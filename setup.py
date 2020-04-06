@@ -57,8 +57,8 @@ setup(
     package_dir={"rex": "rex"},
     entry_points={
         "console_scripts": ["rex=rex.cli:main",
-                            "NSRDB=reVX.resource.solar_cli:main",
-                            "WIND=reVX.resource.wind_cli:main"],
+                            "NSRDB=rex.resource_extraction.solar_cli:main",
+                            "WIND=rex.resource_extraction.wind_cli:main"],
     },
     include_package_data=True,
     license="BSD 3-Clause",
