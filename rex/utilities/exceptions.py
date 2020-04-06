@@ -64,7 +64,7 @@ class ResourceWarning(Warning):
     """
 
 
-class SAMInputError(Exception):
+class SAMInputWarning(Warning):
     """
-    Input error for SAM simulations
+    Warning for bad SAM inputs
     """
