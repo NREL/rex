@@ -20,7 +20,7 @@ Submodules
 .. toctree::
 
    rex.cli
+   rex.renewable_resource
    rex.resource
-   rex.rev_resource
    rex.sam_resource
    rex.version
