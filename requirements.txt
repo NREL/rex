@@ -1,0 +1,5 @@
+click>=7.0
+h5py>=2.9
+numpy>=1.16
+pandas>=0.25
+psutil>=5.6
