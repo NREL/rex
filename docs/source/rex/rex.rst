@@ -11,6 +11,7 @@ Subpackages
 
 .. toctree::
 
+   rex.resource_extraction
    rex.utilities
 
 Submodules
@@ -21,4 +22,5 @@ Submodules
    rex.cli
    rex.resource
    rex.rev_resource
+   rex.sam_resource
    rex.version
