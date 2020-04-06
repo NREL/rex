@@ -6,7 +6,6 @@ import click
 import logging
 import os
 
-from rex.utilities.loggers import init_mult
 from rex.resource_extraction.resource_extraction import NSRDBX, SolarX
 from rex.resource_extraction.resource__cli import dataset as dataset_cmd
 from rex.resource_extraction.resource__cli import multi_site as multi_site_grp
@@ -15,6 +14,7 @@ from rex.resource_extraction.resource__cli import sam as sam_cmd
 from rex.resource_extraction.resource__cli import sam_file as sam_file_cmd
 from rex.resource_extraction.resource__cli import site as site_cmd
 from rex.resource_extraction.resource__cli import timestep as timestep_cmd
+from rex.utilities.loggers import init_mult
 
 logger = logging.getLogger(__name__)
 
