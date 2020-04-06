@@ -8,10 +8,11 @@ import numpy as np
 import os
 import pandas as pd
 import pickle
-from reV.handlers.resource import Resource
-from reV.handlers.rev_resource import (MultiFileWTK, MultiFileNSRDB, NSRDB,
-                                       SolarResource, WindResource)
 from scipy.spatial import cKDTree
+
+from rex.resource import Resource
+from rex.rev_resource import (MultiFileWTK, MultiFileNSRDB, NSRDB,
+                              SolarResource, WindResource)
 
 BIN = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 BIN = os.path.join(os.path.dirname(BIN), 'bin')

@@ -5,16 +5,16 @@ SolarX Command Line Interface
 import click
 import logging
 import os
-from reV.utilities.loggers import init_mult
 
-from reVX.resource.resource import NSRDBX, SolarX
-from reVX.resource.resource_cli import dataset as dataset_cmd
-from reVX.resource.resource_cli import multi_site as multi_site_grp
-from reVX.resource.resource_cli import region as region_cmd
-from reVX.resource.resource_cli import sam as sam_cmd
-from reVX.resource.resource_cli import sam_file as sam_file_cmd
-from reVX.resource.resource_cli import site as site_cmd
-from reVX.resource.resource_cli import timestep as timestep_cmd
+from rex.utilities.loggers import init_mult
+from rex.resource_extraction.resource_extraction import NSRDBX, SolarX
+from rex.resource_extraction.resource__cli import dataset as dataset_cmd
+from rex.resource_extraction.resource__cli import multi_site as multi_site_grp
+from rex.resource_extraction.resource__cli import region as region_cmd
+from rex.resource_extraction.resource__cli import sam as sam_cmd
+from rex.resource_extraction.resource__cli import sam_file as sam_file_cmd
+from rex.resource_extraction.resource__cli import site as site_cmd
+from rex.resource_extraction.resource__cli import timestep as timestep_cmd
 
 logger = logging.getLogger(__name__)
 

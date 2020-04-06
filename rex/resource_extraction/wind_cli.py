@@ -7,12 +7,12 @@ import logging
 import os
 from reV.utilities.loggers import init_mult
 
-from reVX.resource.resource import WindX
-from reVX.resource.resource_cli import dataset as dataset_cmd
-from reVX.resource.resource_cli import multi_site as multi_site_grp
-from reVX.resource.resource_cli import region as region_cmd
-from reVX.resource.resource_cli import site as site_cmd
-from reVX.resource.resource_cli import timestep as timestep_cmd
+from rex.resource_extraction.resource_extraction import WindX
+from rex.resource_extraction.resource_cli import dataset as dataset_cmd
+from rex.resource_extraction.resource_cli import multi_site as multi_site_grp
+from rex.resource_extraction.resource_cli import region as region_cmd
+from rex.resource_extraction.resource_cli import site as site_cmd
+from rex.resource_extraction.resource_cli import timestep as timestep_cmd
 
 logger = logging.getLogger(__name__)
 
