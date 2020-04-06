@@ -22,6 +22,12 @@ class ExecutionError(Exception):
     """
 
 
+class ExtrapolationWarning(Warning):
+    """
+    Warning for when value will be extrapolated
+    """
+
+
 class ResourceKeyError(Exception):
     """
     KeyError for Resources
