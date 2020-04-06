@@ -9,8 +9,8 @@ import pandas as pd
 import pytest
 
 from rex import TESTDATADIR
-from rex.rev_resource import (NSRDB, WindResource, MultiFileNSRDB,
-                              MultiFileWTK)
+from rex.renewable_resource import (NSRDB, WindResource, MultiFileNSRDB,
+                                    MultiFileWTK)
 from rex.utilities.exceptions import ResourceKeyError
 
 

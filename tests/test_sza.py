@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pytest
 
-from rex.rev_resource import NSRDB
+from rex.renewable_resource import NSRDB
 from rex.utilities.solar_position import SolarPosition
 from rex import TESTDATADIR
 

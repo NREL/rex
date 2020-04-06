@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pytest
 
-from rex.rev_resource import WindResource
+from rex.renewable_resource import WindResource
 from rex import TESTDATADIR
 
 
