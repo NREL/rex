@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Classes to handle reV resource data
+Classes to handle renewable resource data
 """
 import numpy as np
 import pandas as pd
@@ -162,7 +162,7 @@ class NSRDB(SolarResource):
                 SAM_res[var] = self[var, :, sites_slice]
         else:
             # contingent import to avoid dependencies
-            from reV.utilities.downscale import downscale_nsrdb
+            from rex.utilities.downscale import downscale_nsrdb
             SAM_res = downscale_nsrdb(SAM_res, self, project_points,
                                       downscale, sam_vars=SAM_res.var_list)
 
