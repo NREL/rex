@@ -7,7 +7,7 @@ import logging
 import os
 import pandas as pd
 
-from rex.resource_extraction.resource_extraction import ResourceX
+from rex.resource_extraction import ResourceX
 from rex.utilities.loggers import init_mult
 
 logger = logging.getLogger(__name__)

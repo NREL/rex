@@ -7,9 +7,8 @@ import os
 import pandas as pd
 import pytest
 
-from rex.resource_extraction.resource_extraction import (MultiFileWindX,
-                                                         MultiFileNSRDBX,
-                                                         NSRDBX, WindX)
+from rex.resource_extraction import (MultiFileWindX, MultiFileNSRDBX,
+                                     NSRDBX, WindX)
 from rex import TESTDATADIR
 
 

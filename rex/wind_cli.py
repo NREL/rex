@@ -6,12 +6,12 @@ import click
 import logging
 import os
 
-from rex.resource_extraction.resource_extraction import WindX
-from rex.resource_extraction.resource_cli import dataset as dataset_cmd
-from rex.resource_extraction.resource_cli import multi_site as multi_site_grp
-from rex.resource_extraction.resource_cli import region as region_cmd
-from rex.resource_extraction.resource_cli import site as site_cmd
-from rex.resource_extraction.resource_cli import timestep as timestep_cmd
+from rex.resource_extraction import WindX
+from rex.resource_cli import dataset as dataset_cmd
+from rex.resource_cli import multi_site as multi_site_grp
+from rex.resource_cli import region as region_cmd
+from rex.resource_cli import site as site_cmd
+from rex.resource_cli import timestep as timestep_cmd
 from rex.utilities.loggers import init_mult
 
 logger = logging.getLogger(__name__)

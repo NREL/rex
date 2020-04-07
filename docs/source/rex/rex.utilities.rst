@@ -12,6 +12,7 @@ Submodules
 .. toctree::
 
    rex.utilities.cli_dtypes
+   rex.utilities.downscale
    rex.utilities.exceptions
    rex.utilities.execution
    rex.utilities.loggers
