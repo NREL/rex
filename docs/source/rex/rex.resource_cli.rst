@@ -2,7 +2,7 @@ rex.resource\_cli module
 ========================
 
 .. click:: rex.resource_cli:main
-   :prog: resource_cli
+   :prog: rex
    :show-nested:
 
 .. automodule:: rex.resource_cli

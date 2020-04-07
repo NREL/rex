@@ -17,8 +17,9 @@ The REsource eXtraction (rex) tool
 rex command line tools
 ======================
 
-- `NSRDB <https://nrel.github.io/reVX/reVX/reVX.resource.solar_cli.html#nsrdb>`_
-- `WIND <https://nrel.github.io/reVX/reVX/reVX.resource.wind_cli.html#wind>`_
+- `rex <https://nrel.github.io/rex/rex/rex.resource_cli.html#rex>`_
+- `NSRDB <https://nrel.github.io/rex/rex/rex.solar_cli.html#nsrdb>`_
+- `WIND <https://nrel.github.io/rex/rex/rex.wind_cli.html#wind>`_
 
 Using Eagle Module
 ==================
