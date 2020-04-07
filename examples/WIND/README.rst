@@ -81,6 +81,67 @@ command line utility with the following options and commands:
       site        Extract a single dataset for the nearest pixel to the given...
       timestep    Extract a single dataset for a single timestep Extract only...
 
+WindX class
+-----------
+
+.. code-block:: python
+
+  from rex import WindX
+
+  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
+  with WindX(wtk_file) as f:
+      meta = f.meta
+      time_index = f.time_index
+      wspd_100m = f['windspeed_100m']
+
+Note: `WindX` will automatically interpolate to the desired hub-height:
+
+.. code-block:: python
+
+  from rex import WindX
+
+  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
+  with WindX(wtk_file) as f:
+      print(f.datasets)  # not 90m is not a valid dataset
+      wspd_90m = f['windspeed_90m']
+
+`WindX` also allows easy extraction of the nearest site to a desired (lat, lon)
+location:
+
+.. code-block:: python
+
+  from rex import WindX
+
+  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
+  nwtc = (39.913561, -105.222422)
+  with WindX(wtk_file) as f:
+      nwtc_wspd = f.get_lat_lon_df('windspeed_100m', nwtc)
+
+
+or to extract all sites in a given region:
+
+.. code-block:: python
+
+  from rex import WindX
+
+  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
+  state='Colorado'
+  with WindX(wtk_file) as f:
+      co_wspd = f.get_region_df('windspeed_100m', state, region_col='state')
+
+Lastly, `WindX` can be used to extract all variables needed to run SAM at a
+given location:
+
+.. code-block:: python
+
+  from rex import WindX
+
+  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
+  nwtc = (39.913561, -105.222422)
+  with WindX(wtk_file) as f:
+      nwtc_sam_vars = f.get_SAM_df(nwtc)
+
+
 References
 ----------
 

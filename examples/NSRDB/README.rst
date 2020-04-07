@@ -101,6 +101,54 @@ The NSRDB module provides a `NSRDB <https://nrel.github.io/rex/rex/rex.resource_
       site        Extract a single dataset for the nearest pixel to the given...
       timestep    Extract a single dataset for a single timestep Extract only...
 
+NSRDBX class
+------------
+
+.. code-block:: python
+
+  from rex import NSRDBX
+
+  nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+  with NSRDBX(nsrdb_file) as f:
+      meta = f.meta
+      time_index = f.time_index
+      dni = f['dni']
+
+`NSRDBX` also allows easy extraction of the nearest site to a desired (lat, lon)
+location:
+
+.. code-block:: python
+
+  from rex import NSRDBX
+
+  nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+  nrel = (39.741931, -105.169891)
+  with NSRDBX(nsrdb_file) as f:
+      nrel_dni = f.get_lat_lon_df('dni', nrel)
+
+or to extract all sites in a given region:
+
+.. code-block:: python
+
+  from rex import NSRDBX
+
+  nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+  state='Colorado'
+  with NSRDBX(nsrdb_file) as f:
+      co_dni = f.get_region_df('dni', state, region_col='state')
+
+Lastly, `NSRDBX` can be used to extract all variables needed to run SAM at a
+given location:
+
+.. code-block:: python
+
+  from rex import NSRDBX
+
+  nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+  nrel = (39.741931, -105.169891)
+  with NSRDBX(nsrdb_file) as f:
+      nrel_sam_vars = f.get_SAM_df(nwtc)
+
 References
 ----------
 
