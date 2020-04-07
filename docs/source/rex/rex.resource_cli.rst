@@ -1,7 +1,7 @@
 rex.resource\_cli module
 ========================
 
-.. click:: reVX.resource_cli:main
+.. click:: rex.resource_cli:main
    :prog: resource_cli
    :show-nested:
 
