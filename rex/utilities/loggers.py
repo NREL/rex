@@ -6,8 +6,7 @@ import logging
 import sys
 import os
 import psutil
-
-__all__ = ['setup_logger', 'LoggingAttributes', 'init_logger']
+import time
 
 FORMAT = '%(levelname)s - %(asctime)s [%(filename)s:%(lineno)d] : %(message)s'
 LOG_LEVEL = {'INFO': logging.INFO,
@@ -15,6 +14,31 @@ LOG_LEVEL = {'INFO': logging.INFO,
              'WARNING': logging.WARNING,
              'ERROR': logging.ERROR,
              'CRITICAL': logging.CRITICAL}
+
+
+def create_dirs(dir_path):
+    """
+    Wrapper for checking and making directory to handle parallel processing
+
+    Parameters
+    ----------
+    dir_path : str
+        Directory path to create if it doesn't exist
+    """
+    i = 0
+    while True:
+        try:
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+
+            break
+        except FileExistsError:
+            time.sleep(0.01)
+        except Exception as ex:
+            i += 1
+            if i == 2:
+                raise FileExistsError('Cannot create {}: {}'
+                                      .format(dir_path, ex))
 
 
 def get_handler(log_level="INFO", log_file=None, log_format=FORMAT):
@@ -52,7 +76,7 @@ def get_handler(log_level="INFO", log_file=None, log_format=FORMAT):
     return handler
 
 
-def setup_logger(logger_name, log_level="INFO", log_file=None,
+def setup_logger(logger_name, stream=True, log_level="INFO", log_file=None,
                  log_format=FORMAT):
     """
     Setup logging instance with given name and attributes
@@ -61,6 +85,8 @@ def setup_logger(logger_name, log_level="INFO", log_file=None,
     ----------
     logger_name : str
         Name of logger
+    stream : bool
+        Init stream logger
     log_level : str
         Level of logging to capture, must be key in LOG_LEVEL. If multiple
         handlers/log_files are requested in a single call of this function,
@@ -93,6 +119,10 @@ def setup_logger(logger_name, log_level="INFO", log_file=None,
         handlers.append(get_handler(log_level=log_level, log_file=log_file,
                                     log_format=log_format))
 
+    if stream:
+        if log_file is not None:
+            handlers.append(get_handler())
+
     for handler in handlers:
         if str(handler) not in current_handlers:
             logger.addHandler(handler)
@@ -115,10 +145,12 @@ class LoggingAttributes:
                 if not isinstance(value, (list, tuple)):
                     # make the log_file request into a iterable list
                     value = [value]
+
                 for v in value:
                     if v not in handlers:
                         # check if each handler has been previously set
                         handlers.append(v)
+
                 log_attrs[attr] = handlers
             else:
                 log_attrs[attr] = value
@@ -151,7 +183,7 @@ class LoggingAttributes:
 LOGGERS = LoggingAttributes()
 
 
-def init_logger(logger_name, log_level="INFO", log_file=None,
+def init_logger(logger_name, stream=True, log_level="INFO", log_file=None,
                 log_format=FORMAT):
     """
     Starts logging instance and adds logging attributes to REV_LOGGERS
@@ -176,7 +208,7 @@ def init_logger(logger_name, log_level="INFO", log_file=None,
         logging instance that was initialized
     """
     kwargs = {"log_level": log_level, "log_file": log_file,
-              "log_format": log_format}
+              "log_format": log_format, 'stream': stream}
     logger = setup_logger(logger_name, **kwargs)
 
     LOGGERS[logger_name] = kwargs
