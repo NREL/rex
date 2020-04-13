@@ -2,7 +2,16 @@
 
 ## Model
 
-Wind resource data for North America was produced using the [Weather Research and Forecasting Model (WRF)](https://www.mmm.ucar.edu/weather-research-and-forecasting-model). The WRF model was initialized with the European Centre for Medium Range Weather Forecasts Interim Reanalysis (ERA-Interm) data set with an initial grid spacing of 54 km.  Three internal nested domains were used to refine the spatial resolution to 18, 6, and finally 2 km.  The WRF model was run for years 2007 to 2014. While outputs were extracted from WRF at 5 minute time-steps, due to storage limitations instantaneous hourly time-step are provided for all variables while full 5 min resolution data is provided for wind speed and wind direction only.
+Wind resource data for North America was produced using the
+[Weather Research and Forecasting Model (WRF)](https://www.mmm.ucar.edu/weather-research-and-forecasting-model).
+The WRF model was initialized with the European Centre for Medium Range Weather
+Forecasts Interim Reanalysis (ERA-Interm) data set with an initial grid spacing
+of 54 km.  Three internal nested domains were used to refine the spatial
+resolution to 18, 6, and finally 2 km.  The WRF model was run for years 2007
+to 2014. While outputs were extracted from WRF at 5 minute time-steps, due to
+storage limitations instantaneous hourly time-step are provided for all
+variables while full 5 min resolution data is provided for wind speed and wind
+direction only.
 
 The following variables were extracted from the WRF model data:
 - Wind Speed at 10, 40, 60, 80, 100, 120, 140, 160, 200 m
@@ -15,7 +24,10 @@ The following variables were extracted from the WRF model data:
 
 ## Domains
 
-The wind resource was produce using three distinct WRF domains shown below. The CONUS domain for 2007-2013 was run by 3Tier while 2014 as well as all years of the Canada and Mexico domains were run under NARIS. The data is provided in three sets of files:
+The wind resource was produce using three distinct WRF domains shown below.
+The CONUS domain for 2007-2013 was run by 3Tier while 2014 as well as all
+years of the Canada and Mexico domains were run under NARIS. The data is
+provided in three sets of files:
 
 - CONUS: Extracted exclusively from the CONUS domain
 - Canada: Combined data from the Canada and CONUS domains
@@ -32,7 +44,10 @@ Users of the WIND Toolkit should use the following citations:
 
 ## Directory structure
 
-Wind resource data is made available as a series of hourly .h5 files corresponding to each domain and year.  Five minute wind data (wind speed and direction) is stored in .h5 files by domain, year, and hub height. Below is an example of the directory structure for the CONUS domains:
+Wind resource data is made available as a series of hourly .h5 files
+corresponding to each domain and year.  Five minute wind data (wind speed and
+direction) is stored in .h5 files by domain, year, and hub height. Below is an
+example of the directory structure for the CONUS domains:
 - /datasets/WIND/conus -> root directory for the conus domain
     - /v1.0.0 -> version 1 of the data corresponding to years 2007-2013, run by 3Tier
         - /wtk_conus_${year}.h5 -> Hourly data for all variables for the given year
@@ -41,16 +56,24 @@ Wind resource data is made available as a series of hourly .h5 files correspondi
 
 ## Data Format
 
-The data is provided in high density data file (.h5) separated by year.  The variables mentioned above are provided in 2 dimensional time-series arrays with dimensions (time x location). The temporal axis is defined by the 'time_index' dataset, while the positional axis is defined by the 'meta' dataset. For storage efficiency each variable has been scaled and stored as an integer. The scale-factor is provided in the 'scale-factor' attribute.  The units for the variable data is also provided as an attribute ('units').
+The data is provided in high density data file (.h5) separated by year. The
+variables mentioned above are provided in 2 dimensional time-series arrays
+with dimensions (time x location). The temporal axis is defined by the
+`time_index` dataset, while the positional axis is defined by the `meta`
+dataset. For storage efficiency each variable has been scaled and stored as an
+integer. The scale-factor is provided in the `scale-factor` attribute. The
+units for the variable data is also provided as an attribute (`units`).
 
 
 ## WIND Module
 
-An extraction utility for the WIND (WTK) data has been created with in [reVX](https://github.com/nrel/reVX) and is available on Eagle as a module:
+An extraction utility for the WIND (WTK) data has been created with in
+[reVX](https://github.com/nrel/reVX) and is available on Eagle as a module:
 `module use /datasets/modulefiles`
 `module load WIND`
 
-The WIND module provides a WIND command line utility with the following options and commands:
+The WIND module provides a WIND command line utility with the following options
+and commands:
 ```
 Usage: WIND [OPTIONS] COMMAND [ARGS]...
 
@@ -83,8 +106,8 @@ module use /datasets/modulefiles
 module load rex
 ```
 
-Once the `rex` module is loaded you can access `rex` in python which can be used
-to access the WTK files:
+Once the `rex` module is loaded you can access `rex` in python which can be
+used to access the WTK files:
 
 ```python
 from rex import WindX
