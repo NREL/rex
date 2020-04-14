@@ -169,7 +169,7 @@ class LoggingAttributes:
         loggers : str | list
             Logger names to initialize
         """
-        if not isinstance(loggers, list):
+        if not isinstance(loggers, (list, tuple)):
             loggers = [loggers]
 
         for logger_name in loggers:
