@@ -6,13 +6,14 @@ import click
 import logging
 import os
 
-from rex.resource_extraction import WindX
+from rex.resource_extraction import WindX, MultiFileWindX
 from rex.resource_cli import dataset as dataset_cmd
 from rex.resource_cli import multi_site as multi_site_grp
 from rex.resource_cli import region as region_cmd
 from rex.resource_cli import site as site_cmd
 from rex.resource_cli import timestep as timestep_cmd
 from rex.utilities.loggers import init_mult
+from rex.utilities.utilities import check_res_file
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,12 @@ def main(ctx, wind_h5, out_dir, compute_tree, verbose):
     ctx.ensure_object(dict)
     ctx.obj['H5'] = wind_h5
     ctx.obj['OUT_DIR'] = out_dir
-    ctx.obj['CLS'] = WindX
+    multi_h5_res, _ = check_res_file(wind_h5)
+    if multi_h5_res:
+        ctx.obj['CLS'] = MultiFileWindX
+    else:
+        ctx.obj['CLS'] = WindX
+
     ctx.obj['TREE'] = compute_tree
 
     name = os.path.splitext(os.path.basename(wind_h5))[0]

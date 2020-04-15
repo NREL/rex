@@ -6,7 +6,7 @@ import click
 import logging
 import os
 
-from rex.resource_extraction import NSRDBX, SolarX
+from rex.resource_extraction import NSRDBX, SolarX, MultiFileNSRDBX
 from rex.resource_cli import dataset as dataset_cmd
 from rex.resource_cli import multi_site as multi_site_grp
 from rex.resource_cli import region as region_cmd
@@ -15,6 +15,7 @@ from rex.resource_cli import sam_file as sam_file_cmd
 from rex.resource_cli import site as site_cmd
 from rex.resource_cli import timestep as timestep_cmd
 from rex.utilities.loggers import init_mult
+from rex.utilities.utilities import check_res_file
 
 logger = logging.getLogger(__name__)
 
@@ -39,11 +40,15 @@ def main(ctx, solar_h5, out_dir, compute_tree, verbose):
     ctx.obj['OUT_DIR'] = out_dir
     ctx.obj['TREE'] = compute_tree
 
+    multi_h5_res, _ = check_res_file(solar_h5)
     name = os.path.splitext(os.path.basename(solar_h5))[0]
-    if 'nsrdb' in name:
-        ctx.obj['CLS'] = NSRDBX
+    if multi_h5_res:
+        ctx.obj['CLS'] = MultiFileNSRDBX
     else:
-        ctx.obj['CLS'] = SolarX
+        if 'nsrdb' in name:
+            ctx.obj['CLS'] = NSRDBX
+        else:
+            ctx.obj['CLS'] = SolarX
 
     init_mult(name, out_dir, verbose=verbose, node=True,
               modules=[__name__, 'rex.resource_extraction.resource_extraction',
