@@ -10,12 +10,11 @@ import pandas as pd
 import pickle
 from scipy.spatial import cKDTree
 
-from rex.resource import Resource
+from rex.resource import Resource, MultiFileResource
 from rex.renewable_resource import (MultiFileWTK, MultiFileNSRDB, NSRDB,
                                     SolarResource, WindResource)
 
-BIN = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-BIN = os.path.join(os.path.dirname(BIN), 'bin')
+TREE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'trees')
 logger = logging.getLogger(__name__)
 
 
@@ -168,12 +167,12 @@ class ResourceX(Resource):
                                .format(type(tree)))
 
             if tree is None:
-                pgz_files = [file for file in os.listdir(BIN)
+                pgz_files = [file for file in os.listdir(TREE_DIR)
                              if file.endswith('.pgz')]
                 for pgz in pgz_files:
                     prefix = pgz.split('_tree')[0]
                     if self.h5_file.startswith(prefix):
-                        tree = os.path.join(BIN, pgz)
+                        tree = os.path.join(TREE_DIR, pgz)
                         break
 
             if isinstance(tree, str):
@@ -473,6 +472,40 @@ class ResourceX(Resource):
         return ts_map
 
 
+class MultiFileResourceX(MultiFileResource, ResourceX):
+    """
+    Multi-File resource extraction class
+    """
+
+    def __init__(self, resource_path, tree=None, compute_tree=False,
+                 unscale=True, str_decode=True):
+        """
+        Parameters
+        ----------
+        resource_path : str
+            Path to resource .h5 files
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        tree : str
+            path to .pgz file containing pickled cKDTree of lat, lon
+            coordinates
+        compute_tree : bool
+            Force the computation of the cKDTree
+        prefix : str
+            Prefix for resource .h5 files
+        suffix : str
+            Suffix for resource .h5 files
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        """
+        super().__init__(resource_path, unscale=unscale, str_decode=str_decode)
+        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+
+
 class SolarX(SolarResource, ResourceX):
     """
     Solar Resource extraction class
@@ -539,7 +572,7 @@ class NSRDBX(NSRDB, ResourceX):
 
 class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
     """
-    NSRDB extraction class
+    Multi-File NSRDB extraction class
     """
     def __init__(self, nsrdb_path, tree=None, compute_tree=False,
                  unscale=True, str_decode=True):
@@ -660,7 +693,7 @@ class WindX(WindResource, ResourceX):
 
 class MultiFileWindX(MultiFileWTK, WindX):
     """
-    Wind Resource extraction class
+    Multi-File Wind Resource extraction class
     """
     def __init__(self, wtk_path, tree=None, compute_tree=False,
                  unscale=True, str_decode=True):

@@ -6,7 +6,7 @@ import click
 import logging
 import os
 
-from rex.resource_extraction import NSRDBX, SolarX
+from rex.resource_extraction import NSRDBX, SolarX, MultiFileNSRDBX
 from rex.resource_cli import dataset as dataset_cmd
 from rex.resource_cli import multi_site as multi_site_grp
 from rex.resource_cli import region as region_cmd
@@ -15,15 +15,16 @@ from rex.resource_cli import sam_file as sam_file_cmd
 from rex.resource_cli import site as site_cmd
 from rex.resource_cli import timestep as timestep_cmd
 from rex.utilities.loggers import init_mult
+from rex.utilities.utilities import check_res_file
 
 logger = logging.getLogger(__name__)
 
 
 @click.group()
 @click.option('--solar_h5', '-h5', required=True,
-              type=click.Path(exists=True),
+              type=click.Path(),
               help=('Path to Resource .h5 file'))
-@click.option('--out_dir', '-o', required=True, type=click.Path(),
+@click.option('--out_dir', '-o', required=True, type=click.Path(exists=True),
               help='Directory to dump output files')
 @click.option('--compute_tree', '-t', is_flag=True,
               help='Flag to force the computation of the cKDTree')
@@ -37,13 +38,23 @@ def main(ctx, solar_h5, out_dir, compute_tree, verbose):
     ctx.ensure_object(dict)
     ctx.obj['H5'] = solar_h5
     ctx.obj['OUT_DIR'] = out_dir
-    ctx.obj['TREE'] = compute_tree
+    ctx.obj['CLS_KWARGS'] = {'compute_tree': compute_tree}
 
+    multi_h5_res, hsds = check_res_file(solar_h5)
     name = os.path.splitext(os.path.basename(solar_h5))[0]
-    if 'nsrdb' in name:
-        ctx.obj['CLS'] = NSRDBX
+    if multi_h5_res:
+        assert os.path.exists(os.path.dirname(solar_h5))
+        ctx.obj['CLS'] = MultiFileNSRDBX
     else:
-        ctx.obj['CLS'] = SolarX
+        if hsds:
+            ctx.obj['CLS_KWARGS']['hsds'] = hsds
+        else:
+            assert os.path.exists(solar_h5)
+
+        if 'nsrdb' in name:
+            ctx.obj['CLS'] = NSRDBX
+        else:
+            ctx.obj['CLS'] = SolarX
 
     init_mult(name, out_dir, verbose=verbose, node=True,
               modules=[__name__, 'rex.resource_extraction.resource_extraction',

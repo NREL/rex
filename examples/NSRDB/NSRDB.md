@@ -80,12 +80,12 @@ The units for the variable data is also provided as an attribute (`psm_units`).
 ## NSRDB Module
 
 An extraction utility for the NSRDB has been created with in
-[reVX](https://github.com/nrel/reVX) and is available on Eagle as a module:
+[`rex`](https://github.com/nrel/rex) and is available on Eagle as a module:
 `module use /datasets/modulefiles`
-`module load NSRDB`
+`module load rex`
 
-The NSRDB module provides a NSRDB command line utility with the following
-options and commands:
+The `rex` module provides a [`NSRDB`](https://nrel.github.io/rex/rex/rex.resource_extaction.solar_cli.html#nsrdb)
+command line utility with the following options and commands:
 ```
 Usage: NSRDB [OPTIONS] COMMAND [ARGS]...
 

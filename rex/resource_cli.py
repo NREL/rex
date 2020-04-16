@@ -7,15 +7,16 @@ import logging
 import os
 import pandas as pd
 
-from rex.resource_extraction import ResourceX
+from rex.resource_extraction import ResourceX, MultiFileResourceX
 from rex.utilities.loggers import init_mult
+from rex.utilities.utilities import check_res_file
 
 logger = logging.getLogger(__name__)
 
 
 @click.group()
 @click.option('--resource_h5', '-h5', required=True,
-              type=click.Path(exists=True),
+              type=click.Path(),
               help=('Path to Resource .h5 file'))
 @click.option('--out_dir', '-o', required=True, type=click.Path(),
               help='Directory to dump output files')
@@ -31,8 +32,19 @@ def main(ctx, resource_h5, out_dir, compute_tree, verbose):
     ctx.ensure_object(dict)
     ctx.obj['H5'] = resource_h5
     ctx.obj['OUT_DIR'] = out_dir
-    ctx.obj['CLS'] = ResourceX
-    ctx.obj['TREE'] = compute_tree
+    ctx.obj['CLS_KWARGS'] = {'compute_tree': compute_tree}
+
+    multi_h5_res, hsds = check_res_file(resource_h5)
+    if multi_h5_res:
+        assert os.path.exists(os.path.dirname(resource_h5))
+        ctx.obj['CLS'] = MultiFileResourceX
+    else:
+        if hsds:
+            ctx.obj['CLS_KWARGS']['hsds'] = hsds
+        else:
+            assert os.path.exists(resource_h5)
+
+        ctx.obj['CLS'] = ResourceX
 
     name = os.path.splitext(os.path.basename(resource_h5))[0]
     init_mult(name, out_dir, verbose=verbose, node=True,
@@ -62,7 +74,7 @@ def sam_file(ctx, lat_lon, gid):
         click.echo("You must only supply '--lat-lon' OR '--gid'!")
         raise click.Abort()
 
-    with ctx.obj['CLS'](ctx.obj['H5'], compute_tree=ctx.obj['TREE']) as f:
+    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
         if lat_lon is not None:
             SAM_df = f.get_SAM_lat_lon(lat_lon)
         elif gid is not None:
@@ -95,7 +107,7 @@ def site(ctx, dataset, lat_lon, gid):
         click.echo("You must only supply '--lat-lon' OR '--gid'!")
         raise click.Abort()
 
-    with ctx.obj['CLS'](ctx.obj['H5'], compute_tree=ctx.obj['TREE']) as f:
+    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
         if lat_lon is not None:
             site_df = f.get_lat_lon_df(dataset, lat_lon)
         elif gid is not None:
@@ -120,7 +132,7 @@ def region(ctx, dataset, region, region_col):
     """
     Extract a single dataset for all pixels in the given region
     """
-    with ctx.obj['CLS'](ctx.obj['H5'], compute_tree=ctx.obj['TREE']) as f:
+    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
         region_df = f.get_region_df(dataset, region, region_col=region_col)
         meta = f['meta']
 
@@ -152,7 +164,7 @@ def timestep(ctx, timestep, dataset, region_col, region):
     Extract a single dataset for a single timestep
     Extract only pixels in region if given.
     """
-    with ctx.obj['CLS'](ctx.obj['H5'], compute_tree=ctx.obj['TREE']) as f:
+    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
         map_df = f.get_timestep_map(dataset, timestep, region=region,
                                     region_col=region_col)
 
@@ -203,7 +215,7 @@ def dataset(ctx, dataset):
     """
     gid = ctx.obj['GID']
     lat_lon = ctx.obj['LAT_LON']
-    with ctx.obj['CLS'](ctx.obj['H5'], compute_tree=ctx.obj['TREE']) as f:
+    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
         meta = f['meta']
         if lat_lon is not None:
             site_df = f.get_lat_lon_df(dataset, lat_lon)
@@ -232,7 +244,7 @@ def sam(ctx):
     """
     gid = ctx.obj['GID']
     lat_lon = ctx.obj['LAT_LON']
-    with ctx.obj['CLS'](ctx.obj['H5'], compute_tree=ctx.obj['TREE']) as f:
+    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
         meta = f['meta']
         if lat_lon is not None:
             SAM_df = f.get_SAM_lat_lon(lat_lon)
