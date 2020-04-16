@@ -20,9 +20,9 @@ logger = logging.getLogger(__name__)
 
 @click.group()
 @click.option('--wind_h5', '-h5', required=True,
-              type=click.Path(exists=True),
+              type=click.Path(),
               help=('Path to Resource .h5 file'))
-@click.option('--out_dir', '-o', required=True, type=click.Path(),
+@click.option('--out_dir', '-o', required=True, type=click.Path(exists=True),
               help='Directory to dump output files')
 @click.option('--compute_tree', '-t', is_flag=True,
               help='Flag to force the computation of the cKDTree')
@@ -38,8 +38,10 @@ def main(ctx, wind_h5, out_dir, compute_tree, verbose):
     ctx.obj['OUT_DIR'] = out_dir
     multi_h5_res, _ = check_res_file(wind_h5)
     if multi_h5_res:
+        assert os.path.exists(os.path.dirname(wind_h5))
         ctx.obj['CLS'] = MultiFileWindX
     else:
+        assert os.path.exists(wind_h5)
         ctx.obj['CLS'] = WindX
 
     ctx.obj['TREE'] = compute_tree

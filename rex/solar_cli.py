@@ -22,9 +22,9 @@ logger = logging.getLogger(__name__)
 
 @click.group()
 @click.option('--solar_h5', '-h5', required=True,
-              type=click.Path(exists=True),
+              type=click.Path(),
               help=('Path to Resource .h5 file'))
-@click.option('--out_dir', '-o', required=True, type=click.Path(),
+@click.option('--out_dir', '-o', required=True, type=click.Path(exists=True),
               help='Directory to dump output files')
 @click.option('--compute_tree', '-t', is_flag=True,
               help='Flag to force the computation of the cKDTree')
@@ -43,8 +43,10 @@ def main(ctx, solar_h5, out_dir, compute_tree, verbose):
     multi_h5_res, _ = check_res_file(solar_h5)
     name = os.path.splitext(os.path.basename(solar_h5))[0]
     if multi_h5_res:
+        assert os.path.exists(os.path.dirname(solar_h5))
         ctx.obj['CLS'] = MultiFileNSRDBX
     else:
+        assert os.path.exists(solar_h5)
         if 'nsrdb' in name:
             ctx.obj['CLS'] = NSRDBX
         else:
