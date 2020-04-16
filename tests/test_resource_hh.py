@@ -48,6 +48,29 @@ def test_sam_df_hh():
         assert np.array_equal(arr1, arr2), msg1
 
 
+def test_preload_sam_hh():
+    """Test the preload_SAM method with a single hub height windspeed in res.
+
+    In this case, all variables should be loaded at the single windspeed hh
+    """
+
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_incomplete_2.h5')
+    sites = slice(0, 200)
+    hub_heights = 80
+
+    SAM_res = WindResource.preload_SAM(h5, sites, hub_heights)
+
+    with WindResource(h5) as wind:
+        p = wind['pressure_100m'] * 9.86923e-6
+        t = wind['temperature_100m']
+        msg1 = ('Error: pressure should have been loaded at 100m '
+                'b/c there is only windspeed at 100m.')
+        msg2 = ('Error: temperature should have been loaded at 100m '
+                'b/c there is only windspeed at 100m.')
+        assert np.allclose(SAM_res['pressure', :, :].values, p), msg1
+        assert np.allclose(SAM_res['temperature', :, :].values, t), msg2
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 

@@ -49,14 +49,16 @@ class SolarResource(Resource):
 
         return res_df
 
-    def _preload_SAM(self, project_points, clearsky=False):
+    def _preload_SAM(self, sites, tech='pv', clearsky=False):
         """
         Pre-load project_points for SAM
 
         Parameters
         ----------
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        tech : str, optional
+            Technology to be run by SAM, by default 'pv'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
 
@@ -66,8 +68,8 @@ class SolarResource(Resource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        SAM_res = SAMResource(project_points, self.time_index)
-        sites_slice = project_points.sites_as_slice
+        SAM_res = SAMResource(sites, tech, self.time_index)
+        sites_slice = SAM_res.sites_as_slice
         SAM_res['meta'] = self['meta', sites_slice]
         for var in SAM_res.var_list:
             ds = var
@@ -79,7 +81,7 @@ class SolarResource(Resource):
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, project_points, clearsky=False,
+    def preload_SAM(cls, h5_file, sites, tech='pv', clearsky=False,
                     unscale=True, hsds=False, str_decode=True, group=None):
         """
         Pre-load project_points for SAM
@@ -88,8 +90,10 @@ class SolarResource(Resource):
         ----------
         h5_file : str
             h5_file to extract resource from
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        tech : str, optional
+            Technology to be run by SAM, by default 'pv'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         unscale : bool
@@ -112,7 +116,7 @@ class SolarResource(Resource):
         kwargs = {"unscale": unscale, "hsds": hsds,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(project_points, clearsky=clearsky)
+            SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky)
 
         return SAM_res
 
@@ -129,14 +133,16 @@ class NSRDB(SolarResource):
     SCALE_ATTR = 'psm_scale_factor'
     UNIT_ATTR = 'psm_units'
 
-    def _preload_SAM(self, project_points, clearsky=False, downscale=None):
+    def _preload_SAM(self, sites, tech='pv', clearsky=False, downscale=None):
         """
         Pre-load project_points for SAM
 
         Parameters
         ----------
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        tech : str, optional
+            Technology to be run by SAM, by default 'pv'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         downscale : NoneType | str
@@ -150,8 +156,8 @@ class NSRDB(SolarResource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        SAM_res = SAMResource(project_points, self.time_index)
-        sites_slice = project_points.sites_as_slice
+        SAM_res = SAMResource(sites, tech, self.time_index)
+        sites_slice = SAM_res.sites_as_slice
         SAM_res['meta'] = self['meta', sites_slice]
 
         if clearsky:
@@ -163,13 +169,13 @@ class NSRDB(SolarResource):
         else:
             # contingent import to avoid dependencies
             from rex.utilities.downscale import downscale_nsrdb
-            SAM_res = downscale_nsrdb(SAM_res, self, project_points,
-                                      downscale, sam_vars=SAM_res.var_list)
+            SAM_res = downscale_nsrdb(SAM_res, self, downscale,
+                                      sam_vars=SAM_res.var_list)
 
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, project_points, clearsky=False,
+    def preload_SAM(cls, h5_file, sites, tech='pv', clearsky=False,
                     downscale=None, unscale=True, hsds=False, str_decode=True,
                     group=None):
         """
@@ -179,8 +185,10 @@ class NSRDB(SolarResource):
         ----------
         h5_file : str
             h5_file to extract resource from
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        tech : str, optional
+            Technology to be run by SAM, by default 'pv'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         downscale : NoneType | str
@@ -207,7 +215,7 @@ class NSRDB(SolarResource):
         kwargs = {"unscale": unscale, "hsds": hsds,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(project_points, clearsky=clearsky,
+            SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
                                        downscale=downscale)
 
         return SAM_res
@@ -655,15 +663,17 @@ class WindResource(Resource):
 
         return res_df
 
-    def _preload_SAM(self, project_points, require_wind_dir=False,
+    def _preload_SAM(self, sites, hub_heights, require_wind_dir=False,
                      precip_rate=False, icing=False,):
         """
         Pre-load project_points for SAM
 
         Parameters
         ----------
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        hub_heights : int | float | list
+            Hub heights to extract for SAM
         require_wind_dir : bool
             Boolean flag as to whether wind direction will be loaded.
         precip_rate : bool
@@ -678,16 +688,16 @@ class WindResource(Resource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        SAM_res = SAMResource(project_points, self.time_index,
+        SAM_res = SAMResource(sites, 'windpower', self.time_index,
+                              hub_heights=hub_heights,
                               require_wind_dir=require_wind_dir)
-        sites_slice = project_points.sites_as_slice
+        sites_slice = SAM_res.sites_as_slice
         SAM_res['meta'] = self['meta', sites_slice]
         var_list = SAM_res.var_list
         if not require_wind_dir:
             var_list.remove('winddirection')
 
-        h = project_points.h
-        h = self._check_hub_height(h)
+        h = self._check_hub_height(SAM_res.h)
         if isinstance(h, (int, float)):
             for var in var_list:
                 ds_name = "{}_{}m".format(var, h)
@@ -696,7 +706,7 @@ class WindResource(Resource):
             _, unq_idx = np.unique(h, return_inverse=True)
             unq_h = sorted(list(set(h)))
 
-            site_list = np.array(project_points.sites)
+            site_list = np.array(sites)
             height_slices = {}
             for i, h_i in enumerate(unq_h):
                 pos = np.where(unq_idx == i)[0]
@@ -722,7 +732,7 @@ class WindResource(Resource):
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, project_points, require_wind_dir=False,
+    def preload_SAM(cls, h5_file, sites, hub_heights, require_wind_dir=False,
                     precip_rate=False, icing=False, unscale=True, hsds=False,
                     str_decode=True, group=None):
         """
@@ -732,8 +742,10 @@ class WindResource(Resource):
         ----------
         h5_file : str
             h5_file to extract resource from
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        hub_heights : int | float | list
+            Hub heights to extract for SAM
         require_wind_dir : bool
             Boolean flag as to whether wind direction will be loaded.
         precip_rate : bool
@@ -761,7 +773,7 @@ class WindResource(Resource):
         kwargs = {"unscale": unscale, "hsds": hsds,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(project_points,
+            SAM_res = res._preload_SAM(sites, hub_heights,
                                        require_wind_dir=require_wind_dir,
                                        precip_rate=precip_rate, icing=icing)
 
@@ -779,7 +791,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     resource.NSRDB : Parent class
     """
     @classmethod
-    def preload_SAM(cls, h5_path, project_points, clearsky=False,
+    def preload_SAM(cls, h5_path, sites, tech='pv', clearsky=False,
                     downscale=None, unscale=True, str_decode=True):
         """
         Pre-load project_points for SAM
@@ -791,8 +803,10 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        tech : str, optional
+            Technology to be run by SAM, by default 'pv'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         downscale : NoneType | str
@@ -812,7 +826,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             in project_points
         """
         with cls(h5_path, unscale=unscale, str_decode=str_decode) as res:
-            SAM_res = res._preload_SAM(project_points, clearsky=clearsky,
+            SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
                                        downscale=downscale)
 
         return SAM_res
@@ -877,7 +891,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
         self._heights = None
 
     @classmethod
-    def preload_SAM(cls, h5_path, project_points, require_wind_dir=False,
+    def preload_SAM(cls, h5_path, sites, hub_heights, require_wind_dir=False,
                     precip_rate=False, icing=False, unscale=True,
                     str_decode=True):
         """
@@ -890,8 +904,10 @@ class MultiFileWTK(MultiFileResource, WindResource):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        hub_heights : int | float | list
+            Hub heights to extract for SAM
         require_wind_dir : bool
             Boolean flag as to whether wind direction will be loaded.
         precip_rate : bool
@@ -912,7 +928,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
             in project_points
         """
         with cls(h5_path, unscale=unscale, str_decode=str_decode) as res:
-            SAM_res = res._preload_SAM(project_points,
+            SAM_res = res._preload_SAM(sites, hub_heights,
                                        require_wind_dir=require_wind_dir,
                                        precip_rate=precip_rate, icing=icing)
 
