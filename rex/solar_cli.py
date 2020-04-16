@@ -38,15 +38,19 @@ def main(ctx, solar_h5, out_dir, compute_tree, verbose):
     ctx.ensure_object(dict)
     ctx.obj['H5'] = solar_h5
     ctx.obj['OUT_DIR'] = out_dir
-    ctx.obj['TREE'] = compute_tree
+    ctx.obj['CLS_KWARGS'] = {'compute_tree': compute_tree}
 
-    multi_h5_res, _ = check_res_file(solar_h5)
+    multi_h5_res, hsds = check_res_file(solar_h5)
     name = os.path.splitext(os.path.basename(solar_h5))[0]
     if multi_h5_res:
         assert os.path.exists(os.path.dirname(solar_h5))
         ctx.obj['CLS'] = MultiFileNSRDBX
     else:
-        assert os.path.exists(solar_h5)
+        if hsds:
+            ctx.obj['CLS_KWARGS']['hsds'] = hsds
+        else:
+            assert os.path.exists(solar_h5)
+
         if 'nsrdb' in name:
             ctx.obj['CLS'] = NSRDBX
         else:

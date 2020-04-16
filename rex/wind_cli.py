@@ -36,15 +36,19 @@ def main(ctx, wind_h5, out_dir, compute_tree, verbose):
     ctx.ensure_object(dict)
     ctx.obj['H5'] = wind_h5
     ctx.obj['OUT_DIR'] = out_dir
-    multi_h5_res, _ = check_res_file(wind_h5)
+    ctx.obj['CLS_KWARGS'] = {'compute_tree': compute_tree}
+
+    multi_h5_res, hsds = check_res_file(wind_h5)
     if multi_h5_res:
         assert os.path.exists(os.path.dirname(wind_h5))
         ctx.obj['CLS'] = MultiFileWindX
     else:
-        assert os.path.exists(wind_h5)
-        ctx.obj['CLS'] = WindX
+        if hsds:
+            ctx.obj['CLS_KWARGS']['hsds'] = hsds
+        else:
+            assert os.path.exists(wind_h5)
 
-    ctx.obj['TREE'] = compute_tree
+        ctx.obj['CLS'] = WindX
 
     name = os.path.splitext(os.path.basename(wind_h5))[0]
     init_mult(name, out_dir, verbose=verbose, node=True,
