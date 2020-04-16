@@ -14,8 +14,7 @@ from rex.resource import Resource
 from rex.renewable_resource import (MultiFileWTK, MultiFileNSRDB, NSRDB,
                                     SolarResource, WindResource)
 
-BIN = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-BIN = os.path.join(os.path.dirname(BIN), 'bin')
+TREE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'trees')
 logger = logging.getLogger(__name__)
 
 
@@ -168,12 +167,12 @@ class ResourceX(Resource):
                                .format(type(tree)))
 
             if tree is None:
-                pgz_files = [file for file in os.listdir(BIN)
+                pgz_files = [file for file in os.listdir(TREE_DIR)
                              if file.endswith('.pgz')]
                 for pgz in pgz_files:
                     prefix = pgz.split('_tree')[0]
                     if self.h5_file.startswith(prefix):
-                        tree = os.path.join(BIN, pgz)
+                        tree = os.path.join(TREE_DIR, pgz)
                         break
 
             if isinstance(tree, str):
