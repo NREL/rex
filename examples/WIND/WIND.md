@@ -68,12 +68,12 @@ units for the variable data is also provided as an attribute (`units`).
 ## WIND Module
 
 An extraction utility for the WIND (WTK) data has been created with in
-[reVX](https://github.com/nrel/reVX) and is available on Eagle as a module:
+[`rex`](https://github.com/nrel/rex) and is available on Eagle as a module:
 `module use /datasets/modulefiles`
-`module load WIND`
+`module load rex`
 
-The WIND module provides a WIND command line utility with the following options
-and commands:
+The `rex` module provides a [`WIND`](https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#wind)
+command line utility with the following options and commands:
 ```
 Usage: WIND [OPTIONS] COMMAND [ARGS]...
 

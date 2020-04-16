@@ -77,9 +77,9 @@ An extraction utility for the NSRDB has been created with in `rex <https://githu
 .. code-block:: bash
 
     module use /datasets/modulefiles
-    module load NSRDB
+    module load rex
 
-The NSRDB module provides a `NSRDB <https://nrel.github.io/rex/rex/rex.resource_extaction.solar_cli.html#nsrdb>`_ command line utility with the following options and commands:
+The `rex` module provides a `NSRDB <https://nrel.github.io/rex/rex/rex.resource_extaction.solar_cli.html#nsrdb>`_ command line utility with the following options and commands:
 
 .. code-block:: bash
 

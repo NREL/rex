@@ -56,9 +56,9 @@ An extraction utility for the WIND (WTK) data has been created with in
 .. code-block:: bash
 
     module use /datasets/modulefiles
-    module load WIND
+    module load rex
 
-The WIND module provides a `WIND <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#wind>`_
+The `rex` module provides a `WIND <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#wind>`_
 command line utility with the following options and commands:
 
 .. code-block:: bash
