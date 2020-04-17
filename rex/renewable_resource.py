@@ -819,7 +819,7 @@ class WindResource(Resource):
             _, unq_idx = np.unique(h, return_inverse=True)
             unq_h = sorted(list(set(h)))
 
-            site_list = np.array(sites)
+            site_list = np.array(SAM_res.sites)
             height_slices = {}
             for i, h_i in enumerate(unq_h):
                 pos = np.where(unq_idx == i)[0]
