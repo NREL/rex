@@ -28,6 +28,12 @@ class ExtrapolationWarning(Warning):
     """
 
 
+class MoninObukhovExtrapolationError(Exception):
+    """
+    Custom error when WindResource._monin_obhukov_extrapolation fails
+    """
+
+
 class ResourceKeyError(Exception):
     """
     KeyError for Resources

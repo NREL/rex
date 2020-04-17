@@ -9,7 +9,8 @@ import warnings
 from rex.resource import Resource, MultiFileResource
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import (ResourceValueError, ExtrapolationWarning,
-                                      ResourceWarning)
+                                      ResourceWarning,
+                                      MoninObukhovExtrapolationError)
 
 
 class SolarResource(Resource):
@@ -412,6 +413,87 @@ class WindResource(Resource):
         return nearest_h, extrapolate
 
     @staticmethod
+    def monin_obukhov_extrapolation(ts_1, h_1, z0, L, h):
+        """
+        Monin-Obukhov extrapolation
+
+        Parameters
+        ----------
+         ts_1 : ndarray
+            Time-series array at height h_1
+        h_1 : int | float
+            Height corresponding to time-seris ts_1
+        z0: int | float | ndarray
+            Roughness length
+        L : ndarray
+            time-series of Obukhov length (m; measure of stability)
+        h : int | float
+            Desired height
+
+        Returns
+        -------
+        ndarray
+            new wind speed from MO extrapolation.
+        """
+        # Non dimensional stability parameter at h
+        zeta = WindResource.stability_function(h / L)
+        # Non dimensional stability parameter at z0
+        zeta_0 = WindResource.stability_function(z0 / L)
+        # Non dimensional stability parameter at h_1
+        zeta_1 = WindResource.stability_function(h_1 / L)
+
+        # Logarithmic extrapolation equation
+        out = (ts_1 * (np.log(h / z0) - zeta + zeta_0)
+               / (np.log(h_1 / z0) - zeta_1 + zeta_0))
+
+        return out
+
+    @staticmethod
+    def stability_function(zeta):
+        """
+        Calculate stability function depending on sign of L
+        (negative is unstable, positive is stable)
+
+        Parameters
+        ----------
+        zeta : ndarray
+            Normalized length
+
+        Returns
+        -------
+        numpy.ndarray
+            stability measurements.
+        """
+        stab_fun = np.zeros(len(zeta))
+        zeta = zeta.astype(float)
+
+        # Unstable conditions
+        x = (np.power(1 - 16 * zeta[zeta < 0], 0.25))
+        paulson_func = (np.pi / 2 - 2 * np.arctan(x)
+                        + np.log(np.power(1 + x, 2)
+                        * (1 + np.power(x, 2)) / 8))
+
+        y = np.power(1 - 10 * zeta[zeta < 0], 1. / 3)
+        conv_func = (3 / 2 * np.log(np.power(y, 2) + y + 1. / 3) - np.sqrt(3)
+                     * np.arctan(2 * y + 1 / np.sqrt(3)) + np.pi / np.sqrt(3))
+
+        o = ((paulson_func + np.power(zeta[zeta < 0], 2) * conv_func)
+             / (1 + np.power(zeta[zeta < 0], 2)))
+
+        stab_fun[np.where(zeta < 0)] = o
+
+        # Stable conditions
+        a = 6.1
+        b = 2.5
+
+        o = np.log(zeta[zeta >= 0]
+                   + (1 + np.power(zeta[zeta >= 0], b))**(1 / b))
+        o *= -a
+        stab_fun[np.where(zeta >= 0)] = o
+
+        return stab_fun
+
+    @staticmethod
     def power_law_interp(ts_1, h_1, ts_2, h_2, h, mean=True):
         """
         Power-law interpolate/extrapolate time-series data to height h
@@ -575,6 +657,30 @@ class WindResource(Resource):
 
         return h
 
+    def _try_monin_obukhov_extrapolation(self, ts_1, ds_slice, h_1, h):
+        rmol = 'inversemoninobukhovlength_2m'
+        if rmol not in self:
+            msg = ("{} is needed to run monin obukhov extrapolation"
+                   .format(rmol))
+            warnings.warn(msg)
+            raise MoninObukhovExtrapolationError(msg)
+
+        if 'roughness_length' in self:
+            z0 = self._get_ds('roughness_length', ds_slice)
+        elif 'z0' in self.meta:
+            z0 = self.meta['z0']
+        else:
+            msg = ("roughness length is needed to run monin obukhov"
+                   "extrapolation")
+            warnings.warn(msg)
+            raise MoninObukhovExtrapolationError(msg)
+
+        L = 1 / self._get_ds(rmol, ds_slice)
+
+        out = self.monin_obukhov_extrapolation(ts_1, h_1, z0, L, h)
+
+        return out
+
     def _get_ds(self, ds_name, ds_slice):
         """
         Extract data from given dataset
@@ -608,7 +714,14 @@ class WindResource(Resource):
             ts2 = super()._get_ds('{}_{}m'.format(var_name, h2), ds_slice)
 
             if (var_name == 'windspeed') and extrapolate:
-                out = self.power_law_interp(ts1, h1, ts2, h2, h)
+                if h < h1:
+                    try:
+                        self._try_monin_obukhov_extrapolation(ts1, ds_slice,
+                                                              h1, h)
+                    except MoninObukhovExtrapolationError:
+                        out = self.power_law_interp(ts1, h1, ts2, h2, h)
+                else:
+                    out = self.power_law_interp(ts1, h1, ts2, h2, h)
             elif var_name == 'winddirection':
                 out = self.circular_interp(ts1, h1, ts2, h2, h)
             else:
