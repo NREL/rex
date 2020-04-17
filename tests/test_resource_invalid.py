@@ -76,25 +76,6 @@ def test_max_ws():
             assert patched_max == 120, msg2
 
 
-def test_preload_sam_hh():
-    """Test the preload_SAM method with invalid resource data ranges.
-    """
-
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_invalid.h5')
-    sites = slice(0, 200)
-    hub_heights = 80
-
-    SAM_res = WindResource.preload_SAM(h5, sites, hub_heights)
-
-    msg1 = 'Invalid pressure range was not corrected.'
-    msg2 = 'Invalid temperature range was not corrected.'
-    msg3 = 'Invalid windspeed range was not corrected.'
-
-    assert np.min(SAM_res._res_arrays['pressure']) >= 0.5, msg1
-    assert np.min(SAM_res._res_arrays['temperature']) >= -200, msg2
-    assert np.max(SAM_res._res_arrays['windspeed']) <= 120, msg3
-
-
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 

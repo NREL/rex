@@ -70,14 +70,14 @@ class SolarResource(Resource):
             in project_points
         """
         SAM_res = SAMResource(sites, tech, self.time_index)
-        sites_slice = SAM_res.sites_slice
-        SAM_res['meta'] = self['meta', sites_slice]
+        sites = SAM_res.sites_slice
+        SAM_res['meta'] = self['meta', sites]
         for var in SAM_res.var_list:
             ds = var
             if clearsky and var in ['dni', 'dhi']:
                 ds = 'clearsky_{}'.format(var)
 
-            SAM_res[var] = self[ds, :, sites_slice]
+            SAM_res[var] = self[ds, :, sites]
 
         return SAM_res
 
@@ -158,15 +158,15 @@ class NSRDB(SolarResource):
             in project_points
         """
         SAM_res = SAMResource(sites, tech, self.time_index)
-        sites_slice = SAM_res.sites_slice
-        SAM_res['meta'] = self['meta', sites_slice]
+        sites = SAM_res.sites_slice
+        SAM_res['meta'] = self['meta', sites]
 
         if clearsky:
             SAM_res.set_clearsky()
 
         if not downscale:
             for var in SAM_res.var_list:
-                SAM_res[var] = self[var, :, sites_slice]
+                SAM_res[var] = self[var, :, sites]
         else:
             # contingent import to avoid dependencies
             from rex.utilities.downscale import downscale_nsrdb
@@ -804,8 +804,8 @@ class WindResource(Resource):
         SAM_res = SAMResource(sites, 'windpower', self.time_index,
                               hub_heights=hub_heights,
                               require_wind_dir=require_wind_dir)
-        sites_slice = SAM_res.sites_slice
-        SAM_res['meta'] = self['meta', sites_slice]
+        sites = SAM_res.sites_slice
+        SAM_res['meta'] = self['meta', sites]
         var_list = SAM_res.var_list
         if not require_wind_dir:
             var_list.remove('winddirection')
@@ -814,7 +814,7 @@ class WindResource(Resource):
         if isinstance(h, (int, float)):
             for var in var_list:
                 ds_name = "{}_{}m".format(var, h)
-                SAM_res[var] = self[ds_name, :, sites_slice]
+                SAM_res[var] = self[ds_name, :, sites]
         else:
             _, unq_idx = np.unique(h, return_inverse=True)
             unq_h = sorted(list(set(h)))
@@ -834,13 +834,13 @@ class WindResource(Resource):
             var = 'precipitationrate'
             ds_name = '{}_0m'.format(var)
             SAM_res.append_var_list(var)
-            SAM_res[var] = self[ds_name, :, sites_slice]
+            SAM_res[var] = self[ds_name, :, sites]
 
         if icing:
             var = 'rh'
             ds_name = 'relativehumidity_2m'
             SAM_res.append_var_list(var)
-            SAM_res[var] = self[ds_name, :, sites_slice]
+            SAM_res[var] = self[ds_name, :, sites]
 
         return SAM_res
 
