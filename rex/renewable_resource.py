@@ -70,7 +70,7 @@ class SolarResource(Resource):
             in project_points
         """
         SAM_res = SAMResource(sites, tech, self.time_index)
-        sites_slice = SAM_res.sites_as_slice
+        sites_slice = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites_slice]
         for var in SAM_res.var_list:
             ds = var
@@ -158,7 +158,7 @@ class NSRDB(SolarResource):
             in project_points
         """
         SAM_res = SAMResource(sites, tech, self.time_index)
-        sites_slice = SAM_res.sites_as_slice
+        sites_slice = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites_slice]
 
         if clearsky:
@@ -804,7 +804,7 @@ class WindResource(Resource):
         SAM_res = SAMResource(sites, 'windpower', self.time_index,
                               hub_heights=hub_heights,
                               require_wind_dir=require_wind_dir)
-        sites_slice = SAM_res.sites_as_slice
+        sites_slice = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites_slice]
         var_list = SAM_res.var_list
         if not require_wind_dir:

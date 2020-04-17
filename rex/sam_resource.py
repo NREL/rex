@@ -213,15 +213,16 @@ class SAMResource:
             List of sites to be provided to SAM
         """
         sites = self._sites
+
         return list(sites)
 
     @property
-    def sites_as_slice(self):
-        """Get the sites in slice format.
+    def sites_slice(self):
+        """Get the sites in slice format if possible
 
         Returns
         -------
-        sites_as_slice : list | slice
+        sites : list | slice
             Sites slice belonging to this instance of ProjectPoints.
             The type is slice if possible. Will be a list only if sites are
             non-sequential.
@@ -231,17 +232,18 @@ class SAMResource:
             try_step = self.sites[1] - self.sites[0]
         else:
             try_step = 1
+
         try_slice = slice(self.sites[0], self.sites[-1] + 1, try_step)
         try_list = list(range(*try_slice.indices(try_slice.stop)))
 
         if self.sites == try_list:
             # try_slice is equivelant to the site list
-            sites_as_slice = try_slice
+            sites = try_slice
         else:
             # cannot be converted to a sequential slice, return list
-            sites_as_slice = self.sites
+            sites = self.sites
 
-        return sites_as_slice
+        return sites
 
     @property
     def shape(self):
