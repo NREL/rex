@@ -33,8 +33,8 @@ class SAMResource:
                 'lineardirectsteam': ('dni', 'dhi', 'wind_speed',
                                       'air_temperature', 'dew_point',
                                       'surface_pressure'),
-                'wind': ('pressure', 'temperature', 'winddirection',
-                         'windspeed')}
+                'windpower': ('pressure', 'temperature', 'winddirection',
+                              'windspeed')}
 
     # valid data ranges for PV solar resource:
     PV_DATA_RANGES = {'dni': (0.0, 1360.0),
@@ -55,7 +55,7 @@ class SAMResource:
     # valid data ranges for wind resource in SAM based on the cpp file:
     # https://github.com/NREL/ssc/blob/develop/shared/lib_windfile.cpp
     WIND_DATA_RANGES = {'windspeed': (0, 120),
-                        'pressure': (0.5, 1.1),
+                        'pressure': (0.5, 1.099),
                         'temperature': (-200, 100),
                         'rh': (0.1, 99.9)}
 
@@ -69,53 +69,58 @@ class SAMResource:
     SWH_DATA_RANGES = CSP_DATA_RANGES
 
     # Data range mapping by tech
-    DATA_RANGES = {'wind': WIND_DATA_RANGES,
+    DATA_RANGES = {'windpower': WIND_DATA_RANGES,
                    'pv': PV_DATA_RANGES,
                    'csp': CSP_DATA_RANGES,
                    'troughphysicalheat': TPPH_DATA_RANGES,
                    'lineardirectsteam': LF_DATA_RANGES,
                    'solarwaterheat': SWH_DATA_RANGES}
 
-    def __init__(self, project_points, time_index, require_wind_dir=False):
+    def __init__(self, sites, tech, time_index, hub_heights=None,
+                 require_wind_dir=False):
         """
         Parameters
         ----------
-        project_points : reV.config.ProjectPoints
-            Instance of ProjectPoints
+        sites : list
+            List of sites to be provided to SAM
+        tech : str
+            Technology to be run by SAM
         time_index : pandas.DatetimeIndex
             Time-series datetime index
+        hub_heights : int | float | list
+            Hub height(s) to extract wind data at
         require_wind_dir : bool
             Boolean flag indicating that wind direction is required
         """
         self._i = 0
-        self._project_points = project_points
+        self._sites = self._parse_sites(sites)
         self._time_index = time_index
-        self._shape = (len(time_index), len(project_points.sites))
+        self._shape = (len(time_index), len(self._sites))
         self._n = self._shape[1]
         self._var_list = None
         self._meta = None
         self._runnable = False
         self._res_arrays = {}
-        h = project_points.h
+        self._h = hub_heights
 
-        if project_points.tech.lower() in self.DATA_RANGES.keys():
-            self._tech = project_points.tech.lower()
+        if tech.lower() in self.DATA_RANGES.keys():
+            self._tech = tech.lower()
         else:
-            msg = 'Selected tech {} is not valid.'.format(project_points.tech)
+            msg = 'Selected tech {} is not valid.'.format(tech)
             logger.error(msg)
             raise ResourceValueError(msg)
 
-        if self._tech == 'wind':
+        if self._tech == 'windpower':
             # hub height specified, get WTK wind data.
-            if isinstance(h, (list, np.ndarray)):
-                if len(h) != self._n:
+            if isinstance(self._h, (list, np.ndarray)):
+                if len(self._h) != self._n:
                     msg = 'Must have a unique height for each site'
                     logger.error(msg)
                     raise ResourceValueError(msg)
+
             if not require_wind_dir:
                 self._res_arrays['winddirection'] = np.zeros(self._shape,
                                                              dtype='float32')
-        self._h = h
 
     def __repr__(self):
         msg = "{} with {} {} sites".format(self.__class__.__name__,
@@ -166,6 +171,37 @@ class SAMResource:
         else:
             raise StopIteration
 
+    @staticmethod
+    def _parse_sites(sites):
+        """
+        Sites to extract resource for and send to SAM
+
+        Parameters
+        ----------
+        sites : list | tuple | slice
+            list, tuple, or slice indicating sites to send to SAM
+
+        Returns
+        -------
+        sites : list
+            list of sites to send to SAM
+        """
+        if isinstance(sites, slice):
+            stop = sites.stop
+            if stop is None:
+                msg = "sites as a slice must have an explicit stop value!"
+                logger.error(msg)
+                raise ResourceValueError(msg)
+
+            sites = list(range(*sites.indices(stop)))
+        elif not isinstance(sites, (list, tuple)):
+            msg = ("sites must a list, tuple or slice, not a {}!"
+                   .format(type(slice)))
+            logger.error(msg)
+            raise ResourceValueError(msg)
+
+        return sites
+
     @property
     def sites(self):
         """
@@ -174,10 +210,40 @@ class SAMResource:
         Returns
         -------
         sites : list
-            List of sites to be provided to SAM, defined by project_points
+            List of sites to be provided to SAM
         """
-        sites = self._project_points.sites
+        sites = self._sites
+
         return list(sites)
+
+    @property
+    def sites_slice(self):
+        """Get the sites in slice format if possible
+
+        Returns
+        -------
+        sites : list | slice
+            Sites slice belonging to this instance of ProjectPoints.
+            The type is slice if possible. Will be a list only if sites are
+            non-sequential.
+        """
+        # try_slice is what the sites list would be if it is sequential
+        if len(self.sites) > 1:
+            try_step = self.sites[1] - self.sites[0]
+        else:
+            try_step = 1
+
+        try_slice = slice(self.sites[0], self.sites[-1] + 1, try_step)
+        try_list = list(range(*try_slice.indices(try_slice.stop)))
+
+        if self.sites == try_list:
+            # try_slice is equivelant to the site list
+            sites = try_slice
+        else:
+            # cannot be converted to a sequential slice, return list
+            sites = self.sites
+
+        return sites
 
     @property
     def shape(self):
@@ -316,7 +382,7 @@ class SAMResource:
         pressure_change = ['csp', 'troughphysicalheat', 'lineardirectsteam',
                            'solarwaterheat']
 
-        if 'pressure' in var_name and tech.lower() == 'wind':
+        if 'pressure' in var_name and tech.lower() == 'windpower':
             # Check if pressure is in Pa, if so convert to atm
             if np.min(var_array) > 1e3:
                 # convert pressure from Pa to ATM

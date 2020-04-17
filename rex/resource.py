@@ -883,20 +883,22 @@ class Resource:
         """
         self._h5.close()
 
-    def _preload_SAM(self, project_points, **kwargs):
+    def _preload_SAM(self, sites, tech, **kwargs):
         """
         Placeholder method to pre-load project_points for SAM
 
         Parameters
         ----------
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        tech : str
+            Technology to be run by SAM
         kwargs : dict
             internal kwargs
         """
 
     @classmethod
-    def preload_SAM(cls, h5_file, project_points, **kwargs):
+    def preload_SAM(cls, h5_file, sites, tech, **kwargs):
         """
         Placeholder for classmethod that will pre-load project_points for SAM
 
@@ -904,8 +906,10 @@ class Resource:
         ----------
         h5_file : str
             h5_file to extract resource from
-        project_points : reV.config.ProjectPoints
-            Projects points to be pre-loaded from Resource for SAM
+        sites : list
+            List of sites to be provided to SAM
+        tech : str
+            Technology to be run by SAM
         kwargs : dict
             kwargs to init resource class
         """

@@ -82,7 +82,7 @@ def interp_cld_props(data, ti_native, ti_new,
     return data
 
 
-def downscale_nsrdb(SAM_res, res, project_points, frequency,
+def downscale_nsrdb(SAM_res, res, frequency,
                     sam_vars=('dhi', 'dni', 'wind_speed', 'air_temperature'),
                     ghi_variability=0.05):
     """Downscale the NSRDB resource and return the preloaded SAM_res.
@@ -93,8 +93,6 @@ def downscale_nsrdb(SAM_res, res, project_points, frequency,
         SAM resource object.
     res : NSRDB
         NSRDB resource handler.
-    project_points : ProjectPoints
-        reV project points object.
     frequency : str
         String in the Pandas frequency format, e.g. '5min'.
     sam_vars : tuple | list
@@ -123,12 +121,12 @@ def downscale_nsrdb(SAM_res, res, project_points, frequency,
                 )
 
     # Indexing variable
-    sites_slice = project_points.sites_as_slice
+    sites_slice = SAM_res.sites_as_slice
 
     # get downscaled time_index
     time_index = make_time_index(res.time_index.year[0], frequency)
     SAM_res._time_index = time_index
-    SAM_res._shape = (len(time_index), len(project_points.sites))
+    SAM_res._shape = (len(time_index), len(SAM_res.sites))
 
     # downscale variables into an all-sky input variable namespace
     all_sky_ins = {'time_index': time_index}
@@ -137,7 +135,7 @@ def downscale_nsrdb(SAM_res, res, project_points, frequency,
                                         res.time_index, time_index)
 
     # calculate downscaled solar zenith angle
-    lat_lon = res.meta.loc[project_points.sites, ['latitude', 'longitude']]\
+    lat_lon = res.meta.loc[SAM_res.sites, ['latitude', 'longitude']]\
         .values.astype(np.float32)
     all_sky_ins['solar_zenith_angle'] = SolarPosition(time_index,
                                                       lat_lon).zenith
@@ -153,7 +151,7 @@ def downscale_nsrdb(SAM_res, res, project_points, frequency,
     all_sky_ins['ghi_variability'] = ghi_variability
 
     # run all-sky
-    logger.debug('Running all-sky for "{}".'.format(project_points))
+    logger.debug('Running all-sky for "{}".'.format(SAM_res))
     all_sky_outs = all_sky(**all_sky_ins)
 
     # set downscaled data to sam resource handler
