@@ -18,4 +18,5 @@ Submodules
    rex.utilities.loggers
    rex.utilities.parse_keys
    rex.utilities.solar_position
+   rex.utilities.toml_parser
    rex.utilities.utilities
