@@ -9,6 +9,8 @@ from rex.resource import Resource
 from rex.renewable_resource import (NSRDB, MultiFileNSRDB, MultiFileWTK,
                                     SolarResource, WindResource)
 from rex.resource_extraction import ResourceX, NSRDBX, WindX
+from rex.utilities.loggers import init_logger
+from rex.utilities.execution import SpawnProcessPool
 
 from rex.version import __version__
 
