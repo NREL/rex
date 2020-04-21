@@ -5,7 +5,7 @@ The REsource eXtraction tool (rex)
 from __future__ import print_function, division, absolute_import
 import os
 
-from rex.rechunk_h5 import RechunkH5
+from rex.rechunk_h5 import RechunkH5, to_records_array
 from rex.renewable_resource import (NSRDB, MultiFileNSRDB, MultiFileWTK,
                                     SolarResource, WindResource)
 from rex.resource import Resource

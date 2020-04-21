@@ -2,4 +2,4 @@
 """
 .h5 rechunking tool
 """
-from .rechunk_h5 import RechunkH5
+from .rechunk_h5 import RechunkH5, to_records_array
