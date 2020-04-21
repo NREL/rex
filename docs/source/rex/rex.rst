@@ -11,6 +11,7 @@ Subpackages
 
 .. toctree::
 
+   rex.rechunk_h5
    rex.utilities
 
 Submodules

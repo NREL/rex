@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-reV utilities.
+rex utilities.
 """
 from .execution import SmartParallelJob
 from .loggers import init_logger, init_mult, setup_logger
