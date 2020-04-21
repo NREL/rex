@@ -8,8 +8,8 @@ import os
 import pytest
 
 from rex.resource import Resource
-from rex.utilities.rechunk_h5 import (get_dataset_attributes, to_records_array,
-                                      RechunkH5)
+from rex.rechunk_h5.rechunk_h5 import (get_dataset_attributes,
+                                       to_records_array, RechunkH5)
 from rex import TESTDATADIR
 
 PURGE_OUT = True

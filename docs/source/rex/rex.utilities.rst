@@ -17,6 +17,5 @@ Submodules
    rex.utilities.execution
    rex.utilities.loggers
    rex.utilities.parse_keys
-   rex.utilities.rechunk_h5
    rex.utilities.solar_position
    rex.utilities.utilities

@@ -24,6 +24,7 @@ rex command line tools
 - `rex <https://nrel.github.io/rex/rex/rex.resource_cli.html#rex>`_
 - `NSRDB <https://nrel.github.io/rex/rex/rex.solar_cli.html#nsrdb>`_
 - `WIND <https://nrel.github.io/rex/rex/rex.wind_cli.html#wind>`_
+- `rechunk <https://nrel.github.io/rex/rex/rex.rechunk_h5.rechunk_cli.html#rechunk>`_
 
 Using Eagle Module
 ==================
