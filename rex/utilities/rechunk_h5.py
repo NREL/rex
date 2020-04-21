@@ -11,6 +11,48 @@ import time
 logger = logging.getLogger(__name__)
 
 
+def get_dataset_attributes(h5_file, out_json=None):
+    """
+    Extact attributes, dtype, and chunk size for all datasets in .h5 file
+
+    Parameters
+    ----------
+    h5_file : str
+        Path to source h5 file to scrape dataset data from
+    out_json : str, optional
+        Path to output json to save DataFrame of dataset attributes to,
+        by default None
+
+    Returns
+    -------
+    ds_attrs : pandas.DataFrame
+        Attributes (attrs, dtype, chunks) for all datasets in source .h5 file
+    """
+    attrs_list = []
+    with h5py.File(h5_file, 'r') as f:
+        datasets = list(f)
+        for ds_name in datasets:
+            ds = f[ds_name]
+            try:
+                attrs = {k: v for k, v in ds.attrs.items()}
+                if not attrs:
+                    attrs = None
+                ds_attrs = {'attrs': attrs,
+                            'dtype': ds.dtype.name,
+                            'chunks': ds.chunks}
+                ds_attrs = pd.Series(ds_attrs)
+                ds_attrs.name = ds_name
+                attrs_list.append(ds_attrs.to_frame().T)
+            except Exception:
+                pass
+
+    ds_attrs = pd.concat(attrs_list)
+    if out_json is not None:
+        ds_attrs.to_json(out_json)
+
+    return ds_attrs
+
+
 def get_chunk_slices(ds_dim, chunk_size):
     """
     Create list of chunk slices [(s_i, e_i), ...]
@@ -129,7 +171,7 @@ class RechunkH5:
         self._dst_path = h5_dst
         self._dst_h5 = h5py.File(h5_dst, 'w')
         if version:
-            self._dst_h5.attrs['Version'] = version
+            self._dst_h5.attrs['version'] = version
 
     def __enter__(self):
         return self
@@ -418,14 +460,42 @@ class RechunkH5:
 
         return var_attrs, attrs
 
-    def rechunk(self, var_attrs_path, meta=None, process_size=None):
+    @staticmethod
+    def _parse_var_attrs(var_attrs):
+        """
+        Parse variable attributes from file if needed
+
+        Parameters
+        ----------
+        var_attrs : str | pandas.DataFrame
+            DataFrame of variable attributes or .json containing variable
+            attributes
+
+        Returns
+        -------
+        var_attrs : pandas.DataFrame
+            DataFrame mapping variable (dataset) name to .h5 attributes
+        """
+        if isinstance(var_attrs, str):
+            var_attrs = pd.read_json(var_attrs)
+        elif not isinstance(var_attrs, pd.DataFrame):
+            msg = ("Variable attributes are expected as a .json file or a "
+                   "pandas DataFrame, but a {} was provided!"
+                   .format(type(var_attrs)))
+            logger.error(msg)
+            raise TypeError(msg)
+
+        return var_attrs
+
+    def rechunk(self, var_attrs, meta=None, process_size=None):
         """
         Rechunk all variables in given variable attributes json
 
         Parameters
         ----------
-        var_attrs_path : str
-            Path to .json file with variable attributes
+        var_attrs : str | pandas.DataFrame
+            DataFrame of variable attributes or .json containing variable
+            attributes
         meta : str
             Path to .csv or .npy file containing meta to load into
             rechunked .h5 file
@@ -434,7 +504,7 @@ class RechunkH5:
         """
         try:
             ts = time.time()
-            var_attrs = pd.read_json(var_attrs_path)
+            var_attrs = self._parse_var_attrs(var_attrs)
             if 'global' in var_attrs.index:
                 var_attrs, global_attrs = self.pop_dset_attrs(var_attrs,
                                                               'global')
@@ -452,9 +522,10 @@ class RechunkH5:
             self.load_meta(meta_attrs, meta_path=meta)
 
             # Process coordinates
-            var_attrs, coords_attrs = self.pop_dset_attrs(var_attrs,
-                                                          'coordinates')
-            self.load_coords(coords_attrs)
+            if 'coordinates' in var_attrs.index:
+                var_attrs, coords_attrs = self.pop_dset_attrs(var_attrs,
+                                                              'coordinates')
+                self.load_coords(coords_attrs)
 
             mask = var_attrs.index.isin(self.src_dsets)
             var_attrs = var_attrs.loc[mask]
@@ -469,7 +540,7 @@ class RechunkH5:
             logger.exception('Error creating {:}'.format(self._dst_path))
 
     @classmethod
-    def run(cls, h5_src, h5_dst, var_attrs_path,
+    def run(cls, h5_src, h5_dst, var_attrs,
             version=None, meta=None, process_size=None):
         """
         Rechunk h5_src to h5_dst using given attributes
@@ -480,8 +551,9 @@ class RechunkH5:
             Source .h5 file path
         h5_dst : str
             Destination path for rechunked .h5 file
-        var_attrs_path : str
-            Path to .json file with variable attributes
+        var_attrs : str | pandas.DataFrame
+            DataFrame of variable attributes or .json containing variable
+            attributes
         version : str
             File version number
         meta : str
@@ -491,4 +563,4 @@ class RechunkH5:
             Size of each chunk to be processed at a time
         """
         with cls(h5_src, h5_dst, version=version) as r:
-            r.rechunk(var_attrs_path, meta=meta, process_size=process_size)
+            r.rechunk(var_attrs, meta=meta, process_size=process_size)
