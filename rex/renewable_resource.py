@@ -670,9 +670,9 @@ class WindResource(Resource):
         elif 'z0' in self.meta:
             z0 = self.meta['z0']
         else:
-            msg = ("roughness length is needed to run monin obukhov"
+            msg = ("roughness length ('z0') is needed to run monin obukhov"
                    "extrapolation")
-            warnings.warn(msg)
+            warnings.warn(msg, ExtrapolationWarning)
             raise MoninObukhovExtrapolationError(msg)
 
         L = 1 / self._get_ds(rmol, ds_slice)
@@ -705,11 +705,16 @@ class WindResource(Resource):
             ds_name = '{}_{}m'.format(var_name, h)
             warnings.warn('Only one hub-height available, returning {}'
                           .format(ds_name), ResourceWarning)
+
         if h in heights:
             ds_name = '{}_{}m'.format(var_name, int(h))
             out = super()._get_ds(ds_name, ds_slice)
         else:
             (h1, h2), extrapolate = self.get_nearest_h(h, heights)
+            if extrapolate:
+                warnings.warn('Extrapolating {}'.format(ds_name),
+                              ExtrapolationWarning)
+
             ts1 = super()._get_ds('{}_{}m'.format(var_name, h1), ds_slice)
             ts2 = super()._get_ds('{}_{}m'.format(var_name, h2), ds_slice)
 
@@ -718,10 +723,16 @@ class WindResource(Resource):
                     try:
                         self._try_monin_obukhov_extrapolation(ts1, ds_slice,
                                                               h1, h)
+                        warnings.warn('\t- Using Monin Obukhov Extrapolation',
+                                      ExtrapolationWarning)
                     except MoninObukhovExtrapolationError:
                         out = self.power_law_interp(ts1, h1, ts2, h2, h)
+                        warnings.warn('\t- Using Power Law Extrapolation',
+                                      ExtrapolationWarning)
                 else:
                     out = self.power_law_interp(ts1, h1, ts2, h2, h)
+                    warnings.warn('\t- Using Power Law Extrapolation',
+                                  ExtrapolationWarning)
             elif var_name == 'winddirection':
                 out = self.circular_interp(ts1, h1, ts2, h2, h)
             else:
