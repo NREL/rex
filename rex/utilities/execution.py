@@ -431,6 +431,19 @@ class SLURM(SubprocessManager):
             return squeue_rows
 
     @staticmethod
+    def scontrol(cmd):
+        """Submit an scontrol command.
+
+        Parameters
+        ----------
+        cmd : str
+            Command string after "scontrol" word
+        """
+        cmd = 'scontrol {}'.format(cmd)
+        cmd = shlex.split(cmd)
+        call(cmd)
+
+    @staticmethod
     def scancel(job_id):
         """Cancel a slurm job.
 
@@ -463,9 +476,9 @@ class SLURM(SubprocessManager):
         qos : str
             New qos value
         """
-        cmd = 'scontrol update job {} QOS={}'.format(job_id, qos)
-        cmd = shlex.split(cmd)
-        call(cmd)
+
+        cmd = 'update job {} QOS={}'.format(job_id, qos)
+        SLURM.scontrol(cmd)
 
     @staticmethod
     def change_qos_all(qos):
@@ -483,6 +496,55 @@ class SLURM(SubprocessManager):
             status = row_list[4]
             if status == 'PD':
                 SLURM.change_qos(job_id, qos)
+
+    @staticmethod
+    def hold(job_id):
+        """Temporarily hold a job from submitting.
+
+        Parameters
+        ----------
+        job_id : int
+            SLURM job id to cancel
+        """
+
+        cmd = 'hold {}'.format(job_id)
+        SLURM.scontrol(cmd)
+
+    @staticmethod
+    def hold_all():
+        """Hold all pending jobs from submitting"""
+        sq = SLURM.squeue()
+        for row in sq[1:]:
+            row_list = [x for x in row.strip().split(' ') if x != '']
+            job_id = row_list[0]
+            status = row_list[4]
+            if status == 'PD':
+                SLURM.hold(job_id)
+
+    @staticmethod
+    def release(job_id):
+        """Release a hold job so it will be submitted.
+
+        Parameters
+        ----------
+        job_id : int
+            SLURM job id to cancel
+        """
+
+        cmd = 'release {}'.format(job_id)
+        SLURM.scontrol(cmd)
+
+    @staticmethod
+    def release_all():
+        """Release all previously help jobs"""
+        sq = SLURM.squeue()
+        for row in sq[1:]:
+            row_list = [x for x in row.strip().split(' ') if x != '']
+            job_id = row_list[0]
+            status = row_list[4]
+            reason = row_list[-1]
+            if status == 'PD' and 'jobheld' in reason.lower():
+                SLURM.release(job_id)
 
     def sbatch(self, cmd, alloc, walltime, memory=None, feature=None,
                name='reV', stdout_path='./stdout', keep_sh=False,
