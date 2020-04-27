@@ -444,6 +444,46 @@ class SLURM(SubprocessManager):
         cmd = shlex.split(cmd)
         call(cmd)
 
+    @staticmethod
+    def scancel_all():
+        """Cancel ALL user jobs"""
+        sq = SLURM.squeue()
+        for row in sq[1:]:
+            job_id = row.strip().split(' ')[0]
+            SLURM.scancel(job_id)
+
+    @staticmethod
+    def change_qos(job_id, qos):
+        """Change the priority (quality of service) for a job.
+
+        Parameters
+        ----------
+        job_id : int
+            SLURM job id to cancel
+        qos : str
+            New qos value
+        """
+        cmd = 'scontrol update job {} QOS={}'.format(job_id, qos)
+        cmd = shlex.split(cmd)
+        call(cmd)
+
+    @staticmethod
+    def change_qos_all(qos):
+        """Change the priority (quality of service) for all jobs.
+
+        Parameters
+        ----------
+        qos : str
+            New qos value
+        """
+        sq = SLURM.squeue()
+        for row in sq[1:]:
+            row_list = [x for x in row.strip().split(' ') if x != '']
+            job_id = row_list[0]
+            status = row_list[4]
+            if status == 'PD':
+                SLURM.change_qos(job_id, qos)
+
     def sbatch(self, cmd, alloc, walltime, memory=None, feature=None,
                name='reV', stdout_path='./stdout', keep_sh=False,
                conda_env=None, module=None,
