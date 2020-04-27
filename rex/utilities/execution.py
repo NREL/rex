@@ -431,18 +431,154 @@ class SLURM(SubprocessManager):
             return squeue_rows
 
     @staticmethod
-    def scancel(job_id):
+    def scontrol(cmd):
+        """Submit an scontrol command.
+
+        Parameters
+        ----------
+        cmd : str
+            Command string after "scontrol" word
+        """
+        cmd = 'scontrol {}'.format(cmd)
+        cmd = shlex.split(cmd)
+        call(cmd)
+
+    @staticmethod
+    def scancel(arg):
         """Cancel a slurm job.
 
         Parameters
         ----------
-        job_id : int
-            SLURM job id to cancel
+        arg : int | list | str
+            SLURM job id(s) to cancel. Can be a list of integer job ids, 'all'
+            to cancel all jobs, or a feature (-p short) to cancel all jobs
+            with a given feature
         """
 
-        cmd = ('scancel {job_id}'.format(job_id=job_id))
-        cmd = shlex.split(cmd)
-        call(cmd)
+        if isinstance(arg, (list, tuple)):
+            for jid in arg:
+                SLURM.scancel(jid)
+
+        elif str(arg).lower() == 'all':
+            sq = SLURM.squeue()
+            for row in sq[1:]:
+                job_id = int(row.strip().split(' ')[0])
+                SLURM.scancel(job_id)
+
+        elif isinstance(arg, (int, str)):
+            cmd = ('scancel {}'.format(arg))
+            cmd = shlex.split(cmd)
+            call(cmd)
+
+        else:
+            e = ('Could not cancel: {} with type {}'
+                 .format(arg, type(arg)))
+            logger.error(e)
+            raise ExecutionError(e)
+
+    @staticmethod
+    def change_qos(arg, qos):
+        """Change the priority (quality of service) for a job.
+
+        Parameters
+        ----------
+        arg : int | list | str
+            SLURM job id(s) to change qos for. Can be 'all' for all jobs.
+        qos : str
+            New qos value
+        """
+
+        if isinstance(arg, (list, tuple)):
+            for jid in arg:
+                SLURM.change_qos(jid, qos)
+
+        elif isinstance(arg, int):
+            cmd = 'update job {} QOS={}'.format(arg, qos)
+            SLURM.scontrol(cmd)
+
+        elif str(arg).lower() == 'all':
+            sq = SLURM.squeue()
+            for row in sq[1:]:
+                row_list = [x for x in row.strip().split(' ') if x != '']
+                job_id = int(row_list[0])
+                status = row_list[4]
+                if status == 'PD':
+                    SLURM.change_qos(job_id, qos)
+
+        else:
+            e = ('Could not change qos of: {} with type {}'
+                 .format(arg, type(arg)))
+            logger.error(e)
+            raise ExecutionError(e)
+
+    @staticmethod
+    def hold(arg):
+        """Temporarily hold a job from submitting. Held jobs will stay in queue
+        but will not get nodes until released.
+
+        Parameters
+        ----------
+        arg : int | list | str
+            SLURM job id(s) to hold. Can be 'all' to hold all jobs.
+        """
+
+        if isinstance(arg, (list, tuple)):
+            for jid in arg:
+                SLURM.hold(jid)
+
+        elif isinstance(arg, int):
+            cmd = 'hold {}'.format(arg)
+            SLURM.scontrol(cmd)
+
+        elif str(arg).lower() == 'all':
+            sq = SLURM.squeue()
+            for row in sq[1:]:
+                row_list = [x for x in row.strip().split(' ') if x != '']
+                job_id = int(row_list[0])
+                status = row_list[4]
+                if status == 'PD':
+                    SLURM.hold(job_id)
+
+        else:
+            e = ('Could not hold: {} with type {}'
+                 .format(arg, type(arg)))
+            logger.error(e)
+            raise ExecutionError(e)
+
+    @staticmethod
+    def release(arg):
+        """Release a job that was previously on hold so it will be submitted
+        to a compute node.
+
+        Parameters
+        ----------
+        arg : int | list | str
+            SLURM job id(s) to release. Can be 'all' to release all jobs.
+        """
+
+        if isinstance(arg, (list, tuple)):
+            for jid in arg:
+                SLURM.release(jid)
+
+        elif isinstance(arg, int):
+            cmd = 'release {}'.format(arg)
+            SLURM.scontrol(cmd)
+
+        elif str(arg).lower() == 'all':
+            sq = SLURM.squeue()
+            for row in sq[1:]:
+                row_list = [x for x in row.strip().split(' ') if x != '']
+                job_id = int(row_list[0])
+                status = row_list[4]
+                reason = row_list[-1]
+                if status == 'PD' and 'jobheld' in reason.lower():
+                    SLURM.release(job_id)
+
+        else:
+            e = ('Could not release: {} with type {}'
+                 .format(arg, type(arg)))
+            logger.error(e)
+            raise ExecutionError(e)
 
     def sbatch(self, cmd, alloc, walltime, memory=None, feature=None,
                name='reV', stdout_path='./stdout', keep_sh=False,
