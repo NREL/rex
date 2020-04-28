@@ -7,7 +7,7 @@ SPHINXBUILD   = sphinx-build
 SPHINXPROJ    = rex
 SOURCEDIR     = source
 BUILDDIR      = _build
-BRANCH := $(shell git rex-parse --abbrev-ref HEAD)
+BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 
 # Put it first so that "make" without argument is like "make help".
 help:
