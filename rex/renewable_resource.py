@@ -50,7 +50,7 @@ class SolarResource(Resource):
 
         return res_df
 
-    def _preload_SAM(self, sites, tech='pv', clearsky=False):
+    def _preload_SAM(self, sites, tech='pv', clearsky=False, means=False):
         """
         Pre-load project_points for SAM
 
@@ -62,6 +62,8 @@ class SolarResource(Resource):
             Technology to be run by SAM, by default 'pv'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
 
         Returns
         -------
@@ -69,7 +71,7 @@ class SolarResource(Resource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        SAM_res = SAMResource(sites, tech, self.time_index)
+        SAM_res = SAMResource(sites, tech, self.time_index, means=means)
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
         for var in SAM_res.var_list:
@@ -82,8 +84,9 @@ class SolarResource(Resource):
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, tech='pv', clearsky=False,
-                    unscale=True, hsds=False, str_decode=True, group=None):
+    def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
+                    str_decode=True, group=None, tech='pv', clearsky=False,
+                    means=False):
         """
         Pre-load project_points for SAM
 
@@ -93,10 +96,6 @@ class SolarResource(Resource):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
-        tech : str, optional
-            Technology to be run by SAM, by default 'pv'
-        clearsky : bool
-            Boolean flag to pull clearsky instead of real irradiance
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         hsds : bool
@@ -107,6 +106,12 @@ class SolarResource(Resource):
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        tech : str, optional
+            Technology to be run by SAM, by default 'pv'
+        clearsky : bool
+            Boolean flag to pull clearsky instead of real irradiance
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
 
         Returns
         -------
@@ -117,7 +122,8 @@ class SolarResource(Resource):
         kwargs = {"unscale": unscale, "hsds": hsds,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky)
+            SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
+                                       means=means)
 
         return SAM_res
 
@@ -134,7 +140,8 @@ class NSRDB(SolarResource):
     SCALE_ATTR = 'psm_scale_factor'
     UNIT_ATTR = 'psm_units'
 
-    def _preload_SAM(self, sites, tech='pv', clearsky=False, downscale=None):
+    def _preload_SAM(self, sites, tech='pv', clearsky=False, downscale=None,
+                     means=False):
         """
         Pre-load project_points for SAM
 
@@ -150,6 +157,8 @@ class NSRDB(SolarResource):
             Option for NSRDB resource downscaling to higher temporal
             resolution. Expects a string in the Pandas frequency format,
             e.g. '5min'.
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
 
         Returns
         -------
@@ -157,7 +166,7 @@ class NSRDB(SolarResource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        SAM_res = SAMResource(sites, tech, self.time_index)
+        SAM_res = SAMResource(sites, tech, self.time_index, means=means)
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
 
@@ -176,9 +185,9 @@ class NSRDB(SolarResource):
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, tech='pv', clearsky=False,
-                    downscale=None, unscale=True, hsds=False, str_decode=True,
-                    group=None):
+    def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
+                    str_decode=True, group=None, tech='pv', clearsky=False,
+                    downscale=None, means=False):
         """
         Pre-load project_points for SAM
 
@@ -188,14 +197,6 @@ class NSRDB(SolarResource):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
-        tech : str, optional
-            Technology to be run by SAM, by default 'pv'
-        clearsky : bool
-            Boolean flag to pull clearsky instead of real irradiance
-        downscale : NoneType | str
-            Option for NSRDB resource downscaling to higher temporal
-            resolution. Expects a string in the Pandas frequency format,
-            e.g. '5min'.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         hsds : bool
@@ -206,6 +207,16 @@ class NSRDB(SolarResource):
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        tech : str, optional
+            Technology to be run by SAM, by default 'pv'
+        clearsky : bool
+            Boolean flag to pull clearsky instead of real irradiance
+        downscale : NoneType | str
+            Option for NSRDB resource downscaling to higher temporal
+            resolution. Expects a string in the Pandas frequency format,
+            e.g. '5min'.
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
 
         Returns
         -------
@@ -217,7 +228,7 @@ class NSRDB(SolarResource):
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
-                                       downscale=downscale)
+                                       downscale=downscale, means=means)
 
         return SAM_res
 
@@ -788,7 +799,7 @@ class WindResource(Resource):
         return res_df
 
     def _preload_SAM(self, sites, hub_heights, require_wind_dir=False,
-                     precip_rate=False, icing=False,):
+                     precip_rate=False, icing=False, means=False):
         """
         Pre-load project_points for SAM
 
@@ -805,6 +816,8 @@ class WindResource(Resource):
         icing : bool
             Boolean flag as to whether icing is analyzed.
             This will preload relative humidity.
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
 
         Returns
         -------
@@ -814,7 +827,8 @@ class WindResource(Resource):
         """
         SAM_res = SAMResource(sites, 'windpower', self.time_index,
                               hub_heights=hub_heights,
-                              require_wind_dir=require_wind_dir)
+                              require_wind_dir=require_wind_dir,
+                              means=means)
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
         var_list = SAM_res.var_list
@@ -856,9 +870,10 @@ class WindResource(Resource):
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, hub_heights, require_wind_dir=False,
-                    precip_rate=False, icing=False, unscale=True, hsds=False,
-                    str_decode=True, group=None):
+    def preload_SAM(cls, h5_file, sites, hub_heights, unscale=True,
+                    hsds=False, str_decode=True, group=None,
+                    require_wind_dir=False, precip_rate=False, icing=False,
+                    means=False):
         """
         Placeholder for classmethod that will pre-load project_points for SAM
 
@@ -870,13 +885,6 @@ class WindResource(Resource):
             List of sites to be provided to SAM
         hub_heights : int | float | list
             Hub heights to extract for SAM
-        require_wind_dir : bool
-            Boolean flag as to whether wind direction will be loaded.
-        precip_rate : bool
-            Boolean flag as to whether precipitationrate_0m will be preloaded
-        icing : bool
-            Boolean flag as to whether icing is analyzed.
-            This will preload relative humidity.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         hsds : bool
@@ -887,6 +895,15 @@ class WindResource(Resource):
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        require_wind_dir : bool
+            Boolean flag as to whether wind direction will be loaded.
+        precip_rate : bool
+            Boolean flag as to whether precipitationrate_0m will be preloaded
+        icing : bool
+            Boolean flag as to whether icing is analyzed.
+            This will preload relative humidity.
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
 
         Returns
         -------
@@ -899,7 +916,8 @@ class WindResource(Resource):
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, hub_heights,
                                        require_wind_dir=require_wind_dir,
-                                       precip_rate=precip_rate, icing=icing)
+                                       precip_rate=precip_rate, icing=icing,
+                                       means=means)
 
         return SAM_res
 
@@ -915,8 +933,8 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     resource.NSRDB : Parent class
     """
     @classmethod
-    def preload_SAM(cls, h5_path, sites, tech='pv', clearsky=False,
-                    downscale=None, unscale=True, str_decode=True):
+    def preload_SAM(cls, h5_path, sites, unscale=True, str_decode=True,
+                    tech='pv', clearsky=False, downscale=None, means=False):
         """
         Pre-load project_points for SAM
 
@@ -929,6 +947,11 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
                 /h5_dir/prefix*suffix
         sites : list
             List of sites to be provided to SAM
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
         tech : str, optional
             Technology to be run by SAM, by default 'pv'
         clearsky : bool
@@ -937,11 +960,8 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             Option for NSRDB resource downscaling to higher temporal
             resolution. Expects a string in the Pandas frequency format,
             e.g. '5min'.
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
 
         Returns
         -------
@@ -951,7 +971,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
         """
         with cls(h5_path, unscale=unscale, str_decode=str_decode) as res:
             SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
-                                       downscale=downscale)
+                                       downscale=downscale, means=means)
 
         return SAM_res
 
@@ -1015,9 +1035,9 @@ class MultiFileWTK(MultiFileResource, WindResource):
         self._heights = None
 
     @classmethod
-    def preload_SAM(cls, h5_path, sites, hub_heights, require_wind_dir=False,
-                    precip_rate=False, icing=False, unscale=True,
-                    str_decode=True):
+    def preload_SAM(cls, h5_path, sites, hub_heights, unscale=True,
+                    str_decode=True, require_wind_dir=False,
+                    precip_rate=False, icing=False, means=False):
         """
         Placeholder for classmethod that will pre-load project_points for SAM
 
@@ -1032,6 +1052,11 @@ class MultiFileWTK(MultiFileResource, WindResource):
             List of sites to be provided to SAM
         hub_heights : int | float | list
             Hub heights to extract for SAM
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
         require_wind_dir : bool
             Boolean flag as to whether wind direction will be loaded.
         precip_rate : bool
@@ -1039,11 +1064,8 @@ class MultiFileWTK(MultiFileResource, WindResource):
         icing : bool
             Boolean flag as to whether icing is analyzed.
             This will preload relative humidity.
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
 
         Returns
         -------
@@ -1054,6 +1076,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
         with cls(h5_path, unscale=unscale, str_decode=str_decode) as res:
             SAM_res = res._preload_SAM(sites, hub_heights,
                                        require_wind_dir=require_wind_dir,
-                                       precip_rate=precip_rate, icing=icing)
+                                       precip_rate=precip_rate, icing=icing,
+                                       means=means)
 
         return SAM_res
