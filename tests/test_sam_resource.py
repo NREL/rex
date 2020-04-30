@@ -120,7 +120,6 @@ def test_preload_sam_means(means):
     hub_heights = 80
 
     SAM_res = WindResource.preload_SAM(h5, sites, hub_heights, means=means)
-    print(SAM_res.var_list)
     if means:
         for var in SAM_res.var_list:
             ts = SAM_res[var]
