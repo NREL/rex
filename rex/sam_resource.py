@@ -77,7 +77,7 @@ class SAMResource:
                    'solarwaterheat': SWH_DATA_RANGES}
 
     def __init__(self, sites, tech, time_index, hub_heights=None,
-                 require_wind_dir=False):
+                 require_wind_dir=False, means=False):
         """
         Parameters
         ----------
@@ -91,6 +91,8 @@ class SAMResource:
             Hub height(s) to extract wind data at
         require_wind_dir : bool
             Boolean flag indicating that wind direction is required
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
         """
         self._i = 0
         self._sites = self._parse_sites(sites)
@@ -102,6 +104,10 @@ class SAMResource:
         self._runnable = False
         self._res_arrays = {}
         self._h = hub_heights
+
+        self._mean_arrays = None
+        if means:
+            self._mean_arrays = {}
 
         if tech.lower() in self.DATA_RANGES.keys():
             self._tech = tech.lower()
@@ -140,7 +146,11 @@ class SAMResource:
             out = self.meta
             out = out.loc[var_slice[0]]
         elif isinstance(var, str):
-            out = self._get_var_ts(var, *var_slice)
+            if var.startswith('mean_'):
+                var = var.lstrip('mean_')
+                out = self._get_var_mean(var, *var_slice)
+            else:
+                out = self._get_var_ts(var, *var_slice)
         elif isinstance(var, int):
             site = var
             out, _ = self._get_res_df(site)
@@ -518,6 +528,8 @@ class SAMResource:
                 arr = self._check_physical_ranges(var, arr, var_slice)
                 var_arr[var_slice] = arr
                 self._res_arrays[var] = var_arr
+                if self._mean_arrays is not None:
+                    self._mean_arrays[var] = var_arr.mean(axis=0)
             else:
                 msg = ('{} has shape {}, '
                        'needs proper shape: {}'.format(var,
@@ -528,6 +540,43 @@ class SAMResource:
             msg = '{} not in {}'.format(var, self.var_list)
             logger.error(msg)
             raise ResourceKeyError(msg)
+
+    def _get_var_mean(self, var, *var_slice):
+        """
+        Get variable means
+
+        Parameters
+        ----------
+        var : str
+            Resource variable name
+        var_slice : int | list | slice
+            Slice of variable array to extract
+
+        Returns
+        -------
+        means : ndarray
+            Vector of variable means
+        """
+        if self._mean_arrays is None:
+            msg = "Variable means were not computed, you must set 'means=True'"
+            logger.error(msg)
+            raise ResourceRuntimeError(msg)
+
+        if var in self.var_list:
+            try:
+                var_array = self._mean_arrays[var]
+            except KeyError:
+                msg = '{} has yet to be set!'.format(var)
+                logger.error(msg)
+                raise ResourceKeyError(msg)
+
+            means = var_array[var_slice]
+        else:
+            msg = '{} not in {}'.format(var, self.var_list)
+            logger.error(msg)
+            raise ResourceKeyError(msg)
+
+        return means
 
     def _get_var_ts(self, var, *var_slice):
         """
@@ -545,7 +594,6 @@ class SAMResource:
         ts : pandas.DataFrame
             Time-series for desired sites of variable var
         """
-
         if var in self.var_list:
             try:
                 var_array = self._res_arrays[var]
@@ -555,9 +603,12 @@ class SAMResource:
                 raise ResourceKeyError(msg)
 
             sites = np.array(self.sites)
+            if len(var_slice) == 2:
+                sites = sites[var_slice[1]]
+
             ts = pd.DataFrame(var_array[var_slice],
                               index=self.time_index[var_slice[0]],
-                              columns=sites[var_slice[1]])
+                              columns=sites)
         else:
             msg = '{} not in {}'.format(var, self.var_list)
             logger.error(msg)

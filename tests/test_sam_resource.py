@@ -8,6 +8,7 @@ import pytest
 
 from rex.renewable_resource import WindResource
 from rex.sam_resource import SAMResource
+from rex.utilities.exceptions import ResourceRuntimeError
 from rex import TESTDATADIR
 
 
@@ -107,6 +108,28 @@ def test_preload_sam_hh():
                 'b/c there is only windspeed at 100m.')
         assert np.allclose(SAM_res['pressure', :, :].values, p), msg1
         assert np.allclose(SAM_res['temperature', :, :].values, t), msg2
+
+
+@pytest.mark.parametrize('means', [True, False])
+def test_preload_sam_means(means):
+    """Test the preload_SAM method with means=True.
+    """
+
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    sites = slice(0, 200)
+    hub_heights = 80
+
+    SAM_res = WindResource.preload_SAM(h5, sites, hub_heights, means=means)
+    if means:
+        for var in SAM_res.var_list:
+            ts = SAM_res[var]
+            means = SAM_res['mean_{}'.format(var)]
+
+            msg = "{} means do not match".format(var)
+            assert np.allclose(means, ts.mean().values), msg
+    else:
+        with pytest.raises(ResourceRuntimeError):
+            SAM_res['mean_windspeed']
 
 
 def execute_pytest(capture='all', flags='-rapP'):
