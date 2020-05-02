@@ -14,9 +14,10 @@ from rex.utilities.loggers import init_logger
               help="Source .h5 file path")
 @click.option('--dst_h5', '-dst', type=click.Path(), required=False,
               help="Destination path for rechunked .h5 file")
-@click.option('--var_attrs', type=click.Path(exists=True), required=True,
+@click.option('--var_attrs_path', '-vap', type=click.Path(exists=True),
+              required=True,
               help=".json containing variable attributes")
-@click.option('--version', default=None,
+@click.option('--version', '-ver', default=None,
               help="File version number")
 @click.option('--meta', '-m', default=None, type=click.Path(exists=True),
               help=("Path to .csv or .npy file containing meta to load into "
@@ -25,12 +26,12 @@ from rex.utilities.loggers import init_logger
               help="Size of each chunk to be processed")
 @click.option('--check_dset_attrs', '-cda', is_flag=True,
               help='Flag to compare source and specified dataset attributes')
-@click.option('--log_file', default=None, type=click.Path(),
+@click.option('--log_file', '-log', default=None, type=click.Path(),
               help='Path to .log file')
 @click.option('--verbose', '-v', is_flag=True,
               help='If used upgrade logging to DEBUG')
 @click.pass_context
-def main(ctx, src_h5, dst_h5, var_attrs, version, meta, process_size,
+def main(ctx, src_h5, dst_h5, var_attrs_path, version, meta, process_size,
          check_dset_attrs, log_file, verbose):
     """
     RechunkH5 CLI entry point
@@ -56,7 +57,7 @@ def main(ctx, src_h5, dst_h5, var_attrs, version, meta, process_size,
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
-    RechunkH5.run(src_h5, dst_h5, var_attrs,
+    RechunkH5.run(src_h5, dst_h5, var_attrs_path,
                   version=version, meta=meta, process_size=process_size,
                   check_dset_attrs=check_dset_attrs)
 
