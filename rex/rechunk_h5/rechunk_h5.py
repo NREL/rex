@@ -234,7 +234,7 @@ class RechunkH5:
         return _shape
 
     @staticmethod
-    def check_dset_attrs(ds_in, dset_attrs):
+    def check_dset_attrs(ds_in, dset_attrs, check_attrs=False):
         """
         Check dataset attributes (dtype, scale_factor, units) against source
         Dataset
@@ -245,6 +245,9 @@ class RechunkH5:
             Source h5 Dataset
         dset_attrs : dict
             Dictionary of dataset attributes (dtype, chunk, attrs)
+        check_attrs : bool, optional
+            Flag to compare source and specified dataset attributes,
+            by default False
         """
         dtype = dset_attrs['dtype']
         attrs = dset_attrs['attrs']
@@ -254,17 +257,18 @@ class RechunkH5:
                            'using source dtype,'.format(ds_in.dtype, dtype))
             dset_attrs['dtype'] = ds_in.dtype.name
 
-        for key, value in attrs.items():
-            src_value = ds_in.attrs.get(key)
-            if src_value:
-                if isinstance(src_value, bytes):
-                    src_value = src_value.decode('utf-8')
+        if check_attrs:
+            for key, value in attrs.items():
+                src_value = ds_in.attrs.get(key)
+                if src_value:
+                    if isinstance(src_value, bytes):
+                        src_value = src_value.decode('utf-8')
 
-                if src_value != value:
-                    logger.warning('Attr {} value ({}) does not match '
-                                   'source value ({}), using source '
-                                   'value.'.format(key, value, src_value))
-                    dset_attrs['attrs'][key] = src_value
+                    if src_value != value:
+                        logger.warning('Attr {} value ({}) does not match '
+                                       'source value ({}), using source '
+                                       'value.'.format(key, value, src_value))
+                        dset_attrs['attrs'][key] = src_value
 
         return dset_attrs
 
@@ -387,7 +391,8 @@ class RechunkH5:
         tt = (time.time() - ts) / 60
         logger.debug('\t- {:.2f} minutes'.format(tt))
 
-    def load_dset(self, dset_name, dset_attrs, process_size=None):
+    def load_dset(self, dset_name, dset_attrs, process_size=None,
+                  check_attrs=False):
         """
         Transfer dataset from domain to combined .h5
 
@@ -399,6 +404,9 @@ class RechunkH5:
             Dictionary of dataset attributes (dtype, chunks, attrs)
         process_size : int
             Size of each chunk to be processed at a time
+        check_attrs : bool, optional
+            Flag to compare source and specified dataset attributes,
+            by default False
         """
         if dset_name not in self._dst_h5:
             ts = time.time()
@@ -406,7 +414,8 @@ class RechunkH5:
             sites = len(self)
             with h5py.File(self._src_path, 'r') as f_in:
                 ds_in = f_in[dset_name]
-                dset_attrs = self.check_dset_attrs(ds_in, dset_attrs)
+                dset_attrs = self.check_dset_attrs(ds_in, dset_attrs,
+                                                   check_attrs=check_attrs)
                 ds_out = self.init_dset(dset_name, self.shape, dset_attrs)
 
                 by_rows = False
@@ -487,7 +496,8 @@ class RechunkH5:
 
         return var_attrs
 
-    def rechunk(self, var_attrs, meta=None, process_size=None):
+    def rechunk(self, var_attrs, meta=None, process_size=None,
+                check_dset_attrs=False):
         """
         Rechunk all variables in given variable attributes json
 
@@ -501,6 +511,9 @@ class RechunkH5:
             rechunked .h5 file
         process_size : int
             Size of each chunk to be processed at a time
+        check_dset_attrs : bool, optional
+            Flag to compare source and specified dataset attributes,
+            by default False
         """
         try:
             ts = time.time()
@@ -531,7 +544,8 @@ class RechunkH5:
             var_attrs = var_attrs.loc[mask]
             for dset_name, dset_attrs in var_attrs.iterrows():
                 self.load_dset(dset_name, dset_attrs,
-                               process_size=process_size)
+                               process_size=process_size,
+                               check_attrs=check_dset_attrs)
 
             tt = (time.time() - ts) / 60
             logger.debug('\t- {:} created in {:.2f} minutes'
@@ -540,8 +554,8 @@ class RechunkH5:
             logger.exception('Error creating {:}'.format(self._dst_path))
 
     @classmethod
-    def run(cls, h5_src, h5_dst, var_attrs,
-            version=None, meta=None, process_size=None):
+    def run(cls, h5_src, h5_dst, var_attrs, version=None, meta=None,
+            process_size=None, check_dset_attrs=False):
         """
         Rechunk h5_src to h5_dst using given attributes
 
@@ -561,6 +575,10 @@ class RechunkH5:
             rechunked .h5 file
         process_size : int
             Size of each chunk to be processed at a time
+        check_dset_attrs : bool, optional
+            Flag to compare source and specified dataset attributes,
+            by default False
         """
         with cls(h5_src, h5_dst, version=version) as r:
-            r.rechunk(var_attrs, meta=meta, process_size=process_size)
+            r.rechunk(var_attrs, meta=meta, process_size=process_size,
+                      check_dset_attrs=check_dset_attrs)

@@ -23,13 +23,15 @@ from rex.utilities.loggers import init_logger
                     "rechunked .h5 file"))
 @click.option('--process_size', '-s', default=None, type=int,
               help="Size of each chunk to be processed")
+@click.option('--check_dset_attrs', '-cda', is_flage=True,
+              help='Flag to compare source and specified dataset attributes')
 @click.option('--log_file', default=None, type=click.Path(),
               help='Path to .log file')
 @click.option('--verbose', '-v', is_flag=True,
               help='If used upgrade logging to DEBUG')
 @click.pass_context
-def main(ctx, src_h5, dst_h5, var_attrs, version, meta, process_size, log_file,
-         verbose):
+def main(ctx, src_h5, dst_h5, var_attrs, version, meta, process_size,
+         check_dset_attrs, log_file, verbose):
     """
     RechunkH5 CLI entry point
     """
@@ -55,7 +57,8 @@ def main(ctx, src_h5, dst_h5, var_attrs, version, meta, process_size, log_file,
         os.makedirs(dst_dir)
 
     RechunkH5.run(src_h5, dst_h5, var_attrs,
-                  version=version, meta=meta, process_size=process_size)
+                  version=version, meta=meta, process_size=process_size,
+                  check_dset_attrs=check_dset_attrs)
 
 
 if __name__ == '__main__':
