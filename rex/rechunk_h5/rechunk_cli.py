@@ -23,7 +23,7 @@ from rex.utilities.loggers import init_logger
                     "rechunked .h5 file"))
 @click.option('--process_size', '-s', default=None, type=int,
               help="Size of each chunk to be processed")
-@click.option('--check_dset_attrs', '-cda', is_flage=True,
+@click.option('--check_dset_attrs', '-cda', is_flag=True,
               help='Flag to compare source and specified dataset attributes')
 @click.option('--log_file', default=None, type=click.Path(),
               help='Path to .log file')
