@@ -77,6 +77,7 @@ def get_chunk_slices(ds_dim, chunk_size):
         chunks[-1] = ds_dim
 
     chunks = list(zip(chunks[:-1], chunks[1:]))
+
     return chunks
 
 
@@ -396,30 +397,39 @@ class RechunkH5:
             with h5py.File(self._src_path, 'r') as f_in:
                 ds_in = f_in[dset_name]
                 shape = ds_in.shape
+                data = None
+                if shape[0] == 1:
+                    shape = (shape[1], )
+                    data = ds_in[1]
+                    logger.debug('\t- Reduce Dataset shape to {}'
+                                 .format(shape))
+
                 dset_attrs = self.check_dset_attrs(ds_in, dset_attrs,
                                                    check_attrs=check_attrs)
                 ds_out = self.init_dset(dset_name, shape, dset_attrs)
 
-                by_rows = False
-                chunks = ds_in.chunks
-                if isinstance(chunks, tuple):
-                    sites = shape[1]
-                    if process_size is None:
-                        process_size = ds_in.chunks[1]
-                else:
-                    by_rows = True
-                    sites = shape[0]
-                    if process_size is None:
-                        process_size = ds_out.chunks[0]
-
-                slice_map = get_chunk_slices(sites, process_size)
-                for s, e in slice_map:
-                    if by_rows:
-                        ds_out[s:e] = ds_in[s:e]
+                if process_size is not None and data is None:
+                    by_rows = False
+                    chunks = ds_in.chunks
+                    if isinstance(chunks, tuple):
+                        sites = shape[1]
                     else:
-                        ds_out[:, s:e] = ds_in[:, s:e]
+                        by_rows = True
+                        sites = shape[0]
 
-                    logger.debug('\t- chunk {}:{} transfered'.format(s, e))
+                    slice_map = get_chunk_slices(sites, process_size)
+                    for s, e in slice_map:
+                        if by_rows:
+                            ds_out[s:e] = ds_in[s:e]
+                        else:
+                            ds_out[:, s:e] = ds_in[:, s:e]
+
+                        logger.debug('\t- chunk {}:{} transfered'.format(s, e))
+                else:
+                    if data is None:
+                        ds_out[:] = ds_in[:]
+                    else:
+                        ds_out[:] = data
 
             logger.info('- {} transfered'.format(dset_name))
             tt = (time.time() - ts) / 60
