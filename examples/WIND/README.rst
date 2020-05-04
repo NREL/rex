@@ -55,31 +55,31 @@ An extraction utility for the WIND (WTK) data has been created with in
 
 .. code-block:: bash
 
-    module use /datasets/modulefiles
-    module load rex
+  module use /datasets/modulefiles
+  module load rex
 
 The `rex` module provides a `WIND <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#wind>`_
 command line utility with the following options and commands:
 
 .. code-block:: bash
 
-    Usage: WIND [OPTIONS] COMMAND [ARGS]...
+  Usage: WIND [OPTIONS] COMMAND [ARGS]...
 
-      WindX Command Line Interface
+    WindX Command Line Interface
 
-    Options:
-      -h5, --wind_h5 PATH  Path to Resource .h5 file  [required]
-      -o, --out_dir PATH   Directory to dump output files  [required]
-      -t, --compute_tree   Flag to force the computation of the cKDTree
-      -v, --verbose        Flag to turn on debug logging. Default is not verbose.
-      --help               Show this message and exit.
+  Options:
+    -h5, --wind_h5 PATH  Path to Resource .h5 file  [required]
+    -o, --out_dir PATH   Directory to dump output files  [required]
+    -t, --compute_tree   Flag to force the computation of the cKDTree
+    -v, --verbose        Flag to turn on debug logging. Default is not verbose.
+    --help               Show this message and exit.
 
-    Commands:
-      multi-site  Extract multiple sites given in '--sites' .csv or .json as...
-      region      Extract a single dataset for all pixels in the given region
-      sam-file    Extract all datasets at the given hub height needed for SAM...
-      site        Extract a single dataset for the nearest pixel to the given...
-      timestep    Extract a single dataset for a single timestep Extract only...
+  Commands:
+    multi-site  Extract multiple sites given in '--sites' .csv or .json as...
+    region      Extract a single dataset for all pixels in the given region
+    sam-file    Extract all datasets at the given hub height needed for SAM...
+    site        Extract a single dataset for the nearest pixel to the given...
+    timestep    Extract a single dataset for a single timestep Extract only...
 
 WindX class
 -----------

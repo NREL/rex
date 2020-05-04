@@ -54,17 +54,10 @@ The following variables are provided by the NSRDB:
 - Reduced ozone vertical pathlength (ozone)
 - Aerosol single-scatter albedo (ssa)
 
-## References
-
-For more information about the NSRDB please see the
-[website](https://nsrdb.nrel.gov/)
-Users of the NSRDB should please cite:
-- [Sengupta, M., Y. Xie, A. Lopez, A. Habte, G. Maclaurin, and J. Shelby. 2018. "The National Solar Radiation Data Base (NSRDB)." Renewable and Sustainable Energy Reviews  89 (June): 51-60.](https://www.sciencedirect.com/science/article/pii/S136403211830087X?via%3Dihub)
-
 ## Directory structure
 
 Solar resource data is made available as a series of .h5 files corresponding
-to each year and can be found at /datasets/NSRDB/v3.0.1/nsrdb_${year}.h5
+to each year and can be found at `/datasets/NSRDB/v3.0.1/nsrdb_${year}.h5`
 
 ## Data Format
 
@@ -75,7 +68,6 @@ with dimensions (time x location). The temporal axis is defined by the
 dataset. For storage efficiency each variable has been scaled and stored as an
 integer. The scale-factor is provided in the 'psm_scale-factor' attribute.
 The units for the variable data is also provided as an attribute (`psm_units`).
-
 
 ## NSRDB Module
 
@@ -210,3 +202,10 @@ with h5py.File('/datasets/NSRDB/v3/nsrdb_2010.h5', mode='r') as f:
     	# Extract site 100 and add to DataFrame
     	time_series[var] = ds[:, 100] / scale_factor
 ```
+
+## References
+
+For more information about the NSRDB please see the
+[website](https://nsrdb.nrel.gov/)
+Users of the NSRDB should please cite:
+- [Sengupta, M., Y. Xie, A. Lopez, A. Habte, G. Maclaurin, and J. Shelby. 2018. "The National Solar Radiation Data Base (NSRDB)." Renewable and Sustainable Energy Reviews  89 (June): 51-60.](https://www.sciencedirect.com/science/article/pii/S136403211830087X?via%3Dihub)
