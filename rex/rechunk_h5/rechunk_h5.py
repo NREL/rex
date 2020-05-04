@@ -182,9 +182,6 @@ class RechunkH5:
         if type is not None:
             raise
 
-    def __len__(self):
-        return self._dst_h5['meta'].shape[0]
-
     def close(self):
         """
         Close h5 instance
@@ -217,21 +214,6 @@ class RechunkH5:
             List of datasets in h5_file
         """
         return list(self._dst_h5)
-
-    @property
-    def shape(self):
-        """
-        Resource shape (timesteps, sites)
-        shape = (len(time_index), len(meta))
-
-        Returns
-        -------
-        _shape : tuple
-            Shape of resource variable arrays (timesteps, sites)
-        """
-        _shape = (self._dst_h5['time_index'].shape[0],
-                  self._dst_h5['meta'].shape[0])
-        return _shape
 
     @staticmethod
     def check_dset_attrs(ds_in, dset_attrs, check_attrs=False):
@@ -411,21 +393,22 @@ class RechunkH5:
         if dset_name not in self._dst_h5:
             ts = time.time()
             logger.info('Rechunking {}'.format(dset_name))
-            sites = len(self)
             with h5py.File(self._src_path, 'r') as f_in:
                 ds_in = f_in[dset_name]
+                shape = ds_in.shape
                 dset_attrs = self.check_dset_attrs(ds_in, dset_attrs,
                                                    check_attrs=check_attrs)
-                ds_out = self.init_dset(dset_name, self.shape, dset_attrs)
+                ds_out = self.init_dset(dset_name, shape, dset_attrs)
 
                 by_rows = False
                 chunks = ds_in.chunks
                 if isinstance(chunks, tuple):
+                    sites = shape[1]
                     if process_size is None:
                         process_size = ds_in.chunks[1]
                 else:
                     by_rows = True
-                    sites = self.shape[0]
+                    sites = shape[0]
                     if process_size is None:
                         process_size = ds_out.chunks[0]
 
