@@ -400,7 +400,7 @@ class RechunkH5:
                 data = None
                 if shape[0] == 1:
                     shape = (shape[1], )
-                    data = ds_in[1]
+                    data = ds_in[0]
                     logger.debug('\t- Reduce Dataset shape to {}'
                                  .format(shape))
 
