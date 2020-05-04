@@ -62,6 +62,7 @@ setup(
                             "rechunk=rex.rechunk_h5.rechunk_cli:main"],
     },
     include_package_data=True,
+    package_data={"rex": ["trees/*.pgz"]},
     license="BSD 3-Clause",
     zip_safe=False,
     keywords="rex",
