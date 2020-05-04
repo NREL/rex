@@ -572,6 +572,14 @@ class RechunkH5:
             Flag to compare source and specified dataset attributes,
             by default False
         """
-        with cls(h5_src, h5_dst, version=version) as r:
-            r.rechunk(var_attrs, meta=meta, process_size=process_size,
-                      check_dset_attrs=check_dset_attrs)
+        logger.info('Rechunking {} to {} using chunks given in {}'
+                    .format(h5_src, h5_dst, var_attrs))
+        try:
+            with cls(h5_src, h5_dst, version=version) as r:
+                r.rechunk(var_attrs, meta=meta, process_size=process_size,
+                          check_dset_attrs=check_dset_attrs)
+
+            logger.info('{} complete'.format(h5_dst))
+        except Exception:
+            logger.exception("Error rechunking {}".format(h5_src))
+            raise
