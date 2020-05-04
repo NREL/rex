@@ -116,7 +116,7 @@ wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
 with WindX(wtk_file) as f:
     meta = f.meta
     time_index = f.time_index
-    wspd_100m = f['windspeed_100m']
+    wspd_100m = f['windspeed_100m'][:, ::1000]
 ```
 
 Note: `WindX` will automatically interpolate to the desired hub-height:
@@ -127,7 +127,7 @@ from rex import WindX
 wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
 with WindX(wtk_file) as f:
     print(f.datasets)  # not 90m is not a valid dataset
-    wspd_90m = f['windspeed_90m']
+    wspd_90m = f['windspeed_90m'][:, ::1000]
 ```
 
 `rex` also allows easy extraction of the nearest site to a desired (lat, lon)
@@ -176,13 +176,13 @@ import pandas as pd
 # Open .h5 file
 with h5py.File('/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5', mode='r') as f:
     # Extract meta data and convert from records array to DataFrame
-    meta = pd.DataFrame(f['meta'][...])
+    meta = pd.DataFrame(f['meta'][::1000])
     # 100m windspeed dataset
     wspd = f['windspeed_100m']
     # Extract scale factor
     scale_factor = wspd.attrs['scale_factor']
     # Extract, average, and unscale windspeed
-    mean_wspd_100m = wspd[...].mean(axis=0) / scale_factor
+    mean_wspd_100m = wspd[::1000].mean(axis=0) / scale_factor
 
 # Add mean windspeed to meta data
 meta['Average 100m Wind Speed'] = mean_wspd_100m

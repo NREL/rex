@@ -124,11 +124,11 @@ to access the NSRDB files:
 ```python
 from rex import NSRDBX
 
-nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
 with NSRDBX(nsrdb_file) as f:
     meta = f.meta
     time_index = f.time_index
-    dni = f['dni']
+    dni = f['dni'][:, ::1000]
 ```
 
 `rex` also allows easy extraction of the nearest site to a desired (lat, lon)
@@ -137,7 +137,7 @@ location:
 ```python
 from rex import NSRDBX
 
-nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
 nrel = (39.741931, -105.169891)
 with NSRDBX(nsrdb_file) as f:
     nrel_dni = f.get_lat_lon_df('dni', nrel)
@@ -148,7 +148,7 @@ or to extract all sites in a given region:
 ```python
 from rex import NSRDBX
 
-nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
 state='Colorado'
 with NSRDBX(nsrdb_file) as f:
     co_dni = f.get_region_df('dni', state, region_col='state')
@@ -160,7 +160,7 @@ location:
 ```python
 from rex import NSRDBX
 
-nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
 nrel = (39.741931, -105.169891)
 with NSRDBX(nsrdb_file) as f:
     nrel_sam_vars = f.get_SAM_df(nwtc)
@@ -175,15 +175,15 @@ import h5py
 import pandas as pd
 
 # Open .h5 file
-with h5py.File('/datasets/NSRDB/v3.0.1/nsrdb_2010.h5', mode='r') as f:
+with h5py.File('/datasets/NSRDB/v3/nsrdb_2010.h5', mode='r') as f:
     # Extract meta data and convert from records array to DataFrame
-    meta = pd.DataFrame(f['meta'][...])
+    meta = pd.DataFrame(f['meta'][::1000])
     # dni dataset
     dni= f['dni']
     # Extract scale factor
     scale_factor = dni.attrs['psm_scale_factor']
     # Extract, average, and un-scale dni
-    mean_dni= dni[...].mean(axis=0) / scale_factor
+    mean_dni= dni[:, ::1000].mean(axis=0) / scale_factor
 
 # Add mean windspeed to meta data
 meta['Average DNI'] = mean_dni
@@ -195,7 +195,7 @@ import h5py
 import pandas as pd
 
 # Open .h5 file
-with h5py.File('/datasets/NSRDB/v3.0.1/nsrdb_2010.h5', mode='r') as f:
+with h5py.File('/datasets/NSRDB/v3/nsrdb_2010.h5', mode='r') as f:
     # Extract time_index and convert to datetime
     # NOTE: time_index is saved as byte-strings and must be decoded
     time_index = pd.to_datetime(f['time_index'][...].astype(str))

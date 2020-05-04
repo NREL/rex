@@ -108,11 +108,11 @@ NSRDBX class
 
   from rex import NSRDBX
 
-  nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+  nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
   with NSRDBX(nsrdb_file) as f:
       meta = f.meta
       time_index = f.time_index
-      dni = f['dni']
+      dni = f['dni'][:, ::1000]
 
 `NSRDBX` also allows easy extraction of the nearest site to a desired (lat, lon)
 location:
@@ -121,7 +121,7 @@ location:
 
   from rex import NSRDBX
 
-  nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+  nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
   nrel = (39.741931, -105.169891)
   with NSRDBX(nsrdb_file) as f:
       nrel_dni = f.get_lat_lon_df('dni', nrel)
@@ -132,7 +132,7 @@ or to extract all sites in a given region:
 
   from rex import NSRDBX
 
-  nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+  nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
   state='Colorado'
   with NSRDBX(nsrdb_file) as f:
       co_dni = f.get_region_df('dni', state, region_col='state')
@@ -144,7 +144,7 @@ given location:
 
   from rex import NSRDBX
 
-  nsrdb_file = '/datasets/NSRDB/v3.0.1/nsrdb_2010.h5'
+  nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
   nrel = (39.741931, -105.169891)
   with NSRDBX(nsrdb_file) as f:
       nrel_sam_vars = f.get_SAM_df(nwtc)
