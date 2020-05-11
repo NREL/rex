@@ -344,8 +344,12 @@ class WindResource(Resource):
             Height of variable
         """
         try:
-            name, h = ds_name.split('_')
-            h = WindResource._parse_hub_height(h)
+            if ds_name.endswith('m'):
+                name, h = ds_name.split('_')
+                h = WindResource._parse_hub_height(h)
+            else:
+                raise ValueError('{} does not end with "_hm"'
+                                 .format(ds_name))
         except Exception as ex:
             name = ds_name
             h = None
