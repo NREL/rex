@@ -40,13 +40,19 @@ class SolarResource(Resource):
         if not self._unscale:
             raise ResourceValueError("SAM requires unscaled values")
 
-        res_df = pd.DataFrame(index=self.time_index)
-        res_df.index.name = 'time_index'
+        res_df = pd.DataFrame({'Year': self.time_index.year,
+                               'Month': self.time_index.month,
+                               'Day': self.time_index.day,
+                               'Hour': self.time_index.hour})
         res_df.name = "{}-{}".format(ds_name, site)
         for var in ['dni', 'dhi', 'wind_speed', 'air_temperature']:
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var, ds_slice)
             res_df[var] = SAMResource.check_units(var, var_array, tech='pv')
+
+        col_map = {'dni': 'DNI', 'dhi': 'DHI', 'wind_speed': 'Wind Speed',
+                   'air_temperature': 'Temperature'}
+        res_df = res_df.rename(columns=col_map)
 
         return res_df
 
@@ -781,8 +787,10 @@ class WindResource(Resource):
 
         _, h = self._parse_name(ds_name)
         h = self._check_hub_height(h)
-        res_df = pd.DataFrame(index=self.time_index)
-        res_df.index.name = 'time_index'
+        res_df = pd.DataFrame({'Year': self.time_index.year,
+                               'Month': self.time_index.month,
+                               'Day': self.time_index.day,
+                               'Hour': self.time_index.hour})
         res_df.name = "{}-{}".format(ds_name, site)
         variables = ['pressure', 'temperature', 'winddirection', 'windspeed']
         if not require_wind_dir:
@@ -790,15 +798,21 @@ class WindResource(Resource):
 
         if icing:
             variables.append('relativehumidity')
+
         for var in variables:
             var_name = "{}_{}m".format(var, h)
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var_name, ds_slice)
-            res_df[var_name] = SAMResource.check_units(var_name, var_array,
-                                                       tech='windpower')
-            res_df[var_name] = SAMResource.enforce_arr_range(
-                var, res_df[var_name],
+            res_df[var] = SAMResource.check_units(var, var_array,
+                                                  tech='windpower')
+            res_df[var] = SAMResource.enforce_arr_range(
+                var, res_df[var],
                 SAMResource.WIND_DATA_RANGES[var], [site])
+
+        col_map = {'pressure': 'Pressure', 'temperature': 'Temperature',
+                   'windspeed': 'Speed', 'winddirection': 'Direction',
+                   'relativehumidity': 'Relative Humidity'}
+        res_df = res_df.rename(columns=col_map)
 
         return res_df
 

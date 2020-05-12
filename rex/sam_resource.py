@@ -181,37 +181,6 @@ class SAMResource:
         else:
             raise StopIteration
 
-    @staticmethod
-    def _parse_sites(sites):
-        """
-        Sites to extract resource for and send to SAM
-
-        Parameters
-        ----------
-        sites : list | tuple | slice
-            list, tuple, or slice indicating sites to send to SAM
-
-        Returns
-        -------
-        sites : list
-            list of sites to send to SAM
-        """
-        if isinstance(sites, slice):
-            stop = sites.stop
-            if stop is None:
-                msg = "sites as a slice must have an explicit stop value!"
-                logger.error(msg)
-                raise ResourceValueError(msg)
-
-            sites = list(range(*sites.indices(stop)))
-        elif not isinstance(sites, (list, tuple)):
-            msg = ("sites must a list, tuple or slice, not a {}!"
-                   .format(type(slice)))
-            logger.error(msg)
-            raise ResourceValueError(msg)
-
-        return sites
-
     @property
     def sites(self):
         """
@@ -289,25 +258,6 @@ class SAMResource:
 
         return self._var_list
 
-    def set_clearsky(self):
-        """Make the NSRDB var list for solar based on clearsky irradiance."""
-        for i, var in enumerate(self.var_list):
-            if var in ['dni', 'dhi', 'ghi']:
-                self._var_list[i] = 'clearsky_{}'.format(var)
-
-    def append_var_list(self, var):
-        """
-        Append a new variable to the SAM resource protected var_list.
-
-        Parameters
-        ----------
-        var : str
-            New resource variable to be added to the protected var_list
-            property.
-        """
-
-        self.var_list.append(var)
-
     @property
     def time_index(self):
         """
@@ -368,6 +318,37 @@ class SAMResource:
             Hub height or height(s) for wind resource, None for solar resource
         """
         return self._h
+
+    @staticmethod
+    def _parse_sites(sites):
+        """
+        Sites to extract resource for and send to SAM
+
+        Parameters
+        ----------
+        sites : list | tuple | slice
+            list, tuple, or slice indicating sites to send to SAM
+
+        Returns
+        -------
+        sites : list
+            list of sites to send to SAM
+        """
+        if isinstance(sites, slice):
+            stop = sites.stop
+            if stop is None:
+                msg = "sites as a slice must have an explicit stop value!"
+                logger.error(msg)
+                raise ResourceValueError(msg)
+
+            sites = list(range(*sites.indices(stop)))
+        elif not isinstance(sites, (list, tuple)):
+            msg = ("sites must a list, tuple or slice, not a {}!"
+                   .format(type(slice)))
+            logger.error(msg)
+            raise ResourceValueError(msg)
+
+        return sites
 
     @staticmethod
     def check_units(var_name, var_array, tech):
@@ -450,6 +431,25 @@ class SAMResource:
             arr[check_high] = max_val
 
         return arr
+
+    def set_clearsky(self):
+        """Make the NSRDB var list for solar based on clearsky irradiance."""
+        for i, var in enumerate(self.var_list):
+            if var in ['dni', 'dhi', 'ghi']:
+                self._var_list[i] = 'clearsky_{}'.format(var)
+
+    def append_var_list(self, var):
+        """
+        Append a new variable to the SAM resource protected var_list.
+
+        Parameters
+        ----------
+        var : str
+            New resource variable to be added to the protected var_list
+            property.
+        """
+
+        self.var_list.append(var)
 
     def _check_physical_ranges(self, var, arr, var_slice):
         """Check physical range of array and enforce usable SAM data.
