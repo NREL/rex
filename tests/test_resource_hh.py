@@ -40,7 +40,7 @@ def test_sam_df_hh():
         sam_df = wind._get_SAM_df('pressure_80m', 0)
 
         arr1 = wind['pressure_100m', :, 0] * 9.86923e-6
-        arr2 = sam_df['pressure_100m'].values
+        arr2 = sam_df['Pressure'].values
 
         msg1 = ('Error: pressure should have been loaded at 100m '
                 'b/c there is only windspeed at 100m.')
