@@ -44,6 +44,9 @@ class SolarResource(Resource):
                                'Month': self.time_index.month,
                                'Day': self.time_index.day,
                                'Hour': self.time_index.hour})
+        if len(self) > 8784:
+            res_df['Minute'] = self.time_index.minute
+
         for var in ['dni', 'dhi', 'wind_speed', 'air_temperature']:
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var, ds_slice)
@@ -791,6 +794,9 @@ class WindResource(Resource):
                                'Month': self.time_index.month,
                                'Day': self.time_index.day,
                                'Hour': self.time_index.hour})
+        if len(self) > 8784:
+            res_df['Minute'] = self.time_index.minute
+
         variables = ['pressure', 'temperature', 'winddirection', 'windspeed']
         if not require_wind_dir:
             variables.remove('winddirection')
