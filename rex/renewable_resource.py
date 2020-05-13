@@ -44,7 +44,6 @@ class SolarResource(Resource):
                                'Month': self.time_index.month,
                                'Day': self.time_index.day,
                                'Hour': self.time_index.hour})
-        res_df.name = "{}-{}".format(ds_name, site)
         for var in ['dni', 'dhi', 'wind_speed', 'air_temperature']:
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var, ds_slice)
@@ -53,6 +52,7 @@ class SolarResource(Resource):
         col_map = {'dni': 'DNI', 'dhi': 'DHI', 'wind_speed': 'Wind Speed',
                    'air_temperature': 'Temperature'}
         res_df = res_df.rename(columns=col_map)
+        res_df.name = "{}-{}".format(ds_name, site)
 
         return res_df
 
@@ -791,7 +791,6 @@ class WindResource(Resource):
                                'Month': self.time_index.month,
                                'Day': self.time_index.day,
                                'Hour': self.time_index.hour})
-        res_df.name = "{}-{}".format(ds_name, site)
         variables = ['pressure', 'temperature', 'winddirection', 'windspeed']
         if not require_wind_dir:
             variables.remove('winddirection')
@@ -813,6 +812,7 @@ class WindResource(Resource):
                    'windspeed': 'Speed', 'winddirection': 'Direction',
                    'relativehumidity': 'Relative Humidity'}
         res_df = res_df.rename(columns=col_map)
+        res_df.name = "{}-{}".format(ds_name, site)
 
         return res_df
 
