@@ -161,7 +161,7 @@ class ResourceX(Resource):
             if c == 'timezone':
                 col_map[c] = 'Time Zone'
             elif c == 'gid':
-                col_map == 'Location ID'
+                col_map = 'Location ID'
             else:
                 col_map[c] = c.capitalize()
 
