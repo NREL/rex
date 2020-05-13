@@ -139,6 +139,41 @@ class ResourceX(Resource):
 
         return tree
 
+    @staticmethod
+    def _to_sam_format(sam_csv, site_meta):
+        """
+        Convert rex SAM .csv to SAM Format by adding site meta data to header
+
+        Parameters
+        ----------
+        sam_csv : str
+            Path to SAM csv
+        site_meta : pandas.DataFrame
+            Site meta data
+        """
+        if 'gid' not in site_meta:
+            site_meta.index.name = 'gid'
+            site_meta = site_meta.reset_index()
+
+        site_meta
+        col_map = {}
+        for c in site_meta.columns:
+            if c == 'timezone':
+                col_map[c] = 'Time Zone'
+            elif c == 'gid':
+                col_map = 'Location ID'
+            else:
+                col_map[c] = c.capitalize()
+
+        site_meta = site_meta.rename(columns=col_map)
+        cols = ','.join(site_meta.columns)
+        values = ','.join(site_meta.values[0].astype(str))
+
+        with open(sam_csv, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(cols + '\n' + values + '\n' + content)
+
     def _init_tree(self, tree=None, compute_tree=False):
         """
         Inititialize cKDTree of lat, lon coordinates

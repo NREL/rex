@@ -21,7 +21,7 @@ def test_min_pressure():
         with WindResource(h5) as wind:
             og_min = np.min(wind['pressure_100m']) * 9.86923e-6
             sam_df = wind._get_SAM_df('pressure_100m', site)
-            patched_min = np.min(sam_df['pressure_100m'].values)
+            patched_min = np.min(sam_df['Pressure'].values)
 
             msg1 = 'Not a good test set. Min pressure is {}'.format(og_min)
             msg2 = ('Physical range enforcement failed. '
@@ -43,7 +43,7 @@ def test_min_temp():
         with WindResource(h5) as wind:
             og_min = np.min(wind['temperature_100m'])
             sam_df = wind._get_SAM_df('temperature_100m', site)
-            patched_min = np.min(sam_df['temperature_100m'].values)
+            patched_min = np.min(sam_df['Temperature'].values)
 
             msg1 = 'Not a good test set. Min temp is {}'.format(og_min)
             msg2 = ('Physical range enforcement failed. '
@@ -65,7 +65,7 @@ def test_max_ws():
         with WindResource(h5) as wind:
             og_max = np.max(wind['windspeed_100m'])
             sam_df = wind._get_SAM_df('windspeed_100m', site)
-            patched_max = np.max(sam_df['windspeed_100m'].values)
+            patched_max = np.max(sam_df['Speed'].values)
 
             msg1 = 'Not a good test set. Min wind speed is {}'.format(og_max)
             msg2 = ('Physical range enforcement failed. '
