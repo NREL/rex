@@ -125,7 +125,7 @@ class ResourceX(Resource):
                     if c.lower().startswith('lat'):
                         lat_lon_cols[0] = c
                     elif c.lower().startswith('lon'):
-                        lat_lon_cols[0] = c
+                        lat_lon_cols[1] = c
 
                 self._lat_lon = self._lat_lon[lat_lon_cols].values
 
