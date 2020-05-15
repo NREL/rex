@@ -46,6 +46,7 @@ class ResourceX(Resource):
         super().__init__(res_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
         self._tree = tree
+        self._lat_lon = None
 
     @property
     def tree(self):
@@ -104,6 +105,31 @@ class ResourceX(Resource):
             counties = None
 
         return counties
+
+    @property
+    def lat_lon(self):
+        """
+        Extract (latitude, longitude) pairs
+
+        Returns
+        -------
+        lat_lon : ndarray
+        """
+        if self._lat_lon is None:
+            if 'coordinates' in self:
+                self._lat_lon = self['coordinates']
+            else:
+                self._lat_lon = self.meta
+                lat_lon_cols = ['latitude', 'longitude']
+                for c in self.meta.columns:
+                    if c.lower().startswith('lat'):
+                        lat_lon_cols[0] = c
+                    elif c.lower().startswith('lon'):
+                        lat_lon_cols[0] = c
+
+                self._lat_lon = self._lat_lon[lat_lon_cols].values
+
+        return self._lat_lon
 
     @staticmethod
     def _load_tree(tree_pickle):
@@ -214,7 +240,7 @@ class ResourceX(Resource):
                 tree = self._load_tree(tree)
 
         if tree is None:
-            lat_lon = self.meta[['latitude', 'longitude']].values
+            lat_lon = self.lat_lon
             tree = cKDTree(lat_lon)
 
         return tree
@@ -492,7 +518,7 @@ class ResourceX(Resource):
         ts_map : pandas.DataFrame
             DataFrame of map values
         """
-        lat_lons = self.meta[['latitude', 'longitude']].values
+        lat_lons = self.lat_lon
         ts_idx = self._get_timestep_idx(timestep)
         gids = slice(None)
         if region is not None:
