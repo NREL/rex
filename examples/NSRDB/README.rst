@@ -147,7 +147,7 @@ given location:
   nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
   nrel = (39.741931, -105.169891)
   with NSRDBX(nsrdb_file) as f:
-      nrel_sam_vars = f.get_SAM_df(nwtc)
+      nrel_sam_vars = f.get_SAM_lat_lon(nwtc)
 
 References
 ----------

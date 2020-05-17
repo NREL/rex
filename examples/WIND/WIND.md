@@ -153,7 +153,7 @@ from rex import WindX
 wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
 nwtc = (39.913561, -105.222422)
 with WindX(wtk_file) as f:
-    nwtc_sam_vars = f.get_SAM_df(nwtc)
+    nwtc_sam_vars = f.get_SAM_lat_lon(nwtc)
 ```
 
 If you would rather access the WTK data directly from the .h5 file please see
