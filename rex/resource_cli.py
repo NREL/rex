@@ -74,19 +74,13 @@ def sam_file(ctx, lat_lon, gid):
         click.echo("You must only supply '--lat-lon' OR '--gid'!")
         raise click.Abort()
 
+    logger.info('Saving data to {}'.format(ctx.obj['OUT_DIR']))
     with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-        gid = f._get_nearest(lat_lon)
-        site_meta = f['meta', gid]
         if lat_lon is not None:
-            SAM_df = f.get_SAM_lat_lon(lat_lon)
+            f.get_SAM_lat_lon(lat_lon, out_path=ctx.obj['OUT_DIR'])
         elif gid is not None:
-            SAM_df = f.get_SAM_gid(lat_lon)
-
-    out_path = "{}.csv".format(SAM_df.name)
-    out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-    logger.info('Saving data to {}'.format(out_path))
-    SAM_df.to_csv(out_path, index=False)
-    ResourceX._to_sam_format(out_path, site_meta)
+            gid = f._get_nearest(lat_lon)
+            f.get_SAM_gid(gid, out_path=ctx.obj['OUT_DIR'])
 
 
 @main.command()

@@ -117,7 +117,7 @@ class ResourceX(Resource):
         """
         if self._lat_lon is None:
             if 'coordinates' in self:
-                self._lat_lon = self['coordinates']
+                self._lat_lon = self.coordinates
             else:
                 self._lat_lon = self.meta
                 lat_lon_cols = ['latitude', 'longitude']
@@ -166,17 +166,28 @@ class ResourceX(Resource):
         return tree
 
     @staticmethod
-    def _to_sam_format(sam_csv, site_meta):
+    def _to_SAM_csv(sam_df, site_meta, out_path):
         """
-        Convert rex SAM .csv to SAM Format by adding site meta data to header
+        Save SAM dataframe to disk and add meta data to header to make
+        SAM compliant
 
         Parameters
         ----------
-        sam_csv : str
-            Path to SAM csv
+        sam_df : pandas.DataFrame
+            rex SAM DataFrame
         site_meta : pandas.DataFrame
             Site meta data
+        out_path : str
+            Path to .csv file to save data too
         """
+        if not out_path.endswith('.csv'):
+            if os.path.isfile(out_path):
+                out_path = os.path.basename(out_path)
+
+            out_path = os.path.join(out_path, "{}.csv".format(sam_df.name))
+
+        sam_df.to_csv(out_path, index=False)
+
         if 'gid' not in site_meta:
             site_meta.index.name = 'gid'
             site_meta = site_meta.reset_index()
@@ -195,7 +206,7 @@ class ResourceX(Resource):
         cols = ','.join(site_meta.columns)
         values = ','.join(site_meta.values[0].astype(str))
 
-        with open(sam_csv, 'r+') as f:
+        with open(out_path, 'r+') as f:
             content = f.read()
             f.seek(0, 0)
             f.write(cols + '\n' + values + '\n' + content)
@@ -445,7 +456,7 @@ class ResourceX(Resource):
 
         return region_df
 
-    def get_SAM_gid(self, gid):
+    def get_SAM_gid(self, gid, out_path=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given resource gid
@@ -454,6 +465,10 @@ class ResourceX(Resource):
         ----------
         gid : int | list
             Resource gid(s) of interset
+        out_path : str, optional
+            Path to save SAM data to in SAM .csv format, by default None
+        kwargs : dict
+            Internal kwargs for _get_SAM_df
 
         Return
         ------
@@ -466,15 +481,19 @@ class ResourceX(Resource):
             gid = [gid, ]
 
         SAM_df = []
-        for id in gid:
-            SAM_df.append(self['SAM', id])
+        for res_id in gid:
+            df = self._get_SAM_df('SAM', res_id, **kwargs)
+            SAM_df.append(df)
+            if out_path is not None:
+                site_meta = self['meta', res_id]
+                self._to_SAM_csv(df, site_meta, out_path)
 
         if len(SAM_df) == 1:
             SAM_df = SAM_df[0]
 
         return SAM_df
 
-    def get_SAM_lat_lon(self, lat_lon):
+    def get_SAM_lat_lon(self, lat_lon, out_path=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given lat_lon
@@ -483,6 +502,10 @@ class ResourceX(Resource):
         ----------
         lat_lon : tuple
             (lat, lon) coordinate of interest
+        out_path : str, optional
+            Path to save SAM data to in SAM .csv format, by default None
+        kwargs : dict
+            Internal kwargs for _get_SAM_df
 
         Return
         ------
@@ -492,7 +515,7 @@ class ResourceX(Resource):
             returned
         """
         gid = self._get_nearest(lat_lon)
-        SAM_df = self.get_SAM_gid(gid)
+        SAM_df = self.get_SAM_gid(gid, out_path=out_path, **kwargs)
 
         return SAM_df
 
@@ -564,6 +587,7 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
             strings. Setting this to False will speed up the meta data read.
         """
         super().__init__(resource_path, unscale=unscale, str_decode=str_decode)
+        self._lat_lon = None
         self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
 
 
@@ -596,6 +620,7 @@ class SolarX(SolarResource, ResourceX):
         """
         super().__init__(solar_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
+        self._lat_lon = None
         self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
 
 
@@ -629,6 +654,7 @@ class NSRDBX(NSRDB, ResourceX):
         super().__init__(nsrdb_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
         self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._lat_lon = None
 
 
 class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
@@ -661,6 +687,7 @@ class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
             strings. Setting this to False will speed up the meta data read.
         """
         super().__init__(nsrdb_path, unscale=unscale, str_decode=str_decode)
+        self._lat_lon = None
         self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
 
 
@@ -685,9 +712,10 @@ class WindX(WindResource, ResourceX):
         """
         super().__init__(wind_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
+        self._lat_lon = None
         self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
 
-    def get_SAM_gid(self, hub_height, gid, **kwargs):
+    def get_SAM_gid(self, hub_height, gid, out_path=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given resource gid and hub height
@@ -698,6 +726,8 @@ class WindX(WindResource, ResourceX):
             Hub height of interest
         gid : int | list
             Resource gid(s) of interset
+        out_path : str, optional
+            Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
             Internal kwargs for _get_SAM_df:
             - require_wind_dir
@@ -715,15 +745,19 @@ class WindX(WindResource, ResourceX):
             gid = [gid, ]
 
         SAM_df = []
-        for id in gid:
-            SAM_df.append(self._get_SAM_df(ds_name, id, **kwargs))
+        for res_id in gid:
+            df = self._get_SAM_df(ds_name, res_id, **kwargs)
+            SAM_df.append(df)
+            if out_path is not None:
+                site_meta = self['meta', res_id]
+                self._to_SAM_csv(df, site_meta, out_path)
 
         if len(SAM_df) == 1:
             SAM_df = SAM_df[0]
 
         return SAM_df
 
-    def get_SAM_lat_lon(self, hub_height, lat_lon):
+    def get_SAM_lat_lon(self, hub_height, lat_lon, out_path=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given lat_lon and hub height
@@ -734,6 +768,8 @@ class WindX(WindResource, ResourceX):
             Hub height of interest
         gid : int | list
             Resource gid(s) of interset
+        out_path : str, optional
+            Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
             Internal kwargs for _get_SAM_df:
             - require_wind_dir
@@ -747,7 +783,7 @@ class WindX(WindResource, ResourceX):
             returned
         """
         gid = self._get_nearest(lat_lon)
-        SAM_df = self.get_SAM_gid(hub_height, gid)
+        SAM_df = self.get_SAM_gid(hub_height, gid, out_path=out_path, **kwargs)
 
         return SAM_df
 
@@ -782,4 +818,5 @@ class MultiFileWindX(MultiFileWTK, WindX):
             strings. Setting this to False will speed up the meta data read.
         """
         super().__init__(wtk_path, unscale=unscale, str_decode=str_decode)
+        self._lat_lon = None
         self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)

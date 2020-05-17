@@ -428,6 +428,7 @@ class Resource:
         self._unscale = unscale
         self._meta = None
         self._time_index = None
+        self._coords = None
         self._str_decode = str_decode
         self._i = 0
 
@@ -455,6 +456,8 @@ class Resource:
             out = self._get_time_index(ds, ds_slice)
         elif ds.endswith('meta'):
             out = self._get_meta(ds, ds_slice)
+        elif ds.endswith('coordinates'):
+            out = self._get_coords(ds, ds_slice)
         elif 'SAM' in ds:
             site = ds_slice[0]
             if isinstance(site, int):
@@ -621,6 +624,24 @@ class Resource:
         return self._time_index
 
     @property
+    def coordinates(self):
+        """
+        Coordinates: (lat, lon) pairs
+
+        Returns
+        -------
+        coords : ndarray
+            Array of (lat, lon) pairs for each site in meta
+        """
+        if self._coords is None:
+            if 'coordinates' in self.h5:
+                self._coords = self._get_coords('coordinates', slice(None))
+            else:
+                raise ResourceKeyError("'coordinates' is not a valid dataset!")
+
+        return self._coords
+
+    @property
     def global_attrs(self):
         """
         Global (file) attributes
@@ -777,13 +798,13 @@ class Resource:
 
         return meta_arr
 
-    def _get_time_index(self, ds, ds_slice):
+    def _get_time_index(self, ds_name, ds_slice):
         """
         Extract and convert time_index to pandas Datetime Index
 
         Parameters
         ----------
-        ds : str
+        ds_name : str
             Dataset to extract time_index from
         ds_slice : int | list | slice
             tuple describing slice of time_index to extract
@@ -794,17 +815,17 @@ class Resource:
             Vector of datetime stamps
         """
         ds_slice = parse_slice(ds_slice)
-        time_index = self.h5[ds][ds_slice[0]]
+        time_index = self.h5[ds_name][ds_slice[0]]
         # time_index: np.array
         return pd.to_datetime(time_index.astype(str))
 
-    def _get_meta(self, ds, ds_slice):
+    def _get_meta(self, ds_name, ds_slice):
         """
         Extract and convert meta to a pandas DataFrame
 
         Parameters
         ----------
-        ds : str
+        ds_name : str
             Dataset to extract meta from
         ds_slice : int | list | slice
             Pandas slicing describing which sites and columns to extract
@@ -819,7 +840,7 @@ class Resource:
         if isinstance(sites, int):
             sites = slice(sites, sites + 1)
 
-        meta = self.h5[ds][sites]
+        meta = self.h5[ds_name][sites]
 
         if isinstance(sites, slice):
             if sites.stop:
@@ -835,6 +856,26 @@ class Resource:
             meta = meta[ds_slice[1]]
 
         return meta
+
+    def _get_coords(self, ds_name, ds_slice):
+        """
+        Extract coordinates (lat, lon) pairs
+
+        Parameters
+        ----------
+        ds_name : str
+            Dataset to extract coordinates from
+        ds_slice : int | list | slice
+            tuple describing slice of coordinates to extract
+
+        Returns
+        -------
+        coords : ndarray
+            Array of (lat, lon) pairs for each site in meta
+        """
+        ds_slice = parse_slice(ds_slice)
+        coords = self.h5[ds_name][ds_slice[0]]
+        return coords
 
     def _get_SAM_df(self, ds_name, site):
         """
@@ -1184,6 +1225,7 @@ class MultiFileResource(Resource):
         self._unscale = unscale
         self._meta = None
         self._time_index = None
+        self._coords = None
         self._str_decode = str_decode
         self._group = None
         # Map variables to their .h5 files
