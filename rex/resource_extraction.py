@@ -14,7 +14,9 @@ from rex.resource import Resource, MultiFileResource
 from rex.renewable_resource import (MultiFileWTK, MultiFileNSRDB, NSRDB,
                                     SolarResource, WindResource)
 
-TREE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'trees')
+TREE_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
+    'bin', 'trees')
 logger = logging.getLogger(__name__)
 
 
@@ -238,7 +240,7 @@ class ResourceX(Resource):
                                'file or a cKDTree, not a {}'
                                .format(type(tree)))
 
-            if tree is None:
+            if tree is None and os.path.exists(TREE_DIR):
                 pgz_files = [file for file in os.listdir(TREE_DIR)
                              if file.endswith('.pgz')]
                 for pgz in pgz_files:
