@@ -2,9 +2,6 @@
 rex
 ***
 
-.. image:: https://badge.fury.io/py/NREL-rex.svg
-    :target: https://badge.fury.io/py/NREL-rex
-
 .. image:: https://github.com/NREL/rex/workflows/Documentation/badge.svg
     :target: https://nrel.github.io/rex/
 
@@ -13,6 +10,21 @@ rex
 
 .. image:: https://img.shields.io/pypi/pyversions/NREL-rex.svg
     :target: https://pypi.org/project/NREL-rex/
+
+.. image:: https://badge.fury.io/py/NREL-rex.svg
+    :target: https://badge.fury.io/py/NREL-rex
+
+.. image:: https://anaconda.org/nrel/nrel-rex/badges/version.svg
+    :target: https://anaconda.org/nrel/nrel-rex
+
+.. image:: https://anaconda.org/nrel/nrel-rex/badges/platforms.svg
+    :target: https://anaconda.org/nrel/nrel-rex
+
+.. image:: https://anaconda.org/nrel/nrel-rex/badges/downloads.svg
+    :target: https://anaconda.org/nrel/nrel-rex
+
+.. image:: https://anaconda.org/nrel/nrel-rex/badges/license.svg
+    :target: https://anaconda.org/nrel/nrel-rex
 
 The REsource eXtraction (rex) tool
 
