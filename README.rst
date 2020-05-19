@@ -20,9 +20,6 @@ rex
 .. image:: https://anaconda.org/nrel/nrel-rex/badges/platforms.svg
     :target: https://anaconda.org/nrel/nrel-rex
 
-.. image:: https://anaconda.org/nrel/nrel-rex/badges/downloads.svg
-    :target: https://anaconda.org/nrel/nrel-rex
-
 .. image:: https://anaconda.org/nrel/nrel-rex/badges/license.svg
     :target: https://anaconda.org/nrel/nrel-rex
 
