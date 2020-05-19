@@ -12,24 +12,18 @@ requirements:
   build:
     - python
     - pip
+  run:
+    - python {{ python }}
+    - pip
     - click
     - h5py
-    - h5pyd
     - numpy
     - pandas
     - psutil
     - scipy
     - toml
-  run:
-    - python {{ python }}
-    - click
-    - h5py
+  run-constrained:
     - h5pyd
-    - {{ pin_compatible('numpy') }}
-    - pandas
-    - psutil
-    - scipy
-    - toml
 
 about:
   home: "https://github.com/NREL/rex"
