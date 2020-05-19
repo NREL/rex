@@ -40,15 +40,21 @@ module:
 Installing rex
 ==============
 
-Option 1: PIP Install (recommended for analysts):
+Option 1: Install from PIP or Conda(recommended for analysts):
 -------------------------------------------------
 
 1. Create a new environment:
     ``conda create --name rex``
+
 2. Activate directory:
     ``conda activate rex``
-3. Install reV:
-    ``pip install NREL-rex``
+
+3. Install rex:
+    1) ``pip install NREL-rex`` or
+    2) ``conda install nrel-rex --channel=nrel``
+
+       - NOTE: If you conda install and want to you HSDS you'll also need to
+         install h5pyd manually: ``pip install h5pyd``
 
 Option 2: Clone repo (recommended for developers)
 -------------------------------------------------
@@ -64,7 +70,7 @@ Option 2: Clone repo (recommended for developers)
        any packages, try removing them from the yml file.
 
     4) run the command: ``conda activate rex``
-    5) prior to running ``pip`` below, make sure branch is correct (install
+    5) prior to running ``pip`` below, make sure the branch is correct (install
        from master!)
 
     6) cd back to the rex repo (where setup.py is located)
@@ -79,3 +85,4 @@ Option 2: Clone repo (recommended for developers)
         - ``rex``
         - ``NSRDB``
         - ``WIND``
+        - ``rechunk``
