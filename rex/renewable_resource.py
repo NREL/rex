@@ -384,9 +384,7 @@ class WindResource(Resource):
             heights = {'pressure': [],
                        'temperature': [],
                        'windspeed': [],
-                       'winddirection': [],
-                       'precipitationrate': [],
-                       'relativehumidity': []}
+                       'winddirection': []}
 
             ignore = ['meta', 'time_index', 'coordinates']
             for ds in self.datasets:
@@ -705,9 +703,10 @@ class WindResource(Resource):
 
         return out
 
-    def _get_ds(self, ds_name, ds_slice):
+    def _get_ds_height(self, ds_name, ds_slice):
         """
-        Extract data from given dataset
+        Extract data from given dataset at desired height, interpolate or
+        extrapolate if neede
 
         Parameters
         ----------
@@ -722,7 +721,7 @@ class WindResource(Resource):
             ndarray of variable timeseries data
             If unscale, returned in native units else in scaled units
         """
-        var_name, h = self._parse_name(ds_name)
+        var_name, _ = self._parse_name(ds_name)
         heights = self.heights[var_name]
         if len(heights) == 1:
             h = heights[0]
@@ -747,7 +746,8 @@ class WindResource(Resource):
                     try:
                         self._try_monin_obukhov_extrapolation(ts1, ds_slice,
                                                               h1, h)
-                        warnings.warn('\t- Using Monin Obukhov Extrapolation',
+                        warnings.warn('\t- Using Monin Obukhov '
+                                      'Extrapolation',
                                       ExtrapolationWarning)
                     except MoninObukhovExtrapolationError:
                         out = self.power_law_interp(ts1, h1, ts2, h2, h)
@@ -761,6 +761,31 @@ class WindResource(Resource):
                 out = self.circular_interp(ts1, h1, ts2, h2, h)
             else:
                 out = self.linear_interp(ts1, h1, ts2, h2, h)
+
+        return out
+
+    def _get_ds(self, ds_name, ds_slice):
+        """
+        Extract data from given dataset
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple of int | list | slice
+            tuple describing list ds_slice to extract
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        var_name, h = self._parse_name(ds_name)
+        if h is not None and var_name in self.heights:
+            out = self._get_ds_height(ds_name, ds_slice)
+        else:
+            out = super()._get_ds(ds_name, ds_slice)
 
         return out
 
