@@ -721,7 +721,7 @@ class WindResource(Resource):
             ndarray of variable timeseries data
             If unscale, returned in native units else in scaled units
         """
-        var_name, _ = self._parse_name(ds_name)
+        var_name, h = self._parse_name(ds_name)
         heights = self.heights[var_name]
         if len(heights) == 1:
             h = heights[0]
