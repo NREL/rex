@@ -10,7 +10,7 @@ export CONDA_BLD_PATH=~/conda-bld
 
 for i in "${ARRAY[@]}"
 do
-	conda-build conda.recipe/ --python $i
+	conda-build conda.recipe/ --python=$i
 done
 
 # convert package to other platforms
@@ -20,7 +20,7 @@ do
     echo $file
     for platform in "${platforms[@]}"
     do
-       conda convert --platform $platform $file  -o $CONDA_BLD_PATH/
+       conda convert --platform=$platform $file -o $CONDA_BLD_PATH/
     done
 done
 
@@ -33,3 +33,4 @@ done
 
 echo "Building and uploading conda package done!"
 rm -rf $CONDA_BLD_PATH/*
+ls $CONDA_BLD_PATH

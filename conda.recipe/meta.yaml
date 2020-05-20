@@ -13,7 +13,7 @@ requirements:
     - python
     - pip
   run:
-    - python {{ python }}
+    - python
     - pip
     - click
     - h5py
