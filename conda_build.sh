@@ -13,7 +13,6 @@ for py in "${PY_VERION[@]}"
 do
 	conda build conda.recipe/ --python=$py
     file=$(conda build conda.recipe/ --python=$py --output)
-    echo Building $file
     for platform in "${platforms[@]}"
     do
        conda convert --platform $platform $file -o $CONDA_BLD_PATH/
@@ -23,7 +22,6 @@ done
 # upload packages to conda
 find $CONDA_BLD_PATH/ -name $PKG_NAME*.tar.bz2 | while read file
 do
-    echo Uploading $file
     anaconda upload -u nrel $file
 done
 
