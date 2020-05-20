@@ -49,8 +49,8 @@ module:
 Installing rex
 ==============
 
-Option 1: Install from PIP or Conda(recommended for analysts):
--------------------------------------------------
+Option 1: Install from PIP or Conda (recommended for analysts):
+---------------------------------------------------------------
 
 1. Create a new environment:
     ``conda create --name rex``
