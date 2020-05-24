@@ -311,7 +311,11 @@ class RechunkH5:
         timezone = attrs['attrs'].get('timezone', None)
         if timezone is not None:
             time_index = pd.to_datetime(time_index.astype(str))
-            time_index = time_index.tz_localize(timezone).astype(str)
+            if time_index.tz is not None:
+                time_index = time_index.tz_convert(timezone).astype(str)
+            else:
+                time_index = time_index.tz_localize(timezone).astype(str)
+
             dtype = 'S{}'.format(len(time_index[0]))
             time_index = np.array(time_index, dtype=dtype)
 
@@ -519,13 +523,15 @@ class RechunkH5:
                     self._dst_h5.attrs[k] = v
 
             # Process time_index
-            var_attrs, time_index_attrs = self.pop_dset_attrs(var_attrs,
-                                                              'time_index')
-            self.load_time_index(time_index_attrs)
+            if 'time_index' in var_attrs.index:
+                var_attrs, time_index_attrs = self.pop_dset_attrs(var_attrs,
+                                                                  'time_index')
+                self.load_time_index(time_index_attrs)
 
             # Process meta
-            var_attrs, meta_attrs = self.pop_dset_attrs(var_attrs, 'meta')
-            self.load_meta(meta_attrs, meta_path=meta)
+            if 'meta' in var_attrs.index:
+                var_attrs, meta_attrs = self.pop_dset_attrs(var_attrs, 'meta')
+                self.load_meta(meta_attrs, meta_path=meta)
 
             # Process coordinates
             if 'coordinates' in var_attrs.index:
