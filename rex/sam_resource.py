@@ -28,6 +28,9 @@ class SAMResource:
                               'air_temperature'),
                 'csp': ('dni', 'dhi', 'wind_speed', 'air_temperature',
                         'dew_point', 'surface_pressure'),
+                'tcsmoltensalt': ('dni', 'dhi', 'wind_speed',
+                                  'air_temperature', 'dew_point',
+                                  'surface_pressure'),
                 'solarwaterheat': ('dni', 'dhi', 'wind_speed',
                                    'air_temperature', 'dew_point',
                                    'surface_pressure'),
@@ -81,6 +84,7 @@ class SAMResource:
                    'pvwattsv5': PV_DATA_RANGES,
                    'pvwattsv7': PV_DATA_RANGES,
                    'csp': CSP_DATA_RANGES,
+                   'tcsmoltensalt': CSP_DATA_RANGES,
                    'troughphysicalheat': TPPH_DATA_RANGES,
                    'lineardirectsteam': LF_DATA_RANGES,
                    'solarwaterheat': SWH_DATA_RANGES}
