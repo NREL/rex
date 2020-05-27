@@ -50,7 +50,8 @@ class SolarResource(Resource):
         for var in ['dni', 'dhi', 'wind_speed', 'air_temperature']:
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var, ds_slice)
-            res_df[var] = SAMResource.check_units(var, var_array, tech='pv')
+            res_df[var] = SAMResource.check_units(var, var_array,
+                                                  tech='pvwattsv7')
 
         col_map = {'dni': 'DNI', 'dhi': 'DHI', 'wind_speed': 'Wind Speed',
                    'air_temperature': 'Temperature'}
@@ -59,7 +60,8 @@ class SolarResource(Resource):
 
         return res_df
 
-    def _preload_SAM(self, sites, tech='pv', clearsky=False, means=False):
+    def _preload_SAM(self, sites, tech='pvwattsv7', clearsky=False,
+                     means=False):
         """
         Pre-load project_points for SAM
 
@@ -68,7 +70,7 @@ class SolarResource(Resource):
         sites : list
             List of sites to be provided to SAM
         tech : str, optional
-            Technology to be run by SAM, by default 'pv'
+            SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         means : bool
@@ -94,8 +96,8 @@ class SolarResource(Resource):
 
     @classmethod
     def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
-                    str_decode=True, group=None, tech='pv', clearsky=False,
-                    means=False):
+                    str_decode=True, group=None, tech='pvwattsv7',
+                    clearsky=False, means=False):
         """
         Pre-load project_points for SAM
 
@@ -116,7 +118,7 @@ class SolarResource(Resource):
         group : str
             Group within .h5 resource file to open
         tech : str, optional
-            Technology to be run by SAM, by default 'pv'
+            SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         means : bool
@@ -149,8 +151,8 @@ class NSRDB(SolarResource):
     SCALE_ATTR = 'psm_scale_factor'
     UNIT_ATTR = 'psm_units'
 
-    def _preload_SAM(self, sites, tech='pv', clearsky=False, downscale=None,
-                     means=False):
+    def _preload_SAM(self, sites, tech='pvwattsv7', clearsky=False,
+                     downscale=None, means=False):
         """
         Pre-load project_points for SAM
 
@@ -159,7 +161,7 @@ class NSRDB(SolarResource):
         sites : list
             List of sites to be provided to SAM
         tech : str, optional
-            Technology to be run by SAM, by default 'pv'
+            SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         downscale : NoneType | str
@@ -195,8 +197,8 @@ class NSRDB(SolarResource):
 
     @classmethod
     def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
-                    str_decode=True, group=None, tech='pv', clearsky=False,
-                    downscale=None, means=False):
+                    str_decode=True, group=None, tech='pvwattsv7',
+                    clearsky=False, downscale=None, means=False):
         """
         Pre-load project_points for SAM
 
@@ -217,7 +219,7 @@ class NSRDB(SolarResource):
         group : str
             Group within .h5 resource file to open
         tech : str, optional
-            Technology to be run by SAM, by default 'pv'
+            SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         downscale : NoneType | str
@@ -983,7 +985,8 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     """
     @classmethod
     def preload_SAM(cls, h5_path, sites, unscale=True, str_decode=True,
-                    tech='pv', clearsky=False, downscale=None, means=False):
+                    tech='pvwattsv7', clearsky=False, downscale=None,
+                    means=False):
         """
         Pre-load project_points for SAM
 
@@ -1002,7 +1005,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
         tech : str, optional
-            Technology to be run by SAM, by default 'pv'
+            SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         downscale : NoneType | str
