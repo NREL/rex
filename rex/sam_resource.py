@@ -22,7 +22,7 @@ class SAMResource:
 
     # Resource variables to load for each SAM technology
     RES_VARS = {'pv': ('dni', 'dhi', 'ghi', 'wind_speed', 'air_temperature'),
-                'pvwattsv7': ('dni', 'dhi', 'ghi', 'wind_speed',
+                'pvwattsv5': ('dni', 'dhi', 'ghi', 'wind_speed',
                               'air_temperature'),
                 'pvwattsv7': ('dni', 'dhi', 'ghi', 'wind_speed',
                               'air_temperature'),
