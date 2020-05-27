@@ -20,10 +20,17 @@ class SAMResource:
     Resource Manager for SAM
     """
 
-    # Resource variables to load for each res type
+    # Resource variables to load for each SAM technology
     RES_VARS = {'pv': ('dni', 'dhi', 'ghi', 'wind_speed', 'air_temperature'),
+                'pvwattsv5': ('dni', 'dhi', 'ghi', 'wind_speed',
+                              'air_temperature'),
+                'pvwattsv7': ('dni', 'dhi', 'ghi', 'wind_speed',
+                              'air_temperature'),
                 'csp': ('dni', 'dhi', 'wind_speed', 'air_temperature',
                         'dew_point', 'surface_pressure'),
+                'tcsmoltensalt': ('dni', 'dhi', 'wind_speed',
+                                  'air_temperature', 'dew_point',
+                                  'surface_pressure'),
                 'solarwaterheat': ('dni', 'dhi', 'wind_speed',
                                    'air_temperature', 'dew_point',
                                    'surface_pressure'),
@@ -33,6 +40,8 @@ class SAMResource:
                 'lineardirectsteam': ('dni', 'dhi', 'wind_speed',
                                       'air_temperature', 'dew_point',
                                       'surface_pressure'),
+                'wind': ('pressure', 'temperature', 'winddirection',
+                         'windspeed'),
                 'windpower': ('pressure', 'temperature', 'winddirection',
                               'windspeed')}
 
@@ -68,10 +77,14 @@ class SAMResource:
     # valid data ranges for solar water heater
     SWH_DATA_RANGES = CSP_DATA_RANGES
 
-    # Data range mapping by tech
+    # Data range mapping by SAM tech string
     DATA_RANGES = {'windpower': WIND_DATA_RANGES,
+                   'wind': WIND_DATA_RANGES,
                    'pv': PV_DATA_RANGES,
+                   'pvwattsv5': PV_DATA_RANGES,
+                   'pvwattsv7': PV_DATA_RANGES,
                    'csp': CSP_DATA_RANGES,
+                   'tcsmoltensalt': CSP_DATA_RANGES,
                    'troughphysicalheat': TPPH_DATA_RANGES,
                    'lineardirectsteam': LF_DATA_RANGES,
                    'solarwaterheat': SWH_DATA_RANGES}
@@ -84,7 +97,7 @@ class SAMResource:
         sites : list
             List of sites to be provided to SAM
         tech : str
-            Technology to be run by SAM
+            SAM technology string. See class attributes for options.
         time_index : pandas.DatetimeIndex
             Time-series datetime index
         hub_heights : int | float | list
@@ -112,7 +125,9 @@ class SAMResource:
         if tech.lower() in self.DATA_RANGES.keys():
             self._tech = tech.lower()
         else:
-            msg = 'Selected tech {} is not valid.'.format(tech)
+            msg = ('Selected tech {} is not valid. The following technology '
+                   'strings are available: {}'
+                   .format(tech, list(self.DATA_RANGES.keys())))
             logger.error(msg)
             raise ResourceValueError(msg)
 
@@ -252,7 +267,9 @@ class SAMResource:
             if self._tech in self.RES_VARS:
                 self._var_list = list(self.RES_VARS[self._tech])
             else:
-                msg = "Resource type {} is invalid!".format(self._tech)
+                msg = ("SAM technology string {} is invalid! The following "
+                       "technology strings are available: {}"
+                       .format(self._tech, list(self.RES_VARS.keys())))
                 logging.error(msg)
                 raise ResourceValueError(msg)
 
@@ -362,8 +379,7 @@ class SAMResource:
         var_array : ndarray
             Variable data
         tech : str
-            Technology (wind, csp, pv, solarwaterheat, lineardirectsteam,
-            troughphysicalheat).
+            SAM technology string (windpower, pvwattsv5, solarwaterheat, etc..)
 
         Returns
         -------
