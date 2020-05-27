@@ -238,7 +238,7 @@ class RechunkH5:
             logger.warning('Source dtype ({}) does not match '
                            'specified dtype ({}), '
                            'using source dtype,'.format(ds_in.dtype, dtype))
-            dset_attrs['dtype'] = ds_in.dtype.name
+            dset_attrs['dtype'] = ds_in.dtype
 
         if check_attrs:
             for key, value in attrs.items():
