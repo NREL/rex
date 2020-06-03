@@ -112,7 +112,7 @@ NSRDBX class
   with NSRDBX(nsrdb_file) as f:
       meta = f.meta
       time_index = f.time_index
-      dni = f['dni'][:, ::1000]
+      dni = f['dni', :, ::1000]
 
 `NSRDBX` also allows easy extraction of the nearest site to a desired (lat, lon)
 location:
@@ -147,7 +147,7 @@ given location:
   nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
   nrel = (39.741931, -105.169891)
   with NSRDBX(nsrdb_file) as f:
-      nrel_sam_vars = f.get_SAM_lat_lon(nwtc)
+      nrel_sam_vars = f.get_SAM_lat_lon(nrel)
 
 References
 ----------

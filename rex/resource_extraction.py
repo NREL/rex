@@ -291,7 +291,9 @@ class ResourceX(Resource):
         gids : ndarray
             Vector of gids in given region
         """
-        gids = (self.meta[region_col] == region).index.values
+        gids = self.meta
+        gids = gids[gids[region_col] == region].index.values
+
         return gids
 
     def _get_timestep_idx(self, timestep):

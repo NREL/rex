@@ -107,7 +107,7 @@ wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
 with WindX(wtk_file) as f:
     meta = f.meta
     time_index = f.time_index
-    wspd_100m = f['windspeed_100m'][:, ::1000]
+    wspd_100m = f['windspeed_100m', :, ::1000]
 ```
 
 Note: `WindX` will automatically interpolate to the desired hub-height:
@@ -118,7 +118,7 @@ from rex import WindX
 wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
 with WindX(wtk_file) as f:
     print(f.datasets)  # not 90m is not a valid dataset
-    wspd_90m = f['windspeed_90m'][:, ::1000]
+    wspd_90m = f['windspeed_90m', :, ::1000]
 ```
 
 `rex` also allows easy extraction of the nearest site to a desired (lat, lon)
