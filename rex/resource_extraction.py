@@ -653,12 +653,12 @@ class NSRDBX(NSRDB, ResourceX):
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
         group : str
-            Group within .h5 resource file to open
+            Group within .h5 NSRDB file to open
         """
         super().__init__(nsrdb_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
         self._lat_lon = None
+        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
 
 
 class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
