@@ -18,7 +18,7 @@ def NSRDBX_cls():
     Init NSRDB resource handler
     """
     path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
-    return NSRDBX(path)
+    return NSRDBX(path, compute_tree=True)
 
 
 @pytest.fixture
@@ -27,7 +27,7 @@ def MultiFileNSRDBX_cls():
     Init NSRDB resource handler
     """
     path = os.path.join(TESTDATADIR, 'nsrdb', 'nsrdb*2018.h5')
-    return MultiFileNSRDBX(path)
+    return MultiFileNSRDBX(path, compute_tree=True)
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ def WindX_cls():
     Init WindResource resource handler
     """
     path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
-    return WindX(path)
+    return WindX(path, compute_tree=True)
 
 
 @pytest.fixture
@@ -45,7 +45,7 @@ def MultiFileWindX_cls():
     Init WindResource resource handler
     """
     path = os.path.join(TESTDATADIR, 'wtk', 'wtk*m.h5')
-    return MultiFileWindX(path)
+    return MultiFileWindX(path, compute_tree=True)
 
 
 def check_props(res_cls):
@@ -65,6 +65,7 @@ def extract_site(res_cls, ds_name):
     """
     time_index = res_cls['time_index']
     meta = res_cls['meta']
+    print(len(meta))
     site = np.random.choice(len(meta), 1)[0]
     lat_lon = meta.loc[site, ['latitude', 'longitude']].values
     truth_ts = res_cls[ds_name, :, site]
@@ -83,7 +84,7 @@ def extract_region(res_cls, ds_name, region, region_col='county'):
     """
     time_index = res_cls['time_index']
     meta = res_cls['meta']
-    sites = (meta[region_col] == region).index.values
+    sites = meta.index[(meta[region_col] == region)].values
     truth_ts = res_cls[ds_name, :, sites]
     truth_df = pd.DataFrame(truth_ts, columns=sites, index=time_index)
 
@@ -111,7 +112,7 @@ def extract_map(res_cls, ds_name, timestep, region=None, region_col='county'):
     idx = np.where(time_index == pd.to_datetime(timestep))[0][0]
     gids = slice(None)
     if region is not None:
-        gids = (meta[region_col] == region).index.values
+        gids = meta.index[(meta[region_col] == region)].values
         lat_lon = lat_lon[gids]
 
     truth = res_cls[ds_name, idx, gids]

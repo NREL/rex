@@ -94,8 +94,8 @@ class SAMResource:
         """
         Parameters
         ----------
-        sites : list
-            List of sites to be provided to SAM
+        sites : int | list | tuple | slice
+            int, list, tuple, or slice indicating sites to send to SAM
         tech : str
             SAM technology string. See class attributes for options.
         time_index : pandas.DatetimeIndex
@@ -343,15 +343,17 @@ class SAMResource:
 
         Parameters
         ----------
-        sites : list | tuple | slice
-            list, tuple, or slice indicating sites to send to SAM
+        sites : int | list | tuple | slice
+            int, list, tuple, or slice indicating sites to send to SAM
 
         Returns
         -------
         sites : list
             list of sites to send to SAM
         """
-        if isinstance(sites, slice):
+        if isinstance(sites, int):
+            sites = [sites]
+        elif isinstance(sites, slice):
             stop = sites.stop
             if stop is None:
                 msg = "sites as a slice must have an explicit stop value!"

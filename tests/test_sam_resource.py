@@ -106,8 +106,8 @@ def test_preload_sam_hh():
                 'b/c there is only windspeed at 100m.')
         msg2 = ('Error: temperature should have been loaded at 100m '
                 'b/c there is only windspeed at 100m.')
-        assert np.allclose(SAM_res['pressure', :, :].values, p), msg1
-        assert np.allclose(SAM_res['temperature', :, :].values, t), msg2
+        assert np.allclose(SAM_res['pressure'].values, p), msg1
+        assert np.allclose(SAM_res['temperature'].values, t), msg2
 
 
 @pytest.mark.parametrize('means', [True, False])
@@ -130,6 +130,24 @@ def test_preload_sam_means(means):
     else:
         with pytest.raises(ResourceRuntimeError):
             SAM_res['mean_windspeed']
+
+
+@pytest.mark.parametrize('sites',
+                         [1, [10], [1, 10, 8, 7, 9], slice(10, 20, 2)])
+def test_preload_sam_sites(sites):
+    """Test the preload_SAM method with different sites"""
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    hub_heights = 100
+
+    SAM_res = WindResource.preload_SAM(h5, sites, hub_heights)
+    test = SAM_res._res_arrays['windspeed']
+    if isinstance(sites, int):
+        test = test.flatten()
+
+    with WindResource(h5) as wind:
+        truth = wind['windspeed_100m', :, sites]
+
+    assert np.allclose(truth, test)
 
 
 def execute_pytest(capture='all', flags='-rapP'):

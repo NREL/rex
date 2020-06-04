@@ -815,7 +815,9 @@ class Resource:
             Vector of datetime stamps
         """
         ds_slice = parse_slice(ds_slice)
-        time_index = self.h5[ds_name][ds_slice[0]]
+        time_index = self.h5[ds_name]
+        time_index = ResourceDataset.extract(time_index, ds_slice[0],
+                                             unscale=False)
         # time_index: np.array
         return pd.to_datetime(time_index.astype(str))
 
@@ -840,7 +842,8 @@ class Resource:
         if isinstance(sites, int):
             sites = slice(sites, sites + 1)
 
-        meta = self.h5[ds_name][sites]
+        meta = self.h5[ds_name]
+        meta = ResourceDataset.extract(meta, sites, unscale=False)
 
         if isinstance(sites, slice):
             if sites.stop:
