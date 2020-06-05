@@ -576,7 +576,9 @@ class SAMResource:
             Vector of variable means
         """
         if self._mean_arrays is None:
-            msg = "Variable means were not computed, you must set 'means=True'"
+            msg = ("Variable means were not computed, ensure ws_mean for "
+                   "windpower, or dni_mean/ghi_mean for pvwatts is in "
+                   "'output_request'")
             logger.error(msg)
             raise ResourceRuntimeError(msg)
 
