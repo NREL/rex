@@ -166,7 +166,8 @@ class ResourceDataset:
                 idx_slice += (ax_idx,)
 
         out = self._ds[slices]
-        if not any(isinstance(s, slice) for s in idx_slice):
+        if any(s != slice(None) if isinstance(s, slice) else True
+               for s in idx_slice):
             out = out[idx_slice]
 
         return out
