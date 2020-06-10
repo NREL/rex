@@ -76,7 +76,8 @@ command line utility provides the following options and commands:
     site        Extract a single dataset for the nearest pixel to the given...
     timestep    Extract a single dataset for a single timestep Extract only...
 
-To use `rex` and the `WIND` cli with HSDS you will need to install `h5pyd`:
+To use `rex` and the `WIND` cli with `HSDS <https://github.com/NREL/hsds-examples>`_
+you will need to install `h5pyd`:
 
 .. code-block:: bash
 

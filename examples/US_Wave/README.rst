@@ -100,7 +100,8 @@ Example scripts to extract wind resource data using python are provided below:
 The easiest way to access and extract data is by using the Resource eXtraction
 tool `rex <https://github.com/nrel/rex>`_
 
-To use `rex` with HSDS you will need to install `h5pyd`:
+To use `rex` with `HSDS <https://github.com/NREL/hsds-examples>`_ you will need
+to install `h5pyd`:
 
 .. code-block:: bash
 
