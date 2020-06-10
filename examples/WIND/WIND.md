@@ -141,7 +141,9 @@ from rex import WindX
 wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
 state='Colorado'
 with WindX(wtk_file) as f:
-    co_wspd = f.get_region_df('windspeed_100m', state, region_col='state')
+    date = '2010-07-04 18:00:00'
+    wspd_map = f.get_timestep_map('windspeed_100m', date, region=region,
+                                  region_col='state')
 ```
 
 Lastly, `rex` can be used to extract all variables needed to run SAM at a given

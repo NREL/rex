@@ -50,16 +50,11 @@ units for the variable data is also provided as an attribute (``units``).
 WIND Module
 -----------
 
-An extraction utility for the WIND (WTK) data has been created with in
-`rex <https://github.com/nrel/rex>`_ and is available on Eagle as a module:
+An extraction utility for WIND Toolkit (WTK) data has been created with in
+`rex <https://github.com/nrel/rex>`_.
 
-.. code-block:: bash
-
-  module use /datasets/modulefiles
-  module load rex
-
-The `rex` module provides a `WIND <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#wind>`_
-command line utility with the following options and commands:
+The `WIND <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#wind>`_
+command line utility provides the following options and commands:
 
 .. code-block:: bash
 
@@ -81,6 +76,12 @@ command line utility with the following options and commands:
     site        Extract a single dataset for the nearest pixel to the given...
     timestep    Extract a single dataset for a single timestep Extract only...
 
+To use `rex` and the `WIND` cli with HSDS you will need to install `h5pyd`:
+
+.. code-block:: bash
+
+  pip install h5pyd
+
 WindX class
 -----------
 
@@ -88,8 +89,8 @@ WindX class
 
   from rex import WindX
 
-  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
-  with WindX(wtk_file) as f:
+  wtk_file = '/nrel/wtk/conus/wtk_conus_2014.h5'
+  with WindX(wtk_file, hsds=True) as f:
       meta = f.meta
       time_index = f.time_index
       wspd_100m = f['windspeed_100m', :, ::1000]
@@ -100,8 +101,8 @@ Note: `WindX` will automatically interpolate to the desired hub-height:
 
   from rex import WindX
 
-  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
-  with WindX(wtk_file) as f:
+  wtk_file = '/nrel/wtk/conus/wtk_conus_2014.h5'
+  with WindX(wtk_file, hsds=True) as f:
       print(f.datasets)  # not 90m is not a valid dataset
       wspd_90m = f['windspeed_90m', :, ::1000]
 
@@ -112,9 +113,9 @@ location:
 
   from rex import WindX
 
-  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
+  wtk_file = '/nrel/wtk/conus/wtk_conus_2014.h5'
   nwtc = (39.913561, -105.222422)
-  with WindX(wtk_file) as f:
+  with WindX(wtk_file, hsds=True) as f:
       nwtc_wspd = f.get_lat_lon_df('windspeed_100m', nwtc)
 
 
@@ -124,10 +125,12 @@ or to extract all sites in a given region:
 
   from rex import WindX
 
-  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
-  state='Colorado'
-  with WindX(wtk_file) as f:
-      co_wspd = f.get_region_df('windspeed_100m', state, region_col='state')
+  wtk_file = '/nrel/wtk/conus/wtk_conus_2014.h5'
+  state = 'Colorado'
+  with WindX(wtk_file, hsds=True) as f:
+      date = '2014-07-04 18:00:00'
+      wspd_map = f.get_timestep_map('windspeed_100m', date, region=region,
+                                    region_col='state')
 
 Lastly, `WindX` can be used to extract all variables needed to run SAM at a
 given location:
@@ -136,9 +139,9 @@ given location:
 
   from rex import WindX
 
-  wtk_file = '/datasets/WIND/conus/v1.0.0/wtk_conus_2010.h5'
+  wtk_file = '/nrel/wtk/conus/wtk_conus_2014.h5'
   nwtc = (39.913561, -105.222422)
-  with WindX(wtk_file) as f:
+  with WindX(wtk_file, hsds=True) as f:
       nwtc_sam_vars = f.get_SAM_lat_lon(nwtc)
 
 

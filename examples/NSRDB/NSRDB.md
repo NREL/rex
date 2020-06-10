@@ -143,7 +143,9 @@ from rex import NSRDBX
 nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
 state='Colorado'
 with NSRDBX(nsrdb_file) as f:
-    co_dni = f.get_region_df('dni', state, region_col='state')
+    date = '2010-07-04 18:00:00'
+    dni_map = f.get_timestep_map('dni', date, region=region,
+                                 region_col='state')
 ```
 
 Lastly, `rex` can be used to extract all variables needed to run SAM at a given

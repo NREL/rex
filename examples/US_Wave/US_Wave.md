@@ -125,8 +125,10 @@ from rex import ResourceX
 wave_file = '/datasets/US_Wave/v1.0.0/US_wave_2010.h5'
 jurisdication='California'
 with ResourceX(wave_file) as f:
-    ca_swh = f.get_region_df('significant_wave_height', jurisdiction,
-                             region_col='jurisdiction')
+    date = '2010-07-04 18:00:00'
+    swh_map = f.get_timestep_map('significant_wave_height', date
+                                 region=jurisdiction,
+                                 region_col='jurisdiction')
 ```
 
 If you would rather access the US Wave data directly using h5py:

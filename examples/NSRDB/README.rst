@@ -72,14 +72,10 @@ The units for the variable data is also provided as an attribute
 NSRDB Module
 ------------
 
-An extraction utility for the NSRDB has been created with in `rex <https://github.com/nrel/rex>`_ and is available on Eagle as a module:
+An extraction utility for the NSRDB has been created with in `rex <https://github.com/nrel/rex>`_
 
-.. code-block:: bash
-
-  module use /datasets/modulefiles
-  module load rex
-
-The `rex` module provides a `NSRDB <https://nrel.github.io/rex/rex/rex.resource_extaction.solar_cli.html#nsrdb>`_ command line utility with the following options and commands:
+The `NSRDB <https://nrel.github.io/rex/rex/rex.resource_extaction.solar_cli.html#nsrdb>`_
+command line utility provides the following options and commands:
 
 .. code-block:: bash
 
@@ -88,7 +84,7 @@ The `rex` module provides a `NSRDB <https://nrel.github.io/rex/rex/rex.resource_
     SolarX Command Line Interface
 
   Options:
-    -h5, --solar_h5 PATH  Path to Resource .h5 file  [required]
+    -h5, --solar_h5 PATH  Path to Resource .h5 file [required]
     -o, --out_dir PATH    Directory to dump output files  [required]
     -t, --compute_tree    Flag to force the computation of the cKDTree
     -v, --verbose         Flag to turn on debug logging. Default is not verbose.
@@ -101,6 +97,12 @@ The `rex` module provides a `NSRDB <https://nrel.github.io/rex/rex/rex.resource_
     site        Extract a single dataset for the nearest pixel to the given...
     timestep    Extract a single dataset for a single timestep Extract only...
 
+To use `rex` and the `NSRDB` cli with HSDS you will need to install `h5pyd`:
+
+.. code-block:: bash
+
+  pip install h5pyd
+
 NSRDBX class
 ------------
 
@@ -108,22 +110,22 @@ NSRDBX class
 
   from rex import NSRDBX
 
-  nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
-  with NSRDBX(nsrdb_file) as f:
+  nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
+  with NSRDBX(nsrdb_file, hsds=True) as f:
       meta = f.meta
       time_index = f.time_index
       dni = f['dni', :, ::1000]
 
-`NSRDBX` also allows easy extraction of the nearest site to a desired (lat, lon)
-location:
+`NSRDBX` also allows easy extraction of the nearest site to a desired
+(lat, lon) location:
 
 .. code-block:: python
 
   from rex import NSRDBX
 
-  nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
+  nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
   nrel = (39.741931, -105.169891)
-  with NSRDBX(nsrdb_file) as f:
+  with NSRDBX(nsrdb_file, hsds=True) as f:
       nrel_dni = f.get_lat_lon_df('dni', nrel)
 
 or to extract all sites in a given region:
@@ -132,10 +134,12 @@ or to extract all sites in a given region:
 
   from rex import NSRDBX
 
-  nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
+  nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
   state='Colorado'
-  with NSRDBX(nsrdb_file) as f:
-      co_dni = f.get_region_df('dni', state, region_col='state')
+  with NSRDBX(nsrdb_file, hsds=True) as f:
+      date = '2018-07-04 18:00:00'
+      dni_map = f.get_timestep_map('dni', date, region=region,
+                                   region_col='state')
 
 Lastly, `NSRDBX` can be used to extract all variables needed to run SAM at a
 given location:
@@ -144,9 +148,9 @@ given location:
 
   from rex import NSRDBX
 
-  nsrdb_file = '/datasets/NSRDB/v3/nsrdb_2010.h5'
+  nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
   nrel = (39.741931, -105.169891)
-  with NSRDBX(nsrdb_file) as f:
+  with NSRDBX(nsrdb_file, hsds=True) as f:
       nrel_sam_vars = f.get_SAM_lat_lon(nrel)
 
 References

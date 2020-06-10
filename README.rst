@@ -35,16 +35,30 @@ rex command line tools
 - `WIND <https://nrel.github.io/rex/rex/rex.wind_cli.html#wind>`_
 - `rechunk <https://nrel.github.io/rex/rex/rex.rechunk_h5.rechunk_cli.html#rechunk>`_
 
-Using Eagle Module
-==================
+Using Eagle Env / Module
+========================
 
-If you would like to run reV on Eagle (NREL's HPC) you can use a pre-compiled
-module:
+If you would like to run `rex` on Eagle (NREL's HPC) you can use a pre-compiled
+conda env:
+
+.. code-block:: bash
+
+    conda activate /datasets/modulefiles/conda_env
+
+or
+
+.. code-block:: bash
+
+    source activate /datasets/modulefiles/conda_env
+
+or module:
 
 .. code-block:: bash
 
     module use /datasets/modulefiles
     module load rex
+
+**NOTE: Loading the rex module can take several minutes**
 
 Installing rex
 ==============
