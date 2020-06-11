@@ -21,7 +21,8 @@ def get_github_url(app, view, path):
         path=path)
 
 
-def html_page_context(app, templatename, context, doctree):
+#  pylint: disable=unused-argument
+def html_page_context(app, pagename, templatename, context, doctree):
     """
     html page context
     """
