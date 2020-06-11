@@ -2,6 +2,7 @@
 """
 Collection of helpful functions
 """
+import datetime
 import os
 import re
 import json
@@ -235,3 +236,75 @@ def check_res_file(res_file):
                 raise FileNotFoundError(msg)
 
     return multi_h5_res, hsds
+
+
+def parse_date_int(s):
+    """Parse data parameters from an integer or string of format YYYYMMDD
+
+    Parmeters
+    ---------
+    s : str | int
+        Date string or integer of format YYYYMMDD
+
+    Returns
+    -------
+    y : int
+        Year integer parsed from input.
+    m : int
+        Month integer parsed from input.
+    d : int
+        Day integer parsed from input.
+    """
+
+    try:
+        s = str(int(s))
+    except ValueError:
+        e = ('Could not convert date string to int: "{}"'
+             .format(s))
+        raise ValueError(e)
+
+    assert len(s) == 8, 'Bad date string, should be YYYYMMDD: {}'.format(s)
+
+    y = int(s[0:4])
+    m = int(s[4:6])
+    d = int(s[6:8])
+
+    assert y > 1970, 'Bad date string, year < 1970: {}'.format(s)
+    assert m < 13, 'Bad date string, month > 12: {}'.format(s)
+    assert d < 32, 'Bad date string, day > 31: {}'.format(s)
+
+    return y, m, d
+
+
+def str_to_date(s):
+    """Convert a date string of format YYYYMMDD to date object.
+
+    Parameters
+    ----------
+    s : str
+        Date string of format YYYYMMDD
+
+    Returns
+    -------
+    d : datetime.date
+        Date object.
+    """
+    d = datetime.date(*parse_date_int(s))
+    return d
+
+
+def str_to_datetime(s):
+    """Convert a date string of format YYYYMMDD to datetime object.
+
+    Parameters
+    ----------
+    s : str
+        Date string of format YYYYMMDD
+
+    Returns
+    -------
+    d : datetime.datetime
+        Datetime object.
+    """
+    d = datetime.datetime(*parse_date_int(s))
+    return d
