@@ -19,6 +19,8 @@ import os
 import sphinx_rtd_theme
 import sys
 
+sys.path.insert(0, os.path.abspath('_ext'))
+
 # -- Project information -----------------------------------------------------
 
 project = 'rex'
@@ -54,8 +56,12 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
-    'sphinx_click.ext'
+    'sphinx_click.ext',
+    'edit_on_github'
 ]
+
+edit_on_github_project = 'nrel/rex'
+edit_on_github_branch = 'master'
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
