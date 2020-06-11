@@ -108,7 +108,7 @@ html_theme_options = {"navigation_depth": 4, "collapse_navigation": False}
 html_context = {
     "display_github": True,
     "github_user": "nrel",
-    "github_repo": "reV",
+    "github_repo": "rex",
     "github_version": "master",
     "conf_py_path": "/docs/source/",
     "source_suffix": source_suffix,
