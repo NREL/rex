@@ -514,6 +514,12 @@ class RechunkH5:
         """
         try:
             ts = time.time()
+            with h5py.File(self._src_path, 'r') as f_in:
+                for k, v in f_in.attrs.items():
+                    logger.debug('Transfering global attribute {}'
+                                 .format(k))
+                    self._dst_h5.attrs[k] = v
+
             var_attrs = self._parse_var_attrs(var_attrs)
             if 'global' in var_attrs.index:
                 var_attrs, global_attrs = self.pop_dset_attrs(var_attrs,
