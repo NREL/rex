@@ -258,7 +258,7 @@ class ResourceX(Resource):
 
         return tree
 
-    def _get_nearest(self, lat_lon):
+    def lat_lon_gid(self, lat_lon):
         """
         Get nearest gid to given (lat, lon) pair or pairs
 
@@ -275,7 +275,7 @@ class ResourceX(Resource):
         _, gids = self.tree.query(lat_lon)
         return gids
 
-    def _get_region(self, region, region_col='state'):
+    def region_gids(self, region, region_col='state'):
         """
         Get the gids for given region
 
@@ -296,7 +296,7 @@ class ResourceX(Resource):
 
         return gids
 
-    def _get_timestep_idx(self, timestep):
+    def timestep_idx(self, timestep):
         """
         Get the index of the desired timestep
 
@@ -381,7 +381,7 @@ class ResourceX(Resource):
         site_ts : ndarray
             Time-series for given site(s) and dataset
         """
-        gid = self._get_nearest(lat_lon)
+        gid = self.lat_lon_gid(lat_lon)
         site_ts = self.get_gid_ts(ds_name, gid)
 
         return site_ts
@@ -403,7 +403,7 @@ class ResourceX(Resource):
         site_df : pandas.DataFrame
             Time-series DataFrame for given site and dataset
         """
-        gid = self._get_nearest(lat_lon)
+        gid = self.lat_lon_gid(lat_lon)
         site_df = self.get_gid_df(ds_name, gid)
 
         return site_df
@@ -427,7 +427,7 @@ class ResourceX(Resource):
             Time-series array of desired dataset for all sites in desired
             region
         """
-        gids = self._get_region(region, region_col=region_col)
+        gids = self.region_gids(region, region_col=region_col)
         region_ts = self[ds_name, :, gids]
 
         return region_ts
@@ -452,7 +452,7 @@ class ResourceX(Resource):
             Time-series array of desired dataset for all sites in desired
             region
         """
-        gids = self._get_region(region, region_col=region_col)
+        gids = self.region_gids(region, region_col=region_col)
         region_df = pd.DataFrame(self[ds_name, :, gids], columns=gids,
                                  index=self.time_index)
         region_df.name = ds_name
@@ -518,7 +518,7 @@ class ResourceX(Resource):
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        gid = self._get_nearest(lat_lon)
+        gid = self.lat_lon_gid(lat_lon)
         SAM_df = self.get_SAM_gid(gid, out_path=out_path, **kwargs)
 
         return SAM_df
@@ -546,10 +546,10 @@ class ResourceX(Resource):
             DataFrame of map values
         """
         lat_lons = self.lat_lon
-        ts_idx = self._get_timestep_idx(timestep)
+        ts_idx = self.timestep_idx(timestep)
         gids = slice(None)
         if region is not None:
-            gids = self._get_region(region, region_col=region_col)
+            gids = self.region_gids(region, region_col=region_col)
             lat_lons = lat_lons[gids]
 
         ts_map = self[ds_name, ts_idx, gids]
@@ -786,7 +786,7 @@ class WindX(WindResource, ResourceX):
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        gid = self._get_nearest(lat_lon)
+        gid = self.lat_lon_gid(lat_lon)
         SAM_df = self.get_SAM_gid(hub_height, gid, out_path=out_path, **kwargs)
 
         return SAM_df
