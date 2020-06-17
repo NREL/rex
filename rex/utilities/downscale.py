@@ -121,7 +121,7 @@ def downscale_nsrdb(SAM_res, res, frequency,
                 )
 
     # Indexing variable
-    sites_slice = SAM_res.sites_as_slice
+    sites_slice = SAM_res.sites_slice
 
     # get downscaled time_index
     time_index = make_time_index(res.time_index.year[0], frequency)
