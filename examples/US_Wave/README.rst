@@ -193,7 +193,41 @@ If you would rather access the US Wave data directly using h5pyd:
 References
 ----------
 
-Users of the High Resolution Ocean Surfae Wave Hindcast should use the
-following citations:
-- `Wu, Wei-Cheng, et al. "Development and validation of a high-resolution regional wave hindcast model for US West Coast wave resource characterization." Renewable Energy 152 (2020): 736-753. <https://www.osti.gov/biblio/1599105>`_
-- `Yang, Zhaoqing, et al. High-Resolution Regional Wave Hindcast for the US West Coast. No. PNNL-28107. Pacific Northwest National Lab.(PNNL), Richland, WA (United States), 2018. <https://www.osti.gov/biblio/1573061/>`_
+Please cite the most relevant publication below when referencing this dataset:
+
+1) `Wu, Wei-Cheng, et al. "Development and validation of a high-resolution regional wave hindcast model for US West Coast wave resource characterization." Renewable Energy 152 (2020): 736-753. <https://www.osti.gov/biblio/1599105>`_
+2) `Yang, Z., G. García-Medina, W. Wu, and T. Wang, 2020. Characteristics and variability of the Nearshore Wave Resource on the U.S. West Coast. Energy. <https://doi.org/10.1016/j.energy.2020.117818>`_
+3) `Yang, Zhaoqing, et al. High-Resolution Regional Wave Hindcast for the US West Coast. No. PNNL-28107. Pacific Northwest National Lab.(PNNL), Richland, WA (United States), 2018. <https://doi.org/10.2172/1573061>`_
+
+Disclaimer and Attribution
+--------------------------
+
+The National Renewable Energy Laboratory (“NREL”) is operated for the U.S.
+Department of Energy (“DOE”) by the Alliance for Sustainable Energy, LLC
+("Alliance"). Pacific Northwest National Laboratory (PNNL) is managed and
+operated by Battelle Memorial Institute ("Battelle") for DOE. As such the
+following rules apply:
+
+This data arose from worked performed under funding provided by the United
+States Government. Access to or use of this data ("Data") denotes consent with
+the fact that this data is provided "AS IS," “WHEREIS” AND SPECIFICALLY FREE
+FROM ANY EXPRESS OR IMPLIED WARRANTY OF ANY KIND, INCLUDING BUT NOT LIMITED TO
+ANY IMPLIED WARRANTIES SUCH AS MERCHANTABILITY AND/OR FITNESS FOR ANY
+PARTICULAR PURPOSE. Furthermore, NEITHER THE UNITED STATES GOVERNMENT NOR ANY
+OF ITS ASSOCITED ENTITES OR CONTRACTORS INCLUDING BUT NOT LIMITED TO THE
+DOE/PNNL/NREL/BATTELLE/ALLIANCE ASSUME ANY LEGAL LIABILITY OR RESPONSIBILITY
+FOR THE ACCURACY, COMPLETENESS, OR USEFULNESS OF THE DATA, OR REPRESENT THAT
+ITS USE WOULD NOT INFRINGE PRIVATELY OWNED RIGHTS. NO ENDORSEMENT OF THE DATA
+OR ANY REPRESENTATIONS MADE IN CONNECTION WITH THE DATA IS PROVIDED. IN NO
+EVENT SHALL ANY PARTY BE LIABLE FOR ANY DAMAGES, INCLUDING BUT NOT LIMITED TO
+SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES ARISING FROM THE PROVISION OF THIS
+DATA; TO THE EXTENT PERMITTED BY LAW USER AGREES TO INDEMNIFY
+DOE/PNNL/NREL/BATTELLE/ALLIANCE AND ITS SUBSIDIARIES, AFFILIATES, OFFICERS,
+AGENTS, AND EMPLOYEES AGAINST ANY CLAIM OR DEMAND RELATED TO USER'S USE OF THE
+DATA, INCLUDING ANY REASONABLE ATTORNEYS FEES INCURRED.
+
+The user is granted the right, without any fee or cost, to use or copy the
+Data, provided that this entire notice appears in all copies of the Data. In
+the event that user engages in any scientific or technical publication
+utilizing this data user agrees to credit DOE/PNNL/NREL/BATTELLE/ALLIANCE in
+any such publication consistent with respective professional practice.
