@@ -11,7 +11,7 @@ export CONDA_BLD_PATH=~/conda-bld
 platforms=( osx-64 linux-64 win-64 )
 for py in "${PY_VERION[@]}"
 do
-	conda build conda.recipe/ --python=$py
+    conda build conda.recipe/ --python=$py
     file=$(conda build conda.recipe/ --python=$py --output)
     for platform in "${platforms[@]}"
     do
