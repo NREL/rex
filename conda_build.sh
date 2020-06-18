@@ -2,8 +2,6 @@
 
 set -e
 
-PKG_NAME=nrel-rex
-
 export CONDA_BLD_PATH=~/conda-bld
 
 conda build conda.recipe/
