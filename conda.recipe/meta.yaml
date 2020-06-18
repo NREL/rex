@@ -2,22 +2,32 @@ package:
     name: nrel-rex
     version: {{ environ.get('GIT_DESCRIBE_TAG','').replace('v', '', 1) }}
 
-build:
-  number: 0
-
 source:
     git_url: ../
 
+build:
+  number: 0
+  noarch: python
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+
 requirements:
-  build:
+  host:
     - python
     - pip
+    - setuptools
+    - click
+    - h5py
+    - numpy>=1.16
+    - pandas
+    - psutil
+    - scipy
+    - toml
   run:
     - python
     - pip
     - click
     - h5py
-    - numpy
+    - {{ pin_compatible('numpy') }}
     - pandas
     - psutil
     - scipy
