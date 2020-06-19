@@ -34,7 +34,7 @@ def get_dataset_attributes(h5_file, out_json=None):
         for ds_name in datasets:
             ds = f[ds_name]
             try:
-                attrs = {k: v for k, v in ds.attrs.items()}
+                attrs = dict(ds.attrs)
                 if not attrs:
                     attrs = None
                 ds_attrs = {'attrs': attrs,

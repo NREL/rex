@@ -2,8 +2,9 @@
 """
 rex utilities.
 """
-from .execution import SmartParallelJob
-from .loggers import init_logger, init_mult, setup_logger
+from .execution import SpawnProcessPool
+from .loggers import init_logger, init_mult, setup_logger, log_mem
 from .solar_position import SolarPosition
 from .toml_parser import TOMLParser
-from .utilities import safe_json_load, jsonify_dict, parse_year, check_res_file
+from .utilities import (safe_json_load, jsonify_dict, parse_year,
+                        check_res_file, parse_table)

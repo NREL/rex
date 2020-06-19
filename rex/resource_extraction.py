@@ -194,7 +194,6 @@ class ResourceX(Resource):
             site_meta.index.name = 'gid'
             site_meta = site_meta.reset_index()
 
-        site_meta
         col_map = {}
         for c in site_meta.columns:
             if c == 'timezone':
@@ -254,7 +253,7 @@ class ResourceX(Resource):
 
         if tree is None:
             lat_lon = self.lat_lon
-            tree = cKDTree(lat_lon)
+            tree = cKDTree(lat_lon)  # pylint: disable=not-callable
 
         return tree
 
@@ -486,6 +485,7 @@ class ResourceX(Resource):
 
         SAM_df = []
         for res_id in gid:
+            # pylint: disable=E1111
             df = self._get_SAM_df('SAM', res_id, **kwargs)
             SAM_df.append(df)
             if out_path is not None:

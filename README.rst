@@ -8,6 +8,9 @@ rex
 .. image:: https://github.com/NREL/rex/workflows/Pytests/badge.svg
     :target: https://github.com/NREL/rex/actions?query=workflow%3A%22Pytests%22
 
+.. image:: https://github.com/NREL/rex/workflows/Lint%20Code%20Base/badge.svg
+    :target: https://github.com/NREL/rex/actions?query=workflow%3A%22Lint+Code+Base%22
+
 .. image:: https://img.shields.io/pypi/pyversions/NREL-rex.svg
     :target: https://pypi.org/project/NREL-rex/
 
