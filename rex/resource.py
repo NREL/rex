@@ -462,7 +462,7 @@ class Resource:
         elif 'SAM' in ds:
             site = ds_slice[0]
             if isinstance(site, int):
-                out = self._get_SAM_df(ds, site)
+                out = self._get_SAM_df(ds, site)  # pylint: disable=E1111
             else:
                 msg = "Can only extract SAM DataFrame for a single site"
                 raise ResourceRuntimeError(msg)
