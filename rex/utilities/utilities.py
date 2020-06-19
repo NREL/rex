@@ -3,9 +3,10 @@
 Collection of helpful functions
 """
 import datetime
-import os
-import re
 import json
+import os
+import pandas as pd
+import re
 
 from rex.utilities.exceptions import JSONError
 
@@ -308,3 +309,32 @@ def str_to_datetime(s):
     """
     d = datetime.datetime(*parse_date_int(s))
     return d
+
+
+def parse_table(table):
+    """
+    Load pandas DataFrame from .csv or .json file if needed
+
+    Parameters
+    ----------
+    trans_table : str | pandas.DataFrame
+        Path to .csv or .json containing supply curve transmission mapping
+
+    Returns
+    -------
+    trans_table : pandas.DataFrame
+        DataFrame of transmission features
+    """
+    if isinstance(table, str):
+        if table.endswith('.csv'):
+            table = pd.read_csv(table)
+        elif table.endswith('.json'):
+            table = pd.read_json(table)
+        else:
+            raise ValueError('Cannot parse {}, expecting a .csv or .json file'
+                             .format(table))
+    elif not isinstance(table, pd.DataFrame):
+        raise ValueError('Cannot parse table from type {}, expecting a .csv, '
+                         '.json, or pandas.DataFrame'.format(type(table)))
+
+    return table
