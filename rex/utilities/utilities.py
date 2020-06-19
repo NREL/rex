@@ -313,17 +313,17 @@ def str_to_datetime(s):
 
 def parse_table(table):
     """
-    Load pandas DataFrame from .csv or .json file if needed
+    Load pandas DataFrame from .csv or .json file or dictionary
 
     Parameters
     ----------
-    trans_table : str | pandas.DataFrame
-        Path to .csv or .json containing supply curve transmission mapping
+    trans_table : str | pandas.DataFrame | dict
+        Path to .csv or .json or dictionary containing table to parse
 
     Returns
     -------
-    trans_table : pandas.DataFrame
-        DataFrame of transmission features
+    table : pandas.DataFrame
+        DataFrame table
     """
     if isinstance(table, str):
         if table.endswith('.csv'):
@@ -333,6 +333,8 @@ def parse_table(table):
         else:
             raise ValueError('Cannot parse {}, expecting a .csv or .json file'
                              .format(table))
+    elif isinstance(table, dict):
+        table = pd.DataFrame(dict)
     elif not isinstance(table, pd.DataFrame):
         raise ValueError('Cannot parse table from type {}, expecting a .csv, '
                          '.json, or pandas.DataFrame'.format(type(table)))
