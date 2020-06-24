@@ -37,6 +37,7 @@ def get_dataset_attributes(h5_file, out_json=None):
                 attrs = dict(ds.attrs)
                 if not attrs:
                     attrs = None
+
                 ds_attrs = {'attrs': attrs,
                             'dtype': ds.dtype.name,
                             'chunks': ds.chunks}
@@ -174,6 +175,8 @@ class RechunkH5:
         if version:
             self._dst_h5.attrs['version'] = version
 
+        self._time_slice = None
+
     def __enter__(self):
         return self
 
@@ -215,6 +218,17 @@ class RechunkH5:
             List of datasets in h5_file
         """
         return list(self._dst_h5)
+
+    @property
+    def time_slice(self):
+        """
+        Time slice or mask to use for rechunking temporal access
+
+        Returns
+        -------
+        slice
+        """
+        return self._time_slice
 
     @staticmethod
     def check_dset_attrs(ds_in, dset_attrs, check_attrs=False):
@@ -294,7 +308,7 @@ class RechunkH5:
 
         return ds
 
-    def load_time_index(self, attrs):
+    def load_time_index(self, attrs, resolution=None):
         """
         Transfer time_index to rechunked .h5
 
@@ -302,6 +316,8 @@ class RechunkH5:
         ----------
         attrs : pandas.Series
             Dataset attributes associated with time_index
+        resolution : str, optional
+            New time resolution, by default None
         """
         ts = time.time()
         logger.info('Rechunking time_index')
@@ -309,12 +325,24 @@ class RechunkH5:
             time_index = f['time_index'][...]
 
         timezone = attrs['attrs'].get('timezone', None)
-        if timezone is not None:
+        if timezone is not None or resolution is not None:
             time_index = pd.to_datetime(time_index.astype(str))
             if time_index.tz is not None:
                 time_index = time_index.tz_convert(timezone).astype(str)
             else:
                 time_index = time_index.tz_localize(timezone).astype(str)
+
+            if resolution is not None:
+                resample = pd.date_range(time_index.min(), time_index.max(),
+                                         freq=resolution)
+                if len(resample) > len(time_index):
+                    msg = ("Resolution ({}) must be > time_index resolution "
+                           "({})".format(resolution, time_index.freq))
+                    logger.error(msg)
+                    raise RuntimeError(msg)
+
+                self._time_slice = time_index.isin(resample)
+                time_index = time_index[self.time_slice]
 
             dtype = 'S{}'.format(len(time_index[0]))
             time_index = np.array(time_index, dtype=dtype)
@@ -378,6 +406,55 @@ class RechunkH5:
         tt = (time.time() - ts) / 60
         logger.debug('\t- {:.2f} minutes'.format(tt))
 
+    def load_data(self, ds_in, ds_out, shape, process_size=None, data=None,
+                  reduce=False):
+        """
+        Load data from ds_in to ds_out
+
+        Parameters
+        ----------
+        ds_in : h5py.Dataset
+            Open dataset instance for source data
+        ds_out : h5py.Dataset
+            Open dataset instance for rechunked data
+        shape : tuple
+            Dataset shape
+        process_size : int, optional
+            Size of each chunk to be processed at a time, by default None
+        data : ndarray, optional
+            Data to load into ds_out, by default None
+        reduce : bool, optional
+            Reduce temporal resolution, by default False
+        """
+        if process_size is not None and data is None:
+            by_rows = False
+            chunks = ds_in.chunks
+            if isinstance(chunks, tuple):
+                sites = shape[1]
+            else:
+                by_rows = True
+                sites = shape[0]
+
+            slice_map = get_chunk_slices(sites, process_size)
+            for s, e in slice_map:
+                if by_rows:
+                    ds_out[s:e] = ds_in[s:e]
+                else:
+                    if reduce:
+                        ds_out[:, s:e] = ds_in[self.time_slice, s:e]
+                    else:
+                        ds_out[:, s:e] = ds_in[:, s:e]
+
+                logger.debug('\t- chunk {}:{} transfered'.format(s, e))
+        else:
+            if data is None:
+                if reduce:
+                    ds_out[:] = ds_in[self.time_slice]
+                else:
+                    ds_out[:] = ds_in[:]
+            else:
+                ds_out[:] = data
+
     def load_dset(self, dset_name, dset_attrs, process_size=None,
                   check_attrs=False):
         """
@@ -389,8 +466,8 @@ class RechunkH5:
             Dataset to transfer
         dset_attrs : dict
             Dictionary of dataset attributes (dtype, chunks, attrs)
-        process_size : int
-            Size of each chunk to be processed at a time
+        process_size : int, optional
+            Size of each chunk to be processed at a time, by default None
         check_attrs : bool, optional
             Flag to compare source and specified dataset attributes,
             by default False
@@ -408,32 +485,17 @@ class RechunkH5:
                     logger.debug('\t- Reduce Dataset shape to {}'
                                  .format(shape))
 
+                reduce = (self.time_slice is not None
+                          and len(self.time_slice) == shape[0])
+                if reduce:
+                    shape[0] = self.time_slice.sum()
+
                 dset_attrs = self.check_dset_attrs(ds_in, dset_attrs,
                                                    check_attrs=check_attrs)
                 ds_out = self.init_dset(dset_name, shape, dset_attrs)
 
-                if process_size is not None and data is None:
-                    by_rows = False
-                    chunks = ds_in.chunks
-                    if isinstance(chunks, tuple):
-                        sites = shape[1]
-                    else:
-                        by_rows = True
-                        sites = shape[0]
-
-                    slice_map = get_chunk_slices(sites, process_size)
-                    for s, e in slice_map:
-                        if by_rows:
-                            ds_out[s:e] = ds_in[s:e]
-                        else:
-                            ds_out[:, s:e] = ds_in[:, s:e]
-
-                        logger.debug('\t- chunk {}:{} transfered'.format(s, e))
-                else:
-                    if data is None:
-                        ds_out[:] = ds_in[:]
-                    else:
-                        ds_out[:] = data
+                self.load_data(ds_in, ds_out, shape, process_size=process_size,
+                               data=data, reduce=reduce)
 
             logger.info('- {} transfered'.format(dset_name))
             tt = (time.time() - ts) / 60
@@ -494,7 +556,7 @@ class RechunkH5:
         return var_attrs
 
     def rechunk(self, var_attrs, meta=None, process_size=None,
-                check_dset_attrs=False):
+                check_dset_attrs=False, resolution=None):
         """
         Rechunk all variables in given variable attributes json
 
@@ -511,6 +573,8 @@ class RechunkH5:
         check_dset_attrs : bool, optional
             Flag to compare source and specified dataset attributes,
             by default False
+        resolution : str, optional
+            New time resolution, by default None
         """
         try:
             ts = time.time()
@@ -532,7 +596,8 @@ class RechunkH5:
             if 'time_index' in var_attrs.index:
                 var_attrs, time_index_attrs = self.pop_dset_attrs(var_attrs,
                                                                   'time_index')
-                self.load_time_index(time_index_attrs)
+                self.load_time_index(time_index_attrs,
+                                     resolution=resolution)
 
             # Process meta
             if 'meta' in var_attrs.index:
@@ -560,7 +625,7 @@ class RechunkH5:
 
     @classmethod
     def run(cls, h5_src, h5_dst, var_attrs, version=None, meta=None,
-            process_size=None, check_dset_attrs=False):
+            process_size=None, check_dset_attrs=False, resolution=None):
         """
         Rechunk h5_src to h5_dst using given attributes
 
@@ -583,13 +648,16 @@ class RechunkH5:
         check_dset_attrs : bool, optional
             Flag to compare source and specified dataset attributes,
             by default False
+        resolution : str, optional
+            New time resolution, by default None
         """
         logger.info('Rechunking {} to {} using chunks given in {}'
                     .format(h5_src, h5_dst, var_attrs))
         try:
             with cls(h5_src, h5_dst, version=version) as r:
                 r.rechunk(var_attrs, meta=meta, process_size=process_size,
-                          check_dset_attrs=check_dset_attrs)
+                          check_dset_attrs=check_dset_attrs,
+                          resolution=resolution)
 
             logger.info('{} complete'.format(h5_dst))
         except Exception:
