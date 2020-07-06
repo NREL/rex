@@ -26,13 +26,15 @@ from rex.utilities.loggers import init_logger
               help="Size of each chunk to be processed")
 @click.option('--check_dset_attrs', '-cda', is_flag=True,
               help='Flag to compare source and specified dataset attributes')
+@click.option('--resolution', '-res', default=None, type=str,
+              help='New time resolution')
 @click.option('--log_file', '-log', default=None, type=click.Path(),
               help='Path to .log file')
 @click.option('--verbose', '-v', is_flag=True,
               help='If used upgrade logging to DEBUG')
 @click.pass_context
 def main(ctx, src_h5, dst_h5, var_attrs_path, version, meta, process_size,
-         check_dset_attrs, log_file, verbose):
+         check_dset_attrs, resolution, log_file, verbose):
     """
     RechunkH5 CLI entry point
     """
@@ -59,7 +61,7 @@ def main(ctx, src_h5, dst_h5, var_attrs_path, version, meta, process_size,
 
     RechunkH5.run(src_h5, dst_h5, var_attrs_path,
                   version=version, meta=meta, process_size=process_size,
-                  check_dset_attrs=check_dset_attrs)
+                  check_dset_attrs=check_dset_attrs, resolution=resolution)
 
 
 if __name__ == '__main__':
