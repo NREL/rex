@@ -327,10 +327,11 @@ class RechunkH5:
         timezone = attrs['attrs'].get('timezone', None)
         if timezone is not None or resolution is not None:
             time_index = pd.to_datetime(time_index.astype(str))
-            if time_index.tz is not None:
-                time_index = time_index.tz_convert(timezone).astype(str)
-            else:
-                time_index = time_index.tz_localize(timezone).astype(str)
+            if timezone is not None:
+                if time_index.tz is not None:
+                    time_index = time_index.tz_convert(timezone)
+                else:
+                    time_index = time_index.tz_localize(timezone)
 
             if resolution is not None:
                 resample = pd.date_range(time_index.min(), time_index.max(),
@@ -344,6 +345,7 @@ class RechunkH5:
                 self._time_slice = time_index.isin(resample)
                 time_index = time_index[self.time_slice]
 
+            time_index = time_index.astype(str)
             dtype = 'S{}'.format(len(time_index[0]))
             time_index = np.array(time_index, dtype=dtype)
 
@@ -440,18 +442,20 @@ class RechunkH5:
                 if by_rows:
                     ds_out[s:e] = ds_in[s:e]
                 else:
+                    data = ds_in[:, s:e]
                     if reduce:
-                        ds_out[:, s:e] = ds_in[self.time_slice, s:e]
-                    else:
-                        ds_out[:, s:e] = ds_in[:, s:e]
+                        data = data[self.time_slice]
+
+                    ds_out[:, s:e] = ds_in[:, s:e]
 
                 logger.debug('\t- chunk {}:{} transfered'.format(s, e))
         else:
             if data is None:
+                data = ds_in[:]
                 if reduce:
-                    ds_out[:] = ds_in[self.time_slice]
-                else:
-                    ds_out[:] = ds_in[:]
+                    data = data[self.time_slice]
+
+                ds_out[:] = data
             else:
                 ds_out[:] = data
 
@@ -488,7 +492,7 @@ class RechunkH5:
                 reduce = (self.time_slice is not None
                           and len(self.time_slice) == shape[0])
                 if reduce:
-                    shape[0] = self.time_slice.sum()
+                    shape = (self.time_slice.sum(), shape[1])
 
                 dset_attrs = self.check_dset_attrs(ds_in, dset_attrs,
                                                    check_attrs=check_attrs)

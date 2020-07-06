@@ -15,7 +15,7 @@ from rex import TESTDATADIR
 PURGE_OUT = True
 
 
-def create_var_attrs(h5_file):
+def create_var_attrs(h5_file, t_chunk=(8 * 7 * 24)):
     """
     Create DataFrame for rechunk attributes
 
@@ -23,6 +23,8 @@ def create_var_attrs(h5_file):
     ----------
     h5_file : str
         Source .h5 file
+    t_chunk : int
+        Number of timesteps per chunk
 
     Returns
     -------
@@ -30,7 +32,6 @@ def create_var_attrs(h5_file):
         rechunk variable attributes
     """
     var_attrs = get_dataset_attributes(h5_file)
-    t_chunk = 8 * 7 * 24
     for var, _ in var_attrs.iterrows():
         if var == 'time_index':
             var_attrs.loc[var, 'dtype'] = 'S20'
@@ -50,6 +51,7 @@ def check_rechunk(src, dst, missing=None):
     """
     with h5py.File(dst, mode='r') as f_dst:
         with h5py.File(src, mode='r') as f_src:
+            print(list(f_src))
             for dset in f_dst:
                 assert dset in f_src
                 ds_dst = f_dst[dset]
@@ -103,6 +105,23 @@ def test_rechunk_h5(drop):
     RechunkH5.run(src_path, rechunk_path, var_attrs)
 
     check_rechunk(src_path, rechunk_path, missing=drop)
+
+    if PURGE_OUT:
+        os.remove(rechunk_path)
+
+
+def test_downscale():
+    """
+    Test downscaling resolution during RechunkH5
+    """
+    src_path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    truth_path = os.path.join(TESTDATADIR, 'wtk/rechunk_3hr.h5')
+    rechunk_path = os.path.join(TESTDATADIR, 'wtk/rechunk.h5')
+    var_attrs = create_var_attrs(src_path, t_chunk=(7 * 24))
+
+    RechunkH5.run(src_path, rechunk_path, var_attrs, resolution='3h')
+
+    check_rechunk(truth_path, rechunk_path)
 
     if PURGE_OUT:
         os.remove(rechunk_path)
