@@ -328,6 +328,9 @@ def parse_table(table):
     if isinstance(table, str):
         if table.endswith('.csv'):
             table = pd.read_csv(table)
+            if 'Unnamed: 0' in table:
+                table = table.drop(columns='Unnamed: 0')
+
         elif table.endswith('.json'):
             table = pd.read_json(table)
         else:
