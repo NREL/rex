@@ -13,7 +13,7 @@ from rex import TESTDATADIR
 def test_min_pressure():
     """Test that minimum pressure range enforcement works."""
 
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_invalid.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_invalid.h5')
 
     # sites set with bad pressure.
     for site in [3, 7, 43, 79, 151, 179]:
@@ -35,7 +35,7 @@ def test_min_pressure():
 def test_min_temp():
     """Test that minimum temperature range enforcement works."""
 
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_invalid.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_invalid.h5')
 
     # sites set with bad temperature.
     for site in [5, 12, 45, 54, 97, 103, 142, 166]:
@@ -57,7 +57,7 @@ def test_min_temp():
 def test_max_ws():
     """Test that max windspeed range enforcement works."""
 
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_invalid.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_invalid.h5')
 
     # sites set with bad wind speeds.
     for site in [7, 54, 66, 89, 110, 149, 188]:
