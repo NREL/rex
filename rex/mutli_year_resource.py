@@ -6,8 +6,9 @@ import numpy as np
 import os
 from warnings import warn
 
+from rex.renewable_resource import NSRDB, SolarResource, WindResource
 from rex.resource import MultiH5, Resource
-from rex.utilities.exceptions import ResourceKeyError
+from rex.utilities.exceptions import ResourceKeyError, ResourceWarning
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import parse_year
 
@@ -51,6 +52,9 @@ class MultiYearH5:
         return len(self.years)
 
     def __getitem__(self, year):
+        if isinstance(year, str):
+            year = int(year)
+
         if year in self.years:
             path = self._year_map[year]
             h5 = self._h5_map[path]
@@ -202,10 +206,14 @@ class MultiYearH5:
                     path = os.path.join(h5_dir, file)
                     if year not in year_map:
                         year_map[year] = path
+                    else:
+                        msg = ('WARNING: Skipping {} as {} has already been '
+                               'parsed'.format(path, year))
+                        warn(msg, ResourceWarning)
                 except RuntimeError:
-                    msg = ('Could not file a valid year in {}'
+                    msg = ('WARNING: Could not file a valid year in {}'
                            .format(file))
-                    warn(msg)
+                    warn(msg, ResourceWarning)
 
         return year_map
 
@@ -229,6 +237,22 @@ class MultiYearH5:
 
         return h5_map
 
+    def year_index(self, year):
+        """
+        Extract time_index for a specific year
+
+        Parameters
+        ----------
+        year : int
+            Year to extract time_index for
+
+        Returns
+        -------
+        time_index : pandas.DatetimeIndex
+            Resource datetime index for desired year
+        """
+        return self.time_index[self.time_index.year == year]
+
     def close(self):
         """
         Close all h5py.File instances
@@ -239,10 +263,8 @@ class MultiYearH5:
 
 class MultiYearResource:
     """
-    Class to handle fine spatial resolution resource data stored in
-    multiple .h5 files
-
-
+    Class to handle multiple years of resource data stored accross multiple
+    .h5 files
     """
     PREFIX = ''
     SUFFIX = '.h5'
@@ -390,7 +412,7 @@ class MultiYearResource:
             Resource Meta Data
         """
         if self._meta is None:
-            if 'meta' in self.h5:
+            if 'meta' in self:
                 self._meta = self._get_meta('meta', slice(None))
             else:
                 raise ResourceKeyError("'meta' is not a valid dataset")
@@ -408,9 +430,8 @@ class MultiYearResource:
             Resource datetime index
         """
         if self._time_index is None:
-            if 'time_index' in self.h5:
-                self._time_index = self._get_time_index('time_index',
-                                                        slice(None))
+            if 'time_index' in self:
+                self._time_index = self._get_time_index(slice(None))
             else:
                 raise ResourceKeyError("'time_index' is not a valid dataset!")
 
@@ -427,7 +448,7 @@ class MultiYearResource:
             Array of (lat, lon) pairs for each site in meta
         """
         if self._coords is None:
-            if 'coordinates' in self.h5:
+            if 'coordinates' in self:
                 self._coords = self._get_coords('coordinates', slice(None))
             else:
                 raise ResourceKeyError("'coordinates' is not a valid dataset!")
@@ -623,23 +644,23 @@ class MultiYearResource:
             If unscale, returned in native units else in scaled units
         """
         out = self.h5[year]._get_ds(ds_name, year_slice)
-
+        print(year, year_slice, out.shape)
         return out
 
     @staticmethod
     def _check_year_slice(year_slice):
         """
-        [summary]
+        Check to see if year positions can be represented as a slice
 
         Parameters
         ----------
-        year_slice : [type]
-            [description]
+        year_slice : ndarray | list
+            List of temporal positions
 
         Returns
         -------
-        [type]
-            [description]
+        year_slice : ndarray | list | slice
+            Slice covering range of positions to extract if possible
         """
         s = year_slice[0]
         e = year_slice[-1] + 1
@@ -647,6 +668,32 @@ class MultiYearResource:
             year_slice = slice(s, e, None)
 
         return year_slice
+
+    @staticmethod
+    def _check_for_years(time_slice):
+        """
+        Check to see if temporal slice is a year (str) or list of years (strs)
+        to extract data for
+
+        Parameters
+        ----------
+        time_slice : list | slice | int | str
+            Temporal slice to extract
+
+        Returns
+        -------
+        check : bool
+            True if temporal slice is a year (str) or list of years (strs),
+            else False
+        """
+        check = False
+        if isinstance(time_slice, (list, tuple)):
+            time_slice = time_slice[0]
+
+        if isinstance(time_slice, str):
+            check = True
+
+        return check
 
     def _get_ds(self, ds_name, ds_slice):
         """
@@ -665,22 +712,67 @@ class MultiYearResource:
             ndarray of variable timeseries data
             If unscale, returned in native units else in scaled units
         """
-        if ds_name not in self.datasets:
-            raise ResourceKeyError('{} not in {}'
-                                   .format(ds_name, self.datasets))
-
         ds_slice = parse_slice(ds_slice)
-        year_map = self.h5.time_index[ds_slice[0]].year
         out = []
-        for year in np.unique(year_map):
-            year_slice = np.where(year_map == year)[0]
-            year_slice = (self._check_year_slice(year_slice), ) + ds_slice[1:]
-            out.append(self._get_year_ds(ds_name, year, year_slice))
+        if self._check_for_years(ds_slice[0]):
+            years = ds_slice[0]
+            year_slice = (slice(None), ) + ds_slice[1:]
+            if isinstance(years, str):
+                years = [years]
 
-        return np.vstack(out)
+            for year in years:
+                year = int(year)
+                out.append(self._get_year_ds(ds_name, year, year_slice))
+
+        else:
+            time_index = self.h5.time_index[ds_slice[0]]
+            year_map = time_index.year
+            for year in year_map.unique():
+                year_index = self.h5.year_index(year)
+                year_slice = \
+                    np.where(year_index.isin(time_index[year_map == year]))[0]
+                year_slice = \
+                    (self._check_year_slice(year_slice), ) + ds_slice[1:]
+                out.append(self._get_year_ds(ds_name, year, year_slice))
+
+        return np.concatenate(out, axis=0)
 
     def close(self):
         """
         Close h5 instance
         """
         self._h5.close()
+
+
+class MultiYearSolarResource:
+    """
+    Class to handle multiple years of solar resource data stored accross
+    multiple .h5 files
+    """
+    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+        super().__init__(h5_path, unscale=unscale, hsds=hsds,
+                         str_decode=str_decode, res_cls=SolarResource)
+
+
+class MultiYearNSRDB(MultiYearResource):
+    """
+    Class to handle multiple years of NSRDB data stored accross
+    multiple .h5 files
+    """
+    PREFIX = 'nsrdb'
+
+    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+        super().__init__(h5_path, unscale=unscale, hsds=hsds,
+                         str_decode=str_decode, res_cls=NSRDB)
+
+
+class MultiYearWindResource(MultiYearResource):
+    """
+    Class to handle multiple years of wind resource data stored accross
+    multiple .h5 files
+    """
+    PREFIX = 'wtk'
+
+    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+        super().__init__(h5_path, unscale=unscale, hsds=hsds,
+                         str_decode=str_decode, res_cls=WindResource)

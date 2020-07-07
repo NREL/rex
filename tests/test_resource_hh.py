@@ -35,7 +35,7 @@ def test_sam_df_hh():
     from that hh
     """
 
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_2012_incomplete_2.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_2.h5')
     with WindResource(h5) as wind:
         sam_df = wind._get_SAM_df('pressure_80m', 0)
 
