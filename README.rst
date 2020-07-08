@@ -30,9 +30,10 @@ The REsource eXtraction (rex) tool
 rex command line tools
 ======================
 
-- `rex <https://nrel.github.io/rex/rex/rex.resource_cli.html#rex>`_
-- `NSRDB <https://nrel.github.io/rex/rex/rex.solar_cli.html#nsrdb>`_
-- `WIND <https://nrel.github.io/rex/rex/rex.wind_cli.html#wind>`_
+- `rex <https://nrel.github.io/rex/rex/rex.resource_extraction.resource_cli.html#rex>`_
+- `NSRDBX <https://nrel.github.io/rex/rex/rex.resource_extraction.nsrdb_cli.html#nsrdbx>`_
+- `WINDX <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#windx>`_
+- `MultiYearX <https://nrel.github.io/rex/rex/rex.resource_extraction.multi_year_resource_cli.html#multiyearx>`_
 - `rechunk <https://nrel.github.io/rex/rex/rex.rechunk_h5.rechunk_cli.html#rechunk>`_
 
 Using Eagle Env / Module

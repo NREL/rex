@@ -74,14 +74,14 @@ NSRDB Module
 
 An extraction utility for the NSRDB has been created with in `rex <https://github.com/nrel/rex>`_
 
-The `NSRDB <https://nrel.github.io/rex/rex/rex.resource_extaction.solar_cli.html#nsrdb>`_
+The `NSRDBX <https://nrel.github.io/rex/rex/rex.resource_extaction.nsrdb_cli.html#nsrdbx>`_
 command line utility provides the following options and commands:
 
 .. code-block:: bash
 
-  Usage: NSRDB [OPTIONS] COMMAND [ARGS]...
+  Usage: NSRDBX [OPTIONS] COMMAND [ARGS]...
 
-    SolarX Command Line Interface
+    NSRDBX Command Line Interface
 
   Options:
     -h5, --solar_h5 PATH  Path to Resource .h5 file [required]

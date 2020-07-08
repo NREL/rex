@@ -13,7 +13,7 @@ from rex import TESTDATADIR
 def test_single_hh():
     """Test that resource with data at a single hub height will always return
     the data at that hub height (and also return a warning)"""
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_incomplete_1.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_1.h5')
     with WindResource(h5) as wind:
         # Existing datasets are P0m and T80m
         assert np.array_equal(wind['pressure_80m'], wind['pressure_0m'])
@@ -23,7 +23,7 @@ def test_single_hh():
 def test_check_hh():
     """Test that check hub height method will return the hh at the single
     windspeed"""
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_incomplete_2.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_2.h5')
     msg = ('Wind resource method _check_hub_height() failed! Should have '
            'returned 100 because theres only windspeed at 100m')
     with WindResource(h5) as wind:
@@ -35,7 +35,7 @@ def test_sam_df_hh():
     from that hh
     """
 
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_incomplete_2.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_2.h5')
     with WindResource(h5) as wind:
         sam_df = wind._get_SAM_df('pressure_80m', 0)
 
@@ -54,7 +54,7 @@ def test_preload_sam_hh():
     In this case, all variables should be loaded at the single windspeed hh
     """
 
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_incomplete_2.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_2.h5')
     sites = slice(0, 200)
     hub_heights = 80
 

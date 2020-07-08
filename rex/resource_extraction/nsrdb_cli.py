@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-SolarX Command Line Interface
+NSRDBX Command Line Interface
 """
 import click
 import logging
 import os
 
-from rex.resource_extraction import NSRDBX, SolarX, MultiFileNSRDBX
-from rex.resource_cli import dataset as dataset_cmd
-from rex.resource_cli import multi_site as multi_site_grp
-from rex.resource_cli import region as region_cmd
-from rex.resource_cli import sam as sam_cmd
-from rex.resource_cli import sam_file as sam_file_cmd
-from rex.resource_cli import site as site_cmd
-from rex.resource_cli import timestep as timestep_cmd
+from rex.resource_extraction.resource_extraction import (NSRDBX, SolarX,
+                                                         MultiFileNSRDBX)
+from rex.resource_extraction.resource_cli import dataset as dataset_cmd
+from rex.resource_extraction.resource_cli import multi_site as multi_site_grp
+from rex.resource_extraction.resource_cli import region as region_cmd
+from rex.resource_extraction.resource_cli import sam as sam_cmd
+from rex.resource_extraction.resource_cli import sam_file as sam_file_cmd
+from rex.resource_extraction.resource_cli import site as site_cmd
+from rex.resource_extraction.resource_cli import timestep as timestep_cmd
 from rex.utilities.loggers import init_mult
 from rex.utilities.utilities import check_res_file
 
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 @click.pass_context
 def main(ctx, solar_h5, out_dir, compute_tree, verbose):
     """
-    SolarX Command Line Interface
+    NSRDBX Command Line Interface
     """
     ctx.ensure_object(dict)
     ctx.obj['H5'] = solar_h5
@@ -57,7 +58,7 @@ def main(ctx, solar_h5, out_dir, compute_tree, verbose):
             ctx.obj['CLS'] = SolarX
 
     init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex.resource_extraction.resource_extraction',
+              modules=[__name__, 'rex.resource_extraction',
                        'rex.renewable_resource'])
 
     logger.info('Extracting solar data from {}'.format(solar_h5))
@@ -165,4 +166,8 @@ def sam(ctx):
 
 
 if __name__ == '__main__':
-    main(obj={})
+    try:
+        main(obj={})
+    except Exception:
+        logger.exception('Error running SolarX CLI')
+        raise

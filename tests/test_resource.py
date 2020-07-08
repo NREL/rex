@@ -55,7 +55,7 @@ def wind_group():
     """
     Init WindResource resource handler
     """
-    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_group.h5')
+    path = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_group.h5')
     return WindResource(path, group='group')
 
 
@@ -489,7 +489,7 @@ class TestGroupResource:
         """
         test WindResource class calls
         """
-        path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_group.h5')
+        path = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_group.h5')
         with pytest.raises(ResourceKeyError):
             with WindResource(path) as res:
                 check_res(res)

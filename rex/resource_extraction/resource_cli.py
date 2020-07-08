@@ -7,7 +7,8 @@ import logging
 import os
 import pandas as pd
 
-from rex.resource_extraction import ResourceX, MultiFileResourceX
+from rex.resource_extraction.resource_extraction import (ResourceX,
+                                                         MultiFileResourceX)
 from rex.utilities.loggers import init_mult
 from rex.utilities.utilities import check_res_file
 
@@ -48,7 +49,7 @@ def main(ctx, resource_h5, out_dir, compute_tree, verbose):
 
     name = os.path.splitext(os.path.basename(resource_h5))[0]
     init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex.resource_extraction.resource_extraction',
+              modules=[__name__, 'rex.resource_extraction',
                        'rex.resource'])
 
     logger.info('Extracting Resource data from {}'.format(resource_h5))
@@ -266,4 +267,8 @@ def sam(ctx):
 
 
 if __name__ == '__main__':
-    main(obj={})
+    try:
+        main(obj={})
+    except Exception:
+        logger.exception('Error running ResourceX CLI')
+        raise

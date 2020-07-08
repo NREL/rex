@@ -32,7 +32,7 @@ def test_sites_slice():
     sam_res = SAMResource(sites, 'windpower', time_index,
                           hub_heights=hub_heights)
     msg = "sites were not returned as the same input list"
-    assert sites == sites
+    assert sam_res.sites == sites
 
 
 def test_check_units():
@@ -68,11 +68,11 @@ def test_valid_range():
     assert np.all(valid == valid_range[1])
 
 
-def test_preload_sam_hh():
+def test_preload_sam():
     """Test the preload_SAM method with invalid resource data ranges.
     """
 
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_invalid.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_invalid.h5')
     sites = slice(0, 200)
     hub_heights = 80
 
@@ -93,7 +93,7 @@ def test_preload_sam_hh():
     In this case, all variables should be loaded at the single windspeed hh
     """
 
-    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012_incomplete_2.h5')
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_2.h5')
     sites = slice(0, 200)
     hub_heights = 80
 
@@ -129,6 +129,7 @@ def test_preload_sam_means(means):
             assert np.allclose(means, ts.mean().values), msg
     else:
         with pytest.raises(ResourceRuntimeError):
+            # pylint: disable=pointless-statement
             SAM_res['mean_windspeed']
 
 
