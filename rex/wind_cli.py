@@ -52,7 +52,7 @@ def main(ctx, wind_h5, out_dir, compute_tree, verbose):
 
     name = os.path.splitext(os.path.basename(wind_h5))[0]
     init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex.resource_extraction.resource_extraction',
+              modules=[__name__, 'rex.resource_extraction',
                        'rex.renewable_resource'])
 
     logger.info('Extracting Wind data from {}'.format(wind_h5))
@@ -207,4 +207,8 @@ def dataset(ctx, dataset):
 
 
 if __name__ == '__cli__':
-    main(obj={})
+    try:
+        main(obj={})
+    except Exception:
+        logger.exception('Error running WindX CLI')
+        raise

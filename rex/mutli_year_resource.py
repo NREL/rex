@@ -284,6 +284,11 @@ class MultiYearResource:
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        res_cls : obj
+            Resource handler to us to open individual .h5 files
         """
         self.h5_dir, prefix, suffix = MultiH5.multi_file_args(h5_path)
         if prefix is None:
@@ -750,6 +755,23 @@ class MultiYearSolarResource:
     multiple .h5 files
     """
     def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+        """
+        Parameters
+        ----------
+        h5_path : str
+            Path to directory containing multi-file resource file sets.
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        """
         super().__init__(h5_path, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, res_cls=SolarResource)
 
@@ -762,6 +784,23 @@ class MultiYearNSRDB(MultiYearResource):
     PREFIX = 'nsrdb'
 
     def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+        """
+        Parameters
+        ----------
+        h5_path : str
+            Path to directory containing multi-file resource file sets.
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        """
         super().__init__(h5_path, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, res_cls=NSRDB)
 
@@ -774,5 +813,22 @@ class MultiYearWindResource(MultiYearResource):
     PREFIX = 'wtk'
 
     def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+        """
+        Parameters
+        ----------
+        h5_path : str
+            Path to directory containing multi-file resource file sets.
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        """
         super().__init__(h5_path, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, res_cls=WindResource)

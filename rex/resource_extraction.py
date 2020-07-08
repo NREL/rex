@@ -10,6 +10,8 @@ import pandas as pd
 import pickle
 from scipy.spatial import cKDTree
 
+from rex.mutli_year_resource import (MultiYearNSRDB, MultiYearResource,
+                                     MultiYearWindResource)
 from rex.resource import Resource, MultiFileResource
 from rex.renewable_resource import (MultiFileWTK, MultiFileNSRDB, NSRDB,
                                     SolarResource, WindResource)
@@ -580,10 +582,6 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
             coordinates
         compute_tree : bool
             Force the computation of the cKDTree
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -593,6 +591,77 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
         super().__init__(resource_path, unscale=unscale, str_decode=str_decode)
         self._lat_lon = None
         self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+
+
+class MultiYearResourceX(MultiYearResource, ResourceX):
+    """
+    Multi Year resource extraction class
+    """
+
+    def __init__(self, resource_path, tree=None, compute_tree=False,
+                 unscale=True, str_decode=True, hsds=False, res_cls=Resource):
+        """
+        Parameters
+        ----------
+        resource_path : str
+            Path to resource .h5 files
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        tree : str
+            path to .pgz file containing pickled cKDTree of lat, lon
+            coordinates
+        compute_tree : bool
+            Force the computation of the cKDTree
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        res_cls : obj
+            Resource handler to us to open individual .h5 files
+        """
+        super().__init__(resource_path, unscale=unscale, str_decode=str_decode,
+                         hsds=hsds, res_cls=res_cls)
+        self._lat_lon = None
+        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+
+    def get_means_map(self, ds_name, year, region=None,
+                      region_col='state'):
+        """
+        Extract given year(s) and compute means
+
+        Parameters
+        ----------
+        ds_name : str
+            Dataset to extract
+        year : str | list
+            Year(s) to compute means for
+        region : str
+            Region to extract all pixels for
+        region_col : str
+            Region column to search
+
+        Returns
+        -------
+        ts_map : pandas.DataFrame
+            DataFrame of map values
+        """
+        lat_lons = self.lat_lon
+        gids = slice(None)
+        if region is not None:
+            gids = self.region_gids(region, region_col=region_col)
+            lat_lons = lat_lons[gids]
+
+        means_map = self[ds_name, year, gids].mean(axis=0)
+        means_map = pd.DataFrame({'longitude': lat_lons[:, 1],
+                                  'latitude': lat_lons[:, 0],
+                                  ds_name: means_map})
+
+        return means_map
 
 
 class SolarX(SolarResource, ResourceX):
@@ -680,10 +749,6 @@ class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
             coordinates
         compute_tree : bool
             Force the computation of the cKDTree
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -691,6 +756,41 @@ class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
             strings. Setting this to False will speed up the meta data read.
         """
         super().__init__(nsrdb_path, unscale=unscale, str_decode=str_decode)
+        self._lat_lon = None
+        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+
+
+class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
+    """
+    Multi Year NSRDB extraction class
+    """
+
+    def __init__(self, nsrdb_path, tree=None, compute_tree=False,
+                 unscale=True, str_decode=True, hsds=False):
+        """
+        Parameters
+        ----------
+        nsrdb_path : str
+            Path to NSRDB .h5 files
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        tree : str
+            path to .pgz file containing pickled cKDTree of lat, lon
+            coordinates
+        compute_tree : bool
+            Force the computation of the cKDTree
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        """
+        super().__init__(nsrdb_path, unscale=unscale, str_decode=str_decode,
+                         hsds=hsds)
         self._lat_lon = None
         self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
 
@@ -811,10 +911,6 @@ class MultiFileWindX(MultiFileWTK, WindX):
             coordinates
         compute_tree : bool
             Force the computation of the cKDTree
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -822,5 +918,40 @@ class MultiFileWindX(MultiFileWTK, WindX):
             strings. Setting this to False will speed up the meta data read.
         """
         super().__init__(wtk_path, unscale=unscale, str_decode=str_decode)
+        self._lat_lon = None
+        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+
+
+class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
+    """
+    Multi Year Wind Resource extraction class
+    """
+
+    def __init__(self, wtk_path, tree=None, compute_tree=False,
+                 unscale=True, str_decode=True, hsds=False):
+        """
+        Parameters
+        ----------
+        wtk_path : str
+            Path to five minute WTK .h5 files
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        tree : str
+            path to .pgz file containing pickled cKDTree of lat, lon
+            coordinates
+        compute_tree : bool
+            Force the computation of the cKDTree
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        """
+        super().__init__(wtk_path, unscale=unscale, str_decode=str_decode,
+                         hsds=hsds)
         self._lat_lon = None
         self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)

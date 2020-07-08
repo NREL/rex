@@ -57,7 +57,7 @@ def main(ctx, solar_h5, out_dir, compute_tree, verbose):
             ctx.obj['CLS'] = SolarX
 
     init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex.resource_extraction.resource_extraction',
+              modules=[__name__, 'rex.resource_extraction',
                        'rex.renewable_resource'])
 
     logger.info('Extracting solar data from {}'.format(solar_h5))
@@ -165,4 +165,8 @@ def sam(ctx):
 
 
 if __name__ == '__main__':
-    main(obj={})
+    try:
+        main(obj={})
+    except Exception:
+        logger.exception('Error running SolarX CLI')
+        raise

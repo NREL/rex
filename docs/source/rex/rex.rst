@@ -19,6 +19,8 @@ Submodules
 
 .. toctree::
 
+   rex.multi_year_resource_cli
+   rex.mutli_year_resource
    rex.renewable_resource
    rex.resource
    rex.resource_cli

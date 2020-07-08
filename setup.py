@@ -59,6 +59,7 @@ setup(
         "console_scripts": ["rex=rex.resource_cli:main",
                             "NSRDB=rex.solar_cli:main",
                             "WIND=rex.wind_cli:main",
+                            "MultiYearX=rex.multi_year_resource_cli:main",
                             "rechunk=rex.rechunk_h5.rechunk_cli:main"],
     },
     include_package_data=True,
