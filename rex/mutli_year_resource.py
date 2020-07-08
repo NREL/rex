@@ -265,6 +265,86 @@ class MultiYearResource:
     """
     Class to handle multiple years of resource data stored accross multiple
     .h5 files
+
+    Examples
+    --------
+
+    Extracting the resource's Datetime Index
+
+    >>> path = '$TESTDATADIR/nsrdb/ri_100_nsrdb_*.h5'
+    >>> with MultiYearResource(path) as res:
+    >>>     ti = res.time_index
+    >>>
+    >>> ti
+    DatetimeIndex(['2012-01-01 00:00:00', '2012-01-01 00:30:00',
+                   '2012-01-01 01:00:00', '2012-01-01 01:30:00',
+                   '2012-01-01 02:00:00', '2012-01-01 02:30:00',
+                   '2012-01-01 03:00:00', '2012-01-01 03:30:00',
+                   '2012-01-01 04:00:00', '2012-01-01 04:30:00',
+                   ...
+                   '2013-12-31 19:00:00', '2013-12-31 19:30:00',
+                   '2013-12-31 20:00:00', '2013-12-31 20:30:00',
+                   '2013-12-31 21:00:00', '2013-12-31 21:30:00',
+                   '2013-12-31 22:00:00', '2013-12-31 22:30:00',
+                   '2013-12-31 23:00:00', '2013-12-31 23:30:00'],
+                  dtype='datetime64[ns]', length=35088, freq=None)
+
+    NOTE: time_index covers data from 2012 and 2013
+
+    >>> with MultiYearResource(path) as res:
+    >>>     print(res.h5_files)
+
+    ['/Users/mrossol/Git_Repos/rex/tests/data/nsrdb/ri_100_nsrdb_2012.h5',
+     '/Users/mrossol/Git_Repos/rex/tests/data/nsrdb/ri_100_nsrdb_2013.h5']
+
+    Data slicing works the same as with "Resource" except axis 0 now covers
+    2012 and 2013
+
+    >>> with MultiYearResource(path) as res:
+    >>>     temperature = res['air_temperature']
+    >>>
+    >>> temperature
+    [[ 4.  5.  5. ...  4.  3.  4.]
+     [ 4.  4.  5. ...  4.  3.  4.]
+     [ 4.  4.  5. ...  4.  3.  4.]
+     ...
+     [-1. -1.  0. ... -2. -3. -2.]
+     [-1. -1.  0. ... -2. -3. -2.]
+     [-1. -1.  0. ... -2. -3. -2.]]
+    >>> temperature.shape
+    (35088, 100)
+
+    >>> with MultiYearResource(path) as res:
+    >>>     temperature = res['air_temperature', ::100] # every 100th timestep
+    >>>
+    >>> temperature
+    [[ 4.  5.  5. ...  4.  3.  4.]
+     [ 1.  1.  2. ...  0.  0.  1.]
+     [-2. -1. -1. ... -2. -4. -2.]
+     ...
+     [-3. -2. -2. ... -3. -4. -3.]
+     [ 0.  0.  1. ...  0. -1.  0.]
+     [ 3.  3.  3. ...  2.  2.  3.]]
+    >>> temperature.shape
+    (351, 100)
+
+    You can also request a specific year of data using a string representation
+    of the year of interest
+    NOTE: you can also request a list of years using strings
+
+    >>> with MultiYearResource(path) as res:
+    >>>     temperature = res['air_temperature', '2012'] # every 100th timestep
+    >>>
+    >>> temperature
+    [[4. 5. 5. ... 4. 3. 4.]
+     [4. 4. 5. ... 4. 3. 4.]
+     [4. 4. 5. ... 4. 3. 4.]
+     ...
+     [1. 1. 2. ... 0. 0. 0.]
+     [1. 1. 2. ... 0. 0. 1.]
+     [1. 1. 2. ... 0. 0. 1.]]
+    >>> temperature.shape
+    (17520, 100)
     """
     PREFIX = ''
     SUFFIX = '.h5'
@@ -649,7 +729,7 @@ class MultiYearResource:
             If unscale, returned in native units else in scaled units
         """
         out = self.h5[year]._get_ds(ds_name, year_slice)
-        print(year, year_slice, out.shape)
+
         return out
 
     @staticmethod
