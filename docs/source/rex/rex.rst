@@ -12,6 +12,7 @@ Subpackages
 .. toctree::
 
    rex.rechunk_h5
+   rex.resource_extraction
    rex.utilities
 
 Submodules
@@ -19,13 +20,8 @@ Submodules
 
 .. toctree::
 
-   rex.multi_year_resource_cli
-   rex.mutli_year_resource
+   rex.multi_year_resource
    rex.renewable_resource
    rex.resource
-   rex.resource_cli
-   rex.resource_extraction
    rex.sam_resource
-   rex.solar_cli
    rex.version
-   rex.wind_cli

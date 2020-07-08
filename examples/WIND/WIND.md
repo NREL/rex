@@ -63,10 +63,10 @@ An extraction utility for the WIND (WTK) data has been created with in
 `module use /datasets/modulefiles`
 `module load rex`
 
-The `rex` module provides a [`WIND`](https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#wind)
+The `rex` module provides a [`WINDX`](https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#windX)
 command line utility with the following options and commands:
 ```
-Usage: WIND [OPTIONS] COMMAND [ARGS]...
+Usage: WINDX [OPTIONS] COMMAND [ARGS]...
 
   WindX Command Line Interface
 

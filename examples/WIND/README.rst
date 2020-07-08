@@ -53,12 +53,12 @@ WIND Module
 An extraction utility for WIND Toolkit (WTK) data has been created with in
 `rex <https://github.com/nrel/rex>`_.
 
-The `WIND <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#wind>`_
+The `WINDX <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#windx>`_
 command line utility provides the following options and commands:
 
 .. code-block:: bash
 
-  Usage: WIND [OPTIONS] COMMAND [ARGS]...
+  Usage: WINDX [OPTIONS] COMMAND [ARGS]...
 
     WindX Command Line Interface
 

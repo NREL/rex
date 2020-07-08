@@ -10,7 +10,7 @@ import pandas as pd
 import pickle
 from scipy.spatial import cKDTree
 
-from rex.mutli_year_resource import (MultiYearNSRDB, MultiYearResource,
+from rex.multi_year_resource import (MultiYearNSRDB, MultiYearResource,
                                      MultiYearWindResource)
 from rex.resource import Resource, MultiFileResource
 from rex.renewable_resource import (MultiFileWTK, MultiFileNSRDB, NSRDB,

@@ -56,11 +56,12 @@ setup(
     packages=find_packages(),
     package_dir={"rex": "rex"},
     entry_points={
-        "console_scripts": ["rex=rex.resource_cli:main",
-                            "NSRDB=rex.solar_cli:main",
-                            "WIND=rex.wind_cli:main",
-                            "MultiYearX=rex.multi_year_resource_cli:main",
-                            "rechunk=rex.rechunk_h5.rechunk_cli:main"],
+        "console_scripts": [
+            "rex=rex.resource_extraction.resource_cli:main",
+            "NSRDBX=rex.resource_extraction.solar_cli:main",
+            "WINDX=rex.resource_extraction.wind_cli:main",
+            "MultiYearX=rex.resource_extraction.multi_year_resource_cli:main",
+            "rechunk=rex.rechunk_h5.rechunk_cli:main"],
     },
     include_package_data=True,
     license="BSD 3-Clause",

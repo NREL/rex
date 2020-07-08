@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Classes to handle resource accross multiple files
+Classes to handle multiple years of resource data
 """
 import numpy as np
 import os

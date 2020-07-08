@@ -653,6 +653,18 @@ class Resource:
         """
         return dict(self.h5.attrs)
 
+    @property
+    def attrs(self):
+        """
+        Global (file) attributes
+
+        Returns
+        -------
+        attrs : dict
+            .h5 file attributes sourced from first .h5 file
+        """
+        return self.global_attrs
+
     @staticmethod
     def df_str_decode(df):
         """Decode a dataframe with byte string columns into ordinary str cols.

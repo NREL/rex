@@ -8,7 +8,7 @@ from pandas.testing import assert_frame_equal
 import pytest
 
 from rex import TESTDATADIR
-from rex.mutli_year_resource import MultiYearNSRDB, MultiYearWindResource
+from rex.multi_year_resource import MultiYearNSRDB, MultiYearWindResource
 from rex.resource import Resource
 
 
