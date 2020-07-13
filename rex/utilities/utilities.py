@@ -3,6 +3,7 @@
 Collection of helpful functions
 """
 import datetime
+import inspect
 import json
 import os
 import pandas as pd
@@ -343,3 +344,21 @@ def parse_table(table):
                          '.json, or pandas.DataFrame'.format(type(table)))
 
     return table
+
+
+def get_class_properties(cls):
+    """
+    Get all class properties
+    Used to check against config keys
+
+    Returns
+    -------
+    properties : list
+        List of class properties, each of which should represent a valid
+        config key/entry
+    """
+    properties = [attr for attr, attr_obj
+                  in inspect.getmembers(cls)
+                  if isinstance(attr_obj, property)]
+
+    return properties
