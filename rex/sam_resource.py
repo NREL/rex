@@ -450,6 +450,30 @@ class SAMResource:
 
         return arr
 
+    @staticmethod
+    def roll_timeseries(time_series, timezone, time_interval):
+        """
+        Roll timeseries array to given timezone from UTC
+
+        Parameters
+        ----------
+        time_series : ndarray
+            time_series array to roll
+        timezone : int
+            Time zone as UTC offset
+        time_interval : int
+            Number of step-steps in an hour, needed to compute time shift
+
+        Returns
+        -------
+        time_series : ndarray
+            Time series in local time
+        """
+        shift = int(-1 * timezone * time_interval)
+        time_series = np.roll(time_series, shift, axis=0)
+
+        return time_series
+
     def set_clearsky(self):
         """Make the NSRDB var list for solar based on clearsky irradiance."""
         for i, var in enumerate(self.var_list):

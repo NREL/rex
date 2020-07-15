@@ -47,9 +47,14 @@ class SolarResource(Resource):
         if len(self) > 8784:
             res_df['Minute'] = self.time_index.minute
 
+        time_zone = self.meta.loc[site, 'timezone']
+        time_interval = len(self.time_index) // 8760
+
         for var in ['dni', 'dhi', 'wind_speed', 'air_temperature']:
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var, ds_slice)
+            var_array = SAMResource.roll_timeseries(var_array, time_zone,
+                                                    time_interval)
             res_df[var] = SAMResource.check_units(var, var_array,
                                                   tech='pvwattsv7')
 
@@ -824,6 +829,9 @@ class WindResource(Resource):
         if len(self) > 8784:
             res_df['Minute'] = self.time_index.minute
 
+        time_zone = self.meta.loc[site, 'timezone']
+        time_interval = len(self.time_index) // 8760
+
         variables = ['pressure', 'temperature', 'winddirection', 'windspeed']
         if not require_wind_dir:
             variables.remove('winddirection')
@@ -835,6 +843,8 @@ class WindResource(Resource):
             var_name = "{}_{}m".format(var, h)
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var_name, ds_slice)
+            var_array = SAMResource.roll_timeseries(var_array, time_zone,
+                                                    time_interval)
             res_df[var] = SAMResource.check_units(var, var_array,
                                                   tech='windpower')
             res_df[var] = SAMResource.enforce_arr_range(
@@ -1022,6 +1032,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             in project_points
         """
         with cls(h5_path, unscale=unscale, str_decode=str_decode) as res:
+            # pylint: disable=assignment-from-no-return
             SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
                                        downscale=downscale, means=means)
 
@@ -1126,6 +1137,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
             in project_points
         """
         with cls(h5_path, unscale=unscale, str_decode=str_decode) as res:
+            # pylint: disable=assignment-from-no-return
             SAM_res = res._preload_SAM(sites, hub_heights,
                                        require_wind_dir=require_wind_dir,
                                        precip_rate=precip_rate, icing=icing,
