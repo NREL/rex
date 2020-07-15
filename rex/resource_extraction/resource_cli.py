@@ -21,19 +21,17 @@ logger = logging.getLogger(__name__)
               help=('Path to Resource .h5 file'))
 @click.option('--out_dir', '-o', required=True, type=click.Path(),
               help='Directory to dump output files')
-@click.option('--compute_tree', '-t', is_flag=True,
-              help='Flag to force the computation of the cKDTree')
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
 @click.pass_context
-def main(ctx, resource_h5, out_dir, compute_tree, verbose):
+def main(ctx, resource_h5, out_dir, verbose):
     """
     ResourceX Command Line Interface
     """
     ctx.ensure_object(dict)
     ctx.obj['H5'] = resource_h5
     ctx.obj['OUT_DIR'] = out_dir
-    ctx.obj['CLS_KWARGS'] = {'compute_tree': compute_tree}
+    ctx.obj['CLS_KWARGS'] = {}
 
     multi_h5_res, hsds = check_res_file(resource_h5)
     if multi_h5_res:
