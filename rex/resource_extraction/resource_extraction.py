@@ -2,23 +2,22 @@
 """
 Resource Extraction Tools
 """
-import gzip
 import logging
 import numpy as np
 import os
 import pandas as pd
 import pickle
 from scipy.spatial import cKDTree
+from tempfile import TemporaryDirectory
 
 from rex.multi_year_resource import (MultiYearNSRDB, MultiYearResource,
                                      MultiYearWindResource)
 from rex.resource import Resource, MultiFileResource
 from rex.renewable_resource import (MultiFileWTK, MultiFileNSRDB, NSRDB,
                                     SolarResource, WindResource)
+from rex.utilities import parse_year
 
-TREE_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-    'bin', 'trees')
+TREE_DIR = TemporaryDirectory()
 logger = logging.getLogger(__name__)
 
 
@@ -136,6 +135,31 @@ class ResourceX(Resource):
         return self._lat_lon
 
     @staticmethod
+    def _get_tree_file(h5_file):
+        """
+        Create path to pre-computed tree from h5_file by splitting file name
+        at year if available, else replacing the .h5 suffix
+
+        Parameters
+        ----------
+        h5_file : str
+            Path to source .h5 file
+
+        Returns
+        -------
+        tree_file : str
+            Path to pre-comupted tree .pkl file name
+        """
+        f_name = os.path.basename(h5_file)
+        try:
+            year = parse_year(f_name)
+            tree_file = f_name.split(str(year))[0] + 'tree.pkl'
+        except RuntimeError:
+            tree_file = f_name.replace('.h5', '_tree.pkl')
+
+        return tree_file
+
+    @staticmethod
     def _load_tree(tree_pickle):
         """
         Load tree from pickle file
@@ -143,8 +167,7 @@ class ResourceX(Resource):
         Parameters
         ----------
         tree_pickle : str
-            Pickle (.pkl, .pickle) or compressed pickle (.pgz, .pgzip) file
-            containing precomputed cKDTree
+            Pickle (.pkl, .pickle) file containing precomputed cKDTree
 
         Returns
         -------
@@ -152,22 +175,58 @@ class ResourceX(Resource):
             Precomputed tree of lat, lon coordinates
         """
         try:
-            if tree_pickle.endswith(('.pkl', '.pickle')):
-                with open(tree_pickle, 'rb') as f:
-                    tree = pickle.load(f)
-            elif tree_pickle.endswith(('.pgz', '.pgzip', '.gz', '.gzip')):
-                with gzip.open(tree_pickle, 'r') as f:
-                    tree = pickle.load(f)
-            else:
-                logger.warning('Cannot parse files of type "{}"'
-                               .format(tree_pickle))
-                tree = None
+            with open(tree_pickle, 'rb') as f:
+                tree = pickle.load(f)
         except Exception as e:
             logger.warning('Could not extract tree from {}: {}'
                            .format(tree_pickle, e))
             tree = None
 
         return tree
+
+    @staticmethod
+    def _load_tree(tree_path):
+        """
+        Load tree from pickle file
+
+        Parameters
+        ----------
+        tree_path : str
+            Pickle (.pkl, .pickle) file containing precomputed cKDTree
+
+        Returns
+        -------
+        tree : cKDTree
+            Precomputed tree of lat, lon coordinates
+        """
+        try:
+            with open(tree_path, 'rb') as f:
+                tree = pickle.load(f)
+        except Exception as e:
+            logger.warning('Could not extract tree from {}: {}'
+                           .format(tree_path, e))
+            tree = None
+
+        return tree
+
+    @staticmethod
+    def _save_tree(tree, tree_path):
+        """
+        Save pre-computed Tree to TEMP_DIR as a pickle file
+
+        Parameters
+        ----------
+        tree : cKDTree
+            pre-computed cKDTree
+        tree_path : str
+            Path to pickle file in TEMP_DIR to save tree too
+        """
+        try:
+            with open(tree_path, 'wb') as f:
+                pickle.dump(tree, f)
+        except Exception as e:
+            logger.warning('Could not save tree to {}: {}'
+                           .format(tree_path, e))
 
     @staticmethod
     def _to_SAM_csv(sam_df, site_meta, out_path):
@@ -232,6 +291,7 @@ class ResourceX(Resource):
         tree : cKDTree
             cKDTree of lat, lon coordinate from wtk .h5 file
         """
+        tree_path = self._get_tree_file(self.h5_file)
         if compute_tree:
             tree = None
         else:
@@ -241,14 +301,9 @@ class ResourceX(Resource):
                                'file or a cKDTree, not a {}'
                                .format(type(tree)))
 
-            if tree is None and os.path.exists(TREE_DIR):
-                pgz_files = [file for file in os.listdir(TREE_DIR)
-                             if file.endswith('.pgz')]
-                for pgz in pgz_files:
-                    prefix = pgz.split('_tree')[0]
-                    if os.path.basename(self.h5_file).startswith(prefix):
-                        tree = os.path.join(TREE_DIR, pgz)
-                        break
+            if tree is None:
+                if tree_path in os.listdir(TREE_DIR.name):
+                    tree = os.path.join(TREE_DIR.name, tree_path)
 
             if isinstance(tree, str):
                 tree = self._load_tree(tree)
@@ -256,6 +311,7 @@ class ResourceX(Resource):
         if tree is None:
             lat_lon = self.lat_lon
             tree = cKDTree(lat_lon)  # pylint: disable=not-callable
+            self._save_tree(tree, os.path.join(TREE_DIR.name, tree_path))
 
         return tree
 
@@ -274,6 +330,7 @@ class ResourceX(Resource):
             Nearest gid(s) to given (lat, lon) pair(s)
         """
         _, gids = self.tree.query(lat_lon)
+
         return gids
 
     def region_gids(self, region, region_col='state'):
