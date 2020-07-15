@@ -9,6 +9,7 @@ import pytest
 
 from rex.resource_extraction import (MultiFileWindX, MultiFileNSRDBX,
                                      NSRDBX, WindX)
+from rex.resource_extraction.resource_extraction import TREE_DIR
 from rex import TESTDATADIR
 
 
@@ -18,7 +19,7 @@ def NSRDBX_cls():
     Init NSRDB resource handler
     """
     path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
-    return NSRDBX(path, compute_tree=True)
+    return NSRDBX(path)
 
 
 @pytest.fixture
@@ -27,7 +28,7 @@ def MultiFileNSRDBX_cls():
     Init NSRDB resource handler
     """
     path = os.path.join(TESTDATADIR, 'nsrdb', 'nsrdb*2018.h5')
-    return MultiFileNSRDBX(path, compute_tree=True)
+    return MultiFileNSRDBX(path)
 
 
 @pytest.fixture
@@ -36,7 +37,7 @@ def WindX_cls():
     Init WindResource resource handler
     """
     path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
-    return WindX(path, compute_tree=True)
+    return WindX(path)
 
 
 @pytest.fixture
@@ -45,7 +46,7 @@ def MultiFileWindX_cls():
     Init WindResource resource handler
     """
     path = os.path.join(TESTDATADIR, 'wtk', 'wtk*m.h5')
-    return MultiFileWindX(path, compute_tree=True)
+    return MultiFileWindX(path)
 
 
 def check_props(res_cls):
@@ -76,6 +77,9 @@ def extract_site(res_cls, ds_name):
 
     site_df = res_cls.get_lat_lon_df(ds_name, lat_lon)
     assert site_df.equals(truth_df)
+
+    tree_file = res_cls._get_tree_file(res_cls.h5_file)
+    assert tree_file in os.listdir(TREE_DIR.name)
 
 
 def extract_region(res_cls, ds_name, region, region_col='county'):

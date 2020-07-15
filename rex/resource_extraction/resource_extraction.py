@@ -32,9 +32,9 @@ class ResourceX(Resource):
         ----------
         res_h5 : str
             Path to resource .h5 file of interest
-        tree : str
-            Path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         hsds : bool
@@ -60,7 +60,7 @@ class ResourceX(Resource):
             Lat, lon coordinates cKDTree
         """
         if not isinstance(self._tree, cKDTree):
-            self._tree = self._init_tree(tree=self._tree)
+            self._tree = self._init_tree(self._tree)
 
         return self._tree
 
@@ -273,7 +273,7 @@ class ResourceX(Resource):
             f.seek(0, 0)
             f.write(cols + '\n' + values + '\n' + content)
 
-    def _init_tree(self, tree=None, compute_tree=False):
+    def _init_tree(self, tree):
         """
         Inititialize cKDTree of lat, lon coordinates
 
@@ -283,8 +283,6 @@ class ResourceX(Resource):
             Path to .pgz file containing pre-computed tree
             If None search bin for .pgz file matching h5 file
             else compute tree
-        compute_tree : bool
-            Force the computation of the cKDTree
 
         Returns
         -------
@@ -292,21 +290,18 @@ class ResourceX(Resource):
             cKDTree of lat, lon coordinate from wtk .h5 file
         """
         tree_path = self._get_tree_file(self.h5_file)
-        if compute_tree:
+        if not isinstance(tree, (cKDTree, str, type(None))):
             tree = None
-        else:
-            if not isinstance(tree, (cKDTree, str, type(None))):
-                tree = None
-                logger.warning('Precomputed tree must be supplied as a pickle '
-                               'file or a cKDTree, not a {}'
-                               .format(type(tree)))
+            logger.warning('Precomputed tree must be supplied as a pickle '
+                           'file or a cKDTree, not a {}'
+                           .format(type(tree)))
 
-            if tree is None:
-                if tree_path in os.listdir(TREE_DIR.name):
-                    tree = os.path.join(TREE_DIR.name, tree_path)
+        if tree is None:
+            if tree_path in os.listdir(TREE_DIR.name):
+                tree = os.path.join(TREE_DIR.name, tree_path)
 
-            if isinstance(tree, str):
-                tree = self._load_tree(tree)
+        if isinstance(tree, str):
+            tree = self._load_tree(tree)
 
         if tree is None:
             lat_lon = self.lat_lon
@@ -623,9 +618,8 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
     """
     Multi-File resource extraction class
     """
-
-    def __init__(self, resource_path, tree=None, compute_tree=False,
-                 unscale=True, str_decode=True):
+    def __init__(self, resource_path, tree=None, unscale=True,
+                 str_decode=True):
         """
         Parameters
         ----------
@@ -634,11 +628,9 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
-        tree : str
-            path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
-        compute_tree : bool
-            Force the computation of the cKDTree
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -647,16 +639,15 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
         """
         super().__init__(resource_path, unscale=unscale, str_decode=str_decode)
         self._lat_lon = None
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._tree = tree
 
 
 class MultiYearResourceX(MultiYearResource, ResourceX):
     """
     Multi Year resource extraction class
     """
-
-    def __init__(self, resource_path, tree=None, compute_tree=False,
-                 unscale=True, str_decode=True, hsds=False, res_cls=Resource):
+    def __init__(self, resource_path, tree=None, unscale=True, str_decode=True,
+                 hsds=False, res_cls=Resource):
         """
         Parameters
         ----------
@@ -665,11 +656,9 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
-        tree : str
-            path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
-        compute_tree : bool
-            Force the computation of the cKDTree
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -684,7 +673,7 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
         super().__init__(resource_path, unscale=unscale, str_decode=str_decode,
                          hsds=hsds, res_cls=res_cls)
         self._lat_lon = None
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._tree = tree
 
     def get_means_map(self, ds_name, year, region=None,
                       region_col='state'):
@@ -725,18 +714,16 @@ class SolarX(SolarResource, ResourceX):
     """
     Solar Resource extraction class
     """
-    def __init__(self, solar_h5, tree=None, compute_tree=False, unscale=True,
-                 hsds=False, str_decode=True, group=None):
+    def __init__(self, solar_h5, tree=None, unscale=True, hsds=False,
+                 str_decode=True, group=None):
         """
         Parameters
         ----------
         solar_h5 : str
             Path to solar .h5 file of interest
-        tree : str
-            path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
-        compute_tree : bool
-            Force the computation of the cKDTree
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         hsds : bool
@@ -751,25 +738,23 @@ class SolarX(SolarResource, ResourceX):
         super().__init__(solar_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
         self._lat_lon = None
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._tree = tree
 
 
 class NSRDBX(NSRDB, ResourceX):
     """
     NSRDB extraction class
     """
-    def __init__(self, nsrdb_h5, tree=None, compute_tree=False, unscale=True,
-                 hsds=False, str_decode=True, group=None):
+    def __init__(self, nsrdb_h5, tree=None, unscale=True, hsds=False,
+                 str_decode=True, group=None):
         """
         Parameters
         ----------
         nsrdb_h5 : str
             Path to NSRDB .h5 file of interest
-        tree : str
-            path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
-        compute_tree : bool
-            Force the computation of the cKDTree
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         hsds : bool
@@ -779,20 +764,19 @@ class NSRDBX(NSRDB, ResourceX):
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
         group : str
-            Group within .h5 NSRDB file to open
+            Group within .h5 resource file to open
         """
         super().__init__(nsrdb_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
         self._lat_lon = None
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._tree = tree
 
 
 class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
     """
     Multi-File NSRDB extraction class
     """
-    def __init__(self, nsrdb_path, tree=None, compute_tree=False,
-                 unscale=True, str_decode=True):
+    def __init__(self, nsrdb_path, tree=None, unscale=True, str_decode=True):
         """
         Parameters
         ----------
@@ -801,11 +785,9 @@ class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
-        tree : str
-            path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
-        compute_tree : bool
-            Force the computation of the cKDTree
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -814,16 +796,15 @@ class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
         """
         super().__init__(nsrdb_path, unscale=unscale, str_decode=str_decode)
         self._lat_lon = None
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._tree = tree
 
 
 class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
     """
     Multi Year NSRDB extraction class
     """
-
-    def __init__(self, nsrdb_path, tree=None, compute_tree=False,
-                 unscale=True, str_decode=True, hsds=False):
+    def __init__(self, nsrdb_path, tree=None, unscale=True, str_decode=True,
+                 hsds=False):
         """
         Parameters
         ----------
@@ -832,11 +813,9 @@ class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
-        tree : str
-            path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
-        compute_tree : bool
-            Force the computation of the cKDTree
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -849,32 +828,38 @@ class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
         super().__init__(nsrdb_path, unscale=unscale, str_decode=str_decode,
                          hsds=hsds)
         self._lat_lon = None
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._tree = tree
 
 
 class WindX(WindResource, ResourceX):
     """
     Wind Resource extraction class
     """
-    def __init__(self, wind_h5, tree=None, compute_tree=False, unscale=True,
-                 hsds=False, str_decode=True, group=None):
+    def __init__(self, wind_h5, tree=None, unscale=True, hsds=False,
+                 str_decode=True, group=None):
         """
         Parameters
         ----------
         wind_h5 : str
             Path to Wind .h5 file of interest
-        tree : str
-            path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
-        compute_tree : bool
-            Force the computation of the cKDTree
-        kwargs : dict
-            Kwargs for Resource
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
         """
         super().__init__(wind_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
         self._lat_lon = None
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._tree = tree
 
     def get_SAM_gid(self, hub_height, gid, out_path=None, **kwargs):
         """
@@ -953,8 +938,7 @@ class MultiFileWindX(MultiFileWTK, WindX):
     """
     Multi-File Wind Resource extraction class
     """
-    def __init__(self, wtk_path, tree=None, compute_tree=False,
-                 unscale=True, str_decode=True):
+    def __init__(self, wtk_path, tree=None, unscale=True, str_decode=True):
         """
         Parameters
         ----------
@@ -963,11 +947,9 @@ class MultiFileWindX(MultiFileWTK, WindX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
-        tree : str
-            path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
-        compute_tree : bool
-            Force the computation of the cKDTree
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -976,16 +958,15 @@ class MultiFileWindX(MultiFileWTK, WindX):
         """
         super().__init__(wtk_path, unscale=unscale, str_decode=str_decode)
         self._lat_lon = None
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._tree = tree
 
 
 class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
     """
     Multi Year Wind Resource extraction class
     """
-
-    def __init__(self, wtk_path, tree=None, compute_tree=False,
-                 unscale=True, str_decode=True, hsds=False):
+    def __init__(self, wtk_path, tree=None, unscale=True, str_decode=True,
+                 hsds=False):
         """
         Parameters
         ----------
@@ -994,11 +975,9 @@ class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
-        tree : str
-            path to .pgz file containing pickled cKDTree of lat, lon
-            coordinates
-        compute_tree : bool
-            Force the computation of the cKDTree
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -1011,4 +990,4 @@ class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
         super().__init__(wtk_path, unscale=unscale, str_decode=str_decode,
                          hsds=hsds)
         self._lat_lon = None
-        self._tree = self._init_tree(tree=tree, compute_tree=compute_tree)
+        self._tree = tree
