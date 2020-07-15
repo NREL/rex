@@ -7,6 +7,7 @@ import os
 import pytest
 
 from rex.renewable_resource import WindResource
+from rex.sam_resource import SAMResource
 from rex import TESTDATADIR
 
 
@@ -40,6 +41,7 @@ def test_sam_df_hh():
         sam_df = wind._get_SAM_df('pressure_80m', 0)
 
         arr1 = wind['pressure_100m', :, 0] * 9.86923e-6
+        arr1 = SAMResource.roll_timeseries(arr1, -5, 1)
         arr2 = sam_df['Pressure'].values
 
         msg1 = ('Error: pressure should have been loaded at 100m '
@@ -63,8 +65,8 @@ def test_preload_sam_hh():
     with WindResource(h5) as wind:
         p = wind['pressure_100m'] * 9.86923e-6
         t = wind['temperature_100m']
-        msg1 = ('Error: pressure should have been loaded at 100m '
-                'b/c there is only windspeed at 100m.')
+        msg1 = ('Error: pressure should have been loaded at 100m b/c '
+                'there is only windspeed at 100m.')
         msg2 = ('Error: temperature should have been loaded at 100m '
                 'b/c there is only windspeed at 100m.')
         assert np.allclose(SAM_res['pressure', :, :].values, p), msg1
