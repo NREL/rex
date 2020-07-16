@@ -90,12 +90,15 @@ class SolarResource(Resource):
         SAM_res = SAMResource(sites, tech, self.time_index, means=means)
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
-        for var in SAM_res.var_list:
-            ds = var
-            if clearsky and var in ['dni', 'dhi']:
-                ds = 'clearsky_{}'.format(var)
+        if clearsky:
+            SAM_res.set_clearsky()
 
-            SAM_res[var] = self[ds, :, sites]
+        SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
+        for var in SAM_res.var_list:
+            if var in self.datasets:
+                SAM_res[var] = self[var, :, sites]
+
+        SAM_res.compute_irradiance(clearsky=clearsky)
 
         return SAM_res
 
@@ -189,9 +192,13 @@ class NSRDB(SolarResource):
         if clearsky:
             SAM_res.set_clearsky()
 
+        SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
         if not downscale:
             for var in SAM_res.var_list:
-                SAM_res[var] = self[var, :, sites]
+                if var in self.datasets:
+                    SAM_res[var] = self[var, :, sites]
+
+            SAM_res.compute_irradiance(clearsky=clearsky)
         else:
             # contingent import to avoid dependencies
             from rex.utilities.downscale import downscale_nsrdb
