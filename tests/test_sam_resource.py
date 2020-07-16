@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pytest
 
-from rex.renewable_resource import WindResource
+from rex.renewable_resource import WindResource, NSRDB
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceRuntimeError
 from rex import TESTDATADIR
@@ -174,6 +174,35 @@ def test_preload_sam_sites(sites):
         truth = wind['windspeed_100m', :, sites]
 
     assert np.allclose(truth, test)
+
+
+def test_check_irradiance():
+    """
+    Test check irradiance method
+    """
+    h5 = os.path.join(TESTDATADIR, 'nsrdb/nsrdb_2012_invalid.h5')
+    sites = slice(0, 100)
+    with pytest.raises(ResourceRuntimeError):
+        # pylint: disable=pointless-statement
+        NSRDB.preload_SAM(h5, sites)
+
+
+def test_fill_irradiance():
+    """
+    Test check irradiance method
+    """
+    baseline = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+    sites = slice(0, 100)
+    baseline = NSRDB.preload_SAM(baseline, sites)
+
+    test = os.path.join(TESTDATADIR, 'nsrdb/nsrdb_2012_missing.h5')
+    sites = slice(0, 100)
+    test = NSRDB.preload_SAM(test, sites)
+
+    for var in ['ghi', 'dni', 'dhi']:
+        baseline_arr = baseline[var].values
+        test_arr = test[var].values
+        assert np.allclose(baseline_arr, test_arr, rtol=0.5)
 
 
 def execute_pytest(capture='all', flags='-rapP'):

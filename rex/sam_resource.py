@@ -8,9 +8,10 @@ import pandas as pd
 from warnings import warn
 import logging
 
-from rex.utilities.parse_keys import parse_keys
 from rex.utilities.exceptions import (ResourceKeyError, ResourceRuntimeError,
                                       ResourceValueError, SAMInputWarning)
+from rex.utilities.parse_keys import parse_keys
+from rex.utilities.solar_position import SolarPosition
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +118,7 @@ class SAMResource:
         self._runnable = False
         self._res_arrays = {}
         self._h = hub_heights
+        self._sza = None
 
         self._mean_arrays = None
         if means:
@@ -336,6 +338,32 @@ class SAMResource:
         """
         return self._h
 
+    @property
+    def lat_lon(self):
+        """
+        site latitudes and longitudes
+
+        Returns
+        -------
+        ndarray
+        """
+        return self.meta[['latitude', 'longitude']].values
+
+    @property
+    def sza(self):
+        """
+        Solar zenith angle for sites of interest
+
+        Returns
+        -------
+        ndarray
+        """
+        if self._sza is None:
+            self._sza = \
+                np.radians(SolarPosition(self.time_index, self.lat_lon).zenith)
+
+        return self._sza
+
     @staticmethod
     def _parse_sites(sites):
         """
@@ -473,6 +501,73 @@ class SAMResource:
         time_series = np.roll(time_series, shift, axis=0)
 
         return time_series
+
+    def check_irradiance_datasets(self, datasets, clearsky=False):
+        """
+        Check available irradiance datasets
+
+        Parameters
+        ----------
+        datasets : list
+            List of available datasets in resource .h5 file
+        clearsky : bool, optional
+            Flag to check for clearsky irradiance datasets, by default False
+        """
+        available = 0
+        irradiance_vars = ['dni', 'dhi', 'ghi']
+        if clearsky:
+            irradiance_vars = ['clearsky_{}'.format(var)
+                               for var in irradiance_vars]
+        for var in irradiance_vars:
+            if var in datasets and var in self.var_list:
+                available += 1
+
+        if available < 2:
+            msg = ("At least 2 irradiance variables (dni, dhi, or ghi) are "
+                   "needed to run SAM!")
+            logger.error(msg)
+            raise ResourceRuntimeError(msg)
+
+    def fillin_irradiance(self, clearsky=False):
+        """
+        Fillin missing irradiance dataset from available values and SZA
+
+        Parameters
+        ----------
+        clearsky : bool, optional
+            Flag to check for clearsky irradiance datasets, by default False
+        """
+        irradiance_vars = ['dni', 'dhi', 'ghi']
+        if clearsky:
+            irradiance_vars = ['clearsky_{}'.format(var)
+                               for var in irradiance_vars]
+
+        missing = None
+        for var in irradiance_vars:
+            if var not in self._res_arrays:
+                missing = var
+                break
+
+        if missing is not None:
+            dni_var, dhi_var, ghi_var = irradiance_vars
+            logger.info('{} is missing and will be computed from {}'
+                        .format(missing, irradiance_vars.remove(missing)))
+            if missing == ghi_var:
+                ghi = (self._res_arrays[dni_var] * np.cos(self.sza)
+                       + self._res_arrays[dhi_var])
+                ghi[ghi < 0] = 0
+                self[ghi_var] = ghi
+            elif missing == dni_var:
+                dni = ((self._res_arrays[ghi_var] - self._res_arrays[dhi_var])
+                       / np.cos(self.sza))
+                dni = np.nan_to_num(dni)
+                dni[dni < 0] = 0
+                self[dni_var] = dni
+            elif missing == dhi_var:
+                dhi = (self._res_arrays[ghi_var]
+                       - self._res_arrays[dni_var] * np.cos(self.sza))
+                dhi[dhi < 0] = 0
+                self[dhi_var] = dhi
 
     def set_clearsky(self):
         """Make the NSRDB var list for solar based on clearsky irradiance."""
