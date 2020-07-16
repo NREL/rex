@@ -262,7 +262,9 @@ def init_mult(name, logdir, modules, verbose=False, node=False):
         elif node and log_level == 'INFO':
             # Node level info loggers only go to STDOUT/STDERR files
             logger = init_logger(module, log_level=log_level, log_file=None)
+
         loggers.append(logger)
+
     return loggers
 
 
@@ -290,4 +292,5 @@ def log_mem(logger, log_level='DEBUG'):
         logger.debug('\t- {}'.format(msg))
     else:
         logger.info(msg)
+
     return msg

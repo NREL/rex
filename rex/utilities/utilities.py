@@ -362,3 +362,58 @@ def get_class_properties(cls):
                   if isinstance(attr_obj, property)]
 
     return properties
+
+
+def timestamp_format_to_redex(time_format):
+    """
+    convert time stamp format to redex
+
+    Parameters
+    ----------
+    time_format : str
+        datetime timestamp format
+
+    Returns
+    -------
+    redex : str
+        redex format for timestamp
+    """
+
+    time_keys = {'%Y': r'\d{4}',
+                 '%m': r'\d{2}',
+                 '%d': r'\d{2}',
+                 '%H': r'\d{2}',
+                 '%M': r'\d{2}',
+                 '%S': r'\d{2}'}
+
+    redex = time_format
+    for key, item in time_keys.items():
+        if key in redex:
+            redex = redex.replace(key, item)
+
+    return redex
+
+
+def file_timestamp(file_path, time_format='%Y-%m-%d_%H_%M_%S'):
+    """
+    extract timestamp from file name
+
+    Parameters
+    ----------
+    file_path : str
+        file path
+    time_format : str, optional
+        datetime timestamp format, by default '%Y-%m-%d_%H_%M_%S'
+
+    Returns
+    -------
+    datetime.datetime
+        datetime timestamp
+    """
+    pattern = timestamp_format_to_redex(time_format)
+    pattern = re.compile(pattern)
+    matcher = pattern.search(os.path.basename(file_path))
+
+    time = matcher.group()
+
+    return datetime.datetime.strptime(time, time_format)
