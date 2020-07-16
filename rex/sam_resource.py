@@ -528,7 +528,7 @@ class SAMResource:
             logger.error(msg)
             raise ResourceRuntimeError(msg)
 
-    def fillin_irradiance(self, clearsky=False):
+    def compute_irradiance(self, clearsky=False):
         """
         Fillin missing irradiance dataset from available values and SZA
 
@@ -544,7 +544,7 @@ class SAMResource:
 
         missing = None
         for var in irradiance_vars:
-            if var not in self._res_arrays:
+            if var in self.var_list and var not in self._res_arrays:
                 missing = var
                 break
 

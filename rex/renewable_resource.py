@@ -98,7 +98,7 @@ class SolarResource(Resource):
             if var in self.datasets:
                 SAM_res[var] = self[var, :, sites]
 
-        SAM_res.fillin_irradiance(clearsky=clearsky)
+        SAM_res.compute_irradiance(clearsky=clearsky)
 
         return SAM_res
 
@@ -198,7 +198,7 @@ class NSRDB(SolarResource):
                 if var in self.datasets:
                     SAM_res[var] = self[var, :, sites]
 
-            SAM_res.fillin_irradiance(clearsky=clearsky)
+            SAM_res.compute_irradiance(clearsky=clearsky)
         else:
             # contingent import to avoid dependencies
             from rex.utilities.downscale import downscale_nsrdb
