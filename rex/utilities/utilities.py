@@ -394,14 +394,14 @@ def timestamp_format_to_redex(time_format):
     return redex
 
 
-def file_timestamp(file_path, time_format='%Y-%m-%d_%H_%M_%S'):
+def filename_timestamp(file_name, time_format='%Y-%m-%d_%H_%M_%S'):
     """
     extract timestamp from file name
 
     Parameters
     ----------
-    file_path : str
-        file path
+    file_name : str
+        file name or file path
     time_format : str, optional
         datetime timestamp format, by default '%Y-%m-%d_%H_%M_%S'
 
@@ -412,7 +412,7 @@ def file_timestamp(file_path, time_format='%Y-%m-%d_%H_%M_%S'):
     """
     pattern = timestamp_format_to_redex(time_format)
     pattern = re.compile(pattern)
-    matcher = pattern.search(os.path.basename(file_path))
+    matcher = pattern.search(os.path.basename(file_name))
 
     time = matcher.group()
 
