@@ -394,7 +394,7 @@ def timestamp_format_to_redex(time_format):
     return redex
 
 
-def filename_timestamp(file_name, time_format='%Y-%m-%d_%H_%M_%S'):
+def filename_timestamp(file_name, time_format='%Y-%m-%d_%H:%M:%S'):
     """
     extract timestamp from file name
 
@@ -403,7 +403,7 @@ def filename_timestamp(file_name, time_format='%Y-%m-%d_%H_%M_%S'):
     file_name : str
         file name or file path
     time_format : str, optional
-        datetime timestamp format, by default '%Y-%m-%d_%H_%M_%S'
+        datetime timestamp format, by default '%Y-%m-%d_%H:%M:%S'
 
     Returns
     -------
@@ -416,4 +416,4 @@ def filename_timestamp(file_name, time_format='%Y-%m-%d_%H_%M_%S'):
 
     time = matcher.group()
 
-    return datetime.datetime.strptime(time, time_format)
+    return time
