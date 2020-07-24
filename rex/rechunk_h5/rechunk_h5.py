@@ -450,7 +450,7 @@ class RechunkH5:
             dtype = 'S{}'.format(len(time_index[0]))
             time_index = np.array(time_index, dtype=dtype)
 
-        attrs['dtype'] = time_index.dtype
+        attrs['dtype'] = time_index.dtype.name
 
         ds = self.init_dset('time_index', time_index.shape, attrs)
         ds[...] = time_index
@@ -481,7 +481,7 @@ class RechunkH5:
             with h5py.File(self._src_path, 'r') as f:
                 meta = f['meta'][...]
 
-        attrs['dtype'] = meta.dtype
+        attrs['dtype'] = meta.dtype.name
         ds = self.init_dset('meta', meta.shape, attrs)
         ds[...] = meta
         logger.info('- meta transfered')
@@ -501,7 +501,7 @@ class RechunkH5:
         logger.info('Rechunking coordinates')
         meta_data = self._dst_h5['meta'][...]
         coords = np.dstack((meta_data['latitude'], meta_data['longitude']))[0]
-        attrs['dtype'] = coords.dtype
+        attrs['dtype'] = coords.dtype.name
 
         ds = self.init_dset('coordinates', coords.shape, attrs)
         ds[...] = coords
