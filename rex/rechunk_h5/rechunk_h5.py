@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype
 import time
+from warnings import warn
 
 logger = logging.getLogger(__name__)
 
@@ -231,6 +232,85 @@ class RechunkH5:
         return self._time_slice
 
     @staticmethod
+    def _check_dtype(ds_in, dset_attrs):
+        """
+        Check dataset dtype against source dataset dtype
+
+        Parameters
+        ----------
+        ds_in : h5py.Dataset
+            Source h5 Dataset
+        dset_attrs : dict
+            Dictionary of dataset attributes (dtype, chunk, attrs)
+        """
+        dtype = dset_attrs['dtype']
+        attrs = dset_attrs['attrs']
+        if ds_in.dtype.name != dtype:
+            msg = ('Source dtype ({}) does not match specified dtype ({}), '
+                   .format(ds_in.dtype, dtype))
+            logger.warning(msg)
+            warn(msg)
+            float_to_int = (np.issubdtype(ds_in.dtype, np.floating)
+                            and np.issubdtype(dtype, np.integer))
+            int_to_float = (np.issubdtype(ds_in.dtype, np.integer)
+                            and np.issubdtype(dtype, np.floating))
+            if float_to_int:
+                if not any(c for c in attrs if 'scale_factor' in c):
+                    msg = ('Cannot downscale from {} to {} without a '
+                           'scale_factor!'.format(ds_in.dtype, dtype))
+                    logger.error(msg)
+                    raise RuntimeError(msg)
+                else:
+                    msg = 'Converting {} to {}'.format(ds_in.dtype, dtype)
+                    logger.warning(msg)
+                    warn(msg)
+            elif int_to_float:
+                msg = ('Cannot scale up an {} to a {}'
+                       .format(ds_in.dtype, dtype))
+                logger.error(msg)
+                raise RuntimeError(msg)
+            elif not np.issubdtype(dtype, ds_in.dtype):
+                msg = ('Output dtype ({}) has greater precision than input '
+                       'dtype ({}), using input dtype'
+                       .format(dtype, ds_in.dtype))
+                logger.warning(msg)
+                warn(msg)
+
+                dset_attrs['dtype'] = ds_in.dtype
+
+        return dset_attrs
+
+    @staticmethod
+    def _check_attrs(ds_in, dset_attrs):
+        """
+        Check dataset attributes against source dataset attributes
+
+        Parameters
+        ----------
+        ds_in : h5py.Dataset
+            Source h5 Dataset
+        dset_attrs : dict
+            Dictionary of dataset attributes (dtype, chunk, attrs)
+        """
+        attrs = dset_attrs['attrs']
+        for key, value in attrs.items():
+            src_value = ds_in.attrs.get(key)
+            if src_value:
+                if isinstance(src_value, bytes):
+                    src_value = src_value.decode('utf-8')
+
+                if src_value != value:
+                    msg = ('Attr {} value ({}) does not match '
+                           'source value ({}), using source value.'
+                           .format(key, value, src_value))
+                    logger.warning(msg)
+                    warn(msg)
+
+                    dset_attrs['attrs'][key] = src_value
+
+        return dset_attrs
+
+    @staticmethod
     def check_dset_attrs(ds_in, dset_attrs, check_attrs=False):
         """
         Check dataset attributes (dtype, scale_factor, units) against source
@@ -246,28 +326,49 @@ class RechunkH5:
             Flag to compare source and specified dataset attributes,
             by default False
         """
-        dtype = dset_attrs['dtype']
-        attrs = dset_attrs['attrs']
-        if ds_in.dtype.name != dtype:
-            logger.warning('Source dtype ({}) does not match '
-                           'specified dtype ({}), '
-                           'using source dtype,'.format(ds_in.dtype, dtype))
-            dset_attrs['dtype'] = ds_in.dtype
+        dset_attrs = RechunkH5._check_dtype(ds_in, dset_attrs)
 
         if check_attrs:
-            for key, value in attrs.items():
-                src_value = ds_in.attrs.get(key)
-                if src_value:
-                    if isinstance(src_value, bytes):
-                        src_value = src_value.decode('utf-8')
-
-                    if src_value != value:
-                        logger.warning('Attr {} value ({}) does not match '
-                                       'source value ({}), using source '
-                                       'value.'.format(key, value, src_value))
-                        dset_attrs['attrs'][key] = src_value
+            dset_attrs = RechunkH5._check_attrs(ds_in, dset_attrs)
 
         return dset_attrs
+
+    @staticmethod
+    def _check_data(data, dset_attrs):
+        """
+        Check data dtype and scale if needed
+
+        Parameters
+        ----------
+        data : ndarray
+            Data to be written to disc
+        dtype : str
+            dtype of data on disc
+        scale_factor : int
+            Scale factor to scale data to integer (if needed)
+
+        Returns
+        -------
+        data : ndarray
+            Data ready for writing to disc:
+            - Scaled and converted to dtype
+        """
+        dtype = dset_attrs['dtype']
+        float_to_int = (np.issubdtype(dtype, np.integer)
+                        and np.issubdtype(data.dtype, np.floating))
+        if float_to_int:
+            attrs = dset_attrs['attrs']
+            scale_factor = [c for c in attrs if 'scale_factor' in c][0]
+            scale_factor = attrs[scale_factor]
+
+            # apply scale factor and dtype
+            data = np.multiply(data, scale_factor)
+            if np.issubdtype(dtype, np.integer):
+                data = np.round(data)
+
+            data = data.astype(dtype)
+
+        return data
 
     def init_dset(self, dset_name, dset_shape, dset_attrs):
         """
@@ -297,6 +398,8 @@ class RechunkH5:
         if chunks:
             chunks = tuple(chunks)
 
+        logger.debug('Creating {} with shape: {}, dtype: {}, chunks: {}'
+                     .format(dset_name, dset_shape, dtype, chunks))
         ds = self._dst_h5.create_dataset(dset_name, shape=dset_shape,
                                          dtype=dtype, chunks=chunks)
         if attrs:
@@ -408,8 +511,8 @@ class RechunkH5:
         tt = (time.time() - ts) / 60
         logger.debug('\t- {:.2f} minutes'.format(tt))
 
-    def load_data(self, ds_in, ds_out, shape, process_size=None, data=None,
-                  reduce=False):
+    def load_data(self, ds_in, ds_out, shape, dset_attrs, process_size=None,
+                  data=None, reduce=False):
         """
         Load data from ds_in to ds_out
 
@@ -421,6 +524,8 @@ class RechunkH5:
             Open dataset instance for rechunked data
         shape : tuple
             Dataset shape
+        dset_attrs : dict
+            Dictionary of dataset attributes (dtype, chunks, attrs)
         process_size : int, optional
             Size of each chunk to be processed at a time, by default None
         data : ndarray, optional
@@ -440,13 +545,13 @@ class RechunkH5:
             slice_map = get_chunk_slices(sites, process_size)
             for s, e in slice_map:
                 if by_rows:
-                    ds_out[s:e] = ds_in[s:e]
+                    ds_out[s:e] = self._check_data(ds_in[s:e], dset_attrs)
                 else:
                     data = ds_in[:, s:e]
                     if reduce:
                         data = data[self.time_slice]
 
-                    ds_out[:, s:e] = ds_in[:, s:e]
+                    ds_out[:, s:e] = self._check_data(data, dset_attrs)
 
                 logger.debug('\t- chunk {}:{} transfered'.format(s, e))
         else:
@@ -455,9 +560,9 @@ class RechunkH5:
                 if reduce:
                     data = data[self.time_slice]
 
-                ds_out[:] = data
+                ds_out[:] = self._check_data(data, dset_attrs)
             else:
-                ds_out[:] = data
+                ds_out[:] = self._check_data(data, dset_attrs)
 
     def load_dset(self, dset_name, dset_attrs, process_size=None,
                   check_attrs=False):
@@ -498,8 +603,9 @@ class RechunkH5:
                                                    check_attrs=check_attrs)
                 ds_out = self.init_dset(dset_name, shape, dset_attrs)
 
-                self.load_data(ds_in, ds_out, shape, process_size=process_size,
-                               data=data, reduce=reduce)
+                self.load_data(ds_in, ds_out, shape, dset_attrs,
+                               process_size=process_size, data=data,
+                               reduce=reduce)
 
             logger.info('- {} transfered'.format(dset_name))
             tt = (time.time() - ts) / 60
@@ -556,6 +662,8 @@ class RechunkH5:
                    .format(type(var_attrs)))
             logger.error(msg)
             raise TypeError(msg)
+
+        var_attrs = var_attrs.where(var_attrs.notnull(), None)
 
         return var_attrs
 
