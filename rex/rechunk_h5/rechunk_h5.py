@@ -483,6 +483,9 @@ class RechunkH5:
             with h5py.File(self._src_path, 'r') as f:
                 meta = f['meta'][...]
 
+        if isinstance(attrs['chunks'], int):
+            attrs['chunks'] = (attrs['chunks'], )
+
         attrs['dtype'] = meta.dtype
         ds = self.init_dset('meta', meta.shape, attrs)
         ds[...] = meta
@@ -504,6 +507,9 @@ class RechunkH5:
         meta_data = self._dst_h5['meta'][...]
         coords = np.dstack((meta_data['latitude'], meta_data['longitude']))[0]
         attrs['dtype'] = coords.dtype
+
+        if isinstance(attrs['chunks'], int):
+            attrs['chunks'] = (attrs['chunks'], 2)
 
         ds = self.init_dset('coordinates', coords.shape, attrs)
         ds[...] = coords
