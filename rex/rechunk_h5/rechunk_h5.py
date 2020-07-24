@@ -398,6 +398,8 @@ class RechunkH5:
         if chunks:
             chunks = tuple(chunks)
 
+        logger.debug('Creating {} with shape: {}, dtype: {}, chunks: {}'
+                     .format(dset_name, dset_shape, dtype, chunks))
         ds = self._dst_h5.create_dataset(dset_name, shape=dset_shape,
                                          dtype=dtype, chunks=chunks)
         if attrs:
