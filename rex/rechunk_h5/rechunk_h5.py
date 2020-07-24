@@ -663,6 +663,8 @@ class RechunkH5:
             logger.error(msg)
             raise TypeError(msg)
 
+        var_attrs = var_attrs.where(var_attrs.notnull(), None)
+
         return var_attrs
 
     def rechunk(self, var_attrs, meta=None, process_size=None,
