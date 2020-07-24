@@ -451,14 +451,14 @@ class Retry:
             Function kwargs
         """
         def new_func(*args, **kwargs):
-            i = 1
+            i = 0
             error = None
-            while True:
+            while i <= self._tries:
                 try:
                     new_func = func(*args, **kwargs)
                     break
                 except RetryError as ex:
-                    raise RuntimeError('{} failed to run {}:\n{}'
+                    raise RuntimeError('{} failed to run {} times:\n{}'
                                        .format(func.__name__, i, ex))
                 except Exception as ex:
                     error = ex
@@ -467,9 +467,6 @@ class Retry:
                     time.sleep(self._wait)
                 finally:
                     i += 1
-
-                if i > self._tries:
-                    break
 
             if i > self._tries:
                 raise RetryError('Failed to run {}:\n{}'
