@@ -8,8 +8,10 @@ import json
 import os
 import pandas as pd
 import re
+import time
+from warnings import warn
 
-from rex.utilities.exceptions import JSONError
+from rex.utilities.exceptions import JSONError, RetryError, RetryWarning
 
 
 def safe_json_load(fpath):
@@ -417,3 +419,60 @@ def filename_timestamp(file_name, time_format='%Y-%m-%d_%H:%M:%S'):
     time = matcher.group()
 
     return time
+
+
+class Retry:
+    """
+    Retry Decorator to run a function multiple times
+    """
+    def __init__(self, tries=3, n_sec=1):
+        """
+        Parameters
+        ----------
+        tries : int, optional
+            Number if times to retry function, by default 2
+        n_sec : int, optional
+            Number of seconds to wait between tries, by default 1
+        """
+        self._tries = tries
+        self._wait = n_sec
+
+    def __call__(self, func, *args, **kwargs):
+        """
+        Decorator call
+
+        Parameters
+        ----------
+        func : obj
+            Function to retry on Exception
+        args : tuple
+            Function arguments
+        kwargs : dict
+            Function kwargs
+        """
+        def new_func(*args, **kwargs):
+            i = 1
+            while True:
+                try:
+                    r = func(*args, **kwargs)
+                    break
+                except RetryError as ex:
+                    raise RuntimeError('{} failed to run {}:\n{}'
+                                       .format(func.__name__, i, ex))
+                except Exception as ex:
+                    error = ex
+                    warn('Attempt {} failed:\n{}'.format(i, error),
+                         RetryWarning)
+                    time.sleep(self._wait)
+                finally:
+                    i += 1
+
+                if i > self._tries:
+                    break
+
+            if i > self._tries:
+                raise RetryError('Failed to run {}:\n{}'
+                                 .format(func.__name__, error))
+
+            return r
+        return new_func

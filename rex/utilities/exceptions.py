@@ -58,6 +58,12 @@ class ResourceError(Exception):
     """
 
 
+class RetryError(Exception):
+    """
+    Custom Error for Retry Decorator
+    """
+
+
 class ParallelExecutionWarning(Warning):
     """
     Warning for parallel job execution.
@@ -73,6 +79,12 @@ class SlurmWarning(Warning):
 class ResourceWarning(Warning):
     """
     Warning during .h5 handling
+    """
+
+
+class RetryWarning(Warning):
+    """
+    Warning that Retry decorator is trying again
     """
 
 
