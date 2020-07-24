@@ -250,16 +250,20 @@ class RechunkH5:
                    .format(ds_in.dtype, dtype))
             logger.warning(msg)
             warn(msg)
-            float_to_int = (np.issubdtype(dtype, np.integer)
-                            and np.issubdtype(ds_in.dtype, np.floating))
-            int_to_float = (np.issubdtype(dtype, np.floating)
-                            and np.issubdtype(ds_in.dtype, np.integer))
+            float_to_int = (np.issubdtype(ds_in.dtype, np.floating)
+                            and np.issubdtype(dtype, np.integer))
+            int_to_float = (np.issubdtype(ds_in.dtype, np.integer)
+                            and np.issubdtype(dtype, np.floating))
             if float_to_int:
                 if not any(c for c in attrs if 'scale_factor' in c):
                     msg = ('Cannot downscale from {} to {} without a '
                            'scale_factor!'.format(ds_in.dtype, dtype))
                     logger.error(msg)
                     raise RuntimeError(msg)
+                else:
+                    msg = 'Converting {} to {}'.format(ds_in.dtype, dtype)
+                    logger.warning(msg)
+                    warn(msg)
             elif int_to_float:
                 msg = ('Cannot scale up an {} to a {}'
                        .format(ds_in.dtype, dtype))
