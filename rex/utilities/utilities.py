@@ -452,9 +452,10 @@ class Retry:
         """
         def new_func(*args, **kwargs):
             i = 1
+            error = None
             while True:
                 try:
-                    r = func(*args, **kwargs)
+                    new_func = func(*args, **kwargs)
                     break
                 except RetryError as ex:
                     raise RuntimeError('{} failed to run {}:\n{}'
@@ -474,5 +475,6 @@ class Retry:
                 raise RetryError('Failed to run {}:\n{}'
                                  .format(func.__name__, error))
 
-            return r
+            return new_func
+
         return new_func
