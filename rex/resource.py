@@ -396,7 +396,7 @@ class Resource:
      [15. 15.]
      [15. 15.]]
     """
-    SCALE_ATTR = 'scale_factor'
+    SCALE_ATTR = 'scalefactor'
     ADD_ATTR = 'add_offset'
     UNIT_ATTR = 'units'
 
