@@ -111,7 +111,7 @@ to install `h5pyd`:
 
     from rex import ResourceX
 
-    wave_file = '/nrel/us-wave/US_wave_2010.h5'
+    wave_file = '/nrel/us-wave/US_Wave_2010.h5'
     with ResourceX(wave_file, hsds=True) as f:
         meta = f.meta
         time_index = f.time_index
@@ -125,7 +125,7 @@ location:
 
     from rex import ResourceX
 
-    wave_file = '/nrel/us-wave/US_wave_2010.h5'
+    wave_file = '/nrel/us-wave/US_Wave_2010.h5'
     lat_lon = (34.399408, -119.841181)
     with ResourceX(wave_file, hsds=True) as f:
         lat_lon_swh = f.get_lat_lon_df('significant_wave_height', nwtc)
@@ -137,7 +137,7 @@ or to extract all sites in a given region:
 
     from rex import ResourceX
 
-    wave_file = '/nrel/us-wave/US_wave_2010.h5'
+    wave_file = '/nrel/us-wave/US_Wave_2010.h5'
     jurisdication='California'
     with ResourceX(wave_file, hsds=True) as f:
         date = '2010-07-04 18:00:00'
@@ -154,7 +154,7 @@ If you would rather access the US Wave data directly using h5pyd:
     import pandas as pd
 
     # Open .h5 file
-    with h5pyd.File('/nrel/us-wave/US_wave_2010.h5', mode='r') as f:
+    with h5pyd.File('/nrel/us-wave/US_Wave_2010.h5', mode='r') as f:
         # Extract meta data and convert from records array to DataFrame
         meta = pd.DataFrame(f['meta'][...])
         # Significant Wave Height
@@ -174,7 +174,7 @@ If you would rather access the US Wave data directly using h5pyd:
     import pandas as pd
 
     # Open .h5 file
-    with h5pyd.File('/nrel/us-wave/US_wave_2010.h5', mode='r') as f:
+    with h5pyd.File('/nrel/us-wave/US_Wave_2010.h5', mode='r') as f:
         # Extract time_index and convert to datetime
         # NOTE: time_index is saved as byte-strings and must be decoded
         time_index = pd.to_datetime(f['time_index'][...].astype(str))
