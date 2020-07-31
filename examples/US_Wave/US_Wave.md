@@ -75,7 +75,7 @@ resolution as fine as 200 meters in shallow waters:
 
 High Resolution Ocean Surface Wave Hindcast data is made available as a series
 of hourly .h5 and can be found at:
-`/datasets/us-wave/v1.0.0/US_Wave_${year}.h5`
+`/datasets/US_wave/v1.0.0/US_wave_${year}.h5`
 
 ## Data Format
 
@@ -98,7 +98,7 @@ The easiest way to access and extract data from the Resource eXtraction tool
 ```python
 from rex import ResourceX
 
-wave_file = '/datasets/us-wave/v1.0.0/US_Wave_2010.h5'
+wave_file = '/datasets/US_wave/v1.0.0/US_wave_2010.h5'
 with ResourceX(wave_file) as f:
     meta = f.meta
     time_index = f.time_index
@@ -111,7 +111,7 @@ location:
 ```python
 from rex import ResourceX
 
-wave_file = '/datasets/us-wave/v1.0.0/US_Wave_2010.h5'
+wave_file = '/datasets/US_wave/v1.0.0/US_wave_2010.h5'
 lat_lon = (34.399408, -119.841181)
 with ResourceX(wave_file) as f:
     lat_lon_swh = f.get_lat_lon_df('significant_wave_height', nwtc)
@@ -122,7 +122,7 @@ or to extract all sites in a given region:
 ```python
 from rex import ResourceX
 
-wave_file = '/datasets/us-wave/v1.0.0/US_Wave_2010.h5'
+wave_file = '/datasets/US_wave/v1.0.0/US_wave_2010.h5'
 jurisdication='California'
 with ResourceX(wave_file) as f:
     date = '2010-07-04 18:00:00'
@@ -139,7 +139,7 @@ import h5py
 import pandas as pd
 
 # Open .h5 file
-with h5py.File('/datasets/us-wave/v1.0.0/US_Wave_2010.h5', mode='r') as f:
+with h5py.File('/datasets/US_wave/v1.0.0/US_wave_2010.h5', mode='r') as f:
     # Extract meta data and convert from records array to DataFrame
     meta = pd.DataFrame(f['meta'][...])
     # Significant Wave Height
@@ -159,7 +159,7 @@ import h5py
 import pandas as pd
 
 # Open .h5 file
-with h5py.File('/datasets/us-wave/v1.0.0/US_Wave_2010.h5', mode='r') as f:
+with h5py.File('/datasets/US_wave/v1.0.0/US_wave_2010.h5', mode='r') as f:
     # Extract time_index and convert to datetime
     # NOTE: time_index is saved as byte-strings and must be decoded
     time_index = pd.to_datetime(f['time_index'][...].astype(str))
