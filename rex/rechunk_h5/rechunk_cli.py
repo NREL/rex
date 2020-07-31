@@ -50,10 +50,8 @@ def main(ctx, src_h5, dst_h5, var_attrs_path, version, meta, process_size,
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 
-    logger = init_logger('rex.rechunk_h5.rechunk_h5', log_file=log_file,
-                         log_level=log_level)
-
-    ctx.obj['LOGGER'] = logger
+    init_logger('rex.rechunk_h5.rechunk_h5', log_file=log_file,
+                log_level=log_level)
 
     dst_dir = os.path.dirname(dst_h5)
     if not os.path.exists(dst_dir):
