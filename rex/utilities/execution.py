@@ -4,7 +4,7 @@ Execution utilities.
 """
 import multiprocessing
 import concurrent.futures as cf
-from subprocess import call, Popen, PIPE
+import subprocess
 import logging
 import gc
 from math import floor
@@ -71,8 +71,8 @@ class SubprocessManager:
         os.remove(fname)
 
     @staticmethod
-    def submit(cmd):
-        """Open a subprocess and submit a command.
+    def _subproc_popen(cmd):
+        """Open a subprocess popen constructor and submit a command.
 
         Parameters
         ----------
@@ -93,7 +93,8 @@ class SubprocessManager:
         cmd = shlex.split(cmd)
 
         # use subprocess to submit command and get piped o/e
-        process = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
         stderr = stderr.decode('ascii').rstrip()
         stdout = stdout.decode('ascii').rstrip()
@@ -102,6 +103,73 @@ class SubprocessManager:
             raise OSError('Subprocess submission failed with return code {} '
                           'and stderr:\n{}'
                           .format(process.returncode, stderr))
+
+        return stdout, stderr
+
+    @staticmethod
+    def _subproc_run(cmd, background=False, background_stdout=False,
+                     shell=True):
+        """Open a subprocess and submit a command.
+
+        Parameters
+        ----------
+        cmd : str
+            Command to be submitted using python subprocess.
+        background : bool
+            Flag to submit subprocess in the background. stdout stderr will
+            be empty strings if this is True.
+        background_stdout : bool
+            Flag to capture the stdout/stderr from the background process
+            in a nohup.out file.
+        """
+        nohup_cmd = None
+
+        if background and background_stdout:
+            nohup_cmd = 'nohup {} &'
+
+        elif background and not background_stdout:
+            nohup_cmd = 'nohup {} </dev/null >/dev/null 2>&1 &'
+
+        if nohup_cmd is not None:
+            cmd = nohup_cmd.format(cmd)
+            shell = True
+
+        subprocess.run(cmd, shell=shell)
+
+    @staticmethod
+    def submit(cmd, background=False, background_stdout=False):
+        """Open a subprocess and submit a command.
+
+        Parameters
+        ----------
+        cmd : str
+            Command to be submitted using python subprocess.
+        background : bool
+            Flag to submit subprocess in the background. stdout stderr will
+            be empty strings if this is True.
+        background_stdout : bool
+            Flag to capture the stdout/stderr from the background process
+            in a nohup.out file.
+
+        Returns
+        -------
+        stdout : str
+            Subprocess standard output. This is decoded from the subprocess
+            stdout with rstrip.
+        stderr : str
+            Subprocess standard error. This is decoded from the subprocess
+            stderr with rstrip. After decoding/rstrip, this will be empty if
+            the subprocess doesn't return an error.
+        """
+
+        if background:
+            SubprocessManager._subproc_run(
+                cmd, background=background,
+                background_stdout=background_stdout)
+            stdout, stderr = '', ''
+
+        else:
+            stdout, stderr = SubprocessManager._subproc_popen(cmd)
 
         return stdout, stderr
 
@@ -125,7 +193,7 @@ class SubprocessManager:
             return '{}'.format(s)
 
     @staticmethod
-    def walltime(hours):
+    def format_walltime(hours):
         """Get the SLURM walltime string in format "HH:MM:SS"
 
         Parameters
@@ -441,7 +509,7 @@ class SLURM(SubprocessManager):
         """
         cmd = 'scontrol {}'.format(cmd)
         cmd = shlex.split(cmd)
-        call(cmd)
+        subprocess.call(cmd)
 
     @staticmethod
     def scancel(arg):
@@ -468,7 +536,7 @@ class SLURM(SubprocessManager):
         elif isinstance(arg, (int, str)):
             cmd = ('scancel {}'.format(arg))
             cmd = shlex.split(cmd)
-            call(cmd)
+            subprocess.call(cmd)
 
         else:
             e = ('Could not cancel: {} with type {}'
@@ -666,8 +734,8 @@ class SLURM(SubprocessManager):
                       '#SBATCH --error={p}/{n}_%j.e\n{m}{f}'
                       'echo Running on: $HOSTNAME, Machine Type: $MACHTYPE\n'
                       '{e}\n{cmd}'
-                      .format(a=alloc, t=self.walltime(walltime), n=name,
-                              p=stdout_path, m=mem_str,
+                      .format(a=alloc, t=self.format_walltime(walltime),
+                              n=name, p=stdout_path, m=mem_str,
                               f=feature_str, e=env_str, cmd=cmd))
 
             # write the shell script file and submit as qsub job
