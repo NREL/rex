@@ -6,14 +6,16 @@ from __future__ import print_function, division, absolute_import
 import os
 
 from rex.multi_year_resource import (MultiYearResource, MultiYearNSRDB,
-                                     MultiYearWindResource)
+                                     MultiYearWindResource,
+                                     MultiYearWaveResource)
 from rex.rechunk_h5 import RechunkH5, to_records_array
 from rex.renewable_resource import (NSRDB, MultiFileNSRDB, MultiFileWTK,
-                                    SolarResource, WindResource)
+                                    SolarResource, WindResource, WaveResource)
 from rex.resource import Resource
 from rex.resource_extraction import (ResourceX, MultiYearResourceX,
                                      NSRDBX, MultiFileNSRDBX, MultiYearNSRDBX,
-                                     WindX, MultiFileWindX, MultiYearWindX)
+                                     WindX, MultiFileWindX, MultiYearWindX,
+                                     WaveX, MultiYearWaveX)
 from rex.utilities import init_logger, init_mult, SpawnProcessPool, Retry
 
 from rex.version import __version__

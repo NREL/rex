@@ -33,6 +33,7 @@ rex command line tools
 - `rex <https://nrel.github.io/rex/rex/rex.resource_extraction.resource_cli.html#rex>`_
 - `NSRDBX <https://nrel.github.io/rex/rex/rex.resource_extraction.nsrdb_cli.html#nsrdbx>`_
 - `WINDX <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#windx>`_
+- `WaveX <https://nrel.github.io/rex/rex/rex.resource_extraction.wave_cli.html#wavex>`_
 - `MultiYearX <https://nrel.github.io/rex/rex/rex.resource_extraction.multi_year_resource_cli.html#multiyearx>`_
 - `rechunk <https://nrel.github.io/rex/rex/rex.rechunk_h5.rechunk_cli.html#rechunk>`_
 

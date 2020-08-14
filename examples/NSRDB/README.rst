@@ -69,15 +69,31 @@ integer. The scale-factor is provided in the ``psm_scale-factor`` attribute.
 The units for the variable data is also provided as an attribute
 (``psm_units``).
 
-NSRDB Module
-------------
+Data Access Examples
+--------------------
 
-An extraction utility for the NSRDB has been created with in `rex <https://github.com/nrel/rex>`_
+Example scripts to extract wave resource data using the command line or python
+are provided below:
+
+The easiest way to access and extract data is by using the Resource eXtraction
+tool `rex <https://github.com/nrel/rex>`_
+
+To use `rex` with `HSDS <https://github.com/NREL/hsds-examples>`_ you will need
+to install `h5pyd`:
+
+.. code-block:: bash
+
+  pip install h5pyd
+
+NSRDB CLI
++++++++++
 
 The `NSRDBX <https://nrel.github.io/rex/rex/rex.resource_extaction.nsrdb_cli.html#nsrdbx>`_
 command line utility provides the following options and commands:
 
 .. code-block:: bash
+
+  NSRDBX --help
 
   Usage: NSRDBX [OPTIONS] COMMAND [ARGS]...
 
@@ -97,15 +113,8 @@ command line utility provides the following options and commands:
     site        Extract a single dataset for the nearest pixel to the given...
     timestep    Extract a single dataset for a single timestep Extract only...
 
-To use `rex` and the `NSRDB` cli with `HSDS <https://github.com/NREL/hsds-examples>`_
-you will need to install `h5pyd`:
-
-.. code-block:: bash
-
-  pip install h5pyd
-
-NSRDBX class
-------------
+NSRDBX python class
++++++++++++++++++++
 
 .. code-block:: python
 

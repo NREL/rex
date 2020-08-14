@@ -23,7 +23,7 @@ class SolarResource(Resource):
     """
     def _get_SAM_df(self, ds_name, site):
         """
-        Get SAM wind resource DataFrame for given site
+        Get SAM solar resource DataFrame for given site
 
         Parameters
         ----------
@@ -986,6 +986,123 @@ class WindResource(Resource):
                                        require_wind_dir=require_wind_dir,
                                        precip_rate=precip_rate, icing=icing,
                                        means=means)
+
+        return SAM_res
+
+
+class WaveResource(Resource):
+    """
+    Class to handle Wave Resource .h5 files
+
+    See Also
+    --------
+    resource.Resource : Parent class
+    """
+
+    def _get_SAM_df(self, ds_name, site):
+        """
+        Get SAM wave resource DataFrame for given site
+
+        Parameters
+        ----------
+        ds_name : str
+            'Dataset' name == SAM
+        site : int
+            Site to extract SAM DataFrame for
+
+        Returns
+        -------
+        res_df : pandas.DataFrame
+            time-series DataFrame of resource variables needed to run SAM
+        """
+        if not self._unscale:
+            raise ResourceValueError("SAM requires unscaled values")
+
+        res_df = pd.DataFrame({'Year': self.time_index.year,
+                               'Month': self.time_index.month,
+                               'Day': self.time_index.day,
+                               'Hour': self.time_index.hour})
+        if len(self) > 8784:
+            res_df['Minute'] = self.time_index.minute
+
+        time_zone = self.meta.loc[site, 'timezone']
+        time_interval = len(self.time_index) // 8760
+
+        for var in ['significant_wave_height', 'peak_period']:
+            ds_slice = (slice(None), site)
+            var_array = self._get_ds(var, ds_slice)
+            var_array = SAMResource.roll_timeseries(var_array, time_zone,
+                                                    time_interval)
+            res_df[var] = SAMResource.check_units(var, var_array,
+                                                  tech='pvwattsv7')
+
+        col_map = {'significant_wave_height': 'Hs', 'peak_period': 'Tp'}
+        res_df = res_df.rename(columns=col_map)
+        res_df.name = "{}-{}".format(ds_name, site)
+
+        return res_df
+
+    def _preload_SAM(self, sites, means=False):
+        """
+        Pre-load project_points for SAM
+
+        Parameters
+        ----------
+        sites : list
+            List of sites to be provided to SAM
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
+
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with Wave resource for sites
+            in project_points
+        """
+        SAM_res = SAMResource(sites, 'wave', self.time_index, means=means)
+        sites = SAM_res.sites_slice
+        SAM_res['meta'] = self['meta', sites]
+        for var in SAM_res.var_list:
+            if var in self.datasets:
+                SAM_res[var] = self[var, :, sites]
+
+        return SAM_res
+
+    @classmethod
+    def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
+                    str_decode=True, group=None, means=False):
+        """
+        Pre-load project_points for SAM
+
+        Parameters
+        ----------
+        h5_file : str
+            h5_file to extract resource from
+        sites : list
+            List of sites to be provided to SAM
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
+
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with Wave resource for sites
+            in project_points
+        """
+        kwargs = {"unscale": unscale, "hsds": hsds,
+                  "str_decode": str_decode, "group": group}
+        with cls(h5_file, **kwargs) as res:
+            SAM_res = res._preload_SAM(sites, means=means)
 
         return SAM_res
 

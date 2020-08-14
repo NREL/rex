@@ -12,7 +12,8 @@ from rex.resource_extraction.resource_cli import region as region_ctx
 from rex.resource_extraction.resource_cli import site as site_ctx
 from rex.resource_extraction.resource_extraction import (MultiYearResourceX,
                                                          MultiYearNSRDBX,
-                                                         MultiYearWindX)
+                                                         MultiYearWindX,
+                                                         MultiYearWaveX)
 from rex.utilities.cli_dtypes import STRLIST
 from rex.utilities.loggers import init_mult
 
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 @click.option('--out_dir', '-o', required=True, type=click.Path(),
               help='Directory to dump output files')
 @click.option('--res_cls', '-res',
-              type=click.Choice(['Resource', 'NSRDB', 'Wind'],
+              type=click.Choice(['Resource', 'NSRDB', 'Wind', 'Wave'],
                                 case_sensitive=False),
               default='Resource',
               help='Resource type')
@@ -48,6 +49,8 @@ def main(ctx, resource_path, res_cls, out_dir, verbose):
         ctx.obj['CLS'] = MultiYearNSRDBX
     elif res_cls == 'Wind':
         ctx.obj['CLS'] = MultiYearWindX
+    elif res_cls == 'Wave':
+        ctx.obj['CLS'] = MultiYearWaveX
 
     name = os.path.splitext(os.path.basename(resource_path))[0]
     init_mult(name, out_dir, verbose=verbose, node=True,

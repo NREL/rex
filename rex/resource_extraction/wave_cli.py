@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-NSRDBX Command Line Interface
+WaveX Command Line Interface
 """
 import click
 import logging
 import os
 
-from rex.resource_extraction.resource_extraction import (NSRDBX, SolarX,
-                                                         MultiFileNSRDBX)
+from rex.resource_extraction.resource_extraction import WaveX
 from rex.resource_extraction.resource_cli import dataset as dataset_cmd
 from rex.resource_extraction.resource_cli import multi_site as multi_site_grp
 from rex.resource_extraction.resource_cli import region as region_cmd
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 @click.group()
-@click.option('--solar_h5', '-h5', required=True,
+@click.option('--wave_h5', '-h5', required=True,
               type=click.Path(),
               help=('Path to Resource .h5 file'))
 @click.option('--out_dir', '-o', required=True, type=click.Path(exists=True),
@@ -30,37 +29,62 @@ logger = logging.getLogger(__name__)
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
 @click.pass_context
-def main(ctx, solar_h5, out_dir, verbose):
+def main(ctx, wave_h5, out_dir, verbose):
     """
-    NSRDBX Command Line Interface
+    WaveX Command Line Interface
     """
     ctx.ensure_object(dict)
-    ctx.obj['H5'] = solar_h5
+    ctx.obj['H5'] = wave_h5
     ctx.obj['OUT_DIR'] = out_dir
     ctx.obj['CLS_KWARGS'] = {}
+    ctx.obj['CLS'] = WaveX
 
-    multi_h5_res, hsds = check_res_file(solar_h5)
-    name = os.path.splitext(os.path.basename(solar_h5))[0]
-    if multi_h5_res:
-        assert os.path.exists(os.path.dirname(solar_h5))
-        ctx.obj['CLS'] = MultiFileNSRDBX
+    _, hsds = check_res_file(wave_h5)
+    name = os.path.splitext(os.path.basename(wave_h5))[0]
+    if hsds:
+        ctx.obj['CLS_KWARGS']['hsds'] = hsds
     else:
-        if hsds:
-            ctx.obj['CLS_KWARGS']['hsds'] = hsds
-        else:
-            assert os.path.exists(solar_h5)
-
-        if 'nsrdb' in name:
-            ctx.obj['CLS'] = NSRDBX
-        else:
-            ctx.obj['CLS'] = SolarX
+        assert os.path.exists(wave_h5)
 
     init_mult(name, out_dir, verbose=verbose, node=True,
               modules=[__name__, 'rex.resource_extraction',
                        'rex.renewable_resource'])
 
-    logger.info('Extracting solar data from {}'.format(solar_h5))
+    logger.info('Extracting wave data from {}'.format(wave_h5))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
+
+
+@main.group()
+@click.option('--sites', '-s', type=click.Path(exists=True), required=True,
+              help=('.csv or .json file with columns "latitude", "longitude" '
+                    'OR "gid"'))
+@click.pass_context
+def multi_site(ctx, sites):
+    """
+    Extract multiple sites given in '--sites' .csv or .json as
+    "latitude", "longitude" pairs OR "gid"s
+    """
+    ctx.invoke(multi_site_grp, sites=sites)
+
+
+@multi_site.command()
+@click.option('--dataset', '-d', type=str, required=True,
+              help='Dataset to extract')
+@click.pass_context
+def dataset(ctx, dataset):
+    """
+    Extract given dataset for all sites
+    """
+    ctx.invoke(dataset_cmd, dataset=dataset)
+
+
+@multi_site.command()
+@click.pass_context
+def sam(ctx):
+    """
+    Extract SAM variables
+    """
+    ctx.invoke(sam_cmd)
 
 
 @main.command()
@@ -130,42 +154,9 @@ def timestep(ctx, timestep, dataset, region, region_col):
                region=region, region_col=region_col)
 
 
-@main.group()
-@click.option('--sites', '-s', type=click.Path(exists=True), required=True,
-              help=('.csv or .json file with columns "latitude", "longitude" '
-                    'OR "gid"'))
-@click.pass_context
-def multi_site(ctx, sites):
-    """
-    Extract multiple sites given in '--sites' .csv or .json as
-    "latitude", "longitude" pairs OR "gid"s
-    """
-    ctx.invoke(multi_site_grp, sites=sites)
-
-
-@multi_site.command()
-@click.option('--dataset', '-d', type=str, required=True,
-              help='Dataset to extract')
-@click.pass_context
-def dataset(ctx, dataset):
-    """
-    Extract given dataset for all sites
-    """
-    ctx.invoke(dataset_cmd, dataset=dataset)
-
-
-@multi_site.command()
-@click.pass_context
-def sam(ctx):
-    """
-    Extract SAM variables
-    """
-    ctx.invoke(sam_cmd)
-
-
 if __name__ == '__main__':
     try:
         main(obj={})
     except Exception:
-        logger.exception('Error running NSRDBX CLI')
+        logger.exception('Error running WaveX CLI')
         raise
