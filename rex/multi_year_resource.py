@@ -6,7 +6,8 @@ import numpy as np
 import os
 from warnings import warn
 
-from rex.renewable_resource import NSRDB, SolarResource, WindResource
+from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
+                                    WaveResource)
 from rex.resource import MultiH5, Resource
 from rex.utilities.exceptions import ResourceKeyError, ResourceWarning
 from rex.utilities.parse_keys import parse_keys, parse_slice
@@ -912,3 +913,31 @@ class MultiYearWindResource(MultiYearResource):
         """
         super().__init__(h5_path, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, res_cls=WindResource)
+
+
+class MultiYearWaveResource:
+    """
+    Class to handle multiple years of wave resource data stored accross
+    multiple .h5 files
+    """
+
+    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+        """
+        Parameters
+        ----------
+        h5_path : str
+            Path to directory containing multi-file resource file sets.
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        """
+        super().__init__(h5_path, unscale=unscale, hsds=hsds,
+                         str_decode=str_decode, res_cls=WaveResource)

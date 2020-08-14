@@ -44,7 +44,8 @@ class SAMResource:
                 'wind': ('pressure', 'temperature', 'winddirection',
                          'windspeed'),
                 'windpower': ('pressure', 'temperature', 'winddirection',
-                              'windspeed')}
+                              'windspeed'),
+                'wave': ('significant_wave_height', 'peak_period')}
 
     # valid data ranges for PV solar resource:
     PV_DATA_RANGES = {'dni': (0.0, 1360.0),
@@ -69,6 +70,8 @@ class SAMResource:
                         'temperature': (-200, 100),
                         'rh': (0.1, 99.9)}
 
+    WAVE_DATA_RANGES = {}
+
     # valid data ranges for trough physical process heat
     TPPH_DATA_RANGES = CSP_DATA_RANGES
 
@@ -88,7 +91,8 @@ class SAMResource:
                    'tcsmoltensalt': CSP_DATA_RANGES,
                    'troughphysicalheat': TPPH_DATA_RANGES,
                    'lineardirectsteam': LF_DATA_RANGES,
-                   'solarwaterheat': SWH_DATA_RANGES}
+                   'solarwaterheat': SWH_DATA_RANGES,
+                   'wave': WAVE_DATA_RANGES}
 
     def __init__(self, sites, tech, time_index, hub_heights=None,
                  require_wind_dir=False, means=False):
