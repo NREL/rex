@@ -20,7 +20,7 @@ class MultiYearH5:
     """
 
     def __init__(self, h5_dir, prefix='', suffix='.h5', res_cls=Resource,
-                 **res_cls_kwargs):
+                 hsds=False, **res_cls_kwargs):
         """
         Parameters
         ----------
@@ -32,10 +32,14 @@ class MultiYearH5:
             Suffix for resource .h5 files
         res_cls : obj
             Resource class to use to open and access resource data
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
         """
         self.h5_dir = h5_dir
         self._year_map = self._map_file_years(h5_dir, prefix=prefix,
-                                              suffix=suffix)
+                                              suffix=suffix, hsds=hsds)
+        res_cls_kwargs.update({'hsds': hsds})
         self._h5_map = self._map_file_instances(set(self._year_map.values()),
                                                 res_cls=res_cls,
                                                 **res_cls_kwargs)
@@ -181,9 +185,9 @@ class MultiYearH5:
         return self._time_index
 
     @staticmethod
-    def _map_file_years(h5_dir, prefix='', suffix='.h5'):
+    def _map_local_files(h5_dir, prefix='', suffix='.h5'):
         """
-        Map file paths to year for which it contains data
+        Map local file paths to year for which it contains data
 
         Parameters
         ----------
@@ -212,9 +216,78 @@ class MultiYearH5:
                                'parsed'.format(path, year))
                         warn(msg, ResourceWarning)
                 except RuntimeError:
-                    msg = ('WARNING: Could not file a valid year in {}'
+                    msg = ('WARNING: Could not find a valid year in {}'
                            .format(file))
                     warn(msg, ResourceWarning)
+
+        return year_map
+
+    @staticmethod
+    def _map_hsds_files(hsds_dir, prefix='', suffix='.h5'):
+        """
+        Map hsds file paths to year for which it contains data
+
+        Parameters
+        ----------
+        hsds_dir : str
+            HSDS directory containing Resource .h5 files
+        prefix : str
+            Prefix for resource .h5 files
+        suffix : str
+            Suffix for resource .h5 files
+
+        Returns
+        -------
+        year_map : dict
+            Dictionary mapping years to file paths
+        """
+        import h5pyd
+
+        year_map = {}
+        with h5pyd.Folder(hsds_dir + '/') as f:
+            for file in f:
+                if file.startswith(prefix) and file.endswith(suffix):
+                    try:
+                        year = parse_year(file)
+                        path = os.path.join(hsds_dir, file)
+                        if year not in year_map:
+                            year_map[year] = path
+                        else:
+                            msg = ('WARNING: Skipping {} as {} has already '
+                                   ' been parsed'.format(path, year))
+                            warn(msg, ResourceWarning)
+                    except RuntimeError:
+                        msg = ('WARNING: Could not find a valid year in {}'
+                               .format(file))
+                        warn(msg, ResourceWarning)
+
+        return year_map
+
+    @staticmethod
+    def _map_file_years(h5_dir, prefix='', suffix='.h5', hsds=False):
+        """
+        Map file paths to year for which it contains data
+
+        Parameters
+        ----------
+        h5_dir : str
+            Path to directory containing Resource .h5 files
+        prefix : str
+            Prefix for resource .h5 files
+        suffix : str
+            Suffix for resource .h5 files
+
+        Returns
+        -------
+        year_map : dict
+            Dictionary mapping years to file paths
+        """
+        if hsds:
+            year_map = MultiYearH5._map_hsds_files(h5_dir, prefix=prefix,
+                                                   suffix=suffix)
+        else:
+            year_map = MultiYearH5._map_local_files(h5_dir, prefix=prefix,
+                                                    suffix=suffix)
 
         return year_map
 
