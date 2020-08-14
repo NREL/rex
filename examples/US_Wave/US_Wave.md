@@ -87,19 +87,60 @@ units for the variable data is also provided as an attribute (`units`). The
 SWAN and IEC valiable names are also provide under the attributes
 (`SWAWN_name`) and (`IEC_name`) respectively.
 
-## Python Examples
+## Data Access Examples
 
-Example scripts to extract wind resource data using python are provided below:
+An extraction utility for the US Wave data has been created with in
+[`rex`](https://github.com/nrel/rex) and is available on Eagle as a module:
+`module use /datasets/modulefiles`
+`module load rex`
+
+### WaveX CLI
+
+The `rex` module provides a [`WaveX`](https://nrel.github.io/rex/rex/rex.resource_extraction.wave_cli.html#waveX)
+command line utility with the following options and commands:
+```
+WaveX --help
+
+Usage: WaveX [OPTIONS] COMMAND [ARGS]...
+
+  WaveX Command Line Interface
+
+Options:
+  -h5, --wave_h5 PATH  Path to Resource .h5 file  [required]
+  -o, --out_dir PATH   Directory to dump output files  [required]
+  -t, --compute_tree   Flag to force the computation of the cKDTree
+  -v, --verbose        Flag to turn on debug logging. Default is not verbose.
+  --help               Show this message and exit.
+
+Commands:
+  multi-site  Extract multiple sites given in '--sites' .csv or .json as...
+  region      Extract a single dataset for all pixels in the given region
+  sam-file    Extract all datasets at the given hub height needed for SAM...
+  site        Extract a single dataset for the nearest pixel to the given...
+  timestep    Extract a single dataset for a single timestep Extract only...
+```
+
+### Python Examples
+
+Example scripts to extract wave resource data using python are provided below:
 
 The easiest way to access and extract data from the Resource eXtraction tool
-[`rex`](https://github.com/nrel/rex)
+(`rex`) which is available on Eagle by running:
+
+```bash
+module use /datasets/modulefiles
+module load rex
+```
+
+Once the `rex` module is loaded you can access `rex` in python which can be
+used to access the US wave files:
 
 
 ```python
-from rex import ResourceX
+from rex import WaveX
 
 wave_file = '/datasets/US_wave/v1.0.0/US_wave_2010.h5'
-with ResourceX(wave_file) as f:
+with WaveX(wave_file) as f:
     meta = f.meta
     time_index = f.time_index
     swh = f['significant_wave_height']
@@ -109,22 +150,22 @@ with ResourceX(wave_file) as f:
 location:
 
 ```python
-from rex import ResourceX
+from rex import WaveX
 
 wave_file = '/datasets/US_wave/v1.0.0/US_wave_2010.h5'
 lat_lon = (34.399408, -119.841181)
-with ResourceX(wave_file) as f:
+with WaveX(wave_file) as f:
     lat_lon_swh = f.get_lat_lon_df('significant_wave_height', nwtc)
 ```
 
 or to extract all sites in a given region:
 
 ```python
-from rex import ResourceX
+from rex import WaveX
 
 wave_file = '/datasets/US_wave/v1.0.0/US_wave_2010.h5'
 jurisdication='California'
-with ResourceX(wave_file) as f:
+with WaveX(wave_file) as f:
     date = '2010-07-04 18:00:00'
     swh_map = f.get_timestep_map('significant_wave_height', date
                                  region=jurisdiction,

@@ -69,16 +69,20 @@ dataset. For storage efficiency each variable has been scaled and stored as an
 integer. The scale-factor is provided in the 'psm_scale-factor' attribute.
 The units for the variable data is also provided as an attribute (`psm_units`).
 
-## NSRDB Module
+## Data Access Examples
 
-An extraction utility for the NSRDB has been created with in
+An extraction utility for the US Wave data has been created with in
 [`rex`](https://github.com/nrel/rex) and is available on Eagle as a module:
 `module use /datasets/modulefiles`
 `module load rex`
 
+### NSRDB CLI
+
 The `rex` module provides a [`NSRDBX`](https://nrel.github.io/rex/rex/rex.resource_extaction.nsrdb_cli.html#nsrdbx)
 command line utility with the following options and commands:
 ```
+NSRDBX --help
+
 Usage: NSRDBX [OPTIONS] COMMAND [ARGS]...
 
   NSRDBX Command Line Interface
@@ -98,7 +102,7 @@ Commands:
   timestep    Extract a single dataset for a single timestep Extract only...
   ```
 
-## Python Examples
+### Python Examples
 
 Example scripts to extract solar resource data using python are provided below:
 

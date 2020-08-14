@@ -55,17 +55,20 @@ dataset. For storage efficiency each variable has been scaled and stored as an
 integer. The scale-factor is provided in the `scale-factor` attribute. The
 units for the variable data is also provided as an attribute (`units`).
 
-
-## WIND Module
+## Data Access Examples
 
 An extraction utility for the WIND (WTK) data has been created with in
 [`rex`](https://github.com/nrel/rex) and is available on Eagle as a module:
 `module use /datasets/modulefiles`
 `module load rex`
 
+### WINDX CLI
+
 The `rex` module provides a [`WINDX`](https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#windX)
 command line utility with the following options and commands:
 ```
+WINDX --help
+
 Usage: WINDX [OPTIONS] COMMAND [ARGS]...
 
   WindX Command Line Interface
@@ -85,7 +88,7 @@ Commands:
   timestep    Extract a single dataset for a single timestep Extract only...
 ```
 
-## Python Examples
+### Python Examples
 
 Example scripts to extract wind resource data using python are provided below:
 
