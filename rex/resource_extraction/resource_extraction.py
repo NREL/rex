@@ -647,8 +647,8 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
     """
     Multi Year resource extraction class
     """
-    def __init__(self, resource_path, tree=None, unscale=True, str_decode=True,
-                 hsds=False, res_cls=Resource):
+    def __init__(self, resource_path, years=None, tree=None, unscale=True,
+                 str_decode=True, hsds=False, res_cls=Resource):
         """
         Parameters
         ----------
@@ -657,6 +657,8 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        years : list, optional
+            List of years to access, by default None
         tree : str | cKDTree
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates
@@ -671,8 +673,8 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
         res_cls : obj
             Resource handler to us to open individual .h5 files
         """
-        super().__init__(resource_path, unscale=unscale, str_decode=str_decode,
-                         hsds=hsds, res_cls=res_cls)
+        super().__init__(resource_path, years=years, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds, res_cls=res_cls)
         self._lat_lon = None
         self._tree = tree
 
@@ -804,8 +806,8 @@ class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
     """
     Multi Year NSRDB extraction class
     """
-    def __init__(self, nsrdb_path, tree=None, unscale=True, str_decode=True,
-                 hsds=False):
+    def __init__(self, nsrdb_path, years=None, tree=None, unscale=True,
+                 str_decode=True, hsds=False):
         """
         Parameters
         ----------
@@ -814,6 +816,8 @@ class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        years : list, optional
+            List of years to access, by default None
         tree : str | cKDTree
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates
@@ -826,8 +830,8 @@ class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(nsrdb_path, unscale=unscale, str_decode=str_decode,
-                         hsds=hsds)
+        super().__init__(nsrdb_path, years=years, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds)
         self._lat_lon = None
         self._tree = tree
 
@@ -966,8 +970,8 @@ class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
     """
     Multi Year Wind Resource extraction class
     """
-    def __init__(self, wtk_path, tree=None, unscale=True, str_decode=True,
-                 hsds=False):
+    def __init__(self, wtk_path, years=None, tree=None, unscale=True,
+                 str_decode=True, hsds=False):
         """
         Parameters
         ----------
@@ -976,6 +980,8 @@ class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        years : list, optional
+            List of years to access, by default None
         tree : str | cKDTree
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates
@@ -988,8 +994,8 @@ class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(wtk_path, unscale=unscale, str_decode=str_decode,
-                         hsds=hsds)
+        super().__init__(wtk_path, years=years, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds)
         self._lat_lon = None
         self._tree = tree
 
@@ -1031,8 +1037,8 @@ class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX):
     Multi Year Wave extraction class
     """
 
-    def __init__(self, wave_path, tree=None, unscale=True, str_decode=True,
-                 hsds=False):
+    def __init__(self, wave_path, years=None, tree=None, unscale=True,
+                 str_decode=True, hsds=False):
         """
         Parameters
         ----------
@@ -1041,6 +1047,8 @@ class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        years : list, optional
+            List of years to access, by default None
         tree : str | cKDTree
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates
@@ -1053,7 +1061,7 @@ class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(wave_path, unscale=unscale, str_decode=str_decode,
-                         hsds=hsds)
+        super().__init__(wave_path, years=years, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds)
         self._lat_lon = None
         self._tree = tree

@@ -14,7 +14,7 @@ from rex.resource_extraction.resource_extraction import (MultiYearResourceX,
                                                          MultiYearNSRDBX,
                                                          MultiYearWindX,
                                                          MultiYearWaveX)
-from rex.utilities.cli_dtypes import STRLIST
+from rex.utilities.cli_dtypes import STRLIST, INTLIST
 from rex.utilities.loggers import init_mult
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,11 @@ logger = logging.getLogger(__name__)
               help=('Path to Resource .h5 files'))
 @click.option('--out_dir', '-o', required=True, type=click.Path(),
               help='Directory to dump output files')
+@click.option('--years', '-yrs', type=INTLIST, default=None,
+              help='List of years to access, by default None')
+@click.option('--hsds', '-hsds', is_flag=True,
+              help=("Boolean flag to use h5pyd to handle .h5 'files' hosted "
+                    "on AWS behind HSDS"))
 @click.option('--res_cls', '-res',
               type=click.Choice(['Resource', 'NSRDB', 'Wind', 'Wave'],
                                 case_sensitive=False),
@@ -34,14 +39,14 @@ logger = logging.getLogger(__name__)
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
 @click.pass_context
-def main(ctx, resource_path, res_cls, out_dir, verbose):
+def main(ctx, resource_path, out_dir, years, hsds, res_cls, verbose):
     """
     ResourceX Command Line Interface
     """
     ctx.ensure_object(dict)
     ctx.obj['H5'] = resource_path
     ctx.obj['OUT_DIR'] = out_dir
-    ctx.obj['CLS_KWARGS'] = {}
+    ctx.obj['CLS_KWARGS'] = {'years': years, 'hsds': hsds}
 
     if res_cls == 'Resource':
         ctx.obj['CLS'] = MultiYearResourceX
