@@ -19,8 +19,8 @@ class MultiYearH5:
     Class to handle multiple years of h5 Resources
     """
 
-    def __init__(self, h5_dir, prefix='', suffix='.h5', res_cls=Resource,
-                 hsds=False, **res_cls_kwargs):
+    def __init__(self, h5_dir, prefix='', suffix='.h5', years=None,
+                 res_cls=Resource, hsds=False, **res_cls_kwargs):
         """
         Parameters
         ----------
@@ -30,6 +30,8 @@ class MultiYearH5:
             Prefix for resource .h5 files
         suffix : str
             Suffix for resource .h5 files
+        years : list, optional
+            List of years to access, by default None
         res_cls : obj
             Resource class to use to open and access resource data
         hsds : bool
@@ -38,7 +40,8 @@ class MultiYearH5:
         """
         self.h5_dir = h5_dir
         self._year_map = self._map_file_years(h5_dir, prefix=prefix,
-                                              suffix=suffix, hsds=hsds)
+                                              suffix=suffix, hsds=hsds,
+                                              years=years)
         res_cls_kwargs.update({'hsds': hsds})
         self._h5_map = self._map_file_instances(set(self._year_map.values()),
                                                 res_cls=res_cls,
@@ -130,8 +133,7 @@ class MultiYearH5:
 
         Returns
         -------
-        [type]
-            [description]
+        h5py.File
         """
         return self._h5_map[self.h5_files[0]]
 
@@ -264,7 +266,43 @@ class MultiYearH5:
         return year_map
 
     @staticmethod
-    def _map_file_years(h5_dir, prefix='', suffix='.h5', hsds=False):
+    def _get_years(year_map, years):
+        """
+        [summary]
+
+        Parameters
+        ----------
+        year_map : dict
+            Dictionary mapping years to file paths
+        years : list
+            List of years of interest. Should be a subset of years in year_map
+
+        Returns
+        -------
+        new_map : dict
+            Dictionary mapping requested years to file paths
+        """
+        new_map = {}
+        for year in years:
+            if not isinstance(year, int):
+                year = int(year)
+
+            if year in year_map:
+                new_map[year] = year_map[year]
+            else:
+                msg = ('A file for {} is unavailable!'.format(year))
+                warn(msg, ResourceWarning)
+
+        if not new_map:
+            msg = ('No files were found for the given years:\n{}'
+                   .format(years))
+            raise RuntimeError(msg)
+
+        return new_map
+
+    @staticmethod
+    def _map_file_years(h5_dir, prefix='', suffix='.h5', hsds=False,
+                        years=None):
         """
         Map file paths to year for which it contains data
 
@@ -276,6 +314,11 @@ class MultiYearH5:
             Prefix for resource .h5 files
         suffix : str
             Suffix for resource .h5 files
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        years : list, optional
+            List of years to access, by default None
 
         Returns
         -------
@@ -288,6 +331,9 @@ class MultiYearH5:
         else:
             year_map = MultiYearH5._map_local_files(h5_dir, prefix=prefix,
                                                     suffix=suffix)
+
+        if years is not None:
+            year_map = MultiYearH5._get_years(year_map, years)
 
         return year_map
 
@@ -423,8 +469,8 @@ class MultiYearResource:
     PREFIX = ''
     SUFFIX = '.h5'
 
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False,
-                 res_cls=Resource):
+    def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
+                 hsds=False, res_cls=Resource):
         """
         Parameters
         ----------
@@ -433,6 +479,8 @@ class MultiYearResource:
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        years : list, optional
+            List of years to access, by default None
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -458,7 +506,7 @@ class MultiYearResource:
         cls_kwargs = {'unscale': unscale, 'str_decode': str_decode,
                       'hsds': hsds}
         self._h5 = MultiYearH5(self.h5_dir, prefix=prefix, suffix=suffix,
-                               res_cls=res_cls, **cls_kwargs)
+                               years=years, res_cls=res_cls, **cls_kwargs)
         self.h5_files = self._h5.h5_files
         self.h5_file = self.h5_files[0]
         self._i = 0
@@ -908,7 +956,8 @@ class MultiYearSolarResource:
     Class to handle multiple years of solar resource data stored accross
     multiple .h5 files
     """
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+    def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
+                 hsds=False):
         """
         Parameters
         ----------
@@ -917,6 +966,8 @@ class MultiYearSolarResource:
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        years : list, optional
+            List of years to access, by default None
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -926,7 +977,7 @@ class MultiYearSolarResource:
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(h5_path, unscale=unscale, hsds=hsds,
+        super().__init__(h5_path, years=years, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, res_cls=SolarResource)
 
 
@@ -937,7 +988,8 @@ class MultiYearNSRDB(MultiYearResource):
     """
     PREFIX = 'nsrdb'
 
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+    def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
+                 hsds=False):
         """
         Parameters
         ----------
@@ -946,6 +998,8 @@ class MultiYearNSRDB(MultiYearResource):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        years : list, optional
+            List of years to access, by default None
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -955,7 +1009,7 @@ class MultiYearNSRDB(MultiYearResource):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(h5_path, unscale=unscale, hsds=hsds,
+        super().__init__(h5_path, years=years, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, res_cls=NSRDB)
 
 
@@ -966,7 +1020,8 @@ class MultiYearWindResource(MultiYearResource):
     """
     PREFIX = 'wtk'
 
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+    def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
+                 hsds=False):
         """
         Parameters
         ----------
@@ -975,6 +1030,8 @@ class MultiYearWindResource(MultiYearResource):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        years : list, optional
+            List of years to access, by default None
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -984,7 +1041,7 @@ class MultiYearWindResource(MultiYearResource):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(h5_path, unscale=unscale, hsds=hsds,
+        super().__init__(h5_path, years=years, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, res_cls=WindResource)
 
 
@@ -994,7 +1051,8 @@ class MultiYearWaveResource:
     multiple .h5 files
     """
 
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+    def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
+                 hsds=False):
         """
         Parameters
         ----------
@@ -1003,6 +1061,8 @@ class MultiYearWaveResource:
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        years : list, optional
+            List of years to access, by default None
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -1012,5 +1072,5 @@ class MultiYearWaveResource:
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(h5_path, unscale=unscale, hsds=hsds,
+        super().__init__(h5_path, years=years, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, res_cls=WaveResource)

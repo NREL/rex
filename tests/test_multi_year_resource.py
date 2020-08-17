@@ -124,6 +124,32 @@ def check_years(res_cls, ds_name):
         assert np.allclose(truth, test)
 
 
+@pytest.mark.parametrize('years',
+                         [['2012'], [2013], [2012, 2013],
+                          ['2013', '2012']])
+def test_years_kwarg(years):
+    """
+    Test years kwarg
+    """
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+
+    with MultiYearWindResource(path, years=years) as res_cls:
+        check_res(res_cls)
+        check_meta(res_cls)
+        check_time_index(res_cls)
+        check_dset(res_cls, 'windspeed_90m')
+
+
+def test_years_error():
+    """
+    Test years RuntimeError when years don't exist
+    """
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+    years = [2014, 2015]
+    with pytest.raises(RuntimeError):
+        MultiYearWindResource(path, years=years)
+
+
 class TestMultiYearNSRDB:
     """
     Multi Year NSRDB Resource handler tests
