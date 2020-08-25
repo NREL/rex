@@ -43,7 +43,7 @@ class MultiYearH5:
                                               suffix=suffix, hsds=hsds,
                                               years=years)
         res_cls_kwargs.update({'hsds': hsds})
-        self._h5_map = self._map_file_instances(set(self._year_map.values()),
+        self._h5_map = self._map_file_instances(list(self._year_map.values()),
                                                 res_cls=res_cls,
                                                 **res_cls_kwargs)
         self._datasets = None
@@ -86,7 +86,6 @@ class MultiYearH5:
         return year
 
     def __contains__(self, year):
-
         return year in self.years
 
     @property
@@ -527,6 +526,19 @@ class MultiYearResource:
     def __len__(self):
         return self.h5.shape[0]
 
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._i >= len(self.datasets):
+            self._i = 0
+            raise StopIteration
+
+        dset = self.datasets[self._i]
+        self._i += 1
+
+        return dset
+
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)
 
@@ -540,19 +552,6 @@ class MultiYearResource:
             out = self._get_ds(ds, ds_slice)
 
         return out
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._i >= len(self.datasets):
-            self._i = 0
-            raise StopIteration
-
-        dset = self.datasets[self._i]
-        self._i += 1
-
-        return dset
 
     def __contains__(self, dset):
         return dset in self.datasets

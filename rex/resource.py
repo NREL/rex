@@ -864,7 +864,7 @@ class Resource:
             else:
                 sites = list(range(len(meta)))
 
-        meta = pd.DataFrame(meta, index=sites)
+        meta = pd.DataFrame(meta, index=pd.Index(data=sites, name='gid'))
         if self._str_decode:
             meta = self.df_str_decode(meta)
 
