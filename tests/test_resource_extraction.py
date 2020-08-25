@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 
 from rex.resource_extraction import (MultiFileWindX, MultiFileNSRDBX,
-                                     NSRDBX, WindX)
+                                     NSRDBX, WindX, WaveX)
 from rex.resource_extraction.resource_extraction import TREE_DIR
 from rex import TESTDATADIR
 
@@ -329,6 +329,30 @@ class TestMultiFileWindX:
         extract_map(MultiFileWindX_cls, ds_name, timestep, region=region,
                     region_col=region_col)
         MultiFileWindX_cls.close()
+
+
+@pytest.mark.parametrize('gid', [1, [1, 2, 4, 8]])
+def test_WaveX(gid):
+    """
+    Test custom WaveX get methods for 4d 'directional_wave_spectrum' dataset
+    """
+    path = os.path.join(TESTDATADIR, 'wave/test_virutal_buoy.h5')
+    ds_name = 'directional_wave_spectrum'
+    with WaveX(path) as f:
+        truth = f[ds_name, :, :, :, gid]
+        index = pd.MultiIndex.from_product(
+            [f.time_index, f['frequency'], f['direction']],
+            names=['time_index', 'frequency', 'direction'])
+
+        # pylint: disable=no-member
+        test_ts = f.get_gid_ts(ds_name, gid)
+        test_df = f.get_gid_df(ds_name, gid)
+
+    assert np.allclose(truth, test_ts)
+    index_len = np.product(truth.shape[:3])
+    gids = len(gid) if isinstance(gid, list) else 1
+    assert np.allclose(truth.reshape((index_len, gids)), test_df.values)
+    assert all(test_df.index == index)
 
 
 def execute_pytest(capture='all', flags='-rapP'):

@@ -406,16 +406,15 @@ class ResourceX(Resource):
         df : pandas.DataFrame
             Time-series DataFrame for given site(s) and dataset
         """
+        index = pd.Index(data=self.time_index, name='time_index')
         if isinstance(gid, int):
             df = pd.DataFrame({ds_name: self[ds_name, :, gid]},
-                              index=self.time_index)
+                              index=index)
             df.name = gid
-            df.index.name = 'time_index'
         else:
             df = pd.DataFrame(self[ds_name, :, gid], columns=gid,
-                              index=self.time_index)
+                              index=index)
             df.name = ds_name
-            df.index.name = 'time_index'
 
         return df
 
@@ -863,72 +862,6 @@ class WindX(WindResource, ResourceX):
         self._lat_lon = None
         self._tree = tree
 
-    def get_gid_ts(self, ds_name, gid):
-        """
-        Extract timeseries of site(s) neareset to given lat_lon(s)
-
-        Parameters
-        ----------
-        ds_name : str
-            Dataset to extract
-        gid : int | list
-            Resource gid(s) of interset
-
-        Return
-        ------
-        ts : ndarray
-            Time-series for given site(s) and dataset
-        """
-        if ds_name == 'directional_wave_spectrum':
-            ts = self[ds_name, :, :, :, gid]
-        else:
-            ts = self[ds_name, :, gid]
-
-        return ts
-
-    def get_gid_df(self, ds_name, gid):
-        """
-        Extract timeseries of site(s) nearest to given lat_lon(s) and return
-        as a DataFrame
-
-        Parameters
-        ----------
-        ds_name : str
-            Dataset to extract
-        gid : int | list
-            Resource gid(s) of interset
-
-        Return
-        ------
-        df : pandas.DataFrame
-            Time-series DataFrame for given site(s) and dataset
-        """
-        if ds_name == 'directional_wave_spectrum':
-            df = self[ds_name, :, :, :, gid]
-            time_index = self.time_index
-            frequency = self['frequency']
-            direction = self['direction']
-            index = pd.MultiIndex.from_product(
-                [time_index, frequency, direction],
-                names=['time_index', 'frequency', 'direction'])
-            ax1 = np.product(df.shape[:3])
-            ax2 = df.shape[-1] if len(df.shape) == 4 else 1
-            df = df.reshape((ax1, ax2))
-        else:
-            df = self[ds_name, :, gid]
-            index = pd.Index(data=self.time_index, name='time_index')
-
-        if isinstance(gid, int):
-            df = pd.DataFrame({ds_name: df},
-                              index=index)
-            df.name = gid
-        else:
-            df = pd.DataFrame(df, columns=gid,
-                              index=index)
-            df.name = ds_name
-
-        return df
-
     def get_SAM_gid(self, hub_height, gid, out_path=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
@@ -1093,6 +1026,69 @@ class WaveX(WaveResource, ResourceX):
                          str_decode=str_decode, group=group)
         self._lat_lon = None
         self._tree = tree
+
+    def get_gid_ts(self, ds_name, gid):
+        """
+        Extract timeseries of site(s) neareset to given lat_lon(s)
+
+        Parameters
+        ----------
+        ds_name : str
+            Dataset to extract
+        gid : int | list
+            Resource gid(s) of interset
+
+        Return
+        ------
+        ts : ndarray
+            Time-series for given site(s) and dataset
+        """
+        if ds_name == 'directional_wave_spectrum':
+            ts = self[ds_name, :, :, :, gid]
+        else:
+            ts = self[ds_name, :, gid]
+
+        return ts
+
+    def get_gid_df(self, ds_name, gid):
+        """
+        Extract timeseries of site(s) nearest to given lat_lon(s) and return
+        as a DataFrame
+
+        Parameters
+        ----------
+        ds_name : str
+            Dataset to extract
+        gid : int | list
+            Resource gid(s) of interset
+
+        Return
+        ------
+        df : pandas.DataFrame
+            Time-series DataFrame for given site(s) and dataset
+        """
+        if ds_name == 'directional_wave_spectrum':
+            df = self[ds_name, :, :, :, gid]
+            index = pd.MultiIndex.from_product(
+                [self.time_index, self['frequency'], self['direction']],
+                names=['time_index', 'frequency', 'direction'])
+            ax1 = np.product(df.shape[:3])
+            ax2 = df.shape[-1] if len(df.shape) == 4 else 1
+            df = df.reshape(ax1, ax2)
+        else:
+            df = self[ds_name, :, gid]
+            index = pd.Index(data=self.time_index, name='time_index')
+
+        if isinstance(gid, int):
+            df = pd.DataFrame(df, columns=[gid],
+                              index=index)
+            df.name = gid
+        else:
+            df = pd.DataFrame(df, columns=gid,
+                              index=index)
+            df.name = ds_name
+
+        return df
 
 
 class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX):
