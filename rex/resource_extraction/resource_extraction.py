@@ -408,7 +408,7 @@ class ResourceX(Resource):
         """
         index = pd.Index(data=self.time_index, name='time_index')
         if isinstance(gid, int):
-            df = pd.DataFrame({ds_name: self[ds_name, :, gid]},
+            df = pd.DataFrame(self[ds_name, :, gid], columns=[gid],
                               index=index)
             df.name = gid
         else:
