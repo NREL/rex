@@ -5,6 +5,7 @@ pytests for resource extractors
 import numpy as np
 import os
 import pandas as pd
+from pandas.testing import assert_frame_equal
 import pytest
 
 from rex.resource_extraction import (MultiFileWindX, MultiFileNSRDBX,
@@ -70,13 +71,14 @@ def extract_site(res_cls, ds_name):
     site = np.random.choice(len(meta), 1)[0]
     lat_lon = meta.loc[site, ['latitude', 'longitude']].values
     truth_ts = res_cls[ds_name, :, site]
-    truth_df = pd.DataFrame({ds_name: truth_ts}, index=time_index)
+    truth_df = pd.DataFrame(truth_ts, columns=[site],
+                            index=pd.Index(time_index, name='time_index'))
 
     site_ts = res_cls.get_lat_lon_ts(ds_name, lat_lon)
     assert np.allclose(truth_ts, site_ts)
 
     site_df = res_cls.get_lat_lon_df(ds_name, lat_lon)
-    assert site_df.equals(truth_df)
+    assert_frame_equal(site_df, truth_df, check_dtype=False)
 
     tree_file = res_cls._get_tree_file(res_cls.h5_file)
     assert tree_file in os.listdir(TREE_DIR.name)
@@ -90,20 +92,21 @@ def extract_region(res_cls, ds_name, region, region_col='county'):
     meta = res_cls['meta']
     sites = meta.index[(meta[region_col] == region)].values
     truth_ts = res_cls[ds_name, :, sites]
-    truth_df = pd.DataFrame(truth_ts, columns=sites, index=time_index)
+    truth_df = pd.DataFrame(truth_ts, columns=sites,
+                            index=pd.Index(time_index, name='time_index'))
 
     lat_lon = meta.loc[sites, ['latitude', 'longitude']].values
     region_ts = res_cls.get_lat_lon_ts(ds_name, lat_lon)
     assert np.allclose(truth_ts, region_ts)
 
     region_df = res_cls.get_lat_lon_df(ds_name, lat_lon)
-    assert region_df.equals(truth_df)
+    assert_frame_equal(region_df, truth_df, check_dtype=False)
 
     region_ts = res_cls.get_region_ts(ds_name, region, region_col=region_col)
     assert np.allclose(truth_ts, region_ts)
 
     region_df = res_cls.get_region_df(ds_name, region, region_col=region_col)
-    assert region_df.equals(truth_df)
+    assert_frame_equal(region_df, truth_df, check_dtype=False)
 
 
 def extract_map(res_cls, ds_name, timestep, region=None, region_col='county'):
