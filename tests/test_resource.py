@@ -183,6 +183,12 @@ def check_dset(res_cls, ds_name):
     assert isinstance(ds, np.ndarray)
     assert ds.shape == (100,)
     assert np.allclose(arr[times, 0], ds)
+    # boolean mask
+    mask = res_cls.time_index.month == 7
+    ds = res_cls[ds_name, mask]
+    assert isinstance(ds, np.ndarray)
+    assert ds.shape == (mask.sum(), ds_shape[1])
+    assert np.allclose(arr[mask], ds)
     # time and site lists
     with pytest.raises(IndexError):
         assert res_cls[ds_name, times, sites]

@@ -134,6 +134,9 @@ class ResourceDataset:
         ds_idx = None
         if isinstance(ds_slice, (list, np.ndarray)):
             in_slice = np.array(ds_slice)
+            if np.issubdtype(in_slice.dtype, np.dtype(bool)):
+                in_slice = np.where(in_slice)[0]
+
             s = in_slice.min()
             e = in_slice.max() + 1
             ds_slice = slice(s, e, None)
