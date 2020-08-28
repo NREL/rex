@@ -350,6 +350,33 @@ class ResourceX(Resource):
 
         return gids
 
+    def box_gids(self, lat_lon_1, lat_lon_2):
+        """
+        Get gids within bounding lat_lon coordinates
+
+        Parameters
+        ----------
+        lat_lon_1 : list | tuple
+            One corner of the bounding box
+        lat_lon_2 : list | tuple
+            The other corner of the bounding box
+
+        Returns
+        -------
+        gids : ndarray
+            Gids in bounding box
+        """
+        lat_min, lat_max = sorted([lat_lon_1[0], lat_lon_2[0]])
+        lon_min, lon_max = sorted([lat_lon_1[1], lat_lon_2[1]])
+
+        coords = self.lat_lon
+        gids = coords[:, 0] >= lat_min
+        gids &= coords[:, 0] <= lat_max
+        gids &= coords[:, 1] >= lon_min
+        gids &= coords[:, 1] <= lon_max
+
+        return np.where(gids)[0]
+
     def timestep_idx(self, timestep):
         """
         Get the index of the desired timestep
@@ -510,6 +537,55 @@ class ResourceX(Resource):
 
         return region_df
 
+    def get_box_ts(self, ds_name, lat_lon_1, lat_lon_2):
+        """
+        Extract timeseries of of all sites in given bounding box
+
+        Parameters
+        ----------
+        ds_name : str
+            Dataset to extract
+        lat_lon_1 : list | tuple
+            One corner of the bounding box
+        lat_lon_2 : list | tuple
+            The other corner of the bounding box
+
+        Return
+        ------
+        box_ts : ndarray
+            Time-series array of desired dataset for all sites in desired
+            bounding box
+        """
+        gids = self.box_gids(lat_lon_1, lat_lon_2)
+        box_ts = self.get_gid_ts(ds_name, gids)
+
+        return box_ts
+
+    def get_box_df(self, ds_name, lat_lon_1, lat_lon_2):
+        """
+        Extract timeseries of of all sites in given bounding box and return as
+        a DataFrame
+
+        Parameters
+        ----------
+        ds_name : str
+            Dataset to extract
+        lat_lon_1 : list | tuple
+            One corner of the bounding box
+        lat_lon_2 : list | tuple
+            The other corner of the bounding box
+
+        Return
+        ------
+        box_df : pandas.DataFrame
+            Time-series array of desired dataset for all sites in desired
+            bounding box
+        """
+        gids = self.box_gids(lat_lon_1, lat_lon_2)
+        box_df = self.get_gid_df(ds_name, gids)
+
+        return box_df
+
     def get_SAM_gid(self, gid, out_path=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
@@ -575,7 +651,7 @@ class ResourceX(Resource):
         return SAM_df
 
     def get_timestep_map(self, ds_name, timestep, region=None,
-                         region_col='state'):
+                         region_col='state', box=None):
         """
         Extract a map of the given dataset at the given timestep for the
         given region if supplied
@@ -586,10 +662,12 @@ class ResourceX(Resource):
             Dataset to extract
         timestep : str
             Timestep of interest
-        region : str
-            Region to extract all pixels for
-        region_col : str
-            Region column to search
+        region : str, optional
+            Region to extract all pixels for, by default None
+        region_col : str, optional
+            Region column to search, by default 'state'
+        box : tuple, optional
+            Bounding corners of box to extract pixels for
 
         Returns
         -------
@@ -599,8 +677,16 @@ class ResourceX(Resource):
         lat_lons = self.lat_lon
         ts_idx = self.timestep_idx(timestep)
         gids = slice(None)
+
+        if region is not None and box is not None:
+            msg = 'Can only process a region OR a set of box corners!'
+            raise RuntimeError(msg)
+
         if region is not None:
             gids = self.region_gids(region, region_col=region_col)
+            lat_lons = lat_lons[gids]
+        elif box is not None:
+            gids = self.box_gids(*box)
             lat_lons = lat_lons[gids]
 
         ts_map = self[ds_name, ts_idx, gids]

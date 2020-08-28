@@ -368,17 +368,15 @@ class WindResource(Resource):
         """
         try:
             if ds_name.endswith('m'):
-                name, h = ds_name.split('_')
+                name = '_'.join(ds_name.split('_')[:-1])
+                h = ds_name.split('_')[-1]
                 h = WindResource._parse_hub_height(h)
             else:
-                raise ValueError('{} does not end with "_hm"'
+                raise ValueError('{} does not end with "_m"'
                                  .format(ds_name))
-        except Exception as ex:
+        except ValueError:
             name = ds_name
             h = None
-            msg = ('Could not extract hub-height from {}:\n{}'
-                   .format(ds_name, ex))
-            warnings.warn(msg)
 
         return name, h
 
@@ -698,7 +696,6 @@ class WindResource(Resource):
         if rmol not in self:
             msg = ("{} is needed to run monin obukhov extrapolation"
                    .format(rmol))
-            warnings.warn(msg)
             raise MoninObukhovExtrapolationError(msg)
 
         if 'roughness_length' in self:
@@ -708,7 +705,6 @@ class WindResource(Resource):
         else:
             msg = ("roughness length ('z0') is needed to run monin obukhov"
                    "extrapolation")
-            warnings.warn(msg, ExtrapolationWarning)
             raise MoninObukhovExtrapolationError(msg)
 
         L = 1 / self._get_ds(rmol, ds_slice)
@@ -749,8 +745,7 @@ class WindResource(Resource):
         else:
             (h1, h2), extrapolate = self.get_nearest_h(h, heights)
             if extrapolate:
-                warnings.warn('Extrapolating {}'.format(ds_name),
-                              ExtrapolationWarning)
+                msg = 'Extrapolating {}'.format(ds_name)
 
             ts1 = super()._get_ds('{}_{}m'.format(var_name, h1), ds_slice)
             ts2 = super()._get_ds('{}_{}m'.format(var_name, h2), ds_slice)
@@ -758,19 +753,19 @@ class WindResource(Resource):
             if (var_name == 'windspeed') and extrapolate:
                 if h < h1:
                     try:
-                        self._try_monin_obukhov_extrapolation(ts1, ds_slice,
-                                                              h1, h)
-                        warnings.warn('\t- Using Monin Obukhov '
-                                      'Extrapolation',
-                                      ExtrapolationWarning)
+                        out = self._try_monin_obukhov_extrapolation(ts1,
+                                                                    ds_slice,
+                                                                    h1, h)
+                        msg += ' using Monin Obukhov Extrapolation'
+                        warnings.warn(msg, ExtrapolationWarning)
                     except MoninObukhovExtrapolationError:
                         out = self.power_law_interp(ts1, h1, ts2, h2, h)
-                        warnings.warn('\t- Using Power Law Extrapolation',
-                                      ExtrapolationWarning)
+                        msg += ' using Power Law Extrapolation'
+                        warnings.warn(msg, ExtrapolationWarning)
                 else:
                     out = self.power_law_interp(ts1, h1, ts2, h2, h)
-                    warnings.warn('\t- Using Power Law Extrapolation',
-                                  ExtrapolationWarning)
+                    msg += ' using Power Law Extrapolation'
+                    warnings.warn(msg, ExtrapolationWarning)
             elif var_name == 'winddirection':
                 out = self.circular_interp(ts1, h1, ts2, h2, h)
             else:

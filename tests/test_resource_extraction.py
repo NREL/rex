@@ -95,18 +95,32 @@ def extract_region(res_cls, ds_name, region, region_col='county'):
     truth_df = pd.DataFrame(truth_ts, columns=sites,
                             index=pd.Index(time_index, name='time_index'))
 
-    lat_lon = meta.loc[sites, ['latitude', 'longitude']].values
-    region_ts = res_cls.get_lat_lon_ts(ds_name, lat_lon)
-    assert np.allclose(truth_ts, region_ts)
-
-    region_df = res_cls.get_lat_lon_df(ds_name, lat_lon)
-    assert_frame_equal(region_df, truth_df, check_dtype=False)
-
     region_ts = res_cls.get_region_ts(ds_name, region, region_col=region_col)
     assert np.allclose(truth_ts, region_ts)
 
     region_df = res_cls.get_region_df(ds_name, region, region_col=region_col)
     assert_frame_equal(region_df, truth_df, check_dtype=False)
+
+
+def extract_box(res_cls, ds_name):
+    """
+    Run tests extracting all gids in a bounding box
+    """
+    time_index = res_cls['time_index']
+    lat_lon = res_cls.lat_lon
+
+    lat_lon_1 = (lat_lon[:, 0].min(), lat_lon[:, 1].min())
+    lat_lon_2 = (lat_lon[:, 0].max(), lat_lon[:, 1].max())
+
+    truth_ts = res_cls[ds_name]
+    truth_df = pd.DataFrame(truth_ts, columns=list(range(len(lat_lon))),
+                            index=pd.Index(time_index, name='time_index'))
+
+    box_ts = res_cls.get_box_ts(ds_name, lat_lon_1, lat_lon_2)
+    assert np.allclose(truth_ts, box_ts)
+
+    box_df = res_cls.get_box_df(ds_name, lat_lon_1, lat_lon_2)
+    assert_frame_equal(box_df, truth_df, check_dtype=False)
 
 
 def extract_map(res_cls, ds_name, timestep, region=None, region_col='county'):
@@ -181,6 +195,14 @@ class TestNSRDBX:
                     region_col=region_col)
         NSRDBX_cls.close()
 
+    @staticmethod
+    def test_box(NSRDBX_cls, ds_name='dhi'):
+        """
+        test bounding box extraction
+        """
+        extract_box(NSRDBX_cls, ds_name)
+        NSRDBX_cls.close()
+
 
 class TestMultiFileNSRDBX:
     """
@@ -230,6 +252,14 @@ class TestMultiFileNSRDBX:
         """
         extract_map(MultiFileNSRDBX_cls, ds_name, timestep, region=region,
                     region_col=region_col)
+        MultiFileNSRDBX_cls.close()
+
+    @staticmethod
+    def test_box(MultiFileNSRDBX_cls, ds_name='dhi'):
+        """
+        test bounding box extraction
+        """
+        extract_box(MultiFileNSRDBX_cls, ds_name)
         MultiFileNSRDBX_cls.close()
 
 
@@ -282,6 +312,14 @@ class TestWindX:
                     region_col=region_col)
         WindX_cls.close()
 
+    @staticmethod
+    def test_box(WindX_cls, ds_name='windspeed_100m'):
+        """
+        test bounding box extraction
+        """
+        extract_box(WindX_cls, ds_name)
+        WindX_cls.close()
+
 
 class TestMultiFileWindX:
     """
@@ -331,6 +369,14 @@ class TestMultiFileWindX:
         """
         extract_map(MultiFileWindX_cls, ds_name, timestep, region=region,
                     region_col=region_col)
+        MultiFileWindX_cls.close()
+
+    @staticmethod
+    def test_box(MultiFileWindX_cls, ds_name='windspeed_100m'):
+        """
+        test bounding box extraction
+        """
+        extract_box(MultiFileWindX_cls, ds_name)
         MultiFileWindX_cls.close()
 
 
