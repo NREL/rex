@@ -370,10 +370,10 @@ class ResourceX(Resource):
         lon_min, lon_max = sorted([lat_lon_1[1], lat_lon_2[1]])
 
         coords = self.lat_lon
-        gids = coords[:, 0] > lat_min
-        gids &= coords[:, 0] < lat_max
-        gids &= coords[:, 1] > lon_min
-        gids &= coords[:, 1] < lon_max
+        gids = coords[:, 0] >= lat_min
+        gids &= coords[:, 0] <= lat_max
+        gids &= coords[:, 1] >= lon_min
+        gids &= coords[:, 1] <= lon_max
 
         return np.where(gids)[0]
 
