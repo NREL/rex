@@ -66,7 +66,7 @@ class SolarResource(Resource):
         return res_df
 
     def _preload_SAM(self, sites, tech='pvwattsv7', clearsky=False,
-                     means=False):
+                     bifacial=False, means=False):
         """
         Pre-load project_points for SAM
 
@@ -78,6 +78,8 @@ class SolarResource(Resource):
             SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
+        bifacial : bool
+            Boolean flag to pull surface albedo for bifacial modeling.
         means : bool
             Boolean flag to compute mean resource when res_array is set
 
@@ -90,8 +92,12 @@ class SolarResource(Resource):
         SAM_res = SAMResource(sites, tech, self.time_index, means=means)
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
+
         if clearsky:
             SAM_res.set_clearsky()
+
+        if bifacial and 'surface_albedo' not in SAM_res.var_list:
+            SAM_res._var_list.append('surface_albedo')
 
         SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
         for var in SAM_res.var_list:
@@ -105,7 +111,7 @@ class SolarResource(Resource):
     @classmethod
     def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
                     str_decode=True, group=None, tech='pvwattsv7',
-                    clearsky=False, means=False):
+                    clearsky=False, bifacial=False, means=False):
         """
         Pre-load project_points for SAM
 
@@ -129,6 +135,8 @@ class SolarResource(Resource):
             SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
+        bifacial : bool
+            Boolean flag to pull surface albedo for bifacial modeling.
         means : bool
             Boolean flag to compute mean resource when res_array is set
 
@@ -142,7 +150,7 @@ class SolarResource(Resource):
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
-                                       means=means)
+                                       bifacial=bifacial, means=means)
 
         return SAM_res
 
@@ -160,7 +168,7 @@ class NSRDB(SolarResource):
     UNIT_ATTR = 'psm_units'
 
     def _preload_SAM(self, sites, tech='pvwattsv7', clearsky=False,
-                     downscale=None, means=False):
+                     bifacial=False, downscale=None, means=False):
         """
         Pre-load project_points for SAM
 
@@ -172,6 +180,8 @@ class NSRDB(SolarResource):
             SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
+        bifacial : bool
+            Boolean flag to pull surface albedo for bifacial modeling.
         downscale : NoneType | str
             Option for NSRDB resource downscaling to higher temporal
             resolution. Expects a string in the Pandas frequency format,
@@ -191,6 +201,9 @@ class NSRDB(SolarResource):
 
         if clearsky:
             SAM_res.set_clearsky()
+
+        if bifacial and 'surface_albedo' not in SAM_res.var_list:
+            SAM_res._var_list.append('surface_albedo')
 
         SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
         if not downscale:
@@ -210,7 +223,8 @@ class NSRDB(SolarResource):
     @classmethod
     def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
                     str_decode=True, group=None, tech='pvwattsv7',
-                    clearsky=False, downscale=None, means=False):
+                    clearsky=False, bifacial=False, downscale=None,
+                    means=False):
         """
         Pre-load project_points for SAM
 
@@ -234,6 +248,8 @@ class NSRDB(SolarResource):
             SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
+        bifacial : bool
+            Boolean flag to pull surface albedo for bifacial modeling.
         downscale : NoneType | str
             Option for NSRDB resource downscaling to higher temporal
             resolution. Expects a string in the Pandas frequency format,
@@ -251,7 +267,8 @@ class NSRDB(SolarResource):
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
-                                       downscale=downscale, means=means)
+                                       bifacial=bifacial, downscale=downscale,
+                                       means=means)
 
         return SAM_res
 
@@ -1114,8 +1131,8 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     """
     @classmethod
     def preload_SAM(cls, h5_path, sites, unscale=True, str_decode=True,
-                    tech='pvwattsv7', clearsky=False, downscale=None,
-                    means=False):
+                    tech='pvwattsv7', clearsky=False, bifacial=False,
+                    downscale=None, means=False):
         """
         Pre-load project_points for SAM
 
@@ -1137,6 +1154,8 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             SAM technology string, by default 'pvwattsv7'
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
+        bifacial : bool
+            Boolean flag to pull surface albedo for bifacial modeling.
         downscale : NoneType | str
             Option for NSRDB resource downscaling to higher temporal
             resolution. Expects a string in the Pandas frequency format,
@@ -1153,7 +1172,8 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
         with cls(h5_path, unscale=unscale, str_decode=str_decode) as res:
             # pylint: disable=assignment-from-no-return
             SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
-                                       downscale=downscale, means=means)
+                                       bifacial=bifacial, downscale=downscale,
+                                       means=means)
 
         return SAM_res
 

@@ -205,6 +205,20 @@ def test_fill_irradiance():
         assert np.allclose(baseline_arr, test_arr, rtol=0.5)
 
 
+def test_bifacial():
+    """
+    Test NSRDB preload sam method with bifacial flag
+    """
+    fp = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+    sites = slice(0, 100)
+    res = NSRDB.preload_SAM(fp, sites, bifacial=True)
+
+    for res_df, _ in res:
+        assert 'surface_albedo' in res_df
+        assert res_df['surface_albedo'].min() > 0.0
+        assert res_df['surface_albedo'].min() < 1.0
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 
