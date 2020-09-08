@@ -144,7 +144,7 @@ def site(ctx, gid, lat_lon):
     ctx.invoke(site_cmd, dataset=dataset, lat_lon=lat_lon, gid=gid)
 
 
-@dataset.command
+@dataset.command()
 @click.option('--region', '-r', type=str, required=True,
               help='Region to extract')
 @click.option('--region_col', '-col', type=str, default='state',

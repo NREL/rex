@@ -195,7 +195,7 @@ def site(ctx, lat_lon, gid):
     site_df.to_csv(out_path)
 
 
-@dataset.command
+@dataset.command()
 @click.option('--region', '-r', type=str, required=True,
               help='Region to extract')
 @click.option('--region_col', '-col', type=str, default='state',

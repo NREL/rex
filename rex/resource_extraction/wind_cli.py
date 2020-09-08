@@ -147,6 +147,23 @@ def site(ctx, lat_lon, gid):
 
 
 @dataset.command()
+@click.option('--region', '-r', type=str, required=True,
+              help='Region to extract')
+@click.option('--region_col', '-col', type=str, default='state',
+              help='Meta column to search for region')
+@click.option('--timestep', '-ts', type=str, default=None,
+              help='Time-step to extract')
+@click.pass_context
+def region(ctx, region, region_col, timestep):
+    """
+    Extract a single dataset for all gids in the given region
+    """
+
+    ctx.invoke(region_cmd, region=region, region_col=region_col,
+               timestep=timestep)
+
+
+@dataset.command()
 @click.option('--lat_lon_1', '-ll1', nargs=2, type=click.Tuple([float, float]),
               required=True,
               help='One corner of the bounding box')
@@ -165,23 +182,6 @@ def box(ctx, lat_lon_1, lat_lon_2, timestep, file_suffix):
 
     ctx.invoke(box_cmd, lat_lon_1=lat_lon_1, lat_lon_2=lat_lon_2,
                file_suffix=file_suffix, timestep=timestep)
-
-
-@dataset.command
-@click.option('--region', '-r', type=str, required=True,
-              help='Region to extract')
-@click.option('--region_col', '-col', type=str, default='state',
-              help='Meta column to search for region')
-@click.option('--timestep', '-ts', type=str, default=None,
-              help='Time-step to extract')
-@click.pass_context
-def region(ctx, region, region_col, timestep):
-    """
-    Extract a single dataset for all gids in the given region
-    """
-
-    ctx.invoke(region_cmd, region=region, region_col=region_col,
-               timestep=timestep)
 
 
 @dataset.command()
