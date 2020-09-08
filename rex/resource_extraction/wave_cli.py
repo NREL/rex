@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=all
 """
 WaveX Command Line Interface
 """
@@ -11,7 +12,7 @@ from rex.resource_extraction.resource_cli import box as box_cmd
 from rex.resource_extraction.resource_cli import dataset as dataset_grp
 from rex.resource_extraction.resource_cli import multi_site as multi_site_cmd
 from rex.resource_extraction.resource_cli import region as region_cmd
-from rex.resource_extraction.resource_cli import sam_file as sam_file_cmd
+from rex.resource_extraction.resource_cli import sam_datasets as sam_cmd
 from rex.resource_extraction.resource_cli import site as site_cmd
 from rex.utilities.loggers import init_mult
 from rex.utilities.utilities import check_res_file
@@ -59,28 +60,16 @@ def main(ctx, wave_h5, out_dir, verbose):
               help='(lat, lon) coordinates of interest')
 @click.option('--gid', '-g', type=int, default=None,
               help='Resource gid of interest')
-@click.pass_context
-def sam_file(ctx, lat_lon, gid):
-    """
-    Extract all datasets needed for SAM for the nearest pixel to the given
-    (lat, lon) coordinates OR the given resource gid
-    """
-    ctx.invoke(sam_file_cmd, lat_lon=lat_lon, gid=gid)
-
-
-@main.command()
-@click.option('--sites', '-s', type=click.Path(exists=True), required=True,
+@click.option('--sites', '-s', type=click.Path(exists=True), default=None,
               help=('.csv or .json file with columns "latitude", "longitude" '
                     'OR "gid"'))
-@click.option('--dataset', '-d', type=str, required=True,
-              help='Dataset to extract, if sam datasets us "SAM" or "sam"')
 @click.pass_context
-def multi_site(ctx, sites, dataset):
+def sam_datasets(ctx, lat_lon, gid, sites):
     """
-    Extract multiple sites given in '--sites' .csv or .json as
-    "latitude", "longitude" pairs OR "gid"s
+    Extract all datasets needed for SAM for the nearest pixel(s) to the given
+    (lat, lon) coordinates, the given resource gid, or the give sites
     """
-    ctx.invoke(multi_site_cmd, sites=sites, dataset=dataset)
+    ctx.invoke(sam_cmd, lat_lon=lat_lon, gid=gid, sites=sites)
 
 
 @main.group()
@@ -101,12 +90,12 @@ def dataset(ctx, dataset):
               default=None,
               help='(lat, lon) coordinates of interest')
 @click.pass_context
-def site(ctx, dataset, gid, lat_lon):
+def site(ctx, gid, lat_lon):
     """
     Extract the nearest pixel to the given (lat, lon) coordinates
     OR the given resource gid
     """
-    ctx.invoke(site_cmd, dataset=dataset, lat_lon=lat_lon, gid=gid)
+    ctx.invoke(site_cmd, lat_lon=lat_lon, gid=gid)
 
 
 @dataset.command
@@ -117,13 +106,13 @@ def site(ctx, dataset, gid, lat_lon):
 @click.option('--timestep', '-ts', type=str, default=None,
               help='Timestep to extract')
 @click.pass_context
-def region(ctx, dataset, region, region_col, timestep):
+def region(ctx, region, region_col, timestep):
     """
     Extract a single dataset for all gids in the given region
     """
 
-    ctx.invoke(region_cmd, dataset=dataset, region=region,
-               region_col=region_col, timestep=timestep)
+    ctx.invoke(region_cmd, region=region, region_col=region_col,
+               timestep=timestep)
 
 
 @dataset.command()
@@ -144,6 +133,20 @@ def box(ctx, lat_lon_1, lat_lon_2, timestep, file_suffix):
     """
     ctx.invoke(box_cmd, lat_lon_1=lat_lon_1, lat_lon_2=lat_lon_2,
                file_suffix=file_suffix, timestep=timestep)
+
+
+@dataset.command()
+@click.option('--sites', '-s', type=click.Path(exists=True), required=True,
+              help=('.csv or .json file with columns "latitude", "longitude" '
+                    'OR "gid"'))
+@click.pass_context
+def multi_site(ctx, sites):
+    """
+    Extract multiple sites given in '--sites' .csv or .json as
+    "latitude", "longitude" pairs OR "gid"s
+
+    """
+    ctx.invoke(multi_site_cmd, sites=sites)
 
 
 if __name__ == '__main__':

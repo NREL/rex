@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=all
 """
 ResourceX Command Line Interface
 """
@@ -13,6 +14,45 @@ from rex.utilities.loggers import init_mult
 from rex.utilities.utilities import check_res_file
 
 logger = logging.getLogger(__name__)
+
+
+def _parse_sites(sites):
+    """
+    Parse sites
+
+    Parameters
+    ----------
+    sites : str
+        Path to .csv of .json containing sites to extract
+
+    Returns
+    -------
+    name : str
+        sites file name
+    gid : list | None
+        Gids to extract
+    lat_lon : list | None
+        Lat, lon pairs to extract
+    """
+    name = os.path.splitext(os.path.basename(sites))[0]
+    if sites.endswith('.csv'):
+        sites = pd.read_csv(sites)
+    elif sites.endswith('.json'):
+        sites = pd.read_json(sites)
+    else:
+        raise RuntimeError("'--sites' must be a .csv or .json file!")
+
+    if 'gid' in sites:
+        gid = sites['gid'].values
+        lat_lon = None
+    elif 'latitude' in sites and 'longitude' in sites:
+        gid = None
+        lat_lon = sites[['latitude', 'longitude']].values
+    else:
+        raise RuntimeError('Must supply site "gid"s or "latitude" and '
+                           '"longitude" as columns in "--sites" file')
+
+    return name, gid, lat_lon
 
 
 @click.group()
@@ -60,26 +100,55 @@ def main(ctx, resource_h5, out_dir, verbose):
               help='(lat, lon) coordinates of interest')
 @click.option('--gid', '-g', type=int, default=None,
               help='Resource gid of interest')
+@click.option('--sites', '-s', type=click.Path(exists=True), default=None,
+              help=('.csv or .json file with columns "latitude", "longitude" '
+                    'OR "gid"'))
 @click.pass_context
-def sam_file(ctx, lat_lon, gid):
+def sam_datasets(ctx, lat_lon, gid, sites):
     """
-    Extract all datasets needed for SAM for the nearest pixel to the given
-    (lat, lon) coordinates OR the given resource gid
+    Extract all datasets needed for SAM for the nearest pixel(s) to the given
+    (lat, lon) coordinates, the given resource gid, or the give sites
     """
-    if lat_lon is None and gid is None:
-        click.echo("Must supply '--lat-lon' OR '--gid'!")
+    inputs = set((lat_lon, gid, sites))
+    if len(inputs) == 1:
+        click.echo("Must supply '--lat-lon', '--gid', or '--sites'!")
         raise click.Abort()
-    elif lat_lon and gid:
-        click.echo("You must only supply '--lat-lon' OR '--gid'!")
+    elif len(inputs) > 2:
+        click.echo("You must only supply one of '--lat-lon', '--gid', or "
+                   "'--sites'!")
         raise click.Abort()
 
-    logger.info('Saving data to {}'.format(ctx.obj['OUT_DIR']))
-    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-        if lat_lon is not None:
-            f.get_SAM_lat_lon(lat_lon, out_path=ctx.obj['OUT_DIR'])
-        elif gid is not None:
-            gid = f._get_nearest(lat_lon)
-            f.get_SAM_gid(gid, out_path=ctx.obj['OUT_DIR'])
+    if lat_lon or gid:
+        logger.info('Saving data to {}'.format(ctx.obj['OUT_DIR']))
+        with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
+            if lat_lon is not None:
+                f.get_SAM_lat_lon(lat_lon, out_path=ctx.obj['OUT_DIR'])
+            elif gid is not None:
+                gid = f._get_nearest(lat_lon)
+                f.get_SAM_gid(gid, out_path=ctx.obj['OUT_DIR'])
+
+    else:
+        name, gid, lat_lon = _parse_sites(sites)
+        with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
+            meta = f['meta']
+            if lat_lon is not None:
+                SAM_df = f.get_SAM_lat_lon(lat_lon)
+            elif gid is not None:
+                SAM_df = f.get_SAM_gid(gid)
+
+        gids = []
+        for df in SAM_df:
+            gids.append(int(df.name.split('-')[-1]))
+            out_path = "{}-{}.csv".format(df.name, name)
+            out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
+            logger.info('Saving data to {}'.format(out_path))
+            df.to_csv(out_path)
+
+        out_path = "{}-meta.csv".format(name)
+        out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
+        meta = meta.loc[gids]
+        logger.info('Saving meta data to {}'.format(out_path))
+        meta.to_csv(out_path)
 
 
 @main.group()
@@ -211,97 +280,35 @@ def box(ctx, lat_lon_1, lat_lon_2, file_suffix, timestep):
         map_df.to_csv(out_path)
 
 
-def _parse_sites(sites):
-    """
-    Parse sites
-
-    Parameters
-    ----------
-    sites : str
-        Path to .csv of .json containing sites to extract
-
-    Returns
-    -------
-    name : str
-        sites file name
-    gid : list | None
-        Gids to extract
-    lat_lon : list | None
-        Lat, lon pairs to extract
-    """
-    name = os.path.splitext(os.path.basename(sites))[0]
-    if sites.endswith('.csv'):
-        sites = pd.read_csv(sites)
-    elif sites.endswith('.json'):
-        sites = pd.read_json(sites)
-    else:
-        raise RuntimeError("'--sites' must be a .csv or .json file!")
-
-    if 'gid' in sites:
-        gid = sites['gid'].values
-        lat_lon = None
-    elif 'latitude' in sites and 'longitude' in sites:
-        gid = None
-        lat_lon = sites[['latitude', 'longitude']].values
-    else:
-        raise RuntimeError('Must supply site "gid"s or "latitude" and '
-                           '"longitude" as columns in "--sites" file')
-
-    return name, gid, lat_lon
-
-
-@main.command()
+@dataset.command()
 @click.option('--sites', '-s', type=click.Path(exists=True), required=True,
               help=('.csv or .json file with columns "latitude", "longitude" '
                     'OR "gid"'))
-@click.option('--dataset', '-d', type=str, required=True,
-              help='Dataset to extract, if sam datasets us "SAM" or "sam"')
 @click.pass_context
-def multi_site(ctx, sites, dataset):
+def multi_site(ctx, sites):
     """
     Extract multiple sites given in '--sites' .csv or .json as
     "latitude", "longitude" pairs OR "gid"s
     """
     name, gid, lat_lon = _parse_sites(sites)
-    if dataset.lower() == 'sam':
-        with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-            meta = f['meta']
-            if lat_lon is not None:
-                SAM_df = f.get_SAM_lat_lon(lat_lon)
-            elif gid is not None:
-                SAM_df = f.get_SAM_gid(gid)
+    dataset = ctx['DATASET']
+    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
+        meta = f['meta']
+        if lat_lon is not None:
+            site_df = f.get_lat_lon_df(dataset, lat_lon)
+        elif gid is not None:
+            site_df = f.get_gid_df(dataset, gid)
 
-        gids = []
-        for df in SAM_df:
-            gids.append(int(df.name.split('-')[-1]))
-            out_path = "{}-{}.csv".format(df.name, name)
-            out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-            logger.info('Saving data to {}'.format(out_path))
-            df.to_csv(out_path)
+    out_path = "{}-{}.csv".format(dataset, name)
+    out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
+    logger.info('Saving data to {}'.format(out_path))
+    site_df.to_csv(out_path)
 
-        out_path = "{}-meta.csv".format(name)
-        out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-        meta = meta.loc[gids]
-        logger.info('Saving meta data to {}'.format(out_path))
-        meta.to_csv(out_path)
-    else:
-        with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-            meta = f['meta']
-            if lat_lon is not None:
-                site_df = f.get_lat_lon_df(dataset, lat_lon)
-            elif gid is not None:
-                site_df = f.get_gid_df(dataset, gid)
-
-        out_path = "{}-{}.csv".format(dataset, name)
-        out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-        logger.info('Saving data to {}'.format(out_path))
-        site_df.to_csv(out_path)
-
-        out_path = "{}-meta.csv".format(name)
-        out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-        meta = meta.loc[site_df.columns]
-        logger.info('Saving meta data to {}'.format(out_path))
-        meta.to_csv(out_path)
+    out_path = "{}-meta.csv".format(name)
+    out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
+    meta = meta.loc[site_df.columns]
+    logger.info('Saving meta data to {}'.format(out_path))
+    meta.to_csv(out_path)
 
 
 if __name__ == '__main__':
