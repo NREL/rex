@@ -475,3 +475,20 @@ class Retry:
             return new_func
 
         return new_func
+
+
+def check_eval_str(s):
+    """Check an eval() string for questionable code.
+
+    Parameters
+    ----------
+    s : str
+        String to be sent to eval(). This is most likely a math equation to be
+        evaluated. It will be checked for questionable code like imports and
+        dunder statements.
+    """
+    bad_strings = ('import', 'os.', 'sys.', '.__', '__.')
+    for bad_s in bad_strings:
+        if bad_s in s:
+            raise ValueError('Will not eval() string which contains "{}": {}'
+                             .format(bad_s, s))
