@@ -141,7 +141,7 @@ def site(ctx, gid, lat_lon):
     Extract the nearest pixel to the given (lat, lon) coordinates
     OR the given resource gid
     """
-    ctx.invoke(site_cmd, dataset=dataset, lat_lon=lat_lon, gid=gid)
+    ctx.invoke(site_cmd, lat_lon=lat_lon, gid=gid)
 
 
 @dataset.command()
@@ -157,8 +157,8 @@ def region(ctx, region, region_col, timestep):
     Extract a single dataset for all gids in the given region
     """
 
-    ctx.invoke(region_cmd, dataset=dataset, region=region,
-               region_col=region_col, timestep=timestep)
+    ctx.invoke(region_cmd, region=region, region_col=region_col,
+               timestep=timestep)
 
 
 @dataset.command()
