@@ -6,10 +6,11 @@ import click
 import logging
 import os
 
-from rex.resource_extraction.resource_cli import dataset as dataset_ctx
-from rex.resource_extraction.resource_cli import multi_site as multi_site_ctx
-from rex.resource_extraction.resource_cli import region as region_ctx
-from rex.resource_extraction.resource_cli import site as site_ctx
+from rex.resource_extraction.resource_cli import box as box_cmd
+from rex.resource_extraction.resource_cli import dataset as dataset_grp
+from rex.resource_extraction.resource_cli import multi_site as multi_site_cmd
+from rex.resource_extraction.resource_cli import region as region_cmd
+from rex.resource_extraction.resource_cli import site as site_cmd
 from rex.resource_extraction.resource_extraction import (MultiYearResourceX,
                                                          MultiYearNSRDBX,
                                                          MultiYearWindX,
@@ -116,61 +117,82 @@ def years(ctx, years, dataset, region_col, region):
     map_df.to_csv(out_path)
 
 
-@main.command()
-@click.option('--dataset', '-d', type=str, required=True,
-              help='Dataset to extract')
-@click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
-              default=None,
-              help='(lat, lon) coordinates of interest')
-@click.option('--gid', '-g', type=int, default=None,
-              help='Resource gid of interest')
-@click.pass_context
-def site(ctx, dataset, lat_lon, gid):
-    """
-    Extract a single dataset for the nearest pixel to the given (lat, lon)
-    coordinates OR the given resource gid
-    """
-    ctx.invoke(site_ctx, dataset=dataset, lat_lon=lat_lon, gid=gid)
-
-
-@main.command()
-@click.option('--dataset', '-d', type=str, required=True,
-              help='Dataset to extract')
-@click.option('--region', '-r', type=str, required=True,
-              help='Region to extract')
-@click.option('--region_col', '-col', type=str, default='state',
-              help='Meta column to search for region')
-@click.pass_context
-def region(ctx, dataset, region, region_col):
-    """
-    Extract a single dataset for all pixels in the given region
-    """
-    ctx.invoke(region_ctx, dataset=dataset, region=region,
-               region_col=region_col)
-
-
 @main.group()
-@click.option('--sites', '-s', type=click.Path(exists=True), required=True,
-              help=('.csv or .json file with columns "latitude", "longitude" '
-                    'OR "gid"'))
-@click.pass_context
-def multi_site(ctx, sites):
-    """
-    Extract multiple sites given in '--sites' .csv or .json as
-    "latitude", "longitude" pairs OR "gid"s
-    """
-    ctx.invoke(multi_site_ctx, sites=sites)
-
-
-@multi_site.command()
 @click.option('--dataset', '-d', type=str, required=True,
               help='Dataset to extract')
 @click.pass_context
 def dataset(ctx, dataset):
     """
-    Extract given dataset for all sites
+    Extract a single dataset
     """
-    ctx.invoke(dataset_ctx, dataset=dataset)
+    ctx.invoke(dataset_grp, dataset=dataset)
+
+
+@dataset.command()
+@click.option('--gid', '-g', type=int, default=None,
+              help='Resource gid of interest')
+@click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
+              default=None,
+              help='(lat, lon) coordinates of interest')
+@click.pass_context
+def site(ctx, dataset, gid, lat_lon):
+    """
+    Extract the nearest pixel to the given (lat, lon) coordinates
+    OR the given resource gid
+    """
+    ctx.invoke(site_cmd, dataset=dataset, lat_lon=lat_lon, gid=gid)
+
+
+@dataset.command
+@click.option('--region', '-r', type=str, required=True,
+              help='Region to extract')
+@click.option('--region_col', '-col', type=str, default='state',
+              help='Meta column to search for region')
+@click.option('--timestep', '-ts', type=str, default=None,
+              help='Timestep to extract')
+@click.pass_context
+def region(ctx, dataset, region, region_col, timestep):
+    """
+    Extract a single dataset for all gids in the given region
+    """
+
+    ctx.invoke(region_cmd, dataset=dataset, region=region,
+               region_col=region_col, timestep=timestep)
+
+
+@dataset.command()
+@click.option('--lat_lon_1', '-ll1', nargs=2, type=click.Tuple([float, float]),
+              required=True,
+              help='One corner of the bounding box')
+@click.option('--lat_lon_2', '-ll2', nargs=2, type=click.Tuple([float, float]),
+              required=True,
+              help='The other corner of the bounding box')
+@click.option('--timestep', '-ts', type=str, default=None,
+              help='Timestep to extract')
+@click.option('--file_suffix', '-fs', default=None,
+              help='File name suffix')
+@click.pass_context
+def box(ctx, lat_lon_1, lat_lon_2, timestep, file_suffix):
+    """
+    Extract all pixels in the given bounding box
+    """
+    ctx.invoke(box_cmd, lat_lon_1=lat_lon_1, lat_lon_2=lat_lon_2,
+               file_suffix=file_suffix, timestep=timestep)
+
+
+@main.command()
+@click.option('--sites', '-s', type=click.Path(exists=True), required=True,
+              help=('.csv or .json file with columns "latitude", "longitude" '
+                    'OR "gid"'))
+@click.option('--dataset', '-d', type=str, required=True,
+              help='Dataset to extract, if sam datasets us "SAM" or "sam"')
+@click.pass_context
+def multi_site(ctx, sites, dataset):
+    """
+    Extract multiple sites given in '--sites' .csv or .json as
+    "latitude", "longitude" pairs OR "gid"s
+    """
+    ctx.invoke(multi_site_cmd, sites=sites, dataset=dataset)
 
 
 if __name__ == '__main__':
