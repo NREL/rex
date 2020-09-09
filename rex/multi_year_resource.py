@@ -6,9 +6,10 @@ import numpy as np
 import os
 from warnings import warn
 
+from rex.multi_file_resource import MultiH5Path
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
-from rex.resource import MultiH5Path, Resource
+from rex.resource import Resource
 from rex.utilities.exceptions import ResourceKeyError, ResourceWarning
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import parse_year

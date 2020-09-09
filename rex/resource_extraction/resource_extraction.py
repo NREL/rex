@@ -10,12 +10,14 @@ import pickle
 from scipy.spatial import cKDTree
 from tempfile import TemporaryDirectory
 
+from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
+                                     MultiFileWTK)
 from rex.multi_year_resource import (MultiYearNSRDB, MultiYearResource,
                                      MultiYearWindResource,
                                      MultiYearWaveResource)
-from rex.resource import Resource, MultiFileResource
-from rex.renewable_resource import (MultiFileWTK, MultiFileNSRDB, NSRDB,
-                                    SolarResource, WaveResource, WindResource)
+from rex.resource import Resource
+from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
+                                    WindResource)
 from rex.utilities import parse_year
 
 TREE_DIR = TemporaryDirectory()
