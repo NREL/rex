@@ -10,9 +10,9 @@ import pandas as pd
 import pytest
 
 from rex import TESTDATADIR
-from rex.resource import MultiH5, MultiH5Path
-from rex.renewable_resource import (NSRDB, WindResource, MultiFileNSRDB,
-                                    MultiFileWTK)
+from rex.multi_file_resource import (MultiH5, MultiH5Path, MultiFileNSRDB,
+                                     MultiFileWTK)
+from rex.renewable_resource import (NSRDB, WindResource)
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 
 
