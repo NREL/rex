@@ -50,7 +50,6 @@ class ResourceX(Resource):
         super().__init__(res_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
         self._tree = tree
-        self._lat_lon = None
 
     @property
     def tree(self):
@@ -109,31 +108,6 @@ class ResourceX(Resource):
             counties = None
 
         return counties
-
-    @property
-    def lat_lon(self):
-        """
-        Extract (latitude, longitude) pairs
-
-        Returns
-        -------
-        lat_lon : ndarray
-        """
-        if self._lat_lon is None:
-            if 'coordinates' in self:
-                self._lat_lon = self.coordinates
-            else:
-                self._lat_lon = self.meta
-                lat_lon_cols = ['latitude', 'longitude']
-                for c in self.meta.columns:
-                    if c.lower().startswith('lat'):
-                        lat_lon_cols[0] = c
-                    elif c.lower().startswith('lon'):
-                        lat_lon_cols[1] = c
-
-                self._lat_lon = self._lat_lon[lat_lon_cols].values
-
-        return self._lat_lon
 
     @staticmethod
     def _get_tree_file(h5_file):
@@ -702,7 +676,7 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
     Multi-File resource extraction class
     """
     def __init__(self, resource_path, tree=None, unscale=True,
-                 str_decode=True):
+                 str_decode=True, check_files=False):
         """
         Parameters
         ----------
@@ -719,9 +693,11 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
         """
-        super().__init__(resource_path, unscale=unscale, str_decode=str_decode)
-        self._lat_lon = None
+        super().__init__(resource_path, unscale=unscale, str_decode=str_decode,
+                         check_files=check_files)
         self._tree = tree
 
 
@@ -757,7 +733,6 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
         """
         super().__init__(resource_path, years=years, unscale=unscale,
                          str_decode=str_decode, hsds=hsds, res_cls=res_cls)
-        self._lat_lon = None
         self._tree = tree
 
     def get_means_map(self, ds_name, year, region=None,
@@ -822,7 +797,6 @@ class SolarX(SolarResource, ResourceX):
         """
         super().__init__(solar_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
-        self._lat_lon = None
         self._tree = tree
 
 
@@ -861,15 +835,17 @@ class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
     """
     Multi-File NSRDB extraction class
     """
-    def __init__(self, nsrdb_path, tree=None, unscale=True, str_decode=True):
+    def __init__(self, nsrdb_source, tree=None, unscale=True, str_decode=True,
+                 check_files=False):
         """
         Parameters
         ----------
-        nsrdb_path : str
-            Path to NSRDB .h5 files
+        nsrdb_source : str | list
+            Path to directory containing multi-file NSRDB file sets.
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+            Or list of source NSRDB .h5 files
         tree : str | cKDTree
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates
@@ -878,9 +854,11 @@ class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
         """
-        super().__init__(nsrdb_path, unscale=unscale, str_decode=str_decode)
-        self._lat_lon = None
+        super().__init__(nsrdb_source, unscale=unscale, str_decode=str_decode,
+                         check_files=check_files)
         self._tree = tree
 
 
@@ -914,7 +892,6 @@ class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
         """
         super().__init__(nsrdb_path, years=years, unscale=unscale,
                          str_decode=str_decode, hsds=hsds)
-        self._lat_lon = None
         self._tree = tree
 
 
@@ -945,7 +922,6 @@ class WindX(WindResource, ResourceX):
         """
         super().__init__(wind_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
-        self._lat_lon = None
         self._tree = tree
 
     def get_SAM_gid(self, hub_height, gid, out_path=None, **kwargs):
@@ -1025,15 +1001,17 @@ class MultiFileWindX(MultiFileWTK, WindX):
     """
     Multi-File Wind Resource extraction class
     """
-    def __init__(self, wtk_path, tree=None, unscale=True, str_decode=True):
+    def __init__(self, wtk_source, tree=None, unscale=True, str_decode=True,
+                 check_files=False):
         """
         Parameters
         ----------
-        wtk_path : str
-            Path to five minute WTK .h5 files
+        wtk_source : str | list
+            Path to directory containing multi-file WTK file sets.
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+            Or list of source WTK .h5 files
         tree : str | cKDTree
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates
@@ -1042,9 +1020,11 @@ class MultiFileWindX(MultiFileWTK, WindX):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
         """
-        super().__init__(wtk_path, unscale=unscale, str_decode=str_decode)
-        self._lat_lon = None
+        super().__init__(wtk_source, unscale=unscale, str_decode=str_decode,
+                         check_files=check_files)
         self._tree = tree
 
 
@@ -1078,7 +1058,6 @@ class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
         """
         super().__init__(wtk_path, years=years, unscale=unscale,
                          str_decode=str_decode, hsds=hsds)
-        self._lat_lon = None
         self._tree = tree
 
 
@@ -1110,7 +1089,6 @@ class WaveX(WaveResource, ResourceX):
         """
         super().__init__(wave_h5, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
-        self._lat_lon = None
         self._tree = tree
 
     def get_gid_ts(self, ds_name, gid):
@@ -1208,5 +1186,4 @@ class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX):
         """
         super().__init__(wave_path, years=years, unscale=unscale,
                          str_decode=str_decode, hsds=hsds)
-        self._lat_lon = None
         self._tree = tree

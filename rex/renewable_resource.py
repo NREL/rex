@@ -1130,19 +1130,20 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     resource.NSRDB : Parent class
     """
     @classmethod
-    def preload_SAM(cls, h5_path, sites, unscale=True, str_decode=True,
+    def preload_SAM(cls, h5_source, sites, unscale=True, str_decode=True,
                     tech='pvwattsv7', clearsky=False, bifacial=False,
-                    downscale=None, means=False):
+                    downscale=None, means=False, check_file=False):
         """
         Pre-load project_points for SAM
 
         Parameters
         ----------
-        h5_path : str
+        h5_source : str | list
             Path to directory containing multi-file resource file sets.
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+            Or list of source .h5 files
         sites : list
             List of sites to be provided to SAM
         unscale : bool
@@ -1162,6 +1163,8 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             e.g. '5min'.
         means : bool
             Boolean flag to compute mean resource when res_array is set
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
 
         Returns
         -------
@@ -1169,7 +1172,8 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        with cls(h5_path, unscale=unscale, str_decode=str_decode) as res:
+        with cls(h5_source, unscale=unscale, str_decode=str_decode,
+                 check_file=check_file) as res:
             # pylint: disable=assignment-from-no-return
             SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
                                        bifacial=bifacial, downscale=downscale,
@@ -1218,38 +1222,45 @@ class MultiFileWTK(MultiFileResource, WindResource):
     """
     SUFFIX = 'm.h5'
 
-    def __init__(self, h5_path, unscale=True, str_decode=True):
+    def __init__(self, h5_source, unscale=True, str_decode=True,
+                 check_files=False):
         """
         Parameters
         ----------
-        h5_path : str
+        h5_source : str | list
             Path to directory containing multi-file resource file sets.
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+            Or list of source .h5 files
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
         """
-        super().__init__(h5_path, unscale=unscale, str_decode=str_decode)
+        super().__init__(h5_source, unscale=unscale, str_decode=str_decode,
+                         check_files=check_files)
         self._heights = None
 
     @classmethod
-    def preload_SAM(cls, h5_path, sites, hub_heights, unscale=True,
+    def preload_SAM(cls, h5_source, sites, hub_heights, unscale=True,
                     str_decode=True, require_wind_dir=False,
-                    precip_rate=False, icing=False, means=False):
+                    precip_rate=False, icing=False, means=False,
+                    check_files=False):
         """
         Placeholder for classmethod that will pre-load project_points for SAM
 
         Parameters
         ----------
-        h5_path : str
+        h5_source : str | list
             Path to directory containing multi-file resource file sets.
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+            Or list of source .h5 files
         sites : list
             List of sites to be provided to SAM
         hub_heights : int | float | list
@@ -1268,6 +1279,8 @@ class MultiFileWTK(MultiFileResource, WindResource):
             This will preload relative humidity.
         means : bool
             Boolean flag to compute mean resource when res_array is set
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
 
         Returns
         -------
@@ -1275,7 +1288,8 @@ class MultiFileWTK(MultiFileResource, WindResource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        with cls(h5_path, unscale=unscale, str_decode=str_decode) as res:
+        with cls(h5_source, unscale=unscale, str_decode=str_decode,
+                 check_files=check_files) as res:
             # pylint: disable=assignment-from-no-return
             SAM_res = res._preload_SAM(sites, hub_heights,
                                        require_wind_dir=require_wind_dir,

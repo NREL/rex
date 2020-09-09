@@ -3,18 +3,19 @@
 pytests for resource handlers
 """
 from datetime import datetime
+import h5py
 import numpy as np
 import os
 import pandas as pd
 import pytest
 
 from rex import TESTDATADIR
+from rex.resource import MultiH5, MultiH5Path
 from rex.renewable_resource import (NSRDB, WindResource, MultiFileNSRDB,
                                     MultiFileWTK)
-from rex.utilities.exceptions import ResourceKeyError
+from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 
 
-@pytest.fixture
 def NSRDB_res():
     """
     Init NSRDB resource handler
@@ -23,7 +24,6 @@ def NSRDB_res():
     return NSRDB(path)
 
 
-@pytest.fixture
 def NSRDB_2018():
     """
     Init NSRDB resource handler
@@ -32,7 +32,18 @@ def NSRDB_2018():
     return MultiFileNSRDB(path)
 
 
-@pytest.fixture
+def NSRDB_2018_list():
+    """
+    Init NSRDB resource handler
+    """
+    path = os.path.join(TESTDATADIR, 'nsrdb')
+    h5_files = MultiH5Path._get_h5_files(path, prefix='nsrdb',
+                                         suffix='2018.h5')
+    print(h5_files)
+
+    return MultiFileNSRDB(h5_files)
+
+
 def WindResource_res():
     """
     Init WindResource resource handler
@@ -41,16 +52,24 @@ def WindResource_res():
     return WindResource(path)
 
 
-@pytest.fixture
 def FiveMinWind_res():
     """
-    Init NSRDB resource handler
+    Init WindResource resource handler
     """
     path = os.path.join(TESTDATADIR, 'wtk', 'wtk*m.h5')
     return MultiFileWTK(path)
 
 
-@pytest.fixture
+def FiveMinWind_list():
+    """
+    Init WindResource resource handler
+    """
+    path = os.path.join(TESTDATADIR, 'wtk')
+    h5_files = MultiH5Path._get_h5_files(path, prefix='wtk',
+                                         suffix='m.h5')
+    return MultiFileWTK(h5_files)
+
+
 def wind_group():
     """
     Init WindResource resource handler
@@ -263,6 +282,19 @@ def check_dset_handler(res_cls, ds_name):
         assert dset[times, sites]
 
 
+def check_dset_map(res_cls, ds_name):
+    """
+    Test MultiH5 dset map
+    """
+    res_values = res_cls.h5[ds_name][:, 0]
+
+    file = res_cls.h5._dset_map[ds_name]
+    with h5py.File(file, 'r') as f:
+        native_values = f[ds_name][:, 0]
+
+    assert np.allclose(res_values, native_values)
+
+
 def check_scale(res_cls, ds_name):
     """
     Test unscaling of variable
@@ -299,369 +331,250 @@ class TestNSRDB:
     NSRDB Resource handler tests
     """
     @staticmethod
-    def test_res(NSRDB_res):
+    @pytest.mark.parametrize('res_cls',
+                             [NSRDB_res(),
+                              NSRDB_2018(),
+                              NSRDB_2018_list()])
+    def test_res(res_cls):
         """
         test NSRDB class calls
         """
-        check_res(NSRDB_res)
-        NSRDB_res.close()
+        check_res(res_cls)
+        res_cls.close()
 
     @staticmethod
-    def test_meta(NSRDB_res):
+    @pytest.mark.parametrize('res_cls',
+                             [NSRDB_res(),
+                              NSRDB_2018(),
+                              NSRDB_2018_list()])
+    def test_meta(res_cls):
         """
         test extraction of NSRDB meta data
         """
-        check_meta(NSRDB_res)
-        NSRDB_res.close()
+        check_meta(res_cls)
+        res_cls.close()
 
     @staticmethod
-    def test_time_index(NSRDB_res):
+    @pytest.mark.parametrize('res_cls',
+                             [NSRDB_res(),
+                              NSRDB_2018(),
+                              NSRDB_2018_list()])
+    def test_time_index(res_cls):
         """
         test extraction of NSRDB time_index
         """
-        check_time_index(NSRDB_res)
-        NSRDB_res.close()
+        check_time_index(res_cls)
+        res_cls.close()
 
     @staticmethod
-    def test_ds(NSRDB_res, ds_name='dni'):
+    @pytest.mark.parametrize('res_cls',
+                             [NSRDB_res(),
+                              NSRDB_2018(),
+                              NSRDB_2018_list()])
+    def test_ds(res_cls, ds_name='dni'):
         """
         test extraction of a variable array
         """
-        check_dset(NSRDB_res, ds_name)
-        check_dset_handler(NSRDB_res, ds_name)
-        NSRDB_res.close()
+        check_dset(res_cls, ds_name)
+        check_dset_handler(res_cls, ds_name)
+        res_cls.close()
 
     @staticmethod
-    def test_unscale_dni(NSRDB_res):
+    @pytest.mark.parametrize('res_cls',
+                             [NSRDB_res(),
+                              NSRDB_2018(),
+                              NSRDB_2018_list()])
+    def test_unscale_dni(res_cls):
         """
         test unscaling of dni values
         """
-        check_scale(NSRDB_res, 'dni')
-        NSRDB_res.close()
+        check_scale(res_cls, 'dni')
+        res_cls.close()
 
     @staticmethod
-    def test_unscale_pressure(NSRDB_res):
+    @pytest.mark.parametrize('res_cls',
+                             [NSRDB_res(),
+                              NSRDB_2018(),
+                              NSRDB_2018_list()])
+    def test_unscale_pressure(res_cls):
         """
         test unscaling of pressure values
         """
-        check_scale(NSRDB_res, 'surface_pressure')
-        NSRDB_res.close()
-
-
-class TestNSRDB2018:
-    """
-    MultiFileNSRDB Resource handler tests
-    """
-    @staticmethod
-    def test_res(NSRDB_2018):
-        """
-        test NSRDB class calls
-        """
-        check_res(NSRDB_2018)
-        NSRDB_2018.close()
+        check_scale(res_cls, 'surface_pressure')
+        res_cls.close()
 
     @staticmethod
-    def test_meta(NSRDB_2018):
+    @pytest.mark.parametrize('res_cls',
+                             [NSRDB_2018(),
+                              NSRDB_2018_list()])
+    def test_dset_map(res_cls, ds_name='dni'):
         """
-        test extraction of NSRDB meta data
+        Test MultiH5 dset map
         """
-        check_meta(NSRDB_2018)
-        NSRDB_2018.close()
-
-    @staticmethod
-    def test_time_index(NSRDB_2018):
-        """
-        test extraction of NSRDB time_index
-        """
-        check_time_index(NSRDB_2018)
-        NSRDB_2018.close()
-
-    @staticmethod
-    def test_ds(NSRDB_2018, ds_name='dni'):
-        """
-        test extraction of a variable array
-        """
-        check_dset(NSRDB_2018, ds_name)
-        check_dset_handler(NSRDB_2018, ds_name)
-        NSRDB_2018.close()
-
-    @staticmethod
-    def test_unscale_dni(NSRDB_2018):
-        """
-        test unscaling of dni values
-        """
-        check_scale(NSRDB_2018, 'dni')
-        NSRDB_2018.close()
-
-    @staticmethod
-    def test_unscale_pressure(NSRDB_2018):
-        """
-        test unscaling of pressure values
-        """
-        check_scale(NSRDB_2018, 'surface_pressure')
-        NSRDB_2018.close()
+        check_dset_map(res_cls, ds_name)
+        res_cls.close()
 
 
 class TestWindResource:
     """
     WindResource Resource handler tests
     """
+
     @staticmethod
-    def test_res(WindResource_res):
+    @pytest.mark.parametrize('res_cls',
+                             [WindResource_res(),
+                              FiveMinWind_res(),
+                              FiveMinWind_list(),
+                              wind_group()])
+    def test_res(res_cls):
         """
         test WindResource class calls
         """
-        check_res(WindResource_res)
-        WindResource_res.close()
+        check_res(res_cls)
+        res_cls.close()
 
     @staticmethod
-    def test_meta(WindResource_res):
+    @pytest.mark.parametrize('res_cls',
+                             [WindResource_res(),
+                              FiveMinWind_res(),
+                              FiveMinWind_list(),
+                              wind_group()])
+    def test_meta(res_cls):
         """
         test extraction of WindResource meta data
         """
-        check_meta(WindResource_res)
-        WindResource_res.close()
+        check_meta(res_cls)
+        res_cls.close()
 
     @staticmethod
-    def test_time_index(WindResource_res):
+    @pytest.mark.parametrize('res_cls',
+                             [WindResource_res(),
+                              FiveMinWind_res(),
+                              FiveMinWind_list(),
+                              wind_group()])
+    def test_time_index(res_cls):
         """
         test extraction of WindResource time_index
         """
-        check_time_index(WindResource_res)
-        WindResource_res.close()
+        check_time_index(res_cls)
+        res_cls.close()
 
     @staticmethod
-    def test_ds(WindResource_res, ds_name='windspeed_100m'):
+    @pytest.mark.parametrize('res_cls',
+                             [WindResource_res(),
+                              FiveMinWind_res(),
+                              FiveMinWind_list(),
+                              wind_group()])
+    def test_ds(res_cls, ds_name='windspeed_100m'):
         """
         test extraction of a variable array
         """
-        check_dset(WindResource_res, ds_name)
-        check_dset_handler(WindResource_res, ds_name)
-        WindResource_res.close()
+        check_dset(res_cls, ds_name)
+        check_dset_handler(res_cls, ds_name)
+        res_cls.close()
 
     @staticmethod
-    def test_new_hubheight(WindResource_res, ds_name='windspeed_90m'):
+    @pytest.mark.parametrize(('res_cls', 'ds_name'),
+                             [(WindResource_res(), 'windspeed_90m'),
+                              (FiveMinWind_res(), 'windspeed_110m'),
+                              (FiveMinWind_list(), 'windspeed_110m'),
+                              (wind_group(), 'windspeed_90m')])
+    def test_new_hubheight(res_cls, ds_name):
         """
         test extraction of a variable array
         """
-        check_dset(WindResource_res, ds_name)
-        WindResource_res.close()
+        check_dset(res_cls, ds_name)
+        res_cls.close()
 
     @staticmethod
-    def test_unscale_windspeed(WindResource_res):
+    @pytest.mark.parametrize('res_cls',
+                             [WindResource_res(),
+                              FiveMinWind_res(),
+                              FiveMinWind_list(),
+                              wind_group()])
+    def test_unscale_windspeed(res_cls):
         """
         test unscaling of windspeed values
         """
-        check_scale(WindResource_res, 'windspeed_100m')
-        WindResource_res.close()
+        check_scale(res_cls, 'windspeed_100m')
+        res_cls.close()
 
     @staticmethod
-    def test_unscale_pressure(WindResource_res):
+    @pytest.mark.parametrize('res_cls',
+                             [WindResource_res(),
+                              FiveMinWind_res(),
+                              FiveMinWind_list(),
+                              wind_group()])
+    def test_unscale_pressure(res_cls):
         """
         test unscaling of pressure values
         """
-        check_scale(WindResource_res, 'pressure_100m')
-        WindResource_res.close()
+        check_scale(res_cls, 'pressure_100m')
+        res_cls.close()
 
     @staticmethod
-    def test_interpolation(WindResource_res, h=90):
+    @pytest.mark.parametrize(('res_cls', 'h'),
+                             [(WindResource_res(), 90),
+                              (FiveMinWind_res(), 110),
+                              (FiveMinWind_list(), 110),
+                              (wind_group(), 90)])
+    def test_interpolation(res_cls, h):
         """
         test variable interpolation
         """
         ignore = ['winddirection', 'precipitationrate', 'relativehumidity']
-        for var in WindResource_res.heights.keys():
+        for var in res_cls.heights.keys():
             if var not in ignore:
-                check_interp(WindResource_res, var, h)
+                check_interp(res_cls, var, h)
 
-        WindResource_res.close()
+        res_cls.close()
 
     @staticmethod
-    def test_extrapolation(WindResource_res, h=110):
+    @pytest.mark.parametrize(('res_cls', 'h'),
+                             [(WindResource_res(), 110),
+                              (FiveMinWind_res(), 90),
+                              (FiveMinWind_list(), 90),
+                              (wind_group(), 100)])
+    def test_extrapolation(res_cls, h):
         """
         test variable interpolation
         """
         for var in ['temperature', 'pressure']:
-            check_interp(WindResource_res, var, h)
+            check_interp(res_cls, var, h)
 
-        WindResource_res.close()
+        res_cls.close()
+
+    @staticmethod
+    @pytest.mark.parametrize('res_cls',
+                             [FiveMinWind_res(),
+                              FiveMinWind_list(), ])
+    def test_dset_map(res_cls, ds_name='windspeed_100m'):
+        """
+        Test MultiH5 dset map
+        """
+        check_dset_map(res_cls, ds_name)
+        res_cls.close()
 
 
-class TestGroupResource:
+def test_group_raise():
     """
-    WindResource Resource handler tests
+    test WindResource class group check
     """
-    @staticmethod
-    def test_group():
-        """
-        test WindResource class calls
-        """
-        path = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_group.h5')
-        with pytest.raises(ResourceKeyError):
-            with WindResource(path) as res:
-                check_res(res)
-
-    @staticmethod
-    def test_res(wind_group):
-        """
-        test WindResource class calls
-        """
-        check_res(wind_group)
-        wind_group.close()
-
-    @staticmethod
-    def test_meta(wind_group):
-        """
-        test extraction of WindResource meta data
-        """
-        check_meta(wind_group)
-        wind_group.close()
-
-    @staticmethod
-    def test_time_index(wind_group):
-        """
-        test extraction of WindResource time_index
-        """
-        check_time_index(wind_group)
-        wind_group.close()
-
-    @staticmethod
-    def test_ds(wind_group, ds_name='windspeed_100m'):
-        """
-        test extraction of a variable array
-        """
-        check_dset(wind_group, ds_name)
-        check_dset_handler(wind_group, ds_name)
-        wind_group.close()
-
-    @staticmethod
-    def test_new_hubheight(wind_group, ds_name='windspeed_90m'):
-        """
-        test extraction of a variable array
-        """
-        check_dset(wind_group, ds_name)
-        wind_group.close()
-
-    @staticmethod
-    def test_unscale_windspeed(wind_group):
-        """
-        test unscaling of windspeed values
-        """
-        check_scale(wind_group, 'windspeed_100m')
-        wind_group.close()
-
-    @staticmethod
-    def test_unscale_pressure(wind_group):
-        """
-        test unscaling of pressure values
-        """
-        check_scale(wind_group, 'pressure_100m')
-        wind_group.close()
-
-    @staticmethod
-    def test_interpolation(wind_group, h=90):
-        """
-        test variable interpolation
-        """
-        ignore = ['winddirection', 'precipitationrate', 'relativehumidity']
-        for var in wind_group.heights.keys():
-            if var not in ignore:
-                check_interp(wind_group, var, h)
-
-        wind_group.close()
-
-    @staticmethod
-    def test_extrapolation(wind_group, h=110):
-        """
-        test variable interpolation
-        """
-        for var in ['temperature', 'pressure']:
-            check_interp(wind_group, var, h)
-
-        wind_group.close()
+    path = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_group.h5')
+    with pytest.raises(ResourceKeyError):
+        with WindResource(path) as res:
+            check_res(res)
 
 
-class TestMultiFileWTK:
+def test_check_files():
     """
-    MultiFileWTK Resource handler tests
+    test MultiH5 check_files
     """
-    @staticmethod
-    def test_res(FiveMinWind_res):
-        """
-        test MultiFileWTK class calls
-        """
-        check_res(FiveMinWind_res)
-        FiveMinWind_res.close()
-
-    @staticmethod
-    def test_meta(FiveMinWind_res):
-        """
-        test extraction of MultiFileWTK meta data
-        """
-        check_meta(FiveMinWind_res)
-        FiveMinWind_res.close()
-
-    @staticmethod
-    def test_time_index(FiveMinWind_res):
-        """
-        test extraction of MultiFileWTK time_index
-        """
-        check_time_index(FiveMinWind_res)
-        FiveMinWind_res.close()
-
-    @staticmethod
-    def test_ds(FiveMinWind_res, ds_name='windspeed_100m'):
-        """
-        test extraction of a variable array
-        """
-        check_dset(FiveMinWind_res, ds_name)
-        check_dset_handler(FiveMinWind_res, ds_name)
-        FiveMinWind_res.close()
-
-    @staticmethod
-    def test_new_hubheight(FiveMinWind_res, ds_name='windspeed_150m'):
-        """
-        test extraction of a variable array
-        """
-        check_dset(FiveMinWind_res, ds_name)
-        FiveMinWind_res.close()
-
-    @staticmethod
-    def test_unscale_windspeed(FiveMinWind_res):
-        """
-        test unscaling of windspeed values
-        """
-        check_scale(FiveMinWind_res, 'windspeed_100m')
-        FiveMinWind_res.close()
-
-    @staticmethod
-    def test_unscale_pressure(FiveMinWind_res):
-        """
-        test unscaling of pressure values
-        """
-        check_scale(FiveMinWind_res, 'pressure_100m')
-        FiveMinWind_res.close()
-
-    @staticmethod
-    def test_interpolation(FiveMinWind_res, h=150):
-        """
-        test variable interpolation
-        """
-        ignore = ['winddirection', 'precipitationrate', 'relativehumidity']
-        for var in FiveMinWind_res.heights.keys():
-            if var not in ignore:
-                check_interp(FiveMinWind_res, var, h)
-
-        FiveMinWind_res.close()
-
-    @staticmethod
-    def test_extrapolation(FiveMinWind_res, h=80):
-        """
-        test variable interpolation
-        """
-        for var in ['temperature', 'pressure']:
-            check_interp(FiveMinWind_res, var, h)
-
-        FiveMinWind_res.close()
+    h5_files = [os.path.join(TESTDATADIR, 'nsrdb', 'nsrdb_irradiance_2018.h5'),
+                os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_100m.h5')]
+    with pytest.raises(ResourceRuntimeError):
+        with MultiH5(h5_files, check_files=True) as f:
+            check_res(f)
 
 
 def execute_pytest(capture='all', flags='-rapP'):

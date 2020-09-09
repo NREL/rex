@@ -432,7 +432,7 @@ class Resource:
         self._unscale = unscale
         self._meta = None
         self._time_index = None
-        self._coords = None
+        self._lat_lon = None
         self._str_decode = str_decode
         self._i = 0
 
@@ -634,16 +634,35 @@ class Resource:
 
         Returns
         -------
-        coords : ndarray
+        lat_lon : ndarray
             Array of (lat, lon) pairs for each site in meta
         """
-        if self._coords is None:
-            if 'coordinates' in self.h5:
-                self._coords = self._get_coords('coordinates', slice(None))
-            else:
-                raise ResourceKeyError("'coordinates' is not a valid dataset!")
+        return self.lat_lon
 
-        return self._coords
+    @property
+    def lat_lon(self):
+        """
+        Extract (latitude, longitude) pairs
+
+        Returns
+        -------
+        lat_lon : ndarray
+        """
+        if self._lat_lon is None:
+            if 'coordinates' in self:
+                self._lat_lon = self._get_coords('coordinates', slice(None))
+            else:
+                self._lat_lon = self.meta
+                lat_lon_cols = ['latitude', 'longitude']
+                for c in self.meta.columns:
+                    if c.lower().startswith('lat'):
+                        lat_lon_cols[0] = c
+                    elif c.lower().startswith('lon'):
+                        lat_lon_cols[1] = c
+
+                self._lat_lon = self._lat_lon[lat_lon_cols].values
+
+        return self._lat_lon
 
     @property
     def global_attrs(self):
@@ -985,29 +1004,37 @@ class MultiH5:
     Class to handle multiple h5 file Resources
     """
 
-    def __init__(self, h5_dir, prefix='', suffix='.h5'):
+    def __init__(self, h5_files, check_files=False):
         """
         Parameters
         ----------
-        h5_dir : str
+        h5_files : str
             Path to directory containing 5min .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
         """
-        self.h5_dir = h5_dir
-        self._dset_map = self._map_file_dsets(h5_dir, prefix=prefix,
-                                              suffix=suffix)
+        self._dset_map = self._map_file_dsets(h5_files)
         self._h5_map = self._map_file_instances(set(self._dset_map.values()))
 
         self._i = 0
 
+        if check_files:
+            self._preflight_check()
+
     def __repr__(self):
-        msg = ("{} for {}:\n Contains {} files and {} datasets"
-               .format(self.__class__.__name__, self.h5_dir,
-                       len(self), len(self._dset_map)))
+        msg = ("{} contains {} files and {} datasets"
+               .format(self.__class__.__name__, len(self),
+                       len(self._dset_map)))
         return msg
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
+        if type is not None:
+            raise
 
     def __len__(self):
         return len(self._h5_map)
@@ -1043,6 +1070,7 @@ class MultiH5:
     def attrs(self):
         """
         Global .h5 file attributes sourced from first .h5 file
+
         Returns
         -------
         attrs : dict
@@ -1050,12 +1078,14 @@ class MultiH5:
         """
         path = self.h5_files[0]
         attrs = dict(self._h5_map[path].attrs)
+
         return attrs
 
     @property
     def datasets(self):
         """
         Available datasets
+
         Returns
         -------
         list
@@ -1067,6 +1097,7 @@ class MultiH5:
     def h5_files(self):
         """
         .h5 files data is being sourced from
+
         Returns
         -------
         list
@@ -1078,10 +1109,12 @@ class MultiH5:
     def _get_dsets(h5_path):
         """
         Get datasets in given .h5 file
+
         Parameters
         ----------
         h5_path : str
             Path to .h5 file to get variables for
+
         Returns
         -------
         unique_dsets : list
@@ -1101,33 +1134,29 @@ class MultiH5:
         return unique_dsets, shared_dsets
 
     @staticmethod
-    def _map_file_dsets(h5_dir, prefix='', suffix='.h5'):
+    def _map_file_dsets(h5_files):
         """
         Map 5min variables to their .h5 files in given directory
+
         Parameters
         ----------
-        h5_dir : str
-            Path to directory containing 5min .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
+        h5_files : list
+            List of h5_files to source data from
+
         Returns
         -------
         dset_map : dict
             Dictionary mapping datasets to file paths
         """
         dset_map = {}
-        for file in sorted(os.listdir(h5_dir)):
-            if file.startswith(prefix) and file.endswith(suffix):
-                path = os.path.join(h5_dir, file)
-                unique_dsets, shared_dsets = MultiH5._get_dsets(path)
-                for dset in shared_dsets:
-                    if dset not in dset_map:
-                        dset_map[dset] = path
+        for file in h5_files:
+            unique_dsets, shared_dsets = MultiH5._get_dsets(file)
+            for dset in shared_dsets:
+                if dset not in dset_map:
+                    dset_map[dset] = file
 
-                for dset in unique_dsets:
-                    dset_map[dset] = path
+            for dset in unique_dsets:
+                dset_map[dset] = file
 
         return dset_map
 
@@ -1136,10 +1165,12 @@ class MultiH5:
         """
         Open all .h5 files and map the open h5py instances to the
         associated file paths
+
         Parameters
         ----------
         h5_files : list
             List of .h5 files to open
+
         Returns
         -------
         h5_map : dict
@@ -1151,10 +1182,88 @@ class MultiH5:
 
         return h5_map
 
+    def _preflight_check(self):
+        """
+        Check time_index and coordinates accross files
+        """
+        time_index = None
+        lat_lon = None
+
+        bad_files = []
+        for file in self.h5_files:
+            with Resource(file) as f:
+                ti = f.time_index
+                ll = f.lat_lon
+                if time_index is None:
+                    time_index = ti.copy()
+                else:
+                    check = time_index.equals(ti)
+                    if not check:
+                        bad_files.append(file)
+
+                if lat_lon is None:
+                    lat_lon = ll.copy()
+                else:
+                    check = np.allclose(lat_lon, ll)
+                    if not check:
+                        bad_files.append(file)
+
+        bad_files = list(set(bad_files))
+        if bad_files:
+            msg = ("The following files' coordinates and time-index do not "
+                   "match:\n{}".format(bad_files))
+            raise ResourceRuntimeError(msg)
+
+    def close(self):
+        """
+        Close all h5py.File instances
+        """
+        for f in self._h5_map.values():
+            f.close()
+
+
+class MultiH5Path(MultiH5):
+    """
+    Class to handle multiple h5 file Resources derived from a path
+    """
+    def __init__(self, h5_path, prefix='', suffix='.h5', check_files=False):
+        """
+        Parameters
+        ----------
+        h5_path : str
+            Path to directory containing multi-file resource file sets.
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        prefix : str
+            Prefix for resource .h5 files
+        suffix : str
+            Suffix for resource .h5 files
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
+        """
+        self.h5_dir, pre, suf = self.multi_file_args(h5_path)
+        if pre is None:
+            pre = prefix
+
+        if suf is None:
+            suf = suffix
+
+        h5_files = self._get_h5_files(self.h5_dir, prefix=pre, suffix=suf)
+        super().__init__(h5_files, check_files=check_files)
+
+    def __repr__(self):
+        msg = ("{} for {}:\n Contains {} files and {} datasets"
+               .format(self.__class__.__name__, self.h5_dir,
+                       len(self), len(self._dset_map)))
+
+        return msg
+
     @staticmethod
     def multi_file_args(h5_path):
         """
         Get multi-h5 directory arguments for multi file resource paths.
+
         Parameters
         ----------
         h5_path : str
@@ -1184,21 +1293,42 @@ class MultiH5:
 
         return h5_dir, prefix, suffix
 
-    def close(self):
+    @staticmethod
+    def _get_h5_files(h5_dir, prefix='', suffix='.h5'):
         """
-        Close all h5py.File instances
+        Map 5min variables to their .h5 files in given directory
+
+        Parameters
+        ----------
+        h5_dir : str
+            Path to directory containing 5min .h5 files
+        prefix : str
+            Prefix for resource .h5 files
+        suffix : str
+            Suffix for resource .h5 files
+
+        Returns
+        -------
+        h5_files : list
+            List of h5_files to source data from
         """
-        for f in self._h5_map.values():
-            f.close()
+        h5_files = []
+        for file in sorted(os.listdir(h5_dir)):
+            if file.startswith(prefix) and file.endswith(suffix):
+                h5_files.append(os.path.join(h5_dir, file))
+
+        return h5_files
 
 
 class MultiFileResource(Resource):
     """
     Class to handle fine spatial resolution resource data stored in
     multiple .h5 files
+
     See Also
     --------
     resource.Resource : Parent class
+
     Examples
     --------
     Due to the size of the 2018 NSRDB and 5min WTK, datasets are stored in
@@ -1243,39 +1373,68 @@ class MultiFileResource(Resource):
     PREFIX = ''
     SUFFIX = '.h5'
 
-    def __init__(self, h5_path, unscale=True, str_decode=True):
+    def __init__(self, h5_source, unscale=True, str_decode=True,
+                 check_files=False):
         """
         Parameters
         ----------
-        h5_path : str
+        h5_source : str | list
             Path to directory containing multi-file resource file sets.
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+            Or list of source .h5 files
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
         """
-        self.h5_dir, prefix, suffix = MultiH5.multi_file_args(h5_path)
-        if prefix is None:
-            prefix = self.PREFIX
-
-        if suffix is None:
-            suffix = self.SUFFIX
-
         self._unscale = unscale
         self._meta = None
         self._time_index = None
-        self._coords = None
+        self._lat_lon = None
         self._str_decode = str_decode
         self._group = None
         # Map variables to their .h5 files
-        self._h5 = MultiH5(self.h5_dir, prefix=prefix, suffix=suffix)
+        self._h5 = self._init_multi_h5(h5_source, check_files=check_files)
         self._h5_files = self._h5.h5_files
         self.h5_file = self._h5_files[0]
 
     def __repr__(self):
-        msg = "{} for {}".format(self.__class__.__name__, self.h5_dir)
+        msg = "{}".format(self.__class__.__name__)
         return msg
+
+    def _init_multi_h5(self, h5_source, check_files=False):
+        """
+        Initialize MultiH5 handler class based on input type
+
+        Parameters
+        ----------
+        h5_source : str | list
+            Path to directory containing multi-file resource file sets.
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+            Or list of source .h5 files
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
+
+        Returns
+        -------
+        multi_h5 : MultiH5 | MultiH5Path
+            Initialized multi h5 handler
+        """
+        if isinstance(h5_source, str):
+            multi_h5 = MultiH5Path(h5_source, prefix=self.PREFIX,
+                                   suffix=self.SUFFIX, check_files=check_files)
+        elif isinstance(h5_source, (list, tuple)):
+            multi_h5 = MultiH5(h5_source, check_files=check_files)
+        else:
+            msg = ('Cannot initialize MultiH5 from {}, expecting a path or a '
+                   'list of .h5 file paths'.format(type(h5_source)))
+            raise ResourceRuntimeError(msg)
+
+        return multi_h5
