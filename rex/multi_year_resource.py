@@ -6,9 +6,10 @@ import numpy as np
 import os
 from warnings import warn
 
+from rex.multi_file_resource import MultiH5Path
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
-from rex.resource import MultiH5, Resource
+from rex.resource import Resource
 from rex.utilities.exceptions import ResourceKeyError, ResourceWarning
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import parse_year
@@ -491,7 +492,7 @@ class MultiYearResource:
         res_cls : obj
             Resource handler to us to open individual .h5 files
         """
-        self.h5_dir, prefix, suffix = MultiH5.multi_file_args(h5_path)
+        self.h5_dir, prefix, suffix = MultiH5Path.multi_file_args(h5_path)
         if prefix is None:
             prefix = self.PREFIX
 

@@ -5,12 +5,14 @@ The REsource eXtraction tool (rex)
 from __future__ import print_function, division, absolute_import
 import os
 
+from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
+                                     MultiFileWTK)
 from rex.multi_year_resource import (MultiYearResource, MultiYearNSRDB,
                                      MultiYearWindResource,
                                      MultiYearWaveResource)
 from rex.rechunk_h5 import RechunkH5, to_records_array
-from rex.renewable_resource import (NSRDB, MultiFileNSRDB, MultiFileWTK,
-                                    SolarResource, WindResource, WaveResource)
+from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
+                                    WaveResource)
 from rex.resource import Resource
 from rex.resource_extraction import (ResourceX, MultiYearResourceX,
                                      NSRDBX, MultiFileNSRDBX, MultiYearNSRDBX,

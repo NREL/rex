@@ -4,7 +4,6 @@ Classes to handle resource data
 """
 import h5py
 import numpy as np
-import os
 import pandas as pd
 
 from rex.utilities.parse_keys import parse_keys, parse_slice
@@ -432,7 +431,7 @@ class Resource:
         self._unscale = unscale
         self._meta = None
         self._time_index = None
-        self._coords = None
+        self._lat_lon = None
         self._str_decode = str_decode
         self._i = 0
 
@@ -634,16 +633,35 @@ class Resource:
 
         Returns
         -------
-        coords : ndarray
+        lat_lon : ndarray
             Array of (lat, lon) pairs for each site in meta
         """
-        if self._coords is None:
-            if 'coordinates' in self.h5:
-                self._coords = self._get_coords('coordinates', slice(None))
-            else:
-                raise ResourceKeyError("'coordinates' is not a valid dataset!")
+        return self.lat_lon
 
-        return self._coords
+    @property
+    def lat_lon(self):
+        """
+        Extract (latitude, longitude) pairs
+
+        Returns
+        -------
+        lat_lon : ndarray
+        """
+        if self._lat_lon is None:
+            if 'coordinates' in self:
+                self._lat_lon = self._get_coords('coordinates', slice(None))
+            else:
+                self._lat_lon = self.meta
+                lat_lon_cols = ['latitude', 'longitude']
+                for c in self.meta.columns:
+                    if c.lower() in ['lat', 'latitude']:
+                        lat_lon_cols[0] = c
+                    elif c.lower() in ['lon', 'long', 'longitude']:
+                        lat_lon_cols[1] = c
+
+                self._lat_lon = self._lat_lon[lat_lon_cols].values
+
+        return self._lat_lon
 
     @property
     def global_attrs(self):
@@ -978,304 +996,3 @@ class Resource:
         kwargs : dict
             kwargs to init resource class
         """
-
-
-class MultiH5:
-    """
-    Class to handle multiple h5 file Resources
-    """
-
-    def __init__(self, h5_dir, prefix='', suffix='.h5'):
-        """
-        Parameters
-        ----------
-        h5_dir : str
-            Path to directory containing 5min .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
-        """
-        self.h5_dir = h5_dir
-        self._dset_map = self._map_file_dsets(h5_dir, prefix=prefix,
-                                              suffix=suffix)
-        self._h5_map = self._map_file_instances(set(self._dset_map.values()))
-
-        self._i = 0
-
-    def __repr__(self):
-        msg = ("{} for {}:\n Contains {} files and {} datasets"
-               .format(self.__class__.__name__, self.h5_dir,
-                       len(self), len(self._dset_map)))
-        return msg
-
-    def __len__(self):
-        return len(self._h5_map)
-
-    def __getitem__(self, dset):
-        if dset in self:
-            path = self._dset_map[dset]
-            h5 = self._h5_map[path]
-            ds = h5[dset]
-        else:
-            raise ValueError('{} is invalid must be one of: {}'
-                             .format(dset, self.datasets))
-
-        return ds
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._i >= len(self.datasets):
-            self._i = 0
-            raise StopIteration
-
-        dset = self.datasets[self._i]
-        self._i += 1
-
-        return dset
-
-    def __contains__(self, dset):
-        return dset in self.datasets
-
-    @property
-    def attrs(self):
-        """
-        Global .h5 file attributes sourced from first .h5 file
-        Returns
-        -------
-        attrs : dict
-            .h5 file attributes sourced from first .h5 file
-        """
-        path = self.h5_files[0]
-        attrs = dict(self._h5_map[path].attrs)
-        return attrs
-
-    @property
-    def datasets(self):
-        """
-        Available datasets
-        Returns
-        -------
-        list
-            List of dataset present in .h5 files
-        """
-        return sorted(self._dset_map)
-
-    @property
-    def h5_files(self):
-        """
-        .h5 files data is being sourced from
-        Returns
-        -------
-        list
-            List of .h5 files data is being sourced form
-        """
-        return sorted(self._h5_map)
-
-    @staticmethod
-    def _get_dsets(h5_path):
-        """
-        Get datasets in given .h5 file
-        Parameters
-        ----------
-        h5_path : str
-            Path to .h5 file to get variables for
-        Returns
-        -------
-        unique_dsets : list
-            List of unique datasets in .h5 file
-        shared_dsets : list
-            List of shared datasets in .h5 file
-        """
-        unique_dsets = []
-        shared_dsets = []
-        with h5py.File(h5_path, mode='r') as f:
-            for dset in f:
-                if dset not in ['meta', 'time_index', 'coordinates']:
-                    unique_dsets.append(dset)
-                else:
-                    shared_dsets.append(dset)
-
-        return unique_dsets, shared_dsets
-
-    @staticmethod
-    def _map_file_dsets(h5_dir, prefix='', suffix='.h5'):
-        """
-        Map 5min variables to their .h5 files in given directory
-        Parameters
-        ----------
-        h5_dir : str
-            Path to directory containing 5min .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
-        Returns
-        -------
-        dset_map : dict
-            Dictionary mapping datasets to file paths
-        """
-        dset_map = {}
-        for file in sorted(os.listdir(h5_dir)):
-            if file.startswith(prefix) and file.endswith(suffix):
-                path = os.path.join(h5_dir, file)
-                unique_dsets, shared_dsets = MultiH5._get_dsets(path)
-                for dset in shared_dsets:
-                    if dset not in dset_map:
-                        dset_map[dset] = path
-
-                for dset in unique_dsets:
-                    dset_map[dset] = path
-
-        return dset_map
-
-    @staticmethod
-    def _map_file_instances(h5_files):
-        """
-        Open all .h5 files and map the open h5py instances to the
-        associated file paths
-        Parameters
-        ----------
-        h5_files : list
-            List of .h5 files to open
-        Returns
-        -------
-        h5_map : dict
-            Dictionary mapping file paths to open resource instances
-        """
-        h5_map = {}
-        for f_path in h5_files:
-            h5_map[f_path] = h5py.File(f_path, mode='r')
-
-        return h5_map
-
-    @staticmethod
-    def multi_file_args(h5_path):
-        """
-        Get multi-h5 directory arguments for multi file resource paths.
-        Parameters
-        ----------
-        h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-        Returns
-        -------
-        h5_dir : str
-            Directory containing multi-file resource files.
-        prefix : str
-            File prefix for files in h5_dir.
-        suffix : str
-            File suffix for files in h5_dir.
-        """
-        h5_dir = h5_path
-        prefix = None
-        suffix = None
-
-        if '*' in h5_path:
-            h5_dir, fn = os.path.split(h5_path)
-            prefix, suffix = fn.split('*')
-        elif os.path.isfile(h5_path):
-            raise RuntimeError("MultiFileResource cannot handle a single file"
-                               " use Resource instead.")
-
-        return h5_dir, prefix, suffix
-
-    def close(self):
-        """
-        Close all h5py.File instances
-        """
-        for f in self._h5_map.values():
-            f.close()
-
-
-class MultiFileResource(Resource):
-    """
-    Class to handle fine spatial resolution resource data stored in
-    multiple .h5 files
-    See Also
-    --------
-    resource.Resource : Parent class
-    Examples
-    --------
-    Due to the size of the 2018 NSRDB and 5min WTK, datasets are stored in
-    multiple files. MultiFileResource and it's sub-classes allow for
-    interaction with all datasets as if they are in a single file.
-    MultiFileResource can take a directory containing all files to source
-    data from, or a filepath with a wildcard (*) indicating the filename
-    format.
-    >>> file = '$TESTDATADIR/wtk/wtk_2010_*m.h5'
-    >>> with MultiFileResource(file) as res:
-    >>>     print(self._h5_files)
-    ['$TESTDATADIR/wtk_2010_200m.h5',
-     '$TESTDATADIR/wtk_2010_100m.h5']
-    >>> file_100m = '$TESTDATADIR/wtk_2010_100m.h5'
-    >>> with Resource(file_100m) as res:
-    >>>     print(res.datasets)
-    ['coordinates', 'meta', 'pressure_100m', 'temperature_100m', 'time_index',
-     'winddirection_100m', 'windspeed_100m']
-    >>> file_200m = '$TESTDATADIR/wtk_2010_200m.h5'
-    >>> with Resource(file_200m) as res:
-    >>>     print(res.datasets)
-    ['coordinates', 'meta', 'pressure_200m', 'temperature_200m', 'time_index',
-     'winddirection_200m', 'windspeed_200m']
-    >>> with MultiFileResource(file) as res:
-    >>>     print(res.datasets)
-    ['coordinates', 'meta', 'pressure_100m', 'pressure_200m',
-     'temperature_100m', 'temperature_200m', 'time_index',
-     'winddirection_100m', 'winddirection_200m', 'windspeed_100m',
-     'windspeed_200m']
-    >>> with MultiFileResource(file) as res:
-    >>>     wspd = res['windspeed_100m']
-    >>>
-    >>> wspd
-    [[15.13 15.17 15.21 ... 15.3  15.32 15.31]
-     [15.09 15.13 15.16 ... 15.26 15.29 15.31]
-     [15.09 15.12 15.15 ... 15.24 15.23 15.26]
-     ...
-     [10.29 11.08 11.51 ... 14.43 14.41 14.19]
-     [11.   11.19 11.79 ... 13.27 11.93 11.8 ]
-     [12.16 12.44 13.09 ... 11.94 10.88 11.12]]
-    """
-    PREFIX = ''
-    SUFFIX = '.h5'
-
-    def __init__(self, h5_path, unscale=True, str_decode=True):
-        """
-        Parameters
-        ----------
-        h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        """
-        self.h5_dir, prefix, suffix = MultiH5.multi_file_args(h5_path)
-        if prefix is None:
-            prefix = self.PREFIX
-
-        if suffix is None:
-            suffix = self.SUFFIX
-
-        self._unscale = unscale
-        self._meta = None
-        self._time_index = None
-        self._coords = None
-        self._str_decode = str_decode
-        self._group = None
-        # Map variables to their .h5 files
-        self._h5 = MultiH5(self.h5_dir, prefix=prefix, suffix=suffix)
-        self._h5_files = self._h5.h5_files
-        self.h5_file = self._h5_files[0]
-
-    def __repr__(self):
-        msg = "{} for {}".format(self.__class__.__name__, self.h5_dir)
-        return msg
