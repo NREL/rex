@@ -20,7 +20,7 @@ class MultiH5:
         """
         Parameters
         ----------
-        h5_files : str
+        h5_files : list
             List of .h5 files to source data from
         check_files : bool
             Check to ensure files have the same coordinates and time_index
