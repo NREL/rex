@@ -4,6 +4,7 @@ Classes to handle resource data
 """
 import h5py
 import numpy as np
+import os
 import pandas as pd
 
 from rex.utilities.parse_keys import parse_keys, parse_slice
@@ -455,14 +456,14 @@ class Resource:
 
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)
-
-        if ds.endswith('time_index'):
+        _, ds_name = os.path.split(ds)
+        if ds_name.startswith('time_index'):
             out = self._get_time_index(ds, ds_slice)
-        elif ds.endswith('meta'):
+        elif ds_name.startswith('meta'):
             out = self._get_meta(ds, ds_slice)
-        elif ds.endswith('coordinates'):
+        elif ds_name.startswith('coordinates'):
             out = self._get_coords(ds, ds_slice)
-        elif 'SAM' in ds:
+        elif 'SAM' in ds_name:
             site = ds_slice[0]
             if isinstance(site, int):
                 out = self._get_SAM_df(ds, site)  # pylint: disable=E1111

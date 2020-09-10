@@ -130,7 +130,7 @@ def extract_map(res_cls, ds_name, timestep, region=None, region_col='county'):
     time_index = res_cls['time_index']
     meta = res_cls['meta']
     lat_lon = meta[['latitude', 'longitude']].values
-    idx = np.where(time_index == pd.to_datetime(timestep))[0][0]
+    idx = np.where(time_index == pd.to_datetime(timestep, utc=True))[0][0]
     gids = slice(None)
     if region is not None:
         gids = meta.index[(meta[region_col] == region)].values
