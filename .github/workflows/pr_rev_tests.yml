@@ -19,7 +19,7 @@ jobs:
       with:
         repository: nrel/reV
         fetch-depth: 1
-        path: reV
+        path: rev
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -29,8 +29,8 @@ jobs:
         python -m pip install --upgrade pip
         cd rex
         python -m pip install .
-        cd
-        cd reV
+        cd ..
+        cd rev
         python -m pip install .
     - name: Run reV pytest
       run: |
