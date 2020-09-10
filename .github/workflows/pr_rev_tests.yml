@@ -29,7 +29,7 @@ jobs:
         python -m pip install --upgrade pip
         cd rex
         python -m pip install .
-        cd ..
+        cd
         cd reV
         python -m pip install .
     - name: Run reV pytest
