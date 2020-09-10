@@ -1,4 +1,4 @@
-name: Pytests
+name: reV Pytests
 
 on:
   pull_request:
