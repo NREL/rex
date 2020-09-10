@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 
 from rex.utilities.parse_keys import parse_keys, parse_slice
-from rex.utilities.exceptions import (ResourceKeyError, ResourceRuntimeError)
+from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
+from rex.utilities.utilities import check_tz
 
 
 class ResourceDataset:
@@ -852,8 +853,10 @@ class Resource:
         time_index = self.h5[ds_name]
         time_index = ResourceDataset.extract(time_index, ds_slice[0],
                                              unscale=False)
-        # time_index: np.array
-        return pd.to_datetime(time_index.astype(str))
+
+        time_index = check_tz(pd.to_datetime(time_index.astype(str)))
+
+        return time_index
 
     def _get_meta(self, ds_name, ds_slice):
         """

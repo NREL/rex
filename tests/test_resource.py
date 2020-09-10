@@ -125,6 +125,7 @@ def check_time_index(res_cls):
     time_index = res_cls['time_index']
     time_shape = time_index.shape
     assert isinstance(time_index, pd.DatetimeIndex)
+    assert str(time_index.tz) == 'UTC'
     # single timestep
     time_index = res_cls['time_index', 50]
     assert isinstance(time_index, datetime)
