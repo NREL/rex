@@ -1,4 +1,4 @@
-name: reV Pytests
+name: reVX Pytests
 
 on:
   pull_request:
@@ -14,12 +14,12 @@ jobs:
         ref: ${{ github.event.pull_request.head.ref }}
         fetch-depth: 1
         path: rex
-    - name: checkout reV
+    - name: checkout reVX
       uses: actions/checkout@v2
       with:
-        repository: nrel/reV
+        repository: nrel/reVX
         fetch-depth: 1
-        path: reV
+        path: reVX
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -29,12 +29,12 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install .
-    - name: Install reV dependencies
-      working-directory: ./reV
+    - name: Install reVX dependencies
+      working-directory: ./reVX
       run: |
         python -m pip install .
-    - name: Run reV pytest
-      working-directory: ./reV
+    - name: Run reVX pytest
+      working-directory: ./reVX
       run: |
         python -m pip install pytest
         python -m pytest -v
