@@ -492,3 +492,23 @@ def check_eval_str(s):
         if bad_s in s:
             raise ValueError('Will not eval() string which contains "{}": {}'
                              .format(bad_s, s))
+
+
+def check_tz(time_index):
+    """
+    Check datetime index for timezone, if None set to UTC
+
+    Parameters
+    ----------
+    time_index : pandas.DatatimeIndex
+        DatetimeIndex to check timezone for
+
+    Returns
+    -------
+    time_index : pandas.DatatimeIndex
+        Updated DatetimeIndex with timezone set
+    """
+    if not time_index.tz:
+        time_index = time_index.tz_localize('utc')
+
+    return time_index

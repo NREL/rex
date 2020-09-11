@@ -18,7 +18,7 @@ from rex.multi_year_resource import (MultiYearNSRDB, MultiYearResource,
 from rex.resource import Resource
 from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
                                     WindResource)
-from rex.utilities import parse_year
+from rex.utilities.utilities import parse_year, check_tz
 
 TREE_DIR = TemporaryDirectory()
 logger = logging.getLogger(__name__)
@@ -367,7 +367,7 @@ class ResourceX(Resource):
         ts_idx : int
             Time index value
         """
-        timestep = pd.to_datetime(timestep)
+        timestep = check_tz(pd.to_datetime(timestep))
         idx = np.where(self.time_index == timestep)[0][0]
 
         return idx
