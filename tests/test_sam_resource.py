@@ -4,6 +4,7 @@ pytests for sam_resource
 """
 import numpy as np
 import os
+from pandas.testing import assert_series_equal
 import pytest
 
 from rex.renewable_resource import WindResource, NSRDB
@@ -185,6 +186,23 @@ def test_check_irradiance():
     with pytest.raises(ResourceRuntimeError):
         # pylint: disable=pointless-statement
         NSRDB.preload_SAM(h5, sites)
+
+
+@pytest.mark.parametrize('sites',
+                         [1, [10], [1, 10, 8, 7, 9], slice(10, 20, 2)])
+def test_meta(sites):
+    """
+    Test check irradiance method
+    """
+    path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+    with NSRDB(path) as f:
+        meta = f.meta
+
+    test = NSRDB.preload_SAM(path, sites)
+
+    for _, site_meta in enumerate(test):
+        gid = site_meta.name
+        assert_series_equal(site_meta, meta.loc[gid])
 
 
 def test_fill_irradiance():

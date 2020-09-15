@@ -94,8 +94,40 @@ def check_meta(res_cls):
     """
     Run tests on meta data
     """
+    with h5py.File(res_cls.h5_file, 'r') as f:
+        ds_name = 'meta'
+        if res_cls._group:
+            ds_name = '{}/{}'.format(res_cls._group, ds_name)
+
+        baseline = pd.DataFrame(f[ds_name][...])
+
+    sites = slice(0, len(baseline))
+    meta = res_cls['meta', sites]
+    cols = ['latitude', 'longitude', 'elevation', 'timezone']
+    assert np.allclose(baseline[cols].values[sites], meta[cols].values)
+    sites = len(baseline)
+    sites = slice(int(sites / 3), int(sites / 2))
+    meta = res_cls['meta', sites]
+    cols = ['latitude', 'longitude', 'elevation', 'timezone']
+    assert np.allclose(baseline[cols].values[sites], meta[cols].values)
+
+    sites = 5
+    meta = res_cls['meta', sites]
+    print(meta, meta.shape)
+    cols = ['latitude', 'longitude', 'elevation', 'timezone']
+    assert np.allclose(baseline[cols].values[sites], meta[cols].values)
+
+    sites = sorted(np.random.choice(len(baseline), 5, replace=False))
+    meta = res_cls['meta', sites]
+    print(meta, meta.shape)
+    cols = ['latitude', 'longitude', 'elevation', 'timezone']
+    assert np.allclose(baseline[cols].values[sites], meta[cols].values)
+
     meta = res_cls['meta']
+    cols = ['latitude', 'longitude', 'elevation', 'timezone']
+    assert np.allclose(baseline[cols].values, meta[cols].values)
     assert isinstance(meta, pd.DataFrame)
+
     meta_shape = meta.shape
     max_sites = int(meta_shape[0] * 0.8)
     # single site
