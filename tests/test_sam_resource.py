@@ -192,7 +192,7 @@ def test_check_irradiance():
                          [1, [10], [1, 10, 8, 7, 9], slice(10, 20, 2)])
 def test_meta(sites):
     """
-    Test check irradiance method
+    Test meta iterator
     """
     path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
     with NSRDB(path) as f:
@@ -200,7 +200,7 @@ def test_meta(sites):
 
     test = NSRDB.preload_SAM(path, sites)
 
-    for _, site_meta in enumerate(test):
+    for _, site_meta in test:
         gid = site_meta.name
         assert_series_equal(site_meta, meta.loc[gid])
 
