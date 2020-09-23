@@ -61,14 +61,14 @@ def get_chunk_slices(ds_dim, chunk_size):
 
     Parameters
     ----------
-    ds_len : 'int'
+    ds_len : int
         Length of dataset axis to chunk
-    chunk_size : 'int'
+    chunk_size : int
         Size of chunks
 
     Returns
     -------
-    chunks : 'list'
+    chunks : list
         List of chunk start and end positions
         [(s_i, e_i), (s_i+1, e_i+1), ...]
     """
