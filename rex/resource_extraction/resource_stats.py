@@ -24,7 +24,7 @@ class ResourceStats:
     STATS = ['mean', 'median', 'std', 'stdev']
 
     def __init__(self, res_h5, statistics=('mean'), max_workers=None,
-                 res_cls=Resource):
+                 res_cls=Resource, hsds=False):
         """
         Parameters
         ----------
@@ -38,6 +38,9 @@ class ResourceStats:
             available cores, by default None
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
         """
         self._res_h5 = res_h5
         self._stats = None
@@ -46,8 +49,9 @@ class ResourceStats:
         self._max_workers = None
         self.max_workers = max_workers
         self._res_cls = res_cls
+        self._hsds = hsds
 
-        with res_cls(res_h5) as f:
+        with res_cls(res_h5, hsds=self._hsds) as f:
             self._time_index = f.time_index
             self._meta = f.meta
 
@@ -313,9 +317,9 @@ class ResourceStats:
         return res_stats
 
     @staticmethod
-    def _extract_stats(res_h5, res_cls, statistics, dataset, time_index=None,
-                       site_slice=None, diurnal=False, month=False,
-                       combinations=False):
+    def _extract_stats(res_h5, res_cls, statistics, dataset, hsds=False,
+                       time_index=None, site_slice=None, diurnal=False,
+                       month=False, combinations=False):
         """
         Extract stats for given dataset, sites, and temporal extent
 
@@ -329,6 +333,9 @@ class ResourceStats:
             Statistics to extract, must be 'mean', 'median', and/or 'std
         dataset : str
             Dataset to extract stats for
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
         time_index : pandas.DatatimeIndex | None, optional
             Resource DatetimeIndex, if None extract from res_h5,
             by default None
@@ -349,7 +356,7 @@ class ResourceStats:
         if site_slice is None:
             site_slice = slice(None, None, None)
 
-        with res_cls(res_h5) as f:
+        with res_cls(res_h5, hsds=hsds) as f:
             if time_index is None:
                 time_index = f.time_index
 
@@ -462,6 +469,7 @@ class ResourceStats:
                     future = exe.submit(ResourceStats._extract_stats,
                                         self.res_h5, self.res_cls,
                                         self.statistics, dataset,
+                                        hsds=self._hsds,
                                         time_index=self.time_index,
                                         site_slice=site_slice,
                                         diurnal=diurnal,
@@ -482,8 +490,8 @@ class ResourceStats:
             logger.info(msg)
             res_stats = ResourceStats._extract_stats(
                 self.res_h5, self.res_cls, self.statistics, dataset,
-                time_index=self.time_index, diurnal=diurnal, month=month,
-                combinations=combinations)
+                hsds=self._hsds, time_index=self.time_index, diurnal=diurnal,
+                month=month, combinations=combinations)
 
         if lat_lon_only:
             meta = self.lat_lon
@@ -649,8 +657,8 @@ class ResourceStats:
 
     @classmethod
     def annual(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-               res_cls=Resource, chunks_per_worker=10, lat_lon_only=True,
-               out_path=None):
+               res_cls=Resource, hsds=False, chunks_per_worker=10,
+               lat_lon_only=True, out_path=None):
         """
         Compute annual stats
 
@@ -668,6 +676,9 @@ class ResourceStats:
             available cores, by default None
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 10
         lat_lon_only : bool, optional
@@ -682,7 +693,7 @@ class ResourceStats:
             DataFrame of annual statistics
         """
         res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls)
+                        res_cls=res_cls, hsds=hsds)
         annual_stats = res_stats.annual_stats(
             dataset,
             chunks_per_worker=chunks_per_worker,
@@ -694,8 +705,8 @@ class ResourceStats:
 
     @classmethod
     def monthly(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-                res_cls=Resource, chunks_per_worker=10, lat_lon_only=True,
-                out_path=None):
+                res_cls=Resource, hsds=False, chunks_per_worker=10,
+                lat_lon_only=True, out_path=None):
         """
         Compute monthly stats
 
@@ -713,6 +724,9 @@ class ResourceStats:
             available cores, by default None
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 10
         lat_lon_only : bool, optional
@@ -727,7 +741,7 @@ class ResourceStats:
             DataFrame of monthly statistics
         """
         res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls)
+                        res_cls=res_cls, hsds=hsds)
         monthly_stats = res_stats.monthly_stats(
             dataset,
             chunks_per_worker=chunks_per_worker,
@@ -739,8 +753,8 @@ class ResourceStats:
 
     @classmethod
     def diurnal(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-                res_cls=Resource, chunks_per_worker=10, lat_lon_only=True,
-                out_path=None):
+                res_cls=Resource, hsds=False, chunks_per_worker=10,
+                lat_lon_only=True, out_path=None):
         """
         Compute diurnal stats
 
@@ -758,6 +772,9 @@ class ResourceStats:
             available cores, by default None
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 10
         lat_lon_only : bool, optional
@@ -772,7 +789,7 @@ class ResourceStats:
             DataFrame of diurnal statistics
         """
         res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls)
+                        res_cls=res_cls, hsds=hsds)
         diurnal_stats = res_stats.diurnal_stats(
             dataset,
             chunks_per_worker=chunks_per_worker,
@@ -784,7 +801,7 @@ class ResourceStats:
 
     @classmethod
     def monthly_diurnal(cls, res_h5, dataset, statistics=('mean'),
-                        max_workers=None, res_cls=Resource,
+                        max_workers=None, res_cls=Resource, hsds=False,
                         chunks_per_worker=10, lat_lon_only=True,
                         out_path=None):
         """
@@ -804,6 +821,9 @@ class ResourceStats:
             available cores, by default None
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 10
         lat_lon_only : bool, optional
@@ -818,7 +838,7 @@ class ResourceStats:
             DataFrame of monthly-diurnal statistics
         """
         res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls)
+                        res_cls=res_cls, hsds=hsds)
         monthly_diurnal_stats = res_stats.monthly_diurnal_stats(
             dataset,
             chunks_per_worker=chunks_per_worker,
@@ -830,8 +850,8 @@ class ResourceStats:
 
     @classmethod
     def all(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-            res_cls=Resource, chunks_per_worker=10, lat_lon_only=True,
-            out_path=None):
+            res_cls=Resource, hsds=False, chunks_per_worker=10,
+            lat_lon_only=True, out_path=None):
         """
         Compute annual, monthly, monthly-diurnal, and diurnal stats
 
@@ -849,6 +869,9 @@ class ResourceStats:
             available cores, by default None
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 10
         lat_lon_only : bool, optional
@@ -863,7 +886,7 @@ class ResourceStats:
             DataFrame of temporal statistics
         """
         res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls)
+                        res_cls=res_cls, hsds=hsds)
         all_stats = res_stats.all_stats(
             dataset,
             chunks_per_worker=chunks_per_worker,

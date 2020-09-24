@@ -18,7 +18,7 @@ from rex.resource_extraction import (ResourceX, MultiYearResourceX,
                                      NSRDBX, MultiFileNSRDBX, MultiYearNSRDBX,
                                      WindX, MultiFileWindX, MultiYearWindX,
                                      WaveX, MultiYearWaveX, ResourceStats)
-from rex.utilities import init_logger, init_mult, SpawnProcessPool, Retry
+from rex.utilities import init_logger, init_mult, SpawnProcessPool, SLURM
 
 from rex.version import __version__
 
