@@ -36,7 +36,7 @@ rex command line tools
 - `WaveX <https://nrel.github.io/rex/rex/rex.resource_extraction.wave_cli.html#wavex>`_
 - `MultiYearX <https://nrel.github.io/rex/rex/rex.resource_extraction.multi_year_resource_cli.html#multiyearx>`_
 - `rechunk <https://nrel.github.io/rex/rex/rex.rechunk_h5.rechunk_cli.html#rechunk>`_
-- `ResStats <https://nrel.github.io/rex/rex/rex.resource_extraction.resource_stats_cli.html#resstats>`_
+- `temporal-stats <https://nrel.github.io/rex/rex/rex.resource_extraction.temporal_stats_cli.html#temporal-stats>`_
 
 Using Eagle Env / Module
 ========================

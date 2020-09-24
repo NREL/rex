@@ -6,4 +6,4 @@ from .resource_extraction import (ResourceX, MultiYearResourceX,
                                   NSRDBX, MultiFileNSRDBX, MultiYearNSRDBX,
                                   WindX, MultiFileWindX, MultiYearWindX,
                                   WaveX, MultiYearWaveX)
-from .resource_stats import ResourceStats
+from .temporal_stats import TemporalStats

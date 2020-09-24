@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Resource Statistics Extraction
+Temporal Statistics Extraction
 """
 from concurrent.futures import as_completed
 import logging
@@ -17,7 +17,7 @@ from rex.utilities.execution import SpawnProcessPool
 logger = logging.getLogger(__name__)
 
 
-class ResourceStats:
+class TemporalStats:
     """
     Temporal Statistics from Resource Data
     """
@@ -252,7 +252,7 @@ class ResourceStats:
         if len(index.shape) != 2 and index.max() > 12:
             month_map = None
 
-        columns = [ResourceStats._format_index_value(i, stat,
+        columns = [TemporalStats._format_index_value(i, stat,
                                                      month_map=month_map)
                    for i in index]
 
@@ -304,7 +304,7 @@ class ResourceStats:
                 logger.warning(msg)
 
             if groupby:
-                columns = ResourceStats._create_names(s_data.index, s)
+                columns = TemporalStats._create_names(s_data.index, s)
                 s_data = s_data.T
                 s_data.columns = columns
             else:
@@ -363,25 +363,25 @@ class ResourceStats:
             res_data = pd.DataFrame(f[dataset, :, site_slice],
                                     index=time_index)
         if combinations:
-            res_stats = [ResourceStats._compute_stats(res_data, statistics)]
+            res_stats = [TemporalStats._compute_stats(res_data, statistics)]
             if month:
-                res_stats.append(ResourceStats._compute_stats(res_data,
+                res_stats.append(TemporalStats._compute_stats(res_data,
                                                               statistics,
                                                               month=True))
 
             if diurnal:
-                res_stats.append(ResourceStats._compute_stats(res_data,
+                res_stats.append(TemporalStats._compute_stats(res_data,
                                                               statistics,
                                                               diurnal=True))
             if month and diurnal:
-                res_stats.append(ResourceStats._compute_stats(res_data,
+                res_stats.append(TemporalStats._compute_stats(res_data,
                                                               statistics,
                                                               month=True,
                                                               diurnal=True))
 
             res_stats = pd.concat(res_stats, axis=1)
         else:
-            res_stats = ResourceStats._compute_stats(res_data, statistics,
+            res_stats = TemporalStats._compute_stats(res_data, statistics,
                                                      diurnal=diurnal,
                                                      month=month)
 
@@ -466,7 +466,7 @@ class ResourceStats:
                                   loggers=loggers) as exe:
                 futures = []
                 for site_slice in slices:
-                    future = exe.submit(ResourceStats._extract_stats,
+                    future = exe.submit(TemporalStats._extract_stats,
                                         self.res_h5, self.res_cls,
                                         self.statistics, dataset,
                                         hsds=self._hsds,
@@ -488,7 +488,7 @@ class ResourceStats:
             msg = ('Extracting {} for {} in serial'
                    .format(self.statistics, dataset))
             logger.info(msg)
-            res_stats = ResourceStats._extract_stats(
+            res_stats = TemporalStats._extract_stats(
                 self.res_h5, self.res_cls, self.statistics, dataset,
                 hsds=self._hsds, time_index=self.time_index, diurnal=diurnal,
                 month=month, combinations=combinations)

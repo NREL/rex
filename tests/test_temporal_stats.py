@@ -7,7 +7,7 @@ import os
 import pytest
 
 from rex.renewable_resource import WindResource
-from rex.resource_extraction.resource_stats import ResourceStats
+from rex.resource_extraction.temporal_stats import TemporalStats
 from rex import TESTDATADIR
 
 PURGE_OUT = True
@@ -22,9 +22,9 @@ with WindResource(RES_H5) as f:
 @pytest.mark.parametrize("max_workers", [1, None])
 def test_means(max_workers):
     """
-    Test ResourceStats means
+    Test TemporalStats means
     """
-    test_stats = ResourceStats.all(RES_H5, DATASET, statistics=('mean'),
+    test_stats = TemporalStats.all(RES_H5, DATASET, statistics=('mean'),
                                    res_cls=WindResource,
                                    max_workers=max_workers)
     truth = np.mean(RES_DATA, axis=0)
@@ -50,9 +50,9 @@ def test_means(max_workers):
 @pytest.mark.parametrize("max_workers", [1, None])
 def test_medians(max_workers):
     """
-    Test ResourceStats medians
+    Test TemporalStats medians
     """
-    test_stats = ResourceStats.all(RES_H5, DATASET, statistics=('median'),
+    test_stats = TemporalStats.all(RES_H5, DATASET, statistics=('median'),
                                    res_cls=WindResource,
                                    max_workers=max_workers)
     truth = np.median(RES_DATA, axis=0)
@@ -78,9 +78,9 @@ def test_medians(max_workers):
 @pytest.mark.parametrize("max_workers", [1, None])
 def test_stdevs(max_workers):
     """
-    Test ResourceStats stdevs
+    Test TemporalStats stdevs
     """
-    test_stats = ResourceStats.all(RES_H5, DATASET, statistics=('std'),
+    test_stats = TemporalStats.all(RES_H5, DATASET, statistics=('std'),
                                    res_cls=WindResource,
                                    max_workers=max_workers)
     truth = np.std(RES_DATA, axis=0, ddof=1)

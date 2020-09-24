@@ -63,7 +63,7 @@ setup(
             "WaveX=rex.resource_extraction.wave_cli:main",
             "MultiYearX=rex.resource_extraction.multi_year_resource_cli:main",
             "rechunk=rex.rechunk_h5.rechunk_cli:main",
-            "ResStats=rex.resource_extraction.resource_stats.cli:main"
+            "temporal-stats=rex.resource_extraction.temporal_stats.cli:main"
         ],
     },
     include_package_data=True,

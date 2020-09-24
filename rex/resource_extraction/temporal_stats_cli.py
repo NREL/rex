@@ -11,7 +11,7 @@ import pandas as pd
 from rex.multi_file_resource import MultiFileNSRDB, MultiFileWTK
 from rex.renewable_resource import (NSRDB, WaveResource, WindResource)
 from rex.resource import Resource
-from rex.resource_extraction.resource_stats import ResourceStats
+from rex.resource_extraction.temporal_stats import TemporalStats
 from rex.utilities.loggers import init_mult
 
 logger = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ logger = logging.getLogger(__name__)
 def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
          res_cls, hsds, chunks_per_worker, lat_lon_only, verbose):
     """
-    ResourceStats Command Line Interface
+    TemporalStats Command Line Interface
     """
     ctx.ensure_object(dict)
 
@@ -71,7 +71,7 @@ def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
     if res_cls == 'MultiFileWTK':
         res_cls = MultiFileWTK
 
-    res_stats = ResourceStats(resource_path, statistics=statistics,
+    res_stats = TemporalStats(resource_path, statistics=statistics,
                               max_workers=max_workers, res_cls=res_cls,
                               hsds=hsds)
 
@@ -166,5 +166,5 @@ if __name__ == '__main__':
     try:
         main(obj={})
     except Exception:
-        logger.exception('Error running ResourceStats CLI')
+        logger.exception('Error running TemporalStats CLI')
         raise
