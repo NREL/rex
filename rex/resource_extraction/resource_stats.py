@@ -92,7 +92,7 @@ class ResourceStats:
         stats = []
         for s in statistics:
             if s.lower() in self.STATS:
-                if s.lower.startswith('std'):
+                if s.lower().startswith('std'):
                     s = 'std'
 
                 stats.append(s)
@@ -225,9 +225,9 @@ class ResourceStats:
         return out
 
     @staticmethod
-    def _create_columns(index, stat):
+    def _create_names(index, stat):
         """
-        Generate statistics columns
+        Generate statistics names
 
         Parameters
         ----------
@@ -300,8 +300,9 @@ class ResourceStats:
                 logger.warning(msg)
 
             if groupby:
+                columns = ResourceStats._create_names(s_data.index, s)
                 s_data = s_data.T
-                s_data.columns = ResourceStats._create_columns(s_data.index, s)
+                s_data.columns = columns
             else:
                 s_data = s_data.to_frame(name=s)
 
@@ -410,7 +411,11 @@ class ResourceStats:
             raise RuntimeError(msg)
 
         sites = shape[1]
-        slice_size = chunks[1] * chunks_per_slice
+        if chunks is not None:
+            slice_size = chunks[1] * chunks_per_slice
+        else:
+            slice_size = chunks_per_slice
+
         slices = [slice(s, e, None) for s, e
                   in get_chunk_slices(sites, slice_size)]
 
@@ -454,7 +459,7 @@ class ResourceStats:
                                   loggers=loggers) as exe:
                 futures = []
                 for site_slice in slices:
-                    future = exe.submit(ResourceStats._compute_stats,
+                    future = exe.submit(ResourceStats._extract_stats,
                                         self.res_h5, self.res_cls,
                                         self.statistics, dataset,
                                         time_index=self.time_index,
@@ -475,7 +480,7 @@ class ResourceStats:
             msg = ('Extracting {} for {} in serial'
                    .format(self.statistics, dataset))
             logger.info(msg)
-            res_stats = ResourceStats._compute_stats(
+            res_stats = ResourceStats._extract_stats(
                 self.res_h5, self.res_cls, self.statistics, dataset,
                 time_index=self.time_index, diurnal=diurnal, month=month,
                 combinations=combinations)
@@ -485,7 +490,7 @@ class ResourceStats:
         else:
             meta = self.meta
 
-        res_stats = pd.concat(meta, res_stats, axis=1)
+        res_stats = meta.join(res_stats, how='inner')
 
         return res_stats
 

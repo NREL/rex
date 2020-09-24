@@ -125,3 +125,23 @@ def test_downscale():
 
     if PURGE_OUT:
         os.remove(rechunk_path)
+
+
+def execute_pytest(capture='all', flags='-rapP'):
+    """Execute module as pytest with detailed summary report.
+
+    Parameters
+    ----------
+    capture : str
+        Log or stdout/stderr capture option. ex: log (only logger),
+        all (includes stdout/stderr)
+    flags : str
+        Which tests to show logs and results for.
+    """
+
+    fname = os.path.basename(__file__)
+    pytest.main(['-q', '--show-capture={}'.format(capture), fname, flags])
+
+
+if __name__ == '__main__':
+    execute_pytest()
