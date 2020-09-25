@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=all
 """
 Resource Statistics
 """
 import click
 import logging
 import os
-import pandas as pd
 
 from rex.multi_file_resource import MultiFileNSRDB, MultiFileWTK
 from rex.renewable_resource import (NSRDB, WaveResource, WindResource)
