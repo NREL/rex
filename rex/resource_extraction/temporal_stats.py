@@ -388,7 +388,7 @@ class TemporalStats:
         if site_slice.stop:
             res_stats.index = list(range(*site_slice.indices(site_slice.stop)))
 
-        res_stats.index.name = 'res_gid'
+        res_stats.index.name = 'gid'
 
         return res_stats
 
