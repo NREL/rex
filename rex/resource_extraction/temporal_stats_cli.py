@@ -74,7 +74,8 @@ def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
                               hsds=hsds)
 
     name = os.path.splitext(os.path.basename(resource_path))[0]
-    out_fpath = os.path.join(out_dir, name + '.csv')
+    out_fpath = '{}_{}.csv'.format(name, dataset)
+    out_fpath = os.path.join(out_dir, out_fpath)
     init_mult(name, out_dir, verbose=verbose, node=True,
               modules=[__name__, 'rex.resource_extraction.resource_stats'])
 
