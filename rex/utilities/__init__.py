@@ -2,7 +2,7 @@
 """
 rex utilities.
 """
-from .execution import SpawnProcessPool
+from .execution import SpawnProcessPool, SLURM
 from .loggers import init_logger, init_mult, setup_logger, log_mem
 from .solar_position import SolarPosition
 from .toml_parser import TOMLParser

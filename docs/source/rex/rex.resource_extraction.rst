@@ -15,5 +15,7 @@ Submodules
    rex.resource_extraction.nsrdb_cli
    rex.resource_extraction.resource_cli
    rex.resource_extraction.resource_extraction
+   rex.resource_extraction.temporal_stats
+   rex.resource_extraction.temporal_stats_cli
    rex.resource_extraction.wave_cli
    rex.resource_extraction.wind_cli

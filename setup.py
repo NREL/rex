@@ -62,7 +62,9 @@ setup(
             "WINDX=rex.resource_extraction.wind_cli:main",
             "WaveX=rex.resource_extraction.wave_cli:main",
             "MultiYearX=rex.resource_extraction.multi_year_resource_cli:main",
-            "rechunk=rex.rechunk_h5.rechunk_cli:main"],
+            "rechunk=rex.rechunk_h5.rechunk_cli:main",
+            "temporal-stats=rex.resource_extraction.temporal_stats.cli:main"
+        ],
     },
     include_package_data=True,
     license="BSD 3-Clause",

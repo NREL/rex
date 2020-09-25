@@ -137,31 +137,6 @@ class ResourceX(Resource):
         return tree_file
 
     @staticmethod
-    def _load_tree(tree_pickle):
-        """
-        Load tree from pickle file
-
-        Parameters
-        ----------
-        tree_pickle : str
-            Pickle (.pkl, .pickle) file containing precomputed cKDTree
-
-        Returns
-        -------
-        tree : cKDTree
-            Precomputed tree of lat, lon coordinates
-        """
-        try:
-            with open(tree_pickle, 'rb') as f:
-                tree = pickle.load(f)
-        except Exception as e:
-            logger.warning('Could not extract tree from {}: {}'
-                           .format(tree_pickle, e))
-            tree = None
-
-        return tree
-
-    @staticmethod
     def _load_tree(tree_path):
         """
         Load tree from pickle file
