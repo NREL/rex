@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 @click.option('--hsds', '-hsds', is_flag=True,
               help=("Boolean flag to use h5pyd to handle .h5 'files' hosted "
                     "on AWS behind HSDS"))
-@click.option('--chunks_per_worker', '-cpw', default=10, type=int,
+@click.option('--chunks_per_worker', '-cpw', default=5, type=int,
               help='Number of chunks to extract on each worker')
 @click.option('--lat_lon_only', '-ll', is_flag=True,
               help='Only append lat, lon coordinates to stats')

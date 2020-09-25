@@ -392,7 +392,7 @@ class TemporalStats:
 
         return res_stats
 
-    def _get_slices(self, dataset, chunks_per_slice=10):
+    def _get_slices(self, dataset, chunks_per_slice=5):
         """
         Get slices to extract
 
@@ -401,7 +401,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract data from
         chunks_per_slice : int, optional
-            Number of chunks to extract in each slice, by default 10
+            Number of chunks to extract in each slice, by default 5
 
         Returns
         -------
@@ -429,7 +429,7 @@ class TemporalStats:
         return slices
 
     def compute_statistics(self, dataset, diurnal=False, month=False,
-                           combinations=False, chunks_per_worker=10,
+                           combinations=False, chunks_per_worker=5,
                            lat_lon_only=True):
         """
         Compute statistics
@@ -445,7 +445,7 @@ class TemporalStats:
         combinations : bool, optional
             Extract all combinations of temporal stats, by default False
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
 
@@ -502,7 +502,7 @@ class TemporalStats:
 
         return res_stats
 
-    def annual_stats(self, dataset, chunks_per_worker=10, lat_lon_only=True):
+    def annual_stats(self, dataset, chunks_per_worker=5, lat_lon_only=True):
         """
         Compute annual stats
 
@@ -511,7 +511,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
 
@@ -527,7 +527,7 @@ class TemporalStats:
 
         return annual_stats
 
-    def monthly_stats(self, dataset, chunks_per_worker=10, lat_lon_only=True):
+    def monthly_stats(self, dataset, chunks_per_worker=5, lat_lon_only=True):
         """
         Compute monthly stats
 
@@ -536,7 +536,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
 
@@ -552,7 +552,7 @@ class TemporalStats:
 
         return monthly_stats
 
-    def diurnal_stats(self, dataset, chunks_per_worker=10, lat_lon_only=True):
+    def diurnal_stats(self, dataset, chunks_per_worker=5, lat_lon_only=True):
         """
         Compute diurnal stats
 
@@ -561,7 +561,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
 
@@ -577,7 +577,7 @@ class TemporalStats:
 
         return diurnal_stats
 
-    def monthly_diurnal_stats(self, dataset, chunks_per_worker=10,
+    def monthly_diurnal_stats(self, dataset, chunks_per_worker=5,
                               lat_lon_only=True):
         """
         Compute monthly-diurnal stats
@@ -587,7 +587,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
 
@@ -603,7 +603,7 @@ class TemporalStats:
 
         return diurnal_stats
 
-    def all_stats(self, dataset, chunks_per_worker=10, lat_lon_only=True):
+    def all_stats(self, dataset, chunks_per_worker=5, lat_lon_only=True):
         """
         Compute annual, monthly, monthly-diurnal, and diurnal stats
 
@@ -612,7 +612,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
 
@@ -657,7 +657,7 @@ class TemporalStats:
 
     @classmethod
     def annual(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-               res_cls=Resource, hsds=False, chunks_per_worker=10,
+               res_cls=Resource, hsds=False, chunks_per_worker=5,
                lat_lon_only=True, out_path=None):
         """
         Compute annual stats
@@ -680,7 +680,7 @@ class TemporalStats:
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
         out_path : str, optional
@@ -705,7 +705,7 @@ class TemporalStats:
 
     @classmethod
     def monthly(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-                res_cls=Resource, hsds=False, chunks_per_worker=10,
+                res_cls=Resource, hsds=False, chunks_per_worker=5,
                 lat_lon_only=True, out_path=None):
         """
         Compute monthly stats
@@ -728,7 +728,7 @@ class TemporalStats:
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
         out_path : str, optional
@@ -753,7 +753,7 @@ class TemporalStats:
 
     @classmethod
     def diurnal(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-                res_cls=Resource, hsds=False, chunks_per_worker=10,
+                res_cls=Resource, hsds=False, chunks_per_worker=5,
                 lat_lon_only=True, out_path=None):
         """
         Compute diurnal stats
@@ -776,7 +776,7 @@ class TemporalStats:
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
         out_path : str, optional
@@ -802,7 +802,7 @@ class TemporalStats:
     @classmethod
     def monthly_diurnal(cls, res_h5, dataset, statistics=('mean'),
                         max_workers=None, res_cls=Resource, hsds=False,
-                        chunks_per_worker=10, lat_lon_only=True,
+                        chunks_per_worker=5, lat_lon_only=True,
                         out_path=None):
         """
         Compute monthly-diurnal stats
@@ -825,7 +825,7 @@ class TemporalStats:
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
         out_path : str, optional
@@ -850,7 +850,7 @@ class TemporalStats:
 
     @classmethod
     def all(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-            res_cls=Resource, hsds=False, chunks_per_worker=10,
+            res_cls=Resource, hsds=False, chunks_per_worker=5,
             lat_lon_only=True, out_path=None):
         """
         Compute annual, monthly, monthly-diurnal, and diurnal stats
@@ -873,7 +873,7 @@ class TemporalStats:
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
         chunks_per_slice : int, optional
-            Number of chunks to extract on each worker, by default 10
+            Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
         out_path : str, optional
