@@ -377,7 +377,9 @@ class PBS(SubprocessManager):
 class SLURM(SubprocessManager):
     """Subclass for SLURM subprocess jobs."""
 
-    SQ_FORMAT = "%.15i %.30P  %.50j  %.20u %.10t %.15M %.25R %q"
+    MAX_NAME_LEN = 100
+    SQ_FORMAT = ("%.15i %.30P  %.{}j  %.20u %.10t %.15M %.25R %q"
+                 .format(MAX_NAME_LEN))
 
     def __init__(self, user=None):
         """Initialize and submit a PBS job.
@@ -426,7 +428,7 @@ class SLURM(SubprocessManager):
 
         elif job_name is not None:
             if job_name in self.squeue_job_names:
-                for attrs in sqd.items():
+                for attrs in sqd.values():
                     if attrs['NAME'] == job_name:
                         status = attrs['ST']
                         break
@@ -478,7 +480,7 @@ class SLURM(SubprocessManager):
 
     @property
     def squeue(self):
-        """Get the cached squeue output string"""
+        """Get the cached squeue output string (no special formatting)"""
         if self._squeue is None:
             self._squeue = self.run_squeue(user=self._user)
         return self._squeue
@@ -490,21 +492,20 @@ class SLURM(SubprocessManager):
 
         sq = self.squeue.split('\n')
         sqd = {}
-        keys = [k.strip(' ') for k in sq[0].split(' ')]
+        keys = [k.strip(' ') for k in sq[0].strip(' ').split(' ') if k != '']
         for row in sq[1:]:
-            props = [k.strip(' ') for k in row.split(' ')]
-            sqd[int(props[0])] = {k: props[i] for i, k in enumerate(keys)}
+            job = [k.strip(' ') for k in row.strip(' ').split(' ') if k != '']
+            sqd[int(job[0])] = {k: job[i] for i, k in enumerate(keys)}
 
         return sqd
 
     @property
     def squeue_job_names(self):
         """Get a list of the job names in the squeue output"""
-        sq = self.squeue.split('\n')
-        keys = [k.strip(' ') for k in sq[0].split(' ')]
-        i = keys.index('NAME')
-        sq_names = [row[i] for row in sq[1:]]
-        return sq_names
+        names = []
+        if self.squeue_dict:
+            names = [attrs['NAME'] for attrs in self.squeue_dict.values()]
+        return names
 
     @staticmethod
     def scontrol(cmd):
@@ -647,6 +648,60 @@ class SLURM(SubprocessManager):
             logger.error(e)
             raise ExecutionError(e)
 
+    @staticmethod
+    def _special_cmd_strs(feature, memory, module, module_root, conda_env):
+        """Get special sbatch request strings for SLURM features, memory,
+        modules, and conda environments
+
+        Parameters
+        ----------
+        feature : str
+            Additional flags for SLURM job. Format is "--qos=high"
+            or "--depend=[state:job_id]". Default is None.
+        memory : int
+            Node memory request in GB.
+        module : bool
+            Module to load
+        module_root : str
+            Path to module root to load
+        conda_env : str
+            Conda environment to activate
+
+        Returns
+        -------
+        feature_str : str
+            SBATCH shell script feature request string.
+        mem_str : str
+            SBATCH shell script memory request string.
+        env_str : str
+            SBATCH shell script module load or source activate environment
+            request string.
+        """
+        feature_str = ''
+        if feature is not None:
+            feature_str = '#SBATCH {}  # extra feature\n'.format(feature)
+
+        mem_str = ''
+        if memory is not None:
+            mem_str = ('#SBATCH --mem={}  # node RAM in MB\n'
+                       .format(int(memory * 1000)))
+
+        env_str = ''
+        if module is not None:
+            env_str = ("echo module use {module_root}\n"
+                       "module use {module_root}\n"
+                       "echo module load {module}\n"
+                       "module load {module}\n"
+                       "echo module load complete!\n"
+                       .format(module_root=module_root, module=module))
+        elif conda_env is not None:
+            env_str = ("echo source activate {conda_env}\n"
+                       "source activate {conda_env}\n"
+                       "echo conda env activate complete!\n"
+                       .format(conda_env=conda_env))
+
+        return feature_str, mem_str, env_str
+
     def sbatch(self, cmd, alloc, walltime, memory=None, feature=None,
                name='reV', stdout_path='./stdout', keep_sh=False,
                conda_env=None, module=None,
@@ -689,6 +744,13 @@ class SLURM(SubprocessManager):
             sbatch standard error, this is typically an empty string if the job
             was submitted successfully.
         """
+
+        if len(name) > self.MAX_NAME_LEN:
+            msg = ('Cannot submit job with name longer than {} chars: "{}"'
+                   .format(self.MAX_NAME_LEN, name))
+            logger.error(msg)
+            raise ValueError(msg)
+
         status = self.check_status(job_name=name)
 
         if status is not None:
@@ -698,29 +760,8 @@ class SLURM(SubprocessManager):
             err = 'already_running'
 
         else:
-            feature_str = ''
-            if feature is not None:
-                feature_str = '#SBATCH {}  # extra feature\n'.format(feature)
-
-            mem_str = ''
-            if memory is not None:
-                mem_str = ('#SBATCH --mem={}  # node RAM in MB\n'
-                           .format(int(memory * 1000)))
-
-            env_str = ''
-            if module is not None:
-                env_str = ("echo module use {module_root}\n"
-                           "module use {module_root}\n"
-                           "echo module load {module}\n"
-                           "module load {module}\n"
-                           "echo module load complete!\n"
-                           .format(module_root=module_root, module=module))
-            elif conda_env is not None:
-                env_str = ("echo source activate {conda_env}\n"
-                           "source activate {conda_env}\n"
-                           "echo conda env activate complete!\n"
-                           .format(conda_env=conda_env))
-
+            special = self._special_cmd_strs(feature, memory, module,
+                                             module_root, conda_env)
             fname = '{}.sh'.format(name)
             script = ('#!/bin/bash\n'
                       '#SBATCH --account={a}  # allocation account\n'
@@ -732,8 +773,8 @@ class SLURM(SubprocessManager):
                       'echo Running on: $HOSTNAME, Machine Type: $MACHTYPE\n'
                       '{e}\n{cmd}'
                       .format(a=alloc, t=self.format_walltime(walltime),
-                              n=name, p=stdout_path, m=mem_str,
-                              f=feature_str, e=env_str, cmd=cmd))
+                              n=name, p=stdout_path, m=special[1],
+                              f=special[0], e=special[2], cmd=cmd))
 
             # write the shell script file and submit as qsub job
             self.make_sh(fname, script)
