@@ -377,126 +377,134 @@ class PBS(SubprocessManager):
 class SLURM(SubprocessManager):
     """Subclass for SLURM subprocess jobs."""
 
-    def __init__(self, cmd, alloc, walltime, memory=None, feature=None,
-                 name='reV', stdout_path='./stdout', conda_env=None,
-                 module=None, module_root='/shared-projects/rev/modulefiles'):
+    SQ_FORMAT = "%.15i %.30P  %.50j  %.20u %.10t %.15M %.25R %q"
+
+    def __init__(self, user=None):
         """Initialize and submit a PBS job.
 
         Parameters
         ----------
-        cmd : str
-            Command to be submitted in PBS shell script. Example:
-                'python -m reV.generation.cli_gen'
-        alloc : str
-            HPC project (allocation) handle. Example: 'rev'.
-        walltime : float
-            Node walltime request in hours.
-        memory : int, Optional
-            Node memory request in GB.
-        feature : str
-            Additional flags for SLURM job. Format is "--qos=high"
-            or "--depend=[state:job_id]". Default is None.
-        name : str
-            SLURM job name.
-        stdout_path : str
-            Path to print .stdout and .stderr files.
-        conda_env : str
-            Conda environment to activate
-        module : str
-            Module to load
-        module_root : str
-            Path to module root to load
+        user : str | None
+            SLURM username. None will get your username using getpass.getuser()
         """
 
-        self.make_path(stdout_path)
-        self.out, self.err = self.sbatch(cmd,
-                                         alloc=alloc,
-                                         memory=memory,
-                                         walltime=walltime,
-                                         feature=feature,
-                                         name=name,
-                                         stdout_path=stdout_path,
-                                         conda_env=conda_env,
-                                         module=module,
-                                         module_root=module_root)
-        if self.out:
-            self.id = self.out.split(' ')[-1]
-        else:
-            self.id = None
+        self._user = user
+        if self._user is None:
+            self._user = self.USER
 
-    @staticmethod
-    def check_status(job, var='id'):
-        """Check the status of this PBS job using qstat.
+        self._squeue = None
+        self._submitted_job_names = []
+        self._submitted_job_ids = []
+
+    def check_status(self, job_id=None, job_name=None):
+        """Check the status of this SLURM job using squeue.
 
         Parameters
         ----------
-        job : str
-            Job name or ID number.
+        job_id : int | None
+            Job integer ID number (preferred input)
+        job_name : str
+            Job name string (not limited to displayed chars in squeue).
         var : str
             Identity/type of job identification input arg ('id' or 'name').
 
         Returns
         -------
-        out : str | NoneType
-            squeue job status str or None if not found.
+        status : str | NoneType
+            squeue job status str ("ST") or None if not found.
             Common status codes: PD, R, CG (pending, running, complete).
         """
 
-        # column location of various job identifiers
-        col_loc = {'id': 0, 'name': 2}
+        status = None
+        sqd = self.squeue_dict
 
-        if var == 'name':
-            # check for specific name
-            squeue_rows = SLURM.squeue(name=job)
+        if job_id is not None:
+            if int(job_id) in sqd:
+                status = sqd[int(job_id)]['ST']
+            elif int(job_id) in self._submitted_job_ids:
+                status = 'PD'
+
+        elif job_name is not None:
+            if job_name in self.squeue_job_names:
+                for attrs in sqd.items():
+                    if attrs['NAME'] == job_name:
+                        status = attrs['ST']
+                        break
+            elif job_name in self._submitted_job_names:
+                status = 'PD'
+
         else:
-            squeue_rows = SLURM.squeue()
+            msg = 'Need a job_id or job_name to check SLURM job status!'
+            logger.error(msg)
+            raise ValueError(msg)
 
-        if squeue_rows is None:
-            return None
-        else:
-            # reverse the list so most recent jobs are first
-            squeue_rows = reversed(squeue_rows)
-
-        # update job status from qstat list
-        for row in squeue_rows:
-            row = row.split()
-            # make sure the row is long enough to be a job status listing
-            if len(row) > 7:
-                if row[col_loc[var]].strip() in job.strip():
-                    # Job status is located at the 4 index
-                    status = row[4]
-                    logger.debug('Job with {} "{}" has status: "{}"'
-                                 .format(var, job, status))
-                    return row[4]
-        return None
+        return status
 
     @staticmethod
-    def squeue(name=None):
+    def run_squeue(job_name=None, user=None, sq_format=None):
         """Run the SLURM squeue command and return the stdout split to rows.
 
         Parameters
         ----------
-        name : str | None
+        job_name : str | None
             Optional to check the squeue for a specific job name (not limited
             to the 8 shown characters) or show users whole squeue.
+        user : str | None
+            SLURM username. None will get your username using getpass.getuser()
+        sq_format : str | None
+            SLURM squeue format string specification. Changing this form the
+            default (None) could have adverse effects!
 
         Returns
         -------
-        squeue_rows : list | None
-            List of strings where each string is a row in the squeue printout.
-            Returns None if squeue is empty.
+        stdout : str
+            squeue output string. Can be split on line breaks to get list.
         """
+        job_name_str = ''
+        if job_name is not None:
+            job_name_str = ' -n {}'.format(job_name)
 
-        cmd = ('squeue -u {user}{job_name}'
-               .format(user=SLURM.USER,
-                       job_name=' -n {}'.format(name) if name else ''))
+        if user is None:
+            user = SLURM.USER
+
+        if sq_format is None:
+            sq_format = SLURM.SQ_FORMAT
+
+        cmd = ('squeue -u {user}{job_name} --format="{format_str}"'
+               .format(user=user, job_name=job_name_str, format_str=sq_format))
         stdout, _ = SLURM.submit(cmd)
-        if not stdout:
-            # No jobs are currently running.
-            return None
-        else:
-            squeue_rows = stdout.split('\n')
-            return squeue_rows
+
+        return stdout
+
+    @property
+    def squeue(self):
+        """Get the cached squeue output string"""
+        if self._squeue is None:
+            self._squeue = self.run_squeue(user=self._user)
+        return self._squeue
+
+    @property
+    def squeue_dict(self):
+        """Get the squeue output as a dict keyed by integer job id with nested
+        dictionary of squeue job properties (columns)."""
+
+        sq = self.squeue.split('\n')
+        sqd = {}
+        keys = [k.strip(' ') for k in sq[0].split(' ')]
+        for row in sq[1:]:
+            props = [k.strip(' ') for k in row.split(' ')]
+            sqd[int(props[0])] = {k: props[i] for i, k in enumerate(keys)}
+
+        return sqd
+
+    @property
+    def squeue_job_names(self):
+        """Get a list of the job names in the squeue output"""
+        sq = self.squeue.split('\n')
+        keys = [k.strip(' ') for k in sq[0].split(' ')]
+        i = keys.index('NAME')
+        sq_names = [row[i] for row in sq[1:]]
+        return sq_names
 
     @staticmethod
     def scontrol(cmd):
@@ -511,27 +519,25 @@ class SLURM(SubprocessManager):
         cmd = shlex.split(cmd)
         subprocess.call(cmd)
 
-    @staticmethod
-    def scancel(arg):
+    def scancel(self, arg):
         """Cancel a slurm job.
 
         Parameters
         ----------
         arg : int | list | str
-            SLURM job id(s) to cancel. Can be a list of integer job ids, 'all'
-            to cancel all jobs, or a feature (-p short) to cancel all jobs
-            with a given feature
+            SLURM integer job id(s) to cancel. Can be a list of integer
+            job ids, 'all' to cancel all jobs, or a feature (-p short) to
+            cancel all jobs with a given feature
         """
 
         if isinstance(arg, (list, tuple)):
-            for jid in arg:
-                SLURM.scancel(jid)
+            for job_id in arg:
+                self.scancel(job_id)
 
         elif str(arg).lower() == 'all':
-            sq = SLURM.squeue()
-            for row in sq[1:]:
-                job_id = int(row.strip().split(' ')[0])
-                SLURM.scancel(job_id)
+            self._squeue = None
+            for job_id in self.squeue_dict.keys():  # pylint: disable=C0201
+                self.scancel(job_id)
 
         elif isinstance(arg, (int, str)):
             cmd = ('scancel {}'.format(arg))
@@ -544,34 +550,32 @@ class SLURM(SubprocessManager):
             logger.error(e)
             raise ExecutionError(e)
 
-    @staticmethod
-    def change_qos(arg, qos):
+    def change_qos(self, arg, qos):
         """Change the priority (quality of service) for a job.
 
         Parameters
         ----------
         arg : int | list | str
-            SLURM job id(s) to change qos for. Can be 'all' for all jobs.
+            SLURM integer job id(s) to change qos for.
+            Can be 'all' for all jobs.
         qos : str
             New qos value
         """
 
         if isinstance(arg, (list, tuple)):
-            for jid in arg:
-                SLURM.change_qos(jid, qos)
+            for job_id in arg:
+                self.change_qos(job_id, qos)
 
         elif isinstance(arg, int):
             cmd = 'update job {} QOS={}'.format(arg, qos)
-            SLURM.scontrol(cmd)
+            self.scontrol(cmd)
 
         elif str(arg).lower() == 'all':
-            sq = SLURM.squeue()
-            for row in sq[1:]:
-                row_list = [x for x in row.strip().split(' ') if x != '']
-                job_id = int(row_list[0])
-                status = row_list[4]
-                if status == 'PD':
-                    SLURM.change_qos(job_id, qos)
+            self._squeue = None
+            for job_id, attrs in self.squeue_dict.items():
+                status = attrs['ST'].lower()
+                if status == 'pd':
+                    self.change_qos(job_id, qos)
 
         else:
             e = ('Could not change qos of: {} with type {}'
@@ -579,33 +583,30 @@ class SLURM(SubprocessManager):
             logger.error(e)
             raise ExecutionError(e)
 
-    @staticmethod
-    def hold(arg):
+    def hold(self, arg):
         """Temporarily hold a job from submitting. Held jobs will stay in queue
         but will not get nodes until released.
 
         Parameters
         ----------
         arg : int | list | str
-            SLURM job id(s) to hold. Can be 'all' to hold all jobs.
+            SLURM integer job id(s) to hold. Can be 'all' to hold all jobs.
         """
 
         if isinstance(arg, (list, tuple)):
-            for jid in arg:
-                SLURM.hold(jid)
+            for job_id in arg:
+                self.hold(job_id)
 
         elif isinstance(arg, int):
             cmd = 'hold {}'.format(arg)
-            SLURM.scontrol(cmd)
+            self.scontrol(cmd)
 
         elif str(arg).lower() == 'all':
-            sq = SLURM.squeue()
-            for row in sq[1:]:
-                row_list = [x for x in row.strip().split(' ') if x != '']
-                job_id = int(row_list[0])
-                status = row_list[4]
-                if status == 'PD':
-                    SLURM.hold(job_id)
+            self._squeue = None
+            for job_id, attrs in self.squeue_dict.items():
+                status = attrs['ST'].lower()
+                if status == 'pd':
+                    self.hold(job_id)
 
         else:
             e = ('Could not hold: {} with type {}'
@@ -613,34 +614,32 @@ class SLURM(SubprocessManager):
             logger.error(e)
             raise ExecutionError(e)
 
-    @staticmethod
-    def release(arg):
+    def release(self, arg):
         """Release a job that was previously on hold so it will be submitted
         to a compute node.
 
         Parameters
         ----------
         arg : int | list | str
-            SLURM job id(s) to release. Can be 'all' to release all jobs.
+            SLURM integer job id(s) to release.
+            Can be 'all' to release all jobs.
         """
 
         if isinstance(arg, (list, tuple)):
-            for jid in arg:
-                SLURM.release(jid)
+            for job_id in arg:
+                self.release(job_id)
 
         elif isinstance(arg, int):
             cmd = 'release {}'.format(arg)
-            SLURM.scontrol(cmd)
+            self.scontrol(cmd)
 
         elif str(arg).lower() == 'all':
-            sq = SLURM.squeue()
-            for row in sq[1:]:
-                row_list = [x for x in row.strip().split(' ') if x != '']
-                job_id = int(row_list[0])
-                status = row_list[4]
-                reason = row_list[-1]
-                if status == 'PD' and 'jobheld' in reason.lower():
-                    SLURM.release(job_id)
+            self._squeue = None
+            for job_id, attrs in self.squeue_dict.items():
+                status = attrs['ST'].lower()
+                reason = attrs['NODELIST(REASON)'].lower()
+                if status == 'pd' and 'jobheld' in reason:
+                    self.release(job_id)
 
         else:
             e = ('Could not release: {} with type {}'
@@ -657,7 +656,7 @@ class SLURM(SubprocessManager):
         Parameters
         ----------
         cmd : str
-            Command to be submitted in PBS shell script. Example:
+            Command to be submitted in SLURM shell script. Example:
                 'python -m reV.generation.cli_gen'
         alloc : str
             HPC project (allocation) handle. Example: 'rev'.
@@ -690,17 +689,15 @@ class SLURM(SubprocessManager):
             sbatch standard error, this is typically an empty string if the job
             was submitted successfully.
         """
+        status = self.check_status(job_name=name)
 
-        status = self.check_status(name, var='name')
-
-        if status in ('PD', 'R'):
-            warn('Not submitting job "{}" because it is already in '
-                 'squeue with status: "{}"'.format(name, status))
+        if status is not None:
+            logger.info('Not submitting job "{}" because it is in '
+                        'squeue or has been recently submitted'.format(name))
             out = None
             err = 'already_running'
 
         else:
-
             feature_str = ''
             if feature is not None:
                 feature_str = '#SBATCH {}  # extra feature\n'.format(feature)
@@ -742,15 +739,23 @@ class SLURM(SubprocessManager):
             self.make_sh(fname, script)
             out, err = self.submit('sbatch {script}'.format(script=fname))
 
+            if not keep_sh:
+                self.rm(fname)
+
             if err:
-                w = 'Received a SLURM error or warning: {}'.format(err)
-                logger.warning(w)
-                warn(w, SlurmWarning)
+                msg = 'Received a SLURM error or warning: {}'.format(err)
+                logger.warning(msg)
+                warn(msg, SlurmWarning)
             else:
                 logger.debug('SLURM job "{}" with id #{} submitted '
                              'successfully'.format(name, out))
-            if not keep_sh:
-                self.rm(fname)
+                self._submitted_job_names.append(name)
+                try:
+                    self._submitted_job_ids.append(int(out))
+                except ValueError:
+                    msg = ('SLURM sbatch output for "{}" was not job id! '
+                           'sbatch stdout: {} sbatch stderr: {}'
+                           .format(name, out, err))
 
         return out, err
 
