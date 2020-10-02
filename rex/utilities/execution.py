@@ -246,15 +246,15 @@ class PBS(SubprocessManager):
                                       stdout_path=stdout_path)
 
     @staticmethod
-    def check_status(job, var='id'):
+    def check_status(job_id=None, job_name=None):
         """Check the status of this PBS job using qstat.
 
         Parameters
         ----------
-        job : str
-            Job name or ID number.
-        var : str
-            Identity/type of job identification input arg ('id' or 'name').
+        job_id : int
+            Job integer ID number.
+        job_name : str
+            Job name string.
 
         Returns
         -------
@@ -264,7 +264,17 @@ class PBS(SubprocessManager):
         """
 
         # column location of various job identifiers
-        col_loc = {'id': 0, 'name': 3}
+        if job_id is not None:
+            job = job_id
+            col_loc = 0
+        elif job_name is not None:
+            job = job_name
+            col_loc = 3
+        else:
+            msg = 'Need a job_id or job_name to check PBS job status!'
+            logger.error(msg)
+            raise ValueError(msg)
+
         qstat_rows = PBS.qstat()
         if qstat_rows is None:
             return None
@@ -277,11 +287,11 @@ class PBS(SubprocessManager):
             row = row.split()
             # make sure the row is long enough to be a job status listing
             if len(row) > 10:
-                if row[col_loc[var]].strip() == job.strip():
+                if row[col_loc].strip() == str(job).strip():
                     # Job status is located at the -2 index
                     status = row[-2]
-                    logger.debug('Job with {} "{}" has status: "{}"'
-                                 .format(var, job, status))
+                    logger.debug('Job "{}" has status: "{}"'
+                                 .format(job, status))
                     return status
         return None
 
@@ -797,6 +807,8 @@ class SLURM(SubprocessManager):
                     msg = ('SLURM sbatch output for "{}" was not job id! '
                            'sbatch stdout: {} sbatch stderr: {}'
                            .format(name, out, err))
+                    logger.error(msg)
+                    raise ValueError(msg)
 
         return out, err
 
