@@ -28,6 +28,12 @@ class HpcJobManager(SubprocessManager, ABC):
     QCOL_ID = None  # Job integer ID column
     QCOL_STATUS = None  # Job status column
 
+    # set a max job name length, will raise error if too long.
+    MAX_NAME_LEN = 100
+
+    # default rows to skip in queue stdout
+    QSKIP = None
+
     def __init__(self, user=None, queue_dict=None):
         """
         Parameters
@@ -77,7 +83,8 @@ class HpcJobManager(SubprocessManager, ABC):
 
         return queue_str
 
-    def parse_queue_str(self, queue_str, keys=0):
+    @classmethod
+    def parse_queue_str(cls, queue_str, keys=0):
         """Parse the qstat or squeue output string into a dict format keyed by
         integer job id with nested dictionary of job properties (queue
         printout columns).
@@ -104,14 +111,15 @@ class HpcJobManager(SubprocessManager, ABC):
         queue_rows = queue_str.split('\n')
 
         if isinstance(keys, int):
+            del_index = keys
             keys = [k.strip(' ')
                     for k in queue_rows[keys].strip(' ').split(' ')
                     if k != '']
-            del queue_rows[keys]
+            del queue_rows[del_index]
 
         for row in queue_rows:
             job = [k.strip(' ') for k in row.strip(' ').split(' ') if k != '']
-            job_id = int(job[keys.index(self.QCOL_ID)])
+            job_id = int(job[keys.index(cls.QCOL_ID)])
             queue_dict[job_id] = {k: job[i] for i, k in enumerate(keys)}
 
         return queue_dict
@@ -209,12 +217,18 @@ class PBS(HpcJobManager):
     """Subclass for PBS subprocess jobs."""
 
     # PBS qstat column headers
-    QCOL_NAME = 'Jobname'  # Job name column
-    QCOL_ID = 'Job ID'  # Job integer ID column
+    QCOL_NAME = 'Name'  # Job name column
+    QCOL_ID = 'Job id'  # Job integer ID column
     QCOL_STATUS = 'S'  # Job status column
 
-    QSTAT_KEYS = ('Job ID', 'Username', 'Queue', 'Jobname', 'SessID', 'NDS',
-                  'TSK', 'Reqd Memory', 'Reqd Time', 'S', 'Elap Time')
+    # Frozen PBS qstat column headers cached b/c its not space delimited
+    QSTAT_KEYS = ('Job id', 'Name', 'User', 'Time Use', 'S', 'Queue')
+
+    # set a max job name length, will raise error if too long.
+    MAX_NAME_LEN = 100
+
+    # default rows to skip in queue stdout
+    QSKIP = (0, 1)
 
     def __init__(self, user=None, queue_dict=None):
         """
@@ -228,8 +242,9 @@ class PBS(HpcJobManager):
         """
         super().__init__(user=user, queue_dict=queue_dict)
 
-    def query_queue(self, job_name=None, user=None, qformat=None,
-                    skip_rows=(0, 1, 2)):
+    @classmethod
+    def query_queue(cls, job_name=None, user=None, qformat=None,
+                    skip_rows=None):
         """Run the PBS qstat command and return the raw stdout string.
 
         Parameters
@@ -250,9 +265,16 @@ class PBS(HpcJobManager):
         stdout : str
             qstat output string. Can be split on line breaks to get list.
         """
-        cmd = 'qstat -u {user}'.format(user=self._user)
-        stdout, _ = self.submit(cmd)
-        stdout = self._skip_q_rows(stdout, skip_rows)
+
+        if user is None:
+            user = cls.USER
+
+        if skip_rows is None:
+            skip_rows = cls.QSKIP
+
+        cmd = 'qstat -u {user}'.format(user=user)
+        stdout, _ = cls.submit(cmd)
+        stdout = cls._skip_q_rows(stdout, skip_rows)
         return stdout
 
     @property
@@ -304,7 +326,13 @@ class PBS(HpcJobManager):
             was submitted successfully.
         """
 
-        status = self.check_status(name, var='name')
+        if len(name) > self.MAX_NAME_LEN:
+            msg = ('Cannot submit job with name longer than {} chars: "{}"'
+                   .format(self.MAX_NAME_LEN, name))
+            logger.error(msg)
+            raise ValueError(msg)
+
+        status = self.check_status(job_name=name)
 
         if status in ('Q', 'R'):
             logger.info('Not submitting job "{}" because it is already in '
@@ -361,6 +389,9 @@ class SLURM(HpcJobManager):
     SQ_FORMAT = ("%.15i %.30P  %.{}j  %.20u %.10t %.15M %.25R %q"
                  .format(MAX_NAME_LEN))
 
+    # default rows to skip in queue stdout
+    QSKIP = None
+
     def __init__(self, user=None, queue_dict=None):
         """
         Parameters
@@ -373,7 +404,8 @@ class SLURM(HpcJobManager):
         """
         super().__init__(user=user, queue_dict=queue_dict)
 
-    def query_queue(self, job_name=None, user=None, qformat=None,
+    @classmethod
+    def query_queue(cls, job_name=None, user=None, qformat=None,
                     skip_rows=None):
         """Run the HPC queue command and return the raw stdout string.
 
@@ -400,15 +432,18 @@ class SLURM(HpcJobManager):
             job_name_str = ' -n {}'.format(job_name)
 
         if user is None:
-            user = self.USER
+            user = cls.USER
 
         if qformat is None:
-            qformat = self.SQ_FORMAT
+            qformat = cls.SQ_FORMAT
+
+        if skip_rows is None:
+            skip_rows = cls.QSKIP
 
         cmd = ('squeue -u {user}{job_name} --format="{format_str}"'
                .format(user=user, job_name=job_name_str, format_str=qformat))
-        stdout, _ = SLURM.submit(cmd)
-        stdout = self._skip_q_rows(stdout, skip_rows)
+        stdout, _ = cls.submit(cmd)
+        stdout = cls._skip_q_rows(stdout, skip_rows)
 
         return stdout
 

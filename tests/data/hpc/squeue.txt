@@ -1,0 +1,4 @@
+JOBID PARTITION NAME USER ST  TIME  NODES NODELIST(REASON)
+12345     debug job1 usr1  R   0:21     1 (Priority)
+12346     debug job2 usr1 PD   0:00     1 (Resources)
+12347     debug job3 usr1 PD   0:00     1 (Priority)
