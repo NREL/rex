@@ -235,17 +235,23 @@ class JobManager(SubprocessManager):
 class PBS(JobManager):
     """Subclass for PBS subprocess jobs."""
 
-    def __init__(self, stdout_path='./stdout'):
+    def __init__(self, stdout_path='./stdout', qstat=None):
         """
         Initialize PBS job handler.
 
         Parameters
         ----------
-        stdout_path : str
-            Path to print .stdout and .stderr files.
+        stdout_path : str, optional
+            Path to print .stdout and .stderr files, by default './stdout'
+        qstat : list | None, optional
+            List of strings where each string is a row in the qstat printout.
+            If None, query qstat, by default None
         """
         super().__init__(stdout_path=stdout_path)
-        self._qstat = reversed(self.qstat())
+        if qstat is None:
+            qstat = reversed(self.qstat())
+
+        self._qstat = qstat
 
     @staticmethod
     def qstat():
@@ -408,17 +414,23 @@ class PBS(JobManager):
 class SLURM(JobManager):
     """Subclass for SLURM subprocess jobs."""
 
-    def __init__(self, stdout_path='./stdout'):
+    def __init__(self, stdout_path='./stdout', squeue=None):
         """
         Initialize SLURM job handler
 
         Parameters
         ----------
-        stdout_path : str
-            Path to print .stdout and .stderr files.
+        stdout_path : str, optional
+            Path to print .stdout and .stderr files, by default './stdout'
+        squeue : list | None, optional
+            List of strings where each string is a row in the squeue printout.
+            If None, query squeue, by default None
         """
         super().__init__(stdout_path=stdout_path)
-        self._squeue = reversed(self.squeue())
+        if squeue is None:
+            squeue = reversed(self.squeue())
+
+        self._squeue = squeue
 
     @staticmethod
     def squeue(name=None):
