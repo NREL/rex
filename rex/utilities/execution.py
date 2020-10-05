@@ -212,7 +212,27 @@ class SubprocessManager:
         return '{}:{}:00'.format(h_str, m_str)
 
 
-class PBS(SubprocessManager):
+class JobManager(SubprocessManager):
+    """
+    Base HPC Job Handler
+    """
+
+    def __init__(self, stdout_path='./stdout'):
+        """
+        Initialize HPC job handler.
+
+        Parameters
+        ----------
+        stdout_path : str
+            Path to print .stdout and .stderr files.
+        """
+        self.stdout_path = stdout_path
+        self.make_path(stdout_path)
+        self._out = None
+        self._err = None
+
+
+class PBS(JobManager):
     """Subclass for PBS subprocess jobs."""
 
     def __init__(self, stdout_path='./stdout'):
@@ -224,9 +244,7 @@ class PBS(SubprocessManager):
         stdout_path : str
             Path to print .stdout and .stderr files.
         """
-        self.make_path(stdout_path)
-        self._out = None
-        self._err = None
+        super().__init__(stdout_path=stdout_path)
         self._qstat = reversed(self.qstat())
 
     @staticmethod
@@ -318,7 +336,7 @@ class PBS(SubprocessManager):
         return status
 
     def qsub(self, cmd, alloc, queue, name='reV', feature=None,
-             stdout_path='./stdout', keep_sh=False):
+             keep_sh=False):
         """Submit a PBS job via qsub command and PBS shell script
 
         Parameters
@@ -335,8 +353,6 @@ class PBS(SubprocessManager):
         feature : str | None
             PBS feature request (-l {feature}).
             Example: 'feature=24core', 'qos=high', etc...
-        stdout_path : str
-            Path to print .stdout and .stderr files.
         keep_sh : bool
             Boolean to keep the .sh files. Default is to remove these files
             after job submission.
@@ -369,7 +385,7 @@ class PBS(SubprocessManager):
                       '{L}'
                       'echo Running on: $HOSTNAME, Machine Type: $MACHTYPE\n'
                       '{cmd}'
-                      .format(n=name, a=alloc, q=queue, p=stdout_path,
+                      .format(n=name, a=alloc, q=queue, p=self.stdout_path,
                               L=feature_str if feature else '',
                               cmd=cmd))
 
@@ -389,7 +405,7 @@ class PBS(SubprocessManager):
         return out, err
 
 
-class SLURM(SubprocessManager):
+class SLURM(JobManager):
     """Subclass for SLURM subprocess jobs."""
 
     def __init__(self, stdout_path='./stdout'):
@@ -401,10 +417,7 @@ class SLURM(SubprocessManager):
         stdout_path : str
             Path to print .stdout and .stderr files.
         """
-        self.make_path(stdout_path)
-        self._out = None
-        self._err = None
-
+        super().__init__(stdout_path=stdout_path)
         self._squeue = reversed(self.squeue())
 
     @staticmethod
@@ -658,8 +671,7 @@ class SLURM(SubprocessManager):
         return status
 
     def sbatch(self, cmd, alloc, walltime, memory=None, feature=None,
-               name='reV', stdout_path='./stdout', keep_sh=False,
-               conda_env=None, module=None,
+               name='reV', keep_sh=False, conda_env=None, module=None,
                module_root='/shared-projects/rev/modulefiles'):
         """Submit a SLURM job via sbatch command and SLURM shell script
 
@@ -679,8 +691,6 @@ class SLURM(SubprocessManager):
             or "--depend=[state:job_id]". Default is None.
         name : str
             SLURM job name.
-        stdout_path : str
-            Path to print .stdout and .stderr files.
         keep_sh : bool
             Boolean to keep the .sh files. Default is to remove these files
             after job submission.
@@ -744,7 +754,7 @@ class SLURM(SubprocessManager):
                       'echo Running on: $HOSTNAME, Machine Type: $MACHTYPE\n'
                       '{e}\n{cmd}'
                       .format(a=alloc, t=self.format_walltime(walltime),
-                              n=name, p=stdout_path, m=mem_str,
+                              n=name, p=self.stdout_path, m=mem_str,
                               f=feature_str, e=env_str, cmd=cmd))
 
             # write the shell script file and submit as qsub job
