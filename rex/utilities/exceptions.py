@@ -22,6 +22,18 @@ class ExecutionError(Exception):
     """
 
 
+class HpcError(Exception):
+    """
+    Error for HPC failure
+    """
+
+
+class SlurmError(Exception):
+    """
+    Error for SLURM failure
+    """
+
+
 class ExtrapolationWarning(Warning):
     """
     Warning for when value will be extrapolated
@@ -67,6 +79,12 @@ class RetryError(Exception):
 class ParallelExecutionWarning(Warning):
     """
     Warning for parallel job execution.
+    """
+
+
+class PbsWarning(Warning):
+    """
+    Warning for PBS errors/warnings
     """
 
 
