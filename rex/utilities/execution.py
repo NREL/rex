@@ -215,38 +215,74 @@ class SubprocessManager:
 class PBS(SubprocessManager):
     """Subclass for PBS subprocess jobs."""
 
-    def __init__(self, cmd, alloc, queue, name='reV',
-                 feature=None, stdout_path='./stdout'):
-        """Initialize and submit a PBS job.
+    def __init__(self, stdout_path='./stdout'):
+        """
+        Initialize PBS job handler.
 
         Parameters
         ----------
-        cmd : str
-            Command to be submitted in PBS shell script. Example:
-                'python -m reV.generation.cli_gen'
-        alloc : str
-            HPC allocation account. Example: 'rev'.
-        queue : str
-            HPC queue to submit job to. Example: 'short', 'batch-h', etc...
-        name : str
-            PBS job name.
-        feature : str | None
-            PBS feature request (-l {feature}).
-            Example: 'feature=24core', 'qos=high', etc...
         stdout_path : str
             Path to print .stdout and .stderr files.
         """
-
         self.make_path(stdout_path)
-        self.id, self.err = self.qsub(cmd,
-                                      alloc=alloc,
-                                      queue=queue,
-                                      name=name,
-                                      feature=feature,
-                                      stdout_path=stdout_path)
+        self._out = None
+        self._err = None
+        self._qstat = reversed(self.qstat())
 
     @staticmethod
-    def check_status(job, var='id'):
+    def qstat():
+        """
+        Run the PBS qstat command and return the stdout split to rows.
+
+        Returns
+        -------
+        qstat_rows : list | None
+            List of strings where each string is a row in the qstat printout.
+            Returns None if qstat is empty.
+        """
+
+        cmd = 'qstat -u {user}'.format(user=PBS.USER)
+        stdout, _ = PBS.submit(cmd)
+        qstat_rows = None
+        if stdout:
+            qstat_rows = stdout.split('\n')
+
+        return qstat_rows
+
+    @property
+    def out(self):
+        """
+        PBS stdout
+
+        Returns
+        -------
+        str
+        """
+        return self._out
+
+    @property
+    def err(self):
+        """
+        PBS stderr
+
+        Returns
+        -------
+        str
+        """
+        return self._err
+
+    @property
+    def id(self):
+        """
+        PBS job ID
+
+        Returns
+        -------
+        str
+        """
+        return self.out
+
+    def check_status(self, job, var='id'):
         """Check the status of this PBS job using qstat.
 
         Parameters
@@ -265,45 +301,21 @@ class PBS(SubprocessManager):
 
         # column location of various job identifiers
         col_loc = {'id': 0, 'name': 3}
-        qstat_rows = PBS.qstat()
-        if qstat_rows is None:
-            return None
-        else:
-            # reverse the list so most recent jobs are first
-            qstat_rows = reversed(qstat_rows)
+        status = None
+        if self._qstat is not None:
+            # update job status from qstat list
+            for row in self._qstat:
+                row = row.split()
+                # make sure the row is long enough to be a job status listing
+                if len(row) > 10:
+                    if row[col_loc[var]].strip() == job.strip():
+                        # Job status is located at the -2 index
+                        status = row[-2]
+                        logger.debug('Job with {} "{}" has status: "{}"'
+                                     .format(var, job, status))
+                        break
 
-        # update job status from qstat list
-        for row in qstat_rows:
-            row = row.split()
-            # make sure the row is long enough to be a job status listing
-            if len(row) > 10:
-                if row[col_loc[var]].strip() == job.strip():
-                    # Job status is located at the -2 index
-                    status = row[-2]
-                    logger.debug('Job with {} "{}" has status: "{}"'
-                                 .format(var, job, status))
-                    return status
-        return None
-
-    @staticmethod
-    def qstat():
-        """Run the PBS qstat command and return the stdout split to rows.
-
-        Returns
-        -------
-        qstat_rows : list | None
-            List of strings where each string is a row in the qstat printout.
-            Returns None if qstat is empty.
-        """
-
-        cmd = 'qstat -u {user}'.format(user=PBS.USER)
-        stdout, _ = PBS.submit(cmd)
-        if not stdout:
-            # No jobs are currently running.
-            return None
-        else:
-            qstat_rows = stdout.split('\n')
-            return qstat_rows
+        return status
 
     def qsub(self, cmd, alloc, queue, name='reV', feature=None,
              stdout_path='./stdout', keep_sh=False):
@@ -371,104 +383,29 @@ class PBS(SubprocessManager):
                 if not keep_sh:
                     self.rm(fname)
 
+        self._out = out
+        self._err = err
+
         return out, err
 
 
 class SLURM(SubprocessManager):
     """Subclass for SLURM subprocess jobs."""
 
-    def __init__(self, cmd, alloc, walltime, memory=None, feature=None,
-                 name='reV', stdout_path='./stdout', conda_env=None,
-                 module=None, module_root='/shared-projects/rev/modulefiles'):
-        """Initialize and submit a PBS job.
+    def __init__(self, stdout_path='./stdout'):
+        """
+        Initialize SLURM job handler
 
         Parameters
         ----------
-        cmd : str
-            Command to be submitted in PBS shell script. Example:
-                'python -m reV.generation.cli_gen'
-        alloc : str
-            HPC project (allocation) handle. Example: 'rev'.
-        walltime : float
-            Node walltime request in hours.
-        memory : int, Optional
-            Node memory request in GB.
-        feature : str
-            Additional flags for SLURM job. Format is "--qos=high"
-            or "--depend=[state:job_id]". Default is None.
-        name : str
-            SLURM job name.
         stdout_path : str
             Path to print .stdout and .stderr files.
-        conda_env : str
-            Conda environment to activate
-        module : str
-            Module to load
-        module_root : str
-            Path to module root to load
         """
-
         self.make_path(stdout_path)
-        self.out, self.err = self.sbatch(cmd,
-                                         alloc=alloc,
-                                         memory=memory,
-                                         walltime=walltime,
-                                         feature=feature,
-                                         name=name,
-                                         stdout_path=stdout_path,
-                                         conda_env=conda_env,
-                                         module=module,
-                                         module_root=module_root)
-        if self.out:
-            self.id = self.out.split(' ')[-1]
-        else:
-            self.id = None
+        self._out = None
+        self._err = None
 
-    @staticmethod
-    def check_status(job, var='id'):
-        """Check the status of this PBS job using qstat.
-
-        Parameters
-        ----------
-        job : str
-            Job name or ID number.
-        var : str
-            Identity/type of job identification input arg ('id' or 'name').
-
-        Returns
-        -------
-        out : str | NoneType
-            squeue job status str or None if not found.
-            Common status codes: PD, R, CG (pending, running, complete).
-        """
-
-        # column location of various job identifiers
-        col_loc = {'id': 0, 'name': 2}
-
-        if var == 'name':
-            # check for specific name
-            squeue_rows = SLURM.squeue(name=job)
-        else:
-            squeue_rows = SLURM.squeue()
-
-        if squeue_rows is None:
-            return None
-        else:
-            # reverse the list so most recent jobs are first
-            squeue_rows = reversed(squeue_rows)
-
-        # update job status from qstat list
-        for row in squeue_rows:
-            row = row.split()
-            # make sure the row is long enough to be a job status listing
-            if len(row) > 7:
-                if row[col_loc[var]].strip() in job.strip():
-                    # Job status is located at the 4 index
-                    status = row[4]
-                    logger.debug('Job with {} "{}" has status: "{}"'
-                                 .format(var, job, status))
-                    return row[4]
-        return None
+        self._squeue = reversed(self.squeue())
 
     @staticmethod
     def squeue(name=None):
@@ -491,12 +428,12 @@ class SLURM(SubprocessManager):
                .format(user=SLURM.USER,
                        job_name=' -n {}'.format(name) if name else ''))
         stdout, _ = SLURM.submit(cmd)
-        if not stdout:
-            # No jobs are currently running.
-            return None
-        else:
+
+        squeue_rows = None
+        if stdout:
             squeue_rows = stdout.split('\n')
-            return squeue_rows
+
+        return squeue_rows
 
     @staticmethod
     def scontrol(cmd):
@@ -648,6 +585,78 @@ class SLURM(SubprocessManager):
             logger.error(e)
             raise ExecutionError(e)
 
+    @property
+    def out(self):
+        """
+        SBATCH stdout
+
+        Returns
+        -------
+        str
+        """
+        return self._out
+
+    @property
+    def err(self):
+        """
+        SBATCH stderr
+
+        Returns
+        -------
+        str
+        """
+        return self._err
+
+    @property
+    def id(self):
+        """
+        Job id
+
+        Returns
+        -------
+        str
+        """
+        if self.out:
+            _id = self.out.split(' ')[-1]
+        else:
+            _id = None
+
+        return _id
+
+    def check_status(self, job, var='id'):
+        """Check the status of this PBS job using qstat.
+
+        Parameters
+        ----------
+        job : str
+            Job name or ID number.
+        var : str
+            Identity/type of job identification input arg ('id' or 'name').
+
+        Returns
+        -------
+        status : str | NoneType
+            squeue job status str or None if not found.
+            Common status codes: PD, R, CG (pending, running, complete).
+        """
+        # column location of various job identifiers
+        col_loc = {'id': 0, 'name': 2}
+
+        status = None
+        if self._squeue is not None:
+            # update job status from qstat list
+            for row in self._squeue:
+                row = row.split()
+                # make sure the row is long enough to be a job status listing
+                if len(row) > 7:
+                    if row[col_loc[var]].strip() in job.strip():
+                        # Job status is located at the 4 index
+                        status = row[4]
+                        logger.debug('Job with {} "{}" has status: "{}"'
+                                     .format(var, job, status))
+                        break
+        return status
+
     def sbatch(self, cmd, alloc, walltime, memory=None, feature=None,
                name='reV', stdout_path='./stdout', keep_sh=False,
                conda_env=None, module=None,
@@ -749,8 +758,12 @@ class SLURM(SubprocessManager):
             else:
                 logger.debug('SLURM job "{}" with id #{} submitted '
                              'successfully'.format(name, out))
+
             if not keep_sh:
                 self.rm(fname)
+
+            self._out = out
+            self._err = err
 
         return out, err
 
