@@ -501,7 +501,7 @@ class MultiYearResource:
 
         self._meta = None
         self._time_index = None
-        self._coords = None
+        self._lat_lon = None
         # Map variables to their .h5 files
         cls_kwargs = {'unscale': unscale, 'str_decode': str_decode,
                       'hsds': hsds}
@@ -645,22 +645,41 @@ class MultiYearResource:
         return self._time_index
 
     @property
+    def lat_lon(self):
+        """
+        Extract (latitude, longitude) pairs
+
+        Returns
+        -------
+        lat_lon : ndarray
+        """
+        if self._lat_lon is None:
+            if 'coordinates' in self:
+                self._lat_lon = self._get_coords('coordinates', slice(None))
+            else:
+                self._lat_lon = self.meta
+                lat_lon_cols = ['latitude', 'longitude']
+                for c in self.meta.columns:
+                    if c.lower() in ['lat', 'latitude']:
+                        lat_lon_cols[0] = c
+                    elif c.lower() in ['lon', 'long', 'longitude']:
+                        lat_lon_cols[1] = c
+
+                self._lat_lon = self._lat_lon[lat_lon_cols].values
+
+        return self._lat_lon
+
+    @property
     def coordinates(self):
         """
         Coordinates: (lat, lon) pairs
 
         Returns
         -------
-        coords : ndarray
+        lat_lon : ndarray
             Array of (lat, lon) pairs for each site in meta
         """
-        if self._coords is None:
-            if 'coordinates' in self:
-                self._coords = self._get_coords('coordinates', slice(None))
-            else:
-                raise ResourceKeyError("'coordinates' is not a valid dataset!")
-
-        return self._coords
+        return self.lat_lon
 
     @property
     def global_attrs(self):

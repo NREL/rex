@@ -63,6 +63,9 @@ def check_meta(res_cls):
     test = res_cls['meta']
     assert_frame_equal(truth, test, check_dtype=False)
 
+    test = res_cls.lat_lon
+    assert np.allclose(truth[['latitude', 'longitude']].values, test)
+
 
 def check_time_index(res_cls):
     """

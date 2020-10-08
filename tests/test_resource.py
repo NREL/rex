@@ -149,6 +149,9 @@ def check_meta(res_cls):
     assert isinstance(meta, pd.DataFrame)
     assert meta.shape == (meta_shape[0], 2)
 
+    lat_lon = res_cls.lat_lon
+    assert np.allclose(baseline[['latitude', 'longitude']].values, lat_lon)
+
 
 def check_time_index(res_cls):
     """
