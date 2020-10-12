@@ -1,0 +1,5 @@
+Job id           Name             User             Time Use S Queue
+---------------- ---------------- ---------------- -------- - -----
+1231230          my_parallel_job0 usr0                    0 R parallel   
+1231231          my_parallel_job1 usr0                    0 Q parallel   
+1231232          my_parallel_job2 usr0                    0 Q parallel   
