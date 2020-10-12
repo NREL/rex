@@ -228,7 +228,7 @@ class NSRDB(SolarResource):
         if not downscale:
             for var in SAM_res.var_list:
                 if var in self.datasets:
-                    SAM_res[var] = self[var, time_step_size, sites]
+                    SAM_res[var] = self[var, time_slice, sites]
 
             SAM_res.compute_irradiance(clearsky=clearsky)
         else:
