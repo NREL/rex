@@ -105,12 +105,14 @@ class SAMResource:
             SAM technology string. See class attributes for options.
         time_index : pandas.DatetimeIndex
             Time-series datetime index
-        hub_heights : int | float | list
-            Hub height(s) to extract wind data at
-        require_wind_dir : bool
-            Boolean flag indicating that wind direction is required
-        means : bool
-            Boolean flag to compute mean resource when res_array is set
+        hub_heights : int | float | list, optional
+            Hub height(s) to extract wind data at, by default None
+        require_wind_dir : bool, optional
+            Boolean flag indicating that wind direction is required,
+            by default False
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
         """
         self._i = 0
         self._sites = self._parse_sites(sites)
