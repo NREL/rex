@@ -679,7 +679,8 @@ class SLURM(HpcJobManager):
         Returns
         -------
         out : str
-            sbatch standard output, this is typically the SLURM job ID.
+            sbatch standard output, if submitted successfully, this is the
+            slurm job id.
         err : str
             sbatch standard error, this is typically an empty string if the job
             was submitted successfully.
@@ -729,10 +730,12 @@ class SLURM(HpcJobManager):
                 logger.warning(msg)
                 warn(msg, SlurmWarning)
             else:
+                job_id = int(out.split(' ')[-1])
+                out = str(job_id)
                 logger.debug('SLURM job "{}" with id #{} submitted '
-                             'successfully'.format(name, out))
-                self._queue[int(out)] = {self.QCOL_ID: int(out),
-                                         self.QCOL_NAME: name,
-                                         self.QCOL_STATUS: 'PD'}
+                             'successfully'.format(name, job_id))
+                self._queue[job_id] = {self.QCOL_ID: job_id,
+                                       self.QCOL_NAME: name,
+                                       self.QCOL_STATUS: 'PD'}
 
         return out, err
