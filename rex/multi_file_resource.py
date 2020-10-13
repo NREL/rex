@@ -466,8 +466,9 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     """
     @classmethod
     def preload_SAM(cls, h5_source, sites, unscale=True, str_decode=True,
-                    tech='pvwattsv7', clearsky=False, bifacial=False,
-                    downscale=None, means=False, check_files=False):
+                    tech='pvwattsv7', time_index_step=None, means=False,
+                    clearsky=False, bifacial=False, downscale=None,
+                    check_files=False):
         """
         Pre-load project_points for SAM
 
@@ -488,6 +489,12 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             strings. Setting this to False will speed up the meta data read.
         tech : str, optional
             SAM technology string, by default 'pvwattsv7'
+        time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
         clearsky : bool
             Boolean flag to pull clearsky instead of real irradiance
         bifacial : bool
@@ -496,8 +503,6 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             Option for NSRDB resource downscaling to higher temporal
             resolution. Expects a string in the Pandas frequency format,
             e.g. '5min'.
-        means : bool
-            Boolean flag to compute mean resource when res_array is set
         check_files : bool
             Check to ensure files have the same coordinates and time_index
 
@@ -510,9 +515,10 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
         with cls(h5_source, unscale=unscale, str_decode=str_decode,
                  check_files=check_files) as res:
             # pylint: disable=assignment-from-no-return
-            SAM_res = res._preload_SAM(sites, tech=tech, clearsky=clearsky,
-                                       bifacial=bifacial, downscale=downscale,
-                                       means=means)
+            SAM_res = res._preload_SAM(sites, tech=tech,
+                                       time_index_step=time_index_step,
+                                       means=means, clearsky=clearsky,
+                                       bifacial=bifacial, downscale=downscale)
 
         return SAM_res
 
@@ -582,8 +588,8 @@ class MultiFileWTK(MultiFileResource, WindResource):
 
     @classmethod
     def preload_SAM(cls, h5_source, sites, hub_heights, unscale=True,
-                    str_decode=True, require_wind_dir=False,
-                    precip_rate=False, icing=False, means=False,
+                    str_decode=True, time_index_step=None, means=False,
+                    require_wind_dir=False, precip_rate=False, icing=False,
                     check_files=False):
         """
         Placeholder for classmethod that will pre-load project_points for SAM
@@ -605,6 +611,12 @@ class MultiFileWTK(MultiFileResource, WindResource):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
+        time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
         require_wind_dir : bool
             Boolean flag as to whether wind direction will be loaded.
         precip_rate : bool
@@ -612,8 +624,6 @@ class MultiFileWTK(MultiFileResource, WindResource):
         icing : bool
             Boolean flag as to whether icing is analyzed.
             This will preload relative humidity.
-        means : bool
-            Boolean flag to compute mean resource when res_array is set
         check_files : bool
             Check to ensure files have the same coordinates and time_index
 
@@ -627,8 +637,9 @@ class MultiFileWTK(MultiFileResource, WindResource):
                  check_files=check_files) as res:
             # pylint: disable=assignment-from-no-return
             SAM_res = res._preload_SAM(sites, hub_heights,
+                                       time_index_step=time_index_step,
+                                       means=means,
                                        require_wind_dir=require_wind_dir,
-                                       precip_rate=precip_rate, icing=icing,
-                                       means=means)
+                                       precip_rate=precip_rate, icing=icing)
 
         return SAM_res

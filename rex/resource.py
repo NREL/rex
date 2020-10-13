@@ -7,6 +7,7 @@ import numpy as np
 import os
 import pandas as pd
 
+from rex.sam_resource import SAMResource
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 from rex.utilities.utilities import check_tz
@@ -970,7 +971,7 @@ class Resource:
         """
         self._h5.close()
 
-    def _preload_SAM(self, sites, tech, **kwargs):
+    def _preload_SAM(self, sites, tech, time_index_step=None, means=False):
         """
         Placeholder method to pre-load project_points for SAM
 
@@ -980,14 +981,31 @@ class Resource:
             List of sites to be provided to SAM
         tech : str
             Technology to be run by SAM
-        kwargs : dict
-            internal kwargs
+        time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
         """
+        time_slice = slice(None, None, time_index_step)
+        SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
+                              means=means)
+        sites = SAM_res.sites_slice
+        SAM_res['meta'] = self['meta', sites]
+
+        for var in SAM_res.var_list:
+            if var in self.datasets:
+                SAM_res[var] = self[var, time_slice, sites]
+
+        return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, tech, **kwargs):
+    def preload_SAM(cls, h5_file, sites, tech, unscale=True, hsds=False,
+                    str_decode=True, group=None, time_index_step=None,
+                    means=False):
         """
-        Placeholder for classmethod that will pre-load project_points for SAM
+        Pre-load project_points for SAM
 
         Parameters
         ----------
@@ -997,6 +1015,34 @@ class Resource:
             List of sites to be provided to SAM
         tech : str
             Technology to be run by SAM
-        kwargs : dict
-            kwargs to init resource class
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
+        time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
+
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with Solar resource for sites
+            in project_points
         """
+        kwargs = {"unscale": unscale, "hsds": hsds,
+                  "str_decode": str_decode, "group": group}
+        with cls(h5_file, **kwargs) as res:
+            SAM_res = res._preload_SAM(sites, tech,
+                                       time_index_step=time_index_step,
+                                       means=means)
+
+        return SAM_res
