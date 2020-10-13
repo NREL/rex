@@ -74,7 +74,7 @@ def test_pbs_qsub():
     try:
         pbs.qsub(cmd, alloc, queue, name)
     except FileNotFoundError as e:
-        assert str(e) == "[Errno 2] No such file or directory: 'qsub': 'qsub'"
+        assert 'qsub' in str(e)
 
     fn_sh = '{}.sh'.format(name)
 
@@ -144,8 +144,7 @@ def test_slurm_sbatch():
     try:
         slurm.sbatch(cmd, alloc, walltime, name=name)
     except FileNotFoundError as e:
-        truth = "[Errno 2] No such file or directory: 'sbatch': 'sbatch'"
-        assert str(e) == truth
+        assert 'sbatch' in str(e)
 
     fn_sh = '{}.sh'.format(name)
 
