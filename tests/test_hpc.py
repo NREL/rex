@@ -4,6 +4,7 @@ pytests for hpc job managers.
 """
 import shutil
 import os
+import pytest
 
 from rex import TESTDATADIR
 from rex.utilities.hpc import PBS, SLURM
@@ -71,10 +72,8 @@ def test_pbs_qsub():
     assert err == 'already_running'
     name = 'pbs_qsub_test'
 
-    try:
+    with pytest.raises(FileNotFoundError):
         pbs.qsub(cmd, alloc, queue, name)
-    except FileNotFoundError as e:
-        assert 'qsub' in str(e)
 
     fn_sh = '{}.sh'.format(name)
 
@@ -141,10 +140,8 @@ def test_slurm_sbatch():
     assert err == 'already_running'
     name = 'slurm_sbatch_test'
 
-    try:
+    with pytest.raises(FileNotFoundError):
         slurm.sbatch(cmd, alloc, walltime, name=name)
-    except FileNotFoundError as e:
-        assert 'sbatch' in str(e)
 
     fn_sh = '{}.sh'.format(name)
 
