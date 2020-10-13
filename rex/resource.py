@@ -971,7 +971,7 @@ class Resource:
         """
         self._h5.close()
 
-    def _preload_SAM(self, sites, tech, time_step_size=None, means=False):
+    def _preload_SAM(self, sites, tech, time_index_step=None, means=False):
         """
         Placeholder method to pre-load project_points for SAM
 
@@ -981,14 +981,14 @@ class Resource:
             List of sites to be provided to SAM
         tech : str
             Technology to be run by SAM
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
             Boolean flag to compute mean resource when res_array is set,
             by default False
         """
-        time_slice = slice(None, None, time_step_size)
+        time_slice = slice(None, None, time_index_step)
         SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
                               means=means)
         sites = SAM_res.sites_slice
@@ -1002,7 +1002,7 @@ class Resource:
 
     @classmethod
     def preload_SAM(cls, h5_file, sites, tech, unscale=True, hsds=False,
-                    str_decode=True, group=None, time_step_size=None,
+                    str_decode=True, group=None, time_index_step=None,
                     means=False):
         """
         Pre-load project_points for SAM
@@ -1025,7 +1025,7 @@ class Resource:
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
@@ -1042,7 +1042,7 @@ class Resource:
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, tech,
-                                       time_step_size=time_step_size,
+                                       time_index_step=time_index_step,
                                        means=means)
 
         return SAM_res

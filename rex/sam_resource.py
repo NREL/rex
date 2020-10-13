@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)
 
 class SAMResource:
     """
-    Resource Manager for SAM
+    Resource container for SAM. Resource handlers preload the datasets needed
+    by SAM for the sites of interest. SAMResource handles all ETL needed before
+    resource data is passed into SAM.
     """
 
     # Resource variables to load for each SAM technology

@@ -177,9 +177,9 @@ def test_preload_sam_sites(sites):
     assert np.allclose(truth, test)
 
 
-@pytest.mark.parametrize('time_step_size',
+@pytest.mark.parametrize('time_index_step',
                          [None, 1, 2, 10])
-def test_preload_sam_time_step_size(time_step_size):
+def test_preload_sam_time_index_step(time_index_step):
     """Test the preload_SAM method with different sites"""
     h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     hub_heights = 100
@@ -187,12 +187,12 @@ def test_preload_sam_time_step_size(time_step_size):
     sites = slice(0, 100)
 
     SAM_res = WindResource.preload_SAM(h5, sites, hub_heights,
-                                       time_step_size=time_step_size)
+                                       time_index_step=time_index_step)
     test = SAM_res._res_arrays['windspeed']
     if isinstance(sites, int):
         test = test.flatten()
 
-    time_slice = slice(None, None, time_step_size)
+    time_slice = slice(None, None, time_index_step)
     with WindResource(h5) as wind:
         truth = wind['windspeed_100m', time_slice, sites]
 

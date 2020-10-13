@@ -466,7 +466,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     """
     @classmethod
     def preload_SAM(cls, h5_source, sites, unscale=True, str_decode=True,
-                    tech='pvwattsv7', time_step_size=None, means=False,
+                    tech='pvwattsv7', time_index_step=None, means=False,
                     clearsky=False, bifacial=False, downscale=None,
                     check_files=False):
         """
@@ -489,7 +489,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             strings. Setting this to False will speed up the meta data read.
         tech : str, optional
             SAM technology string, by default 'pvwattsv7'
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
@@ -516,7 +516,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
                  check_files=check_files) as res:
             # pylint: disable=assignment-from-no-return
             SAM_res = res._preload_SAM(sites, tech=tech,
-                                       time_step_size=time_step_size,
+                                       time_index_step=time_index_step,
                                        means=means, clearsky=clearsky,
                                        bifacial=bifacial, downscale=downscale)
 
@@ -588,7 +588,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
 
     @classmethod
     def preload_SAM(cls, h5_source, sites, hub_heights, unscale=True,
-                    str_decode=True, time_step_size=None, means=False,
+                    str_decode=True, time_index_step=None, means=False,
                     require_wind_dir=False, precip_rate=False, icing=False,
                     check_files=False):
         """
@@ -611,7 +611,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
@@ -637,7 +637,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
                  check_files=check_files) as res:
             # pylint: disable=assignment-from-no-return
             SAM_res = res._preload_SAM(sites, hub_heights,
-                                       time_step_size=time_step_size,
+                                       time_index_step=time_index_step,
                                        means=means,
                                        require_wind_dir=require_wind_dir,
                                        precip_rate=precip_rate, icing=icing)

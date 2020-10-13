@@ -65,7 +65,7 @@ class SolarResource(Resource):
 
         return res_df
 
-    def _preload_SAM(self, sites, tech='pvwattsv7', time_step_size=None,
+    def _preload_SAM(self, sites, tech='pvwattsv7', time_index_step=None,
                      means=False, clearsky=False, bifacial=False):
         """
         Pre-load project_points for SAM
@@ -76,7 +76,7 @@ class SolarResource(Resource):
             List of sites to be provided to SAM
         tech : str, optional
             SAM technology string, by default 'pvwattsv7'
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
@@ -92,7 +92,7 @@ class SolarResource(Resource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        time_slice = slice(None, None, time_step_size)
+        time_slice = slice(None, None, time_index_step)
         SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
                               means=means)
         sites = SAM_res.sites_slice
@@ -116,7 +116,7 @@ class SolarResource(Resource):
     @classmethod
     def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
                     str_decode=True, group=None, tech='pvwattsv7',
-                    time_step_size=None, means=False, clearsky=False,
+                    time_index_step=None, means=False, clearsky=False,
                     bifacial=False):
         """
         Pre-load project_points for SAM
@@ -139,7 +139,7 @@ class SolarResource(Resource):
             Group within .h5 resource file to open
         tech : str, optional
             SAM technology string, by default 'pvwattsv7'
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
@@ -160,7 +160,7 @@ class SolarResource(Resource):
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, tech=tech,
-                                       time_step_size=time_step_size,
+                                       time_index_step=time_index_step,
                                        means=means, clearsky=clearsky,
                                        bifacial=bifacial)
 
@@ -179,7 +179,7 @@ class NSRDB(SolarResource):
     SCALE_ATTR = 'psm_scale_factor'
     UNIT_ATTR = 'psm_units'
 
-    def _preload_SAM(self, sites, tech='pvwattsv7', time_step_size=None,
+    def _preload_SAM(self, sites, tech='pvwattsv7', time_index_step=None,
                      means=False, clearsky=False, bifacial=False,
                      downscale=None):
         """
@@ -191,7 +191,7 @@ class NSRDB(SolarResource):
             List of sites to be provided to SAM
         tech : str, optional
             SAM technology string, by default 'pvwattsv7'
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
@@ -212,7 +212,7 @@ class NSRDB(SolarResource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        time_slice = slice(None, None, time_step_size)
+        time_slice = slice(None, None, time_index_step)
         SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
                               means=means)
         sites = SAM_res.sites_slice
@@ -242,7 +242,7 @@ class NSRDB(SolarResource):
     @classmethod
     def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
                     str_decode=True, group=None, tech='pvwattsv7',
-                    time_step_size=None, means=False, clearsky=False,
+                    time_index_step=None, means=False, clearsky=False,
                     bifacial=False, downscale=None):
         """
         Pre-load project_points for SAM
@@ -265,7 +265,7 @@ class NSRDB(SolarResource):
             Group within .h5 resource file to open
         tech : str, optional
             SAM technology string, by default 'pvwattsv7'
-       time_step_size: int, optional
+       time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
@@ -290,7 +290,7 @@ class NSRDB(SolarResource):
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, tech=tech,
-                                       time_step_size=time_step_size,
+                                       time_index_step=time_index_step,
                                        means=means, clearsky=clearsky,
                                        bifacial=bifacial, downscale=downscale)
 
@@ -902,7 +902,7 @@ class WindResource(Resource):
 
         return res_df
 
-    def _preload_SAM(self, sites, hub_heights, time_step_size=None,
+    def _preload_SAM(self, sites, hub_heights, time_index_step=None,
                      means=False, require_wind_dir=False,
                      precip_rate=False, icing=False):
         """
@@ -914,7 +914,7 @@ class WindResource(Resource):
             List of sites to be provided to SAM
         hub_heights : int | float | list
             Hub heights to extract for SAM
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
@@ -936,7 +936,7 @@ class WindResource(Resource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        time_slice = slice(None, None, time_step_size)
+        time_slice = slice(None, None, time_index_step)
         SAM_res = SAMResource(sites, 'windpower',
                               self['time_index', time_slice],
                               hub_heights=hub_heights,
@@ -985,7 +985,7 @@ class WindResource(Resource):
     @classmethod
     def preload_SAM(cls, h5_file, sites, hub_heights, unscale=True,
                     hsds=False, str_decode=True, group=None,
-                    time_step_size=None, means=False,
+                    time_index_step=None, means=False,
                     require_wind_dir=False, precip_rate=False, icing=False):
         """
         Placeholder for classmethod that will pre-load project_points for SAM
@@ -1008,7 +1008,7 @@ class WindResource(Resource):
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
         means : bool, optional
@@ -1037,7 +1037,7 @@ class WindResource(Resource):
                                        require_wind_dir=require_wind_dir,
                                        precip_rate=precip_rate, icing=icing,
                                        means=means,
-                                       time_step_size=time_step_size)
+                                       time_index_step=time_index_step)
 
         return SAM_res
 
@@ -1094,7 +1094,7 @@ class WaveResource(Resource):
 
         return res_df
 
-    def _preload_SAM(self, sites, means=False, time_step_size=None):
+    def _preload_SAM(self, sites, means=False, time_index_step=None):
         """
         Pre-load project_points for SAM
 
@@ -1104,7 +1104,7 @@ class WaveResource(Resource):
             List of sites to be provided to SAM
         means : bool
             Boolean flag to compute mean resource when res_array is set
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
 
@@ -1115,14 +1115,14 @@ class WaveResource(Resource):
             in project_points
         """
         SAM_res = super()._preload_SAM(sites, 'wave', means=means,
-                                       time_step_size=time_step_size)
+                                       time_index_step=time_index_step)
 
         return SAM_res
 
     @classmethod
     def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
                     str_decode=True, group=None, means=False,
-                    time_step_size=None):
+                    time_index_step=None):
         """
         Pre-load project_points for SAM
 
@@ -1144,7 +1144,7 @@ class WaveResource(Resource):
             Group within .h5 resource file to open
         means : bool
             Boolean flag to compute mean resource when res_array is set
-        time_step_size: int, optional
+        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
 
@@ -1158,6 +1158,6 @@ class WaveResource(Resource):
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, means=means,
-                                       time_step_size=time_step_size)
+                                       time_index_step=time_index_step)
 
         return SAM_res
