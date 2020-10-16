@@ -344,7 +344,8 @@ class RechunkH5:
         var_attrs = var_attrs.where(var_attrs.notnull(), None)
 
         if version is not None:
-            logger.debug('')
+            logger.debug('Adding version: {} to global attributes'
+                         .format(version))
             if 'global' in var_attrs.index:
                 global_attrs = var_attrs.loc['global', 'attrs']
                 if isinstance(global_attrs, dict):
@@ -356,6 +357,8 @@ class RechunkH5:
 
         if hub_height is not None:
             var_attrs = RechunkH5._get_hub_height_attrs(var_attrs, hub_height)
+            logger.debug('Reducing variable attributes to variables at hub '
+                         'height {}m:\n{}'.format(hub_height, var_attrs.index))
 
         return var_attrs
 
