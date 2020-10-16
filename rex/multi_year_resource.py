@@ -246,8 +246,12 @@ class MultiYearH5:
         import h5pyd
 
         year_map = {}
-        with h5pyd.Folder(hsds_dir + '/') as f:
+        if not hsds_dir.endswith('/'):
+            hsds_dir += '/'
+
+        with h5pyd.Folder(hsds_dir) as f:
             for file in f:
+                print(file)
                 if file.startswith(prefix) and file.endswith(suffix):
                     try:
                         year = parse_year(file)
