@@ -127,6 +127,24 @@ def test_downscale():
         os.remove(rechunk_path)
 
 
+def test_hub_height():
+    """
+    Test hub_height RechunkH5 kwarg
+    """
+    src_path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    rechunk_path = os.path.join(TESTDATADIR, 'wtk/rechunk_100m.h5')
+    var_attrs = create_var_attrs(src_path, t_chunk=(7 * 24))
+
+    RechunkH5.run(src_path, rechunk_path, var_attrs, hub_height=100)
+
+    missing = ['pressure_0m', 'pressure_200m', 'temperature_80m',
+               'winddirection_80m', 'windspeed_80m']
+    check_rechunk(src_path, rechunk_path, missing=missing)
+
+    if PURGE_OUT:
+        os.remove(rechunk_path)
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 

@@ -6,6 +6,7 @@ import click
 import os
 
 from rex.rechunk_h5.rechunk_h5 import RechunkH5
+from rex.utilities.cli_dtypes import INT, STR
 from rex.utilities.loggers import init_logger
 
 
@@ -17,24 +18,28 @@ from rex.utilities.loggers import init_logger
 @click.option('--var_attrs_path', '-vap', type=click.Path(exists=True),
               required=True,
               help=".json containing variable attributes")
+@click.option('--hub_height', '-hh', type=INT, default=None,
+              help="Rechunk specific hub_height")
 @click.option('--version', '-ver', default=None,
               help="File version number")
+@click.option('--overwrite', '-rm', is_flag=True,
+              help="Flag to overwrite an existing h5_dst file")
 @click.option('--meta', '-m', default=None, type=click.Path(exists=True),
               help=("Path to .csv or .npy file containing meta to load into "
                     "rechunked .h5 file"))
-@click.option('--process_size', '-s', default=None, type=int,
+@click.option('--process_size', '-s', default=None, type=INT,
               help="Size of each chunk to be processed")
 @click.option('--check_dset_attrs', '-cda', is_flag=True,
               help='Flag to compare source and specified dataset attributes')
-@click.option('--resolution', '-res', default=None, type=str,
+@click.option('--resolution', '-res', default=None, type=STR,
               help='New time resolution')
 @click.option('--log_file', '-log', default=None, type=click.Path(),
               help='Path to .log file')
 @click.option('--verbose', '-v', is_flag=True,
               help='If used upgrade logging to DEBUG')
 @click.pass_context
-def main(ctx, src_h5, dst_h5, var_attrs_path, version, meta, process_size,
-         check_dset_attrs, resolution, log_file, verbose):
+def main(ctx, src_h5, dst_h5, var_attrs_path, hub_height, version, overwrite,
+         meta, process_size, check_dset_attrs, resolution, log_file, verbose):
     """
     RechunkH5 CLI entry point
     """
@@ -57,9 +62,10 @@ def main(ctx, src_h5, dst_h5, var_attrs_path, version, meta, process_size,
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
-    RechunkH5.run(src_h5, dst_h5, var_attrs_path,
-                  version=version, meta=meta, process_size=process_size,
-                  check_dset_attrs=check_dset_attrs, resolution=resolution)
+    RechunkH5.run(src_h5, dst_h5, var_attrs_path, hub_height=hub_height,
+                  version=version, overwrite=overwrite, meta=meta,
+                  process_size=process_size, check_dset_attrs=check_dset_attrs,
+                  resolution=resolution)
 
 
 if __name__ == '__main__':

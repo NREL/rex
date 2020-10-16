@@ -156,7 +156,10 @@ class RechunkH5:
     """
     Class to create new .h5 file with new chunking
     """
-    def __init__(self, h5_src, h5_dst, version=None):
+    NON_VAR_DSETS = ['global', 'meta', 'coordinates', 'time_index']
+
+    def __init__(self, h5_src, h5_dst, var_attrs, hub_height=None,
+                 version=None, overwrite=True):
         """
         Initalize class object
 
@@ -166,15 +169,27 @@ class RechunkH5:
             Source .h5 file path
         h5_dst : str
             Destination path for rechunked .h5 file
-        version : str
-            File version number
+        var_attrs : str | pandas.DataFrame
+            DataFrame of variable attributes or .json containing variable
+            attributes
+        hub_height : int | None, optional
+            Rechunk specific hub_height, by default None
+        version : str, optional
+            File version number, by default None
+        overwrite : bool, optional
+            Flag to overwrite an existing h5_dst file, by default True
         """
         self._src_path = h5_src
         self._src_dsets = None
         self._dst_path = h5_dst
-        self._dst_h5 = h5py.File(h5_dst, 'w')
-        if version:
-            self._dst_h5.attrs['version'] = version
+        self._dst_h5 = h5py.File(h5_dst, mode='w-' if overwrite else 'w')
+
+        self._rechunk_attrs = self._parse_var_attrs(var_attrs,
+                                                    hub_height=hub_height,
+                                                    version=version)
+        if self.global_attrs is not None:
+            for k, v in self.global_attrs['attrs'].items():
+                self._dst_h5.attrs[k] = v
 
         self._time_slice = None
 
@@ -230,6 +245,157 @@ class RechunkH5:
         slice
         """
         return self._time_slice
+
+    @property
+    def rechunk_attrs(self):
+        """
+        Attributes for rechunked files, includes dataset and global attrs
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
+        return self._rechunk_attrs
+
+    @property
+    def global_attrs(self):
+        """
+        Global attributes
+
+        Returns
+        -------
+        pandas.Series
+        """
+        return self._get_attrs('global')
+
+    @property
+    def time_index_attrs(self):
+        """
+        Time index attributes
+
+        Returns
+        -------
+        pandas.Series
+        """
+        return self._get_attrs('time_index')
+
+    @property
+    def meta_attrs(self):
+        """
+        Meta attributes
+
+        Returns
+        -------
+        pandas.Series
+        """
+        return self._get_attrs('meta')
+
+    @property
+    def coordinates_attrs(self):
+        """
+        Coordinates attributes
+
+        Returns
+        -------
+        pandas.Series
+        """
+        return self._get_attrs('coordinates')
+
+    @property
+    def variable_attrs(self):
+        """
+        Variable attributes
+
+        Returns
+        -------
+        pandas.Series
+        """
+        return self._get_attrs('variables')
+
+    @staticmethod
+    def _parse_var_attrs(var_attrs, hub_height=None, version=None):
+        """
+        Parse variable attributes from file if needed
+
+        Parameters
+        ----------
+        var_attrs : str | pandas.DataFrame
+            DataFrame of variable attributes or .json containing variable
+            attributes
+        hub_height : int | None, optional
+            Rechunk specific hub_height, by default None
+        version : str, optional
+            File version number, by default None
+
+        Returns
+        -------
+        var_attrs : pandas.DataFrame
+            DataFrame mapping variable (dataset) name to .h5 attributes
+        """
+        if isinstance(var_attrs, str):
+            var_attrs = pd.read_json(var_attrs)
+        elif not isinstance(var_attrs, pd.DataFrame):
+            msg = ("Variable attributes are expected as a .json file or a "
+                   "pandas DataFrame, but a {} was provided!"
+                   .format(type(var_attrs)))
+            logger.error(msg)
+            raise TypeError(msg)
+
+        var_attrs = var_attrs.where(var_attrs.notnull(), None)
+
+        if version is not None:
+            logger.debug('Adding version: {} to global attributes'
+                         .format(version))
+            if 'global' in var_attrs.index:
+                global_attrs = var_attrs.loc['global', 'attrs']
+                if isinstance(global_attrs, dict):
+                    global_attrs['version'] = version
+                else:
+                    global_attrs = {'version': version}
+            else:
+                var_attrs.at['global'] = {'attrs': {'version': version}}
+
+        if hub_height is not None:
+            var_attrs = RechunkH5._get_hub_height_attrs(var_attrs, hub_height)
+            logger.debug('Reducing variable attributes to variables at hub '
+                         'height {}m:\n{}'.format(hub_height, var_attrs.index))
+
+        return var_attrs
+
+    @classmethod
+    def _get_hub_height_attrs(cls, var_attrs, hub_height):
+        """
+        Extract attributes for variables at given hub height
+
+        Parameters
+        ----------
+        var_attrs : pandas.DataFrame
+            All variable attributes
+        hub_height : int
+            Hub height of interest
+
+        Returns
+        -------
+        var_attrs : pandas.DataFrame
+            Variable attributes associated with given hub height
+        """
+        variables = var_attrs.index
+        h_flag = '_{}m'.format(hub_height)
+        file_vars = [v for v in variables if h_flag in v]
+        if h_flag == '_0m':
+            for v in variables:
+                check = (v not in cls.NON_VAR_DSETS
+                         and not v.endswith(('0m', '2m')))
+                if check:
+                    file_vars.append(v)
+
+        for v in variables:
+            if v in cls.NON_VAR_DSETS:
+                file_vars.append(v)
+
+        var_attrs = var_attrs.loc[file_vars]
+
+        return var_attrs
 
     @staticmethod
     def _check_dtype(ds_in, dset_attrs):
@@ -369,6 +535,33 @@ class RechunkH5:
             data = data.astype(dtype)
 
         return data
+
+    def _get_attrs(self, index):
+        """
+        Extract attributes for desired dataset(s)
+
+        Parameters
+        ----------
+        index : str
+            rechunk_attrs index to extract. To extract variable attrs, use
+            'variables'
+
+        Returns
+        -------
+        pandas.Series
+            Attributes for given index value(s)
+        """
+        if index in self.rechunk_attrs.index:
+            attrs = self.rechunk_attrs.loc[index]
+        elif index.lower().startswith('variable'):
+            variables = [idx for idx in self.rechunk_attrs.index
+                         if (idx in self.src_dsets)
+                         and (idx not in self.NON_VAR_DSETS)]
+            attrs = self.rechunk_attrs.loc[variables]
+        else:
+            attrs = None
+
+        return attrs
 
     def init_dset(self, dset_name, dset_shape, dset_attrs):
         """
@@ -620,74 +813,18 @@ class RechunkH5:
             logger.warning('{} already exists in {}'
                            .format(dset_name, self._dst_path))
 
-    @staticmethod
-    def pop_dset_attrs(var_attrs, dset):
-        """
-        Pop attributres for given dataset from dataset attributes DataFrame
-
-        Parameters
-        ----------
-        dset_attrs : pandas.DataFrame
-            DataFrame of dataset attributes (dtype, chunks, attrs)
-        dset : str
-            Dataset of interest
-
-        Returns
-        -------
-        dset_attrs : pandas.DataFrame
-            Updated DataFrame of dataset attributes (dtype, chunks, attrs)
-        attrs : pandas.Series
-            Series of attributes for given dataset
-        """
-        attrs = var_attrs.loc[dset]
-        var_attrs = var_attrs.drop(dset)
-
-        return var_attrs, attrs
-
-    @staticmethod
-    def _parse_var_attrs(var_attrs):
-        """
-        Parse variable attributes from file if needed
-
-        Parameters
-        ----------
-        var_attrs : str | pandas.DataFrame
-            DataFrame of variable attributes or .json containing variable
-            attributes
-
-        Returns
-        -------
-        var_attrs : pandas.DataFrame
-            DataFrame mapping variable (dataset) name to .h5 attributes
-        """
-        if isinstance(var_attrs, str):
-            var_attrs = pd.read_json(var_attrs)
-        elif not isinstance(var_attrs, pd.DataFrame):
-            msg = ("Variable attributes are expected as a .json file or a "
-                   "pandas DataFrame, but a {} was provided!"
-                   .format(type(var_attrs)))
-            logger.error(msg)
-            raise TypeError(msg)
-
-        var_attrs = var_attrs.where(var_attrs.notnull(), None)
-
-        return var_attrs
-
-    def rechunk(self, var_attrs, meta=None, process_size=None,
+    def rechunk(self, meta=None, process_size=None,
                 check_dset_attrs=False, resolution=None):
         """
         Rechunk all variables in given variable attributes json
 
         Parameters
         ----------
-        var_attrs : str | pandas.DataFrame
-            DataFrame of variable attributes or .json containing variable
-            attributes
-        meta : str
+        meta : str, optional
             Path to .csv or .npy file containing meta to load into
-            rechunked .h5 file
-        process_size : int
-            Size of each chunk to be processed at a time
+            rechunked .h5 file, by default None
+        process_size : int, optional
+            Size of each chunk to be processed at a time, by default None
         check_dset_attrs : bool, optional
             Flag to compare source and specified dataset attributes,
             by default False
@@ -701,36 +838,20 @@ class RechunkH5:
                     logger.debug('Transfering global attribute {}'
                                  .format(k))
                     self._dst_h5.attrs[k] = v
-
-            var_attrs = self._parse_var_attrs(var_attrs)
-            if 'global' in var_attrs.index:
-                var_attrs, global_attrs = self.pop_dset_attrs(var_attrs,
-                                                              'global')
-
-                for k, v in global_attrs['attrs'].items():
-                    self._dst_h5.attrs[k] = v
-
-            # Process time_index
-            if 'time_index' in var_attrs.index:
-                var_attrs, time_index_attrs = self.pop_dset_attrs(var_attrs,
-                                                                  'time_index')
-                self.load_time_index(time_index_attrs,
+                # Process time_index
+            if self.time_index_attrs is not None:
+                self.load_time_index(self.time_index_attrs,
                                      resolution=resolution)
 
             # Process meta
-            if 'meta' in var_attrs.index:
-                var_attrs, meta_attrs = self.pop_dset_attrs(var_attrs, 'meta')
-                self.load_meta(meta_attrs, meta_path=meta)
+            if self.meta_attrs is not None:
+                self.load_meta(self.meta_attrs, meta_path=meta)
 
             # Process coordinates
-            if 'coordinates' in var_attrs.index:
-                var_attrs, coords_attrs = self.pop_dset_attrs(var_attrs,
-                                                              'coordinates')
-                self.load_coords(coords_attrs)
+            if self.coordinates_attrs is not None:
+                self.load_coords(self.coordinates_attrs)
 
-            mask = var_attrs.index.isin(self.src_dsets)
-            var_attrs = var_attrs.loc[mask]
-            for dset_name, dset_attrs in var_attrs.iterrows():
+            for dset_name, dset_attrs in self.variable_attrs.iterrows():
                 self.load_dset(dset_name, dset_attrs,
                                process_size=process_size,
                                check_attrs=check_dset_attrs)
@@ -742,7 +863,8 @@ class RechunkH5:
             logger.exception('Error creating {:}'.format(self._dst_path))
 
     @classmethod
-    def run(cls, h5_src, h5_dst, var_attrs, version=None, meta=None,
+    def run(cls, h5_src, h5_dst, var_attrs, hub_height=None,
+            version=None, overwrite=True, meta=None,
             process_size=None, check_dset_attrs=False, resolution=None):
         """
         Rechunk h5_src to h5_dst using given attributes
@@ -756,13 +878,17 @@ class RechunkH5:
         var_attrs : str | pandas.DataFrame
             DataFrame of variable attributes or .json containing variable
             attributes
-        version : str
-            File version number
-        meta : str
+        hub_height : int | None, optional
+            Rechunk specific hub_height, by default None
+        version : str, optional
+            File version number, by default None
+        overwrite : bool, optional
+            Flag to overwrite an existing h5_dst file, by default True
+        meta : str, optional
             Path to .csv or .npy file containing meta to load into
-            rechunked .h5 file
-        process_size : int
-            Size of each chunk to be processed at a time
+            rechunked .h5 file, by default None
+        process_size : int, optional
+            Size of each chunk to be processed at a time, by default None
         check_dset_attrs : bool, optional
             Flag to compare source and specified dataset attributes,
             by default False
@@ -772,8 +898,10 @@ class RechunkH5:
         logger.info('Rechunking {} to {} using chunks given in {}'
                     .format(h5_src, h5_dst, var_attrs))
         try:
-            with cls(h5_src, h5_dst, version=version) as r:
-                r.rechunk(var_attrs, meta=meta, process_size=process_size,
+            kwargs = {'hub_height': hub_height, 'version': version,
+                      'overwrite': overwrite}
+            with cls(h5_src, h5_dst, var_attrs, **kwargs) as r:
+                r.rechunk(meta=meta, process_size=process_size,
                           check_dset_attrs=check_dset_attrs,
                           resolution=resolution)
 
