@@ -18,7 +18,7 @@ from rex.utilities.loggers import init_logger
 @click.option('--var_attrs_path', '-vap', type=click.Path(exists=True),
               required=True,
               help=".json containing variable attributes")
-@click.option('--hub_height', '-hh', type=INT, default=None,
+@click.option('--hub_height', '-hgt', type=INT, default=None,
               help="Rechunk specific hub_height")
 @click.option('--version', '-ver', default=None,
               help="File version number")
