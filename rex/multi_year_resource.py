@@ -251,7 +251,6 @@ class MultiYearH5:
 
         with h5pyd.Folder(hsds_dir) as f:
             for file in f:
-                print(file)
                 if file.startswith(prefix) and file.endswith(suffix):
                     try:
                         year = parse_year(file)
