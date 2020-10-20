@@ -43,11 +43,8 @@ class ResourceDataset:
 
     def __getitem__(self, ds_slice):
         ds_slice = parse_slice(ds_slice)
-        out = self._extract_ds_slice(ds_slice)
-        if self._unscale:
-            out = self._unscale_data(out)
 
-        return out
+        return self._get_ds_slice(ds_slice)
 
     @property
     def shape(self):
@@ -118,6 +115,79 @@ class ResourceDataset:
     @staticmethod
     def _check_slice(ds_slice):
         """
+        Check ds_slice for lists, ensure lists are of the same len
+
+        Parameters
+        ----------
+        ds_slice : int | slice | list | ndarray | tuple
+            What to extract from ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        list_len : int | None
+            List lenght, None if none of the args are a list | ndarray
+        multi_list : bool
+            Flag if multiple list are provided in ds_slice
+        """
+        multi_list = False
+        list_len = []
+        for s in ds_slice:
+            if isinstance(s, (list, np.ndarray)):
+                list_len.append(len(s))
+
+        if list_len:
+            if len(list_len) > 1:
+                multi_list = True
+
+            list_len = list(set(list_len))
+            if len(list_len) > 1:
+                msg = ('shape mismatch: indexing arrays could not be '
+                       'broadcast together with shapes {}'
+                       .format(['({},)'.format(ln) for ln in list_len]))
+                raise IndexError(msg)
+            else:
+                list_len = list_len[0]
+        else:
+            list_len = None
+
+        return list_len, multi_list
+
+    @staticmethod
+    def _make_list_slices(ds_slice, list_len):
+        """
+        Duplicate slice arguements to enable zipping of list slices with
+        non-list slices
+
+        Parameters
+        ----------
+        ds_slice : int | slice | list | ndarray | tuple
+            What to extract from ds, each arg is for a sequential axis
+        list_len : int
+            List lenght
+
+        Returns
+        -------
+        zip_slices : list
+            List of slices to extract for each entry in list slice
+        axis : int
+            Axis to append output data together along
+        """
+        zip_slices = []
+        axis = None
+        for i, s in enumerate(ds_slice):
+            if not isinstance(s, (list, np.ndarray)):
+                zip_slices.append([s] * list_len)
+            else:
+                if axis is None:
+                    axis = i
+
+                zip_slices.append(s)
+
+        return zip_slices, axis
+
+    @staticmethod
+    def _list_to_slice(ds_slice):
+        """
         Check ds_slice to see if it is an int, slice, or list. Return
         pieces required for fancy indexing based on input type.
 
@@ -148,9 +218,93 @@ class ResourceDataset:
 
         return ds_slice, ds_idx
 
+    def _extract_list_slice(self, ds_slice):
+        """
+        Optimize and extract list slice request along a single dimension
+
+        Parameters
+        ----------
+        ds_slice : int | slice | list | ndarray | tuple
+            What to extract from ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            Extracted array of data from ds
+        """
+        out_slices = []
+        chunks = self.chunks
+        sort_idx = []
+        list_len = None
+        if chunks:
+            for i, ax_slice in enumerate(ds_slice):
+                c = chunks[i]
+                if isinstance(ax_slice, (list, np.ndarray)):
+                    if not isinstance(ax_slice, np.ndarray):
+                        ax_slice = np.array(ax_slice)
+
+                    idx = np.argsort(ax_slice)
+                    sort_idx.append(np.argsort(idx))
+                    ax_slice = ax_slice[idx]
+                    diff = np.diff(ax_slice) > c
+                    if np.any(diff):
+                        pos = np.where(diff)[0] + 1
+                        ax_slice = np.split(ax_slice, pos)
+                        list_len = len(ax_slice)
+                else:
+                    sort_idx.append(slice(None))
+
+                out_slices.append(ax_slice)
+        else:
+            out_slices = ds_slice
+
+        if list_len is not None:
+            out_slices, axis = self._make_list_slices(out_slices, list_len)
+            out = None
+            for s in zip(*out_slices):
+                arr = self._extract_ds_slice(s)
+                if out is None:
+                    out = arr
+                else:
+                    out = np.append(out, arr, axis=axis)
+
+            out = out[tuple(sort_idx)]
+        else:
+            out = self._extract_ds_slice(ds_slice)
+
+        return out
+
+    def _extract_multi_list_slice(self, ds_slice, list_len):
+        """
+        Extract ds_slice that has multiple lists
+
+        Parameters
+        ----------
+        ds_slice : int | slice | list | ndarray | tuple
+            What to extract from ds, each arg is for a sequential axis
+        list_len : int
+            List lenght
+
+        Returns
+        -------
+        out : ndarray
+            Extracted array of data from ds
+        """
+        zip_slices, axis = self._make_list_slices(ds_slice, list_len)
+
+        out = None
+        for s in zip(*zip_slices):
+            arr = np.expand_dims(self._ds[s], axis=axis)
+            if out is None:
+                out = arr
+            else:
+                out = np.append(out, arr, axis=axis)
+
+        return out
+
     def _extract_ds_slice(self, ds_slice):
         """
-        Extact ds_slice from ds as efficiently as possible.
+        Extact ds_slice from ds using slices where possible
 
         Parameters
         ----------
@@ -165,12 +319,13 @@ class ResourceDataset:
         slices = ()
         idx_slice = ()
         for ax_slice in ds_slice:
-            ax_slice, ax_idx = ResourceDataset._check_slice(ax_slice)
+            ax_slice, ax_idx = self._list_to_slice(ax_slice)
             slices += (ax_slice,)
             if ax_idx is not None:
                 idx_slice += (ax_idx,)
 
         out = self._ds[slices]
+        # check to see if idx_slice needs to be applied
         if any(s != slice(None) if isinstance(s, slice) else True
                for s in idx_slice):
             out = out[idx_slice]
@@ -200,6 +355,34 @@ class ResourceDataset:
             data /= self.scale_factor
 
         return data
+
+    def _get_ds_slice(self, ds_slice):
+        """
+        Get ds_slice from ds as efficiently as possible, unscale if desired
+
+        Parameters
+        ----------
+        ds_slice : int | slice | list | ndarray
+            What to extract from ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            Extracted array of data from ds
+        """
+        list_len, multi_list = self._check_slice(ds_slice)
+        if list_len is not None:
+            if multi_list:
+                out = self._extract_multi_list_slice(ds_slice, list_len)
+            else:
+                out = self._extract_list_slice(ds_slice)
+        else:
+            out = self._extract_ds_slice(ds_slice)
+
+        if self._unscale:
+            out = self._unscale_data(out)
+
+        return out
 
     @classmethod
     def extract(cls, ds, ds_slice, scale_attr='scale_factor',
