@@ -169,21 +169,15 @@ class ResourceDataset:
         -------
         zip_slices : list
             List of slices to extract for each entry in list slice
-        axis : int
-            Axis to append output data together along
         """
         zip_slices = []
-        axis = None
-        for i, s in enumerate(ds_slice):
+        for s in ds_slice:
             if not isinstance(s, (list, np.ndarray)):
                 zip_slices.append([s] * list_len)
             else:
-                if axis is None:
-                    axis = i
-
                 zip_slices.append(s)
 
-        return zip_slices, axis
+        return zip_slices
 
     @staticmethod
     def _list_to_slice(ds_slice):
@@ -251,7 +245,7 @@ class ResourceDataset:
                         pos = np.where(diff)[0] + 1
                         ax_slice = np.split(ax_slice, pos)
                         list_len = len(ax_slice)
-                else:
+                elif isinstance(ax_slice, slice):
                     sort_idx.append(slice(None))
 
                 out_slices.append(ax_slice)
@@ -259,7 +253,9 @@ class ResourceDataset:
             out_slices = ds_slice
 
         if list_len is not None:
-            out_slices, axis = self._make_list_slices(out_slices, list_len)
+            out_slices = self._make_list_slices(out_slices, list_len)
+            axis = [i for i, s in enumerate(sort_idx)
+                    if not isinstance(s, slice)][0]
             out = None
             for s in zip(*out_slices):
                 arr = self._extract_ds_slice(s)
@@ -290,15 +286,15 @@ class ResourceDataset:
         out : ndarray
             Extracted array of data from ds
         """
-        zip_slices, axis = self._make_list_slices(ds_slice, list_len)
+        zip_slices = self._make_list_slices(ds_slice, list_len)
 
         out = None
         for s in zip(*zip_slices):
-            arr = np.expand_dims(self._ds[s], axis=axis)
+            arr = np.expand_dims(self._ds[s], axis=0)
             if out is None:
                 out = arr
             else:
-                out = np.append(out, arr, axis=axis)
+                out = np.append(out, arr, axis=0)
 
         return out
 
@@ -324,7 +320,10 @@ class ResourceDataset:
             if ax_idx is not None:
                 idx_slice += (ax_idx,)
 
+        print(slices)
         out = self._ds[slices]
+        print(out.shape)
+        print(idx_slice)
         # check to see if idx_slice needs to be applied
         if any(s != slice(None) if isinstance(s, slice) else True
                for s in idx_slice):
