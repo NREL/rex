@@ -18,10 +18,6 @@ def get_baseline(path, dset, ds_slice):
     with h5py.File(path, mode='r') as f:
         arr = f[dset][...]
 
-    print('numpy get')
-    print(arr.shape)
-    print(ds_slice)
-    print(arr[ds_slice].shape)
     return arr[ds_slice]
 
 
@@ -80,13 +76,10 @@ def test_4d_list_gets(ds_slice):
     path = os.path.join(TESTDATADIR, 'wave/test_virutal_buoy.h5')
     dset = 'directional_wave_spectrum'
     baseline = get_baseline(path, dset, ds_slice)
-    print('ds_slice = ', ds_slice)
     with NSRDB(path, unscale=False) as f:
         dset_slice = (dset, ) + ds_slice
         test = f[dset_slice]
 
-    print('baseline shape = ', baseline.shape)
-    print('rex shape = ', test.shape)
     assert np.allclose(baseline, test)
 
 

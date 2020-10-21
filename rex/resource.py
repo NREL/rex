@@ -320,10 +320,8 @@ class ResourceDataset:
             if ax_idx is not None:
                 idx_slice += (ax_idx,)
 
-        print(slices)
         out = self._ds[slices]
-        print(out.shape)
-        print(idx_slice)
+
         # check to see if idx_slice needs to be applied
         if any(s != slice(None) if isinstance(s, slice) else True
                for s in idx_slice):
