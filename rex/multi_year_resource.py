@@ -10,7 +10,7 @@ from rex.multi_file_resource import MultiH5Path
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
 from rex.resource import Resource
-from rex.utilities.exceptions import ResourceKeyError, ResourceWarning
+from rex.utilities.exceptions import ResourceWarning
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import parse_year
 
@@ -502,9 +502,7 @@ class MultiYearResource:
         if suffix is None:
             suffix = self.SUFFIX
 
-        self._meta = None
         self._time_index = None
-        self._lat_lon = None
         # Map variables to their .h5 files
         cls_kwargs = {'unscale': unscale, 'str_decode': str_decode,
                       'hsds': hsds}
@@ -621,13 +619,8 @@ class MultiYearResource:
         meta : pandas.DataFrame
             Resource Meta Data
         """
-        if self._meta is None:
-            if 'meta' in self:
-                self._meta = self._get_meta('meta', slice(None))
-            else:
-                raise ResourceKeyError("'meta' is not a valid dataset")
 
-        return self._meta
+        return self.h5.h5.meta
 
     @property
     def time_index(self):
@@ -639,13 +632,7 @@ class MultiYearResource:
         time_index : pandas.DatetimeIndex
             Resource datetime index
         """
-        if self._time_index is None:
-            if 'time_index' in self:
-                self._time_index = self._get_time_index(slice(None))
-            else:
-                raise ResourceKeyError("'time_index' is not a valid dataset!")
-
-        return self._time_index
+        return self.h5.time_index
 
     @property
     def lat_lon(self):
@@ -656,21 +643,7 @@ class MultiYearResource:
         -------
         lat_lon : ndarray
         """
-        if self._lat_lon is None:
-            if 'coordinates' in self:
-                self._lat_lon = self._get_coords('coordinates', slice(None))
-            else:
-                self._lat_lon = self.meta
-                lat_lon_cols = ['latitude', 'longitude']
-                for c in self.meta.columns:
-                    if c.lower() in ['lat', 'latitude']:
-                        lat_lon_cols[0] = c
-                    elif c.lower() in ['lon', 'long', 'longitude']:
-                        lat_lon_cols[1] = c
-
-                self._lat_lon = self._lat_lon[lat_lon_cols].values
-
-        return self._lat_lon
+        return self.h5.h5.lat_lon
 
     @property
     def coordinates(self):
@@ -800,8 +773,9 @@ class MultiYearResource:
         ----------
         ds_name : str
             Dataset to extract time_index from
-        ds_slice : int | list | slice
-            tuple describing slice of time_index to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from
+            time_index, each arg is for a sequential axis
 
         Returns
         -------
@@ -821,8 +795,9 @@ class MultiYearResource:
         ----------
         ds_name : str
             Dataset to extract meta from
-        ds_slice : int | list | slice
-            Pandas slicing describing which sites and columns to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray, str) of what sites and columns
+            to extract from meta
 
         Returns
         -------
@@ -841,8 +816,9 @@ class MultiYearResource:
         ----------
         ds_name : str
             Dataset to extract coordinates from
-        ds_slice : int | list | slice
-            tuple describing slice of coordinates to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from
+            coordinates, each arg is for a sequential axis
 
         Returns
         -------

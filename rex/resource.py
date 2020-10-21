@@ -119,8 +119,9 @@ class ResourceDataset:
 
         Parameters
         ----------
-        ds_slice : int | slice | list | ndarray | tuple
-            What to extract from ds, each arg is for a sequential axis
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
 
         Returns
         -------
@@ -160,8 +161,9 @@ class ResourceDataset:
 
         Parameters
         ----------
-        ds_slice : int | slice | list | ndarray | tuple
-            What to extract from ds, each arg is for a sequential axis
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
         list_len : int
             List lenght
 
@@ -187,8 +189,9 @@ class ResourceDataset:
 
         Parameters
         ----------
-        ds_slice : slice | list | ndarray
-            slice, list, or vector of points to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
 
         Returns
         -------
@@ -218,8 +221,9 @@ class ResourceDataset:
 
         Parameters
         ----------
-        ds_slice : int | slice | list | ndarray | tuple
-            What to extract from ds, each arg is for a sequential axis
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
 
         Returns
         -------
@@ -276,8 +280,9 @@ class ResourceDataset:
 
         Parameters
         ----------
-        ds_slice : int | slice | list | ndarray | tuple
-            What to extract from ds, each arg is for a sequential axis
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
         list_len : int
             List lenght
 
@@ -304,8 +309,9 @@ class ResourceDataset:
 
         Parameters
         ----------
-        ds_slice : int | slice | list | ndarray
-            What to extract from ds, each arg is for a sequential axis
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
 
         Returns
         -------
@@ -359,8 +365,9 @@ class ResourceDataset:
 
         Parameters
         ----------
-        ds_slice : int | slice | list | ndarray
-            What to extract from ds, each arg is for a sequential axis
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
 
         Returns
         -------
@@ -391,8 +398,9 @@ class ResourceDataset:
         ----------
         ds : h5py.dataset
             Open .h5 dataset instance to extract data from
-        ds_slice : slice | list | ndarray
-            slice, list, or vector of points to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
         scale_attr : str, optional
             Name of scale factor attribute, by default 'scale_factor'
         add_attr : str, optional
@@ -1023,8 +1031,9 @@ class Resource:
         ----------
         ds_name : str
             Dataset to extract time_index from
-        ds_slice : int | list | slice
-            tuple describing slice of time_index to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from
+            time_index
 
         Returns
         -------
@@ -1048,8 +1057,9 @@ class Resource:
         ----------
         ds_name : str
             Dataset to extract meta from
-        ds_slice : int | list | slice
-            Pandas slicing describing which sites and columns to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray, str) of what sites and columns
+            to extract from meta
 
         Returns
         -------
@@ -1090,8 +1100,9 @@ class Resource:
         ----------
         ds_name : str
             Dataset to extract coordinates from
-        ds_slice : int | list | slice
-            tuple describing slice of coordinates to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from
+            coordinates, each arg is for a sequential axis
 
         Returns
         -------
@@ -1124,8 +1135,9 @@ class Resource:
         ----------
         ds_name : str
             Variable dataset to be extracted
-        ds_slice : int | list | slice
-            tuple describing slice of dataset array to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
 
         Returns
         -------
