@@ -776,6 +776,8 @@ class SAMResource:
         -------
         res_df : pandas.DataFrame
             Time-series of SAM resource variables for given site
+        site_meta : pandas.Series
+            Meta data for the input site
         """
 
         self.runnable()
