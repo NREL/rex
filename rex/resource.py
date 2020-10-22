@@ -385,13 +385,9 @@ class ResourceDataset:
 
         out = np.zeros(out_shape, dtype=self.dtype)
         start = 0
-        print(out.shape)
         for s in zip(*zip_slices):
-            print(s)
             arr_slice, stop = self._get_out_arr_slice(s, start)
-            print(arr_slice)
             arr = self._extract_ds_slice(s)
-            print(arr.shape)
             out[arr_slice] = arr
 
             start = stop
