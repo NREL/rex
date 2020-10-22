@@ -231,7 +231,6 @@ def check_res_file(res_file):
                     if hsds_file not in f:
                         msg = ('{} is not a valid HSDS file path!'
                                .format(res_file))
-                        print(msg)
                         raise FileNotFoundError(msg)
             except Exception as ex:
                 msg = ("{} is not a valid file path, and HSDS "
