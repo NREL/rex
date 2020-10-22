@@ -215,6 +215,95 @@ class ResourceDataset:
 
         return ds_slice, ds_idx
 
+    @staticmethod
+    def _get_out_arr_slice(arr_slice, start):
+        """
+        Determine slice of pre-build output array that is being filled
+
+        Parameters
+        ----------
+        arr_slice : tuple
+            Tuple of (int, slice, list, ndarray) for section of output array
+            being extracted
+        start : int
+            Start of slice, used for list gets
+
+        Returns
+        -------
+        out_slice : tuple
+            Slice arguments of portion of output array to insert arr_slice
+            into
+        stop : int
+            Stop of slice, used for list gets, will be new start upon
+            iteration
+        """
+        out_slice = ()
+        int_slice = ()
+        int_start = start
+        int_stop = start
+        stop = start
+        for s in arr_slice:
+            if isinstance(s, slice):
+                out_slice += (slice(None), )
+                int_slice += (slice(None), )
+            elif isinstance(s, int):
+                if int_start == int_stop:
+                    int_slice += (int_start, )
+                    int_stop += 1
+            elif isinstance(s, (list, tuple, np.ndarray)):
+                list_len = len(s)
+                if list_len == 1:
+                    stop += 1
+                    out_slice += ([start], )
+                else:
+                    stop += len(s)
+                    out_slice += (slice(start, stop), )
+
+        if not out_slice:
+            out_slice += (start, )
+            stop += 1
+        elif all(s == slice(None) for s in out_slice):
+            out_slice = int_slice
+            stop = int_stop
+
+        return out_slice, stop
+
+    def _get_out_arr_shape(self, ds_slice):
+        """
+        Determine shape of output array
+
+        Parameters
+        ----------
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
+
+        Returns
+        -------
+        out_shape : tuple
+            Shape of output array
+        """
+        ds_shape = self.shape
+        out_shape = ()
+        contains_list = False
+
+        ds_slice += (slice(None), ) * (len(ds_shape) - len(ds_slice))
+        for i, ax_slice in enumerate(ds_slice):
+            if isinstance(ax_slice, slice):
+                stop = ax_slice.stop
+                if stop is None:
+                    stop = ds_shape[i]
+
+                out_shape += (len(range(*ax_slice.indices(stop))), )
+
+            if isinstance(ax_slice, (list, tuple, np.ndarray)):
+                if not contains_list:
+                    out_shape += (len(ax_slice), )
+
+                contains_list = True
+
+        return out_shape
+
     def _extract_list_slice(self, ds_slice):
         """
         Optimize and extract list slice request along a single dimension
@@ -257,16 +346,15 @@ class ResourceDataset:
             out_slices = ds_slice
 
         if list_len is not None:
+            out_shape = self._get_out_arr_shape(ds_slice)
             out_slices = self._make_list_slices(out_slices, list_len)
-            axis = [i for i, s in enumerate(sort_idx)
-                    if not isinstance(s, slice)][0]
-            out = None
+
+            out = np.zeros(out_shape, dtype=self.dtype)
+            start = 0
             for s in zip(*out_slices):
-                arr = self._extract_ds_slice(s)
-                if out is None:
-                    out = arr
-                else:
-                    out = np.append(out, arr, axis=axis)
+                arr_slice, stop = self._get_out_arr_slice(s, start)
+                out[arr_slice] = self._extract_ds_slice(s)
+                start = stop
 
             out = out[tuple(sort_idx)]
         else:
@@ -293,13 +381,20 @@ class ResourceDataset:
         """
         zip_slices = self._make_list_slices(ds_slice, list_len)
 
-        out = None
+        out_shape = self._get_out_arr_shape(ds_slice)
+
+        out = np.zeros(out_shape, dtype=self.dtype)
+        start = 0
+        print(out.shape)
         for s in zip(*zip_slices):
-            arr = np.expand_dims(self._ds[s], axis=0)
-            if out is None:
-                out = arr
-            else:
-                out = np.append(out, arr, axis=0)
+            print(s)
+            arr_slice, stop = self._get_out_arr_slice(s, start)
+            print(arr_slice)
+            arr = self._extract_ds_slice(s)
+            print(arr.shape)
+            out[arr_slice] = arr
+
+            start = stop
 
         return out
 
@@ -1075,10 +1170,11 @@ class Resource:
         meta = ResourceDataset.extract(meta, sites, unscale=False)
 
         if isinstance(sites, slice):
-            if sites.stop:
-                sites = list(range(*sites.indices(sites.stop)))
-            else:
-                sites = list(range(len(meta)))
+            stop = sites.stop
+            if stop is None:
+                stop = len(meta)
+
+            sites = list(range(*sites.indices(stop)))
 
         meta = pd.DataFrame(meta, index=sites)
         if 'gid' not in meta:
