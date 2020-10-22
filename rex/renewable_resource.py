@@ -763,8 +763,9 @@ class WindResource(Resource):
         ----------
         ds_name : str
             Variable dataset to be extracted
-        ds_slice : tuple of int | list | slice
-            tuple describing list ds_slice to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
 
         Returns
         -------
@@ -822,8 +823,9 @@ class WindResource(Resource):
         ----------
         ds_name : str
             Variable dataset to be extracted
-        ds_slice : tuple of int | list | slice
-            tuple describing list ds_slice to extract
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
 
         Returns
         -------
