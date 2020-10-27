@@ -201,10 +201,10 @@ class NSRDB(SolarResource):
             Boolean flag to pull clearsky instead of real irradiance
         bifacial : bool
             Boolean flag to pull surface albedo for bifacial modeling.
-        downscale : NoneType | str
+        downscale : NoneType | dict
             Option for NSRDB resource downscaling to higher temporal
-            resolution. Expects a string in the Pandas frequency format,
-            e.g. '5min'.
+            resolution. Expects a dict of downscaling kwargs with a minimum
+            requirement of the desired frequency e.g. 'frequency': '5min'
 
         Returns
         -------
@@ -234,8 +234,8 @@ class NSRDB(SolarResource):
         else:
             # contingent import to avoid dependencies
             from rex.utilities.downscale import downscale_nsrdb
-            SAM_res = downscale_nsrdb(SAM_res, self, downscale,
-                                      sam_vars=SAM_res.var_list)
+            SAM_res = downscale_nsrdb(SAM_res, self, sam_vars=SAM_res.var_list,
+                                      **downscale)
 
         return SAM_res
 
@@ -275,10 +275,10 @@ class NSRDB(SolarResource):
             Boolean flag to pull clearsky instead of real irradiance
         bifacial : bool
             Boolean flag to pull surface albedo for bifacial modeling.
-        downscale : NoneType | str
+        downscale : NoneType | dict
             Option for NSRDB resource downscaling to higher temporal
-            resolution. Expects a string in the Pandas frequency format,
-            e.g. '5min'.
+            resolution. Expects a dict of downscaling kwargs with a minimum
+            requirement of the desired frequency e.g. 'frequency': '5min'
 
         Returns
         -------
