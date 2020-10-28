@@ -19,7 +19,7 @@ from nsrdb.utilities.interpolation import temporal_lin, temporal_step
 logger = logging.getLogger(__name__)
 
 
-def make_time_index(year, frequency):
+def make_time_index(year, frequency, set_timezone=True):
     """Make the NSRDB target time index.
 
     Parameters
@@ -28,6 +28,9 @@ def make_time_index(year, frequency):
         Year for time index.
     frequency : str
         String in the Pandas frequency format, e.g. '5min'.
+    set_timezone : bool
+        Flag to set a timezone-aware time index. will be set to UTC with
+        zero offset.
 
     Returns
     -------
@@ -36,6 +39,10 @@ def make_time_index(year, frequency):
     """
     ti = pd.date_range('1-1-{y}'.format(y=year), '1-1-{y}'.format(y=year + 1),
                        freq=frequency)[:-1]
+
+    if set_timezone:
+        ti = ti.tz_localize('UTC')
+
     return ti
 
 
@@ -78,6 +85,9 @@ def interp_cld_props(data, ti_native, ti_new,
 
         # interpolate empty values
         data[var] = data[var].interpolate(method='linear', axis=0).values
+
+        logger.debug('Downscaled array for "{}" has shape {} and {} NaN values'
+                     .format(var, data[var].shape, np.isnan(data[var]).sum()))
 
     return data
 
@@ -130,17 +140,29 @@ def downscale_nsrdb(SAM_res, res, frequency='5min',
     SAM_res._time_index = time_index
     SAM_res._shape = (len(time_index), len(SAM_res.sites))
 
+    logger.debug('Native resource time index has length {}: \n{}'
+                 .format(len(res.time_index), res.time_index))
+    logger.debug('Target resource time index has length {}: \n{}'
+                 .format(len(time_index), time_index))
+
     # downscale variables into an all-sky input variable namespace
     all_sky_ins = {'time_index': time_index}
     for var in var_list:
-        all_sky_ins[var] = temporal_lin(res[var, :, sites_slice],
-                                        res.time_index, time_index)
+        arr = res[var, :, sites_slice]
+        arr = temporal_lin(res[var, :, sites_slice], res.time_index,
+                           time_index)
+        all_sky_ins[var] = arr
+        logger.debug('Downscaled array for "{}" has shape {} and {} NaN values'
+                     .format(var, arr.shape, np.isnan(arr).sum()))
 
     # calculate downscaled solar zenith angle
     lat_lon = res.meta.loc[SAM_res.sites, ['latitude', 'longitude']]\
         .values.astype(np.float32)
-    all_sky_ins['solar_zenith_angle'] = SolarPosition(time_index,
-                                                      lat_lon).zenith
+    sza = SolarPosition(time_index, lat_lon).zenith
+    all_sky_ins['solar_zenith_angle'] = sza
+    logger.debug('Downscaled array for "solar_zenith_angle" '
+                 'has shape {} and {} NaN values'
+                 .format(sza.shape, np.isnan(sza).sum()))
 
     # get downscaled cloud properties
     all_sky_ins['cloud_type'] = temporal_step(
