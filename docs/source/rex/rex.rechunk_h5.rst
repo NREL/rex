@@ -11,5 +11,7 @@ Submodules
 
 .. toctree::
 
+   rex.rechunk_h5.combine_h5
+   rex.rechunk_h5.combine_h5_cli
    rex.rechunk_h5.rechunk_cli
    rex.rechunk_h5.rechunk_h5
