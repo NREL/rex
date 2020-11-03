@@ -235,8 +235,10 @@ class NSRDB(SolarResource):
         else:
             # contingent import to avoid dependencies
             from rex.utilities.downscale import downscale_nsrdb
+            frequency = downscale.pop('frequency')
             SAM_res = downscale_nsrdb(SAM_res, self, sam_vars=SAM_res.var_list,
-                                      **downscale)
+                                      frequency=frequency,
+                                      variability_kwargs=downscale)
 
         return SAM_res
 
