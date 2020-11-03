@@ -94,7 +94,7 @@ def interp_cld_props(data, ti_native, ti_new,
 
 def downscale_nsrdb(SAM_res, res, frequency='5min',
                     sam_vars=('dhi', 'dni', 'wind_speed', 'air_temperature'),
-                    all_sky_kwargs=None):
+                    variability_kwargs=None):
     """Downscale the NSRDB resource and return the preloaded SAM_res.
 
     Parameters
@@ -107,10 +107,10 @@ def downscale_nsrdb(SAM_res, res, frequency='5min',
         String in the Pandas frequency format, e.g. '5min'.
     sam_vars : tuple | list
         Variables to save to SAM resource handler before returning.
-    all_sky_kwargs : Nonetype | dict
+    variability_kwargs : Nonetype | dict
         Downscaling kwargs to the NSRDB all sky method call. Should include
-        maximum GHI synthetic variability fraction ("ghi_variability") which
-        will be set to 0.05 (5%) if all_sky_kwargs is None.
+        maximum GHI synthetic variability fraction ("var_frac") which
+        will be set to 0.05 (5%) if variability_kwargs is None.
 
     Returns
     -------
@@ -172,10 +172,10 @@ def downscale_nsrdb(SAM_res, res, frequency='5min',
     all_sky_ins = interp_cld_props(all_sky_ins, res.time_index, time_index)
 
     # add all sky kwargs such as variability
-    if all_sky_kwargs is None:
-        all_sky_kwargs = {'ghi_variability': 0.05}
+    if variability_kwargs is None:
+        variability_kwargs = {'var_frac': 0.05}
 
-    all_sky_ins.update(all_sky_kwargs)
+    all_sky_ins['variability_kwargs'] = variability_kwargs
 
     # run all-sky
     logger.debug('Running all-sky for "{}".'.format(SAM_res))

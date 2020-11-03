@@ -205,6 +205,7 @@ class NSRDB(SolarResource):
             Option for NSRDB resource downscaling to higher temporal
             resolution. Expects a dict of downscaling kwargs with a minimum
             requirement of the desired frequency e.g. 'frequency': '5min'
+            and an option to add "variability_kwargs".
 
         Returns
         -------
@@ -279,6 +280,7 @@ class NSRDB(SolarResource):
             Option for NSRDB resource downscaling to higher temporal
             resolution. Expects a dict of downscaling kwargs with a minimum
             requirement of the desired frequency e.g. 'frequency': '5min'
+            and an option to add "variability_kwargs".
 
         Returns
         -------
