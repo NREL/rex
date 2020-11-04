@@ -117,7 +117,7 @@ class CombineH5:
                     logger.error(msg)
                     raise ValueError(msg)
 
-            attrs = attrs.update(dset_attrs)
+            attrs.update(dset_attrs)
 
             if shape is None:
                 shape = list(dset_shape)

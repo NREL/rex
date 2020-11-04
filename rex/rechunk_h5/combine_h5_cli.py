@@ -13,7 +13,7 @@ from rex.utilities.loggers import init_logger
 @click.command()
 @click.option('--combined_h5', '-comb', type=click.Path(), required=True,
               help="Path to save combined .h5 file to")
-@click.option('--source_h5', '-src  ', type=click.Path(exists=True),
+@click.option('--source_h5', '-src', type=click.Path(exists=True),
               required=True, multiple=True,
               help="Path to source .h5 file, may supply multiple")
 @click.option('--axis', '-ax', type=int, default=1,
