@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Module to rechunk existing .h5 files
 """
@@ -243,10 +244,9 @@ class CombineH5:
                         meta = np.append(meta, m)
         else:
             with Resource(self.source_h5[0]) as f:
-                ds = f.open_dataset('meta')
-                meta = ds.ds['meta'][...]
-                chunks = ds.chunks
-                attrs = f.get_attrs('meta')
+                meta = f.h5['meta'][...]
+                attrs.update(f.get_attrs('meta'))
+                chunks = f.get_dset_properties('meta')[-1]
 
         logger.debug('Combined meta has:\n'
                      'shape: {}\n'
@@ -289,7 +289,7 @@ class CombineH5:
             with Resource(self.source_h5[0]) as f:
                 coords = f.lat_lon
 
-        logger.debug('Combined time_index has:\n'
+        logger.debug('Combined coordinates have:\n'
                      'shape: {}\n'
                      'dtype: {}\n'
                      'chunks: {}'
