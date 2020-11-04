@@ -182,7 +182,7 @@ class RechunkH5:
         self._src_path = h5_src
         self._src_dsets = None
         self._dst_path = h5_dst
-        self._dst_h5 = h5py.File(h5_dst, mode='w-' if overwrite else 'w')
+        self._dst_h5 = h5py.File(h5_dst, mode='w' if overwrite else 'w-')
 
         self._rechunk_attrs = self._parse_var_attrs(var_attrs,
                                                     hub_height=hub_height,

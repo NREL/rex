@@ -37,7 +37,7 @@ class CombineH5:
         self._datasets = None
         self._dset_attrs = self._check_datasets()
         self._dst_h5 = h5py.File(self.combined_h5,
-                                 mode='w-' if overwrite else 'w')
+                                 mode='w' if overwrite else 'w-')
         self._transfer_global_attrs()
 
     @property
