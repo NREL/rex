@@ -435,7 +435,7 @@ class RechunkH5:
                        .format(ds_in.dtype, dtype))
                 logger.error(msg)
                 raise RuntimeError(msg)
-            elif not np.issubdtype(dtype, ds_in.dtype):
+            elif np.dtype(dtype).itemsize > ds_in.dtype.itemsize:
                 msg = ('Output dtype ({}) has greater precision than input '
                        'dtype ({}), using input dtype'
                        .format(dtype, ds_in.dtype))

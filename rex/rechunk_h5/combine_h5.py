@@ -125,22 +125,23 @@ class CombineH5:
                 dtype = dset_dtype
             else:
                 if dset_chunks != chunks:
-                    msg = ("{} chunks do not match between source files!"
-                           .format(dset_name))
+                    msg = ("{} chunks ({} != {}) do not match between source "
+                           "files!".format(dset_name, chunks, dset_chunks))
                     logger.error(msg)
                     raise RuntimeError(msg)
 
                 if dset_dtype != dtype:
-                    msg = ("{} dtypes do not match between source files!"
-                           .format(dset_name))
+                    msg = ("{} dtypes ({} != {}) do not match between source "
+                           "files!".format(dset_name, dtype, dset_dtype))
                     logger.error(msg)
                     raise RuntimeError(msg)
 
                 for i, s in enumerate(dset_shape):
                     # pylint: disable=unsubscriptable-object
                     if i != self._axis and s != shape[i]:
-                        msg = ("{} shape does not match between source files!"
-                               .format(dset_name))
+                        msg = ("{} shape ({} != {}) does not match between "
+                               "source files!"
+                               .format(dset_name, dset_shape, shape))
                         logger.error(msg)
                         raise RuntimeError(msg)
 
