@@ -40,6 +40,21 @@ class CombineH5:
                                  mode='w' if overwrite else 'w-')
         self._transfer_global_attrs()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
+        if type is not None:
+            raise
+
+    def close(self):
+        """
+        Close h5 instance
+        """
+        self._dst_h5.close()
+
     @property
     def combined_h5(self):
         """
@@ -75,9 +90,9 @@ class CombineH5:
             datasets = []
             for h5_path in self._source_h5:
                 with Resource(h5_path) as f:
-                    datasets.extend(f.datasets)
+                    datasets.append(f.datasets)
 
-            self._datasets = list(set(datasets))
+            self._datasets = list(set(datasets[0]).intersection(*datasets[1:]))
 
         return self._datasets
 
@@ -246,7 +261,7 @@ class CombineH5:
         else:
             with Resource(self.source_h5[0]) as f:
                 meta = f.h5['meta'][...]
-                attrs.update(f.get_attrs('meta'))
+                attrs = f.get_attrs('meta')
                 chunks = f.get_dset_properties('meta')[-1]
 
         logger.debug('Combined meta has:\n'
@@ -271,7 +286,7 @@ class CombineH5:
         logger.info('Combining coordinates')
         if 'coordinates' in self.datasets:
             with Resource(self.source_h5[0]) as f:
-                chunks = f.get_dset_properties('coordintes')[-1]
+                chunks = f.get_dset_properties('coordinates')[-1]
                 attrs = f.get_attrs('coordinates')
         else:
             chunks = None
@@ -457,5 +472,6 @@ class CombineH5:
         """
         logger.info('Combining data from {} into {}'
                     .format(source_h5, combined_h5))
-        comb = cls(combined_h5, *source_h5, axis=axis, overwrite=overwrite)
-        comb.combine(process_size=process_size)
+        with cls(combined_h5, *source_h5,
+                 axis=axis, overwrite=overwrite) as comb:
+            comb.combine(process_size=process_size)
