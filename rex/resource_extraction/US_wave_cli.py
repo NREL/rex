@@ -13,6 +13,8 @@ from rex.resource_extraction.resource_cli import multi_site as multi_site_cmd
 from rex.resource_extraction.resource_cli import region as region_cmd
 from rex.resource_extraction.resource_cli import site as site_cmd
 from rex.resource_extraction.multi_year_resource_cli \
+    import map_means as means_grp
+from rex.resource_extraction.multi_year_resource_cli \
     import year as yr_means_cmd
 from rex.resource_extraction.multi_year_resource_cli \
     import multi_year as multi_yr_means_cmd
@@ -154,8 +156,7 @@ def map_means(ctx, region, region_col):
     """
     Map means for given dataset in region if given.
     """
-    ctx.obj['REGION'] = region
-    ctx.obj['REGION_COL'] = region_col
+    ctx.invoke(means_grp, region=region, region_col=region_col)
 
 
 @map_means.command()

@@ -143,17 +143,28 @@ def multi_site(ctx, sites):
     ctx.invoke(multi_site_cmd, sites=sites)
 
 
-@dataset.group()
+@dataset.group(invoke_without_command=True)
 @click.option('--region', '-r', type=str, default=None,
               help='Region to extract')
 @click.option('--region_col', '-col', type=str, default='state',
               help='Meta column to search for region')
 def map_means(ctx, region, region_col):
     """
-    Map means for given dataset in region if given.
+    Map temporal means for given dataset in region if given.
     """
-    ctx.obj['REGION'] = region
-    ctx.obj['REGION_COL'] = region_col
+    if ctx.invoked_subcommand is None:
+        with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
+            map_df = f.get_means_map(ctx.obj["DATASET"], year=None,
+                                     region=region,
+                                     region_col=region_col)
+
+        out_path = "{}-means.csv".format(dataset)
+        out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
+        logger.info('Saving data to {}'.format(out_path))
+        map_df.to_csv(out_path)
+    else:
+        ctx.obj['REGION'] = region
+        ctx.obj['REGION_COL'] = region_col
 
 
 @map_means.command()
@@ -165,7 +176,7 @@ def year(ctx, year):
     Map means for a given year
     """
     with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-        map_df = f.get_means_map(ctx.obj["DATASET"], year,
+        map_df = f.get_means_map(ctx.obj["DATASET"], year=year,
                                  region=ctx.obj['REGION'],
                                  region_col=ctx.obj["REGION_COL"])
 
@@ -181,10 +192,10 @@ def year(ctx, year):
 @click.pass_context
 def multi_year(ctx, years):
     """
-    Map means for a given year
+    Map means for a given subset of years
     """
     with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-        map_df = f.get_means_map(ctx.obj["DATASET"], years,
+        map_df = f.get_means_map(ctx.obj["DATASET"], year=years,
                                  region=ctx.obj['REGION'],
                                  region_col=ctx.obj["REGION_COL"])
 

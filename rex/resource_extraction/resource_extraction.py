@@ -712,7 +712,7 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
                          str_decode=str_decode, hsds=hsds, res_cls=res_cls)
         self._tree = tree
 
-    def get_means_map(self, ds_name, year, region=None,
+    def get_means_map(self, ds_name, year=None, region=None,
                       region_col='state'):
         """
         Extract given year(s) and compute means
@@ -721,8 +721,8 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
         ----------
         ds_name : str
             Dataset to extract
-        year : str | list
-            Year(s) to compute means for
+        year : str | list, optional
+            Year(s) to compute means for, by default None
         region : str
             Region to extract all pixels for
         region_col : str
@@ -738,6 +738,9 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
         if region is not None:
             gids = self.region_gids(region, region_col=region_col)
             lat_lons = lat_lons[gids]
+
+        if year is None:
+            year = slice(None)
 
         means_map = self[ds_name, year, gids].mean(axis=0)
         means_map = pd.DataFrame({'longitude': lat_lons[:, 1],
