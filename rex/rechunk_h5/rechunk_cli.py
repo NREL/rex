@@ -10,10 +10,10 @@ from rex.utilities.cli_dtypes import INT, STR
 from rex.utilities.loggers import init_logger
 
 
-@click.group(invoke_without_command=True)
+@click.command()
 @click.option('--src_h5', '-src', type=click.Path(exists=True), required=True,
               help="Source .h5 file path")
-@click.option('--dst_h5', '-dst', type=click.Path(), required=False,
+@click.option('--dst_h5', '-dst', type=click.Path(), required=True,
               help="Destination path for rechunked .h5 file")
 @click.option('--var_attrs_path', '-vap', type=click.Path(exists=True),
               required=True,
@@ -37,14 +37,11 @@ from rex.utilities.loggers import init_logger
               help='Path to .log file')
 @click.option('--verbose', '-v', is_flag=True,
               help='If used upgrade logging to DEBUG')
-@click.pass_context
-def main(ctx, src_h5, dst_h5, var_attrs_path, hub_height, version, overwrite,
+def main(src_h5, dst_h5, var_attrs_path, hub_height, version, overwrite,
          meta, process_size, check_dset_attrs, resolution, log_file, verbose):
     """
     RechunkH5 CLI entry point
     """
-    ctx.ensure_object(dict)
-
     if verbose:
         log_level = 'DEBUG'
     else:
@@ -70,6 +67,6 @@ def main(ctx, src_h5, dst_h5, var_attrs_path, hub_height, version, overwrite,
 
 if __name__ == '__main__':
     try:
-        main(obj={})
+        main()
     except Exception:
         raise

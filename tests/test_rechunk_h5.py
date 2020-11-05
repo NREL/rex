@@ -51,7 +51,6 @@ def check_rechunk(src, dst, missing=None):
     """
     with h5py.File(dst, mode='r') as f_dst:
         with h5py.File(src, mode='r') as f_src:
-            print(list(f_src))
             for dset in f_dst:
                 assert dset in f_src
                 ds_dst = f_dst[dset]

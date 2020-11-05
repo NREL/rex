@@ -32,12 +32,12 @@ class ResourceDataset:
             Flag to unscale dataset data, by default True
         """
         self._ds = ds
-        self._scale_factor = self._ds.attrs.get(scale_attr, 1)
-        self._adder = self._ds.attrs.get(add_attr, 0)
+        self._scale_factor = self.ds.attrs.get(scale_attr, 1)
+        self._adder = self.ds.attrs.get(add_attr, 0)
         self._unscale = unscale
 
     def __repr__(self):
-        msg = "{} for {}".format(self.__class__.__name__, self._ds.name)
+        msg = "{} for {}".format(self.__class__.__name__, self.ds.name)
 
         return msg
 
@@ -45,6 +45,17 @@ class ResourceDataset:
         ds_slice = parse_slice(ds_slice)
 
         return self._get_ds_slice(ds_slice)
+
+    @property
+    def ds(self):
+        """
+        Open Dataset instance
+
+        Returns
+        -------
+        h5py(d).Dataset
+        """
+        return self._ds
 
     @property
     def shape(self):
@@ -55,7 +66,7 @@ class ResourceDataset:
         -------
         tuple
         """
-        return self._ds.shape
+        return self.ds.shape
 
     @property
     def size(self):
@@ -66,7 +77,7 @@ class ResourceDataset:
         -------
         int
         """
-        return self._ds.size
+        return self.ds.size
 
     @property
     def dtype(self):
@@ -77,7 +88,7 @@ class ResourceDataset:
         -------
         str | numpy.dtype
         """
-        return self._ds.dtype
+        return self.ds.dtype
 
     @property
     def chunks(self):
@@ -88,7 +99,11 @@ class ResourceDataset:
         -------
         tuple
         """
-        return self._ds.chunks
+        chunks = self.ds.chunks
+        if isinstance(chunks, dict):
+            chunks = tuple(chunks.get('dims', None))
+
+        return chunks
 
     @property
     def scale_factor(self):
@@ -417,7 +432,7 @@ class ResourceDataset:
             if ax_idx is not None:
                 idx_slice += (ax_idx,)
 
-        out = self._ds[slices]
+        out = self.ds[slices]
 
         # check to see if idx_slice needs to be applied
         if any(s != slice(None) if isinstance(s, slice) else True

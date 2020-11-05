@@ -182,7 +182,7 @@ class RechunkH5:
         self._src_path = h5_src
         self._src_dsets = None
         self._dst_path = h5_dst
-        self._dst_h5 = h5py.File(h5_dst, mode='w-' if overwrite else 'w')
+        self._dst_h5 = h5py.File(h5_dst, mode='w' if overwrite else 'w-')
 
         self._rechunk_attrs = self._parse_var_attrs(var_attrs,
                                                     hub_height=hub_height,
@@ -435,7 +435,7 @@ class RechunkH5:
                        .format(ds_in.dtype, dtype))
                 logger.error(msg)
                 raise RuntimeError(msg)
-            elif not np.issubdtype(dtype, ds_in.dtype):
+            elif np.dtype(dtype).itemsize > ds_in.dtype.itemsize:
                 msg = ('Output dtype ({}) has greater precision than input '
                        'dtype ({}), using input dtype'
                        .format(dtype, ds_in.dtype))
