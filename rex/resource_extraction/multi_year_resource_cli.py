@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 @click.pass_context
 def main(ctx, resource_path, out_dir, years, hsds, res_cls, verbose):
     """
-    ResourceX Command Line Interface
+    Multi-year ResourceX Command Line Interface
     """
     ctx.ensure_object(dict)
     ctx.obj['H5'] = resource_path
@@ -68,56 +68,6 @@ def main(ctx, resource_path, out_dir, years, hsds, res_cls, verbose):
     logger.info('Outputs to be stored in: {}'.format(out_dir))
 
 
-@main.command()
-@click.option('--year', '-yr', type=str, required=True,
-              help='Year to average')
-@click.option('--dataset', '-d', type=str, required=True,
-              help='Dataset to extract')
-@click.option('--region_col', '-col', type=str, default='state',
-              help='Meta column to search for region')
-@click.option('--region', '-r', type=str, default=None,
-              help='Region to extract')
-@click.pass_context
-def year(ctx, year, dataset, region_col, region):
-    """
-    Average a single dataset for a given year
-    Extract only pixels in region if given.
-    """
-    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-        map_df = f.get_means_map(dataset, year, region=region,
-                                 region_col=region_col)
-
-    out_path = "{}-{}.csv".format(dataset, year)
-    out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-    logger.info('Saving data to {}'.format(out_path))
-    map_df.to_csv(out_path)
-
-
-@main.command()
-@click.option('--years', '-yrs', type=STRLIST, required=True,
-              help='List of Years to average')
-@click.option('--dataset', '-d', type=str, required=True,
-              help='Dataset to extract')
-@click.option('--region_col', '-col', type=str, default='state',
-              help='Meta column to search for region')
-@click.option('--region', '-r', type=str, default=None,
-              help='Region to extract')
-@click.pass_context
-def years(ctx, years, dataset, region_col, region):
-    """
-    Average a single dataset for a given years
-    Extract only pixels in region if given.
-    """
-    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-        map_df = f.get_means_map(dataset, years, region=region,
-                                 region_col=region_col)
-
-    out_path = "{}_{}-{}.csv".format(dataset, years[0], years[-1])
-    out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-    logger.info('Saving data to {}'.format(out_path))
-    map_df.to_csv(out_path)
-
-
 @main.group()
 @click.option('--dataset', '-d', type=str, required=True,
               help='Dataset to extract')
@@ -130,13 +80,13 @@ def dataset(ctx, dataset):
 
 
 @dataset.command()
-@click.option('--gid', '-g', type=int, default=None,
-              help='Resource gid of interest')
 @click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
               default=None,
               help='(lat, lon) coordinates of interest')
+@click.option('--gid', '-g', type=int, default=None,
+              help='Resource gid of interest')
 @click.pass_context
-def site(ctx, gid, lat_lon):
+def site(ctx, lat_lon, gid):
     """
     Extract the nearest pixel to the given (lat, lon) coordinates
     OR the given resource gid
@@ -156,7 +106,6 @@ def region(ctx, region, region_col, timestep):
     """
     Extract a single dataset for all gids in the given region
     """
-
     ctx.invoke(region_cmd, region=region, region_col=region_col,
                timestep=timestep)
 
@@ -168,12 +117,12 @@ def region(ctx, region, region_col, timestep):
 @click.option('--lat_lon_2', '-ll2', nargs=2, type=click.Tuple([float, float]),
               required=True,
               help='The other corner of the bounding box')
-@click.option('--timestep', '-ts', type=str, default=None,
-              help='Timestep to extract')
 @click.option('--file_suffix', '-fs', default=None,
               help='File name suffix')
+@click.option('--timestep', '-ts', type=str, default=None,
+              help='Timestep to extract')
 @click.pass_context
-def box(ctx, lat_lon_1, lat_lon_2, timestep, file_suffix):
+def box(ctx, lat_lon_1, lat_lon_2, file_suffix, timestep):
     """
     Extract all pixels in the given bounding box
     """
@@ -192,6 +141,57 @@ def multi_site(ctx, sites):
     "latitude", "longitude" pairs OR "gid"s
     """
     ctx.invoke(multi_site_cmd, sites=sites)
+
+
+@dataset.group()
+@click.option('--region', '-r', type=str, default=None,
+              help='Region to extract')
+@click.option('--region_col', '-col', type=str, default='state',
+              help='Meta column to search for region')
+def map_means(ctx, region, region_col):
+    """
+    Map means for given dataset in region if given.
+    """
+    ctx.obj['REGION'] = region
+    ctx.obj['REGION_COL'] = region_col
+
+
+@map_means.command()
+@click.option('--year', '-yr', type=str, required=True,
+              help='Year to average')
+@click.pass_context
+def year(ctx, year):
+    """
+    Map means for a given year
+    """
+    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
+        map_df = f.get_means_map(ctx.obj["DATASET"], year,
+                                 region=ctx.obj['REGION'],
+                                 region_col=ctx.obj["REGION_COL"])
+
+    out_path = "{}-{}.csv".format(dataset, year)
+    out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
+    logger.info('Saving data to {}'.format(out_path))
+    map_df.to_csv(out_path)
+
+
+@map_means.command()
+@click.option('--years', '-yrs', type=STRLIST, required=True,
+              help='List of Years to average')
+@click.pass_context
+def multi_year(ctx, years):
+    """
+    Map means for a given year
+    """
+    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
+        map_df = f.get_means_map(ctx.obj["DATASET"], years,
+                                 region=ctx.obj['REGION'],
+                                 region_col=ctx.obj["REGION_COL"])
+
+    out_path = "{}_{}-{}.csv".format(dataset, years[0], years[-1])
+    out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
+    logger.info('Saving data to {}'.format(out_path))
+    map_df.to_csv(out_path)
 
 
 if __name__ == '__main__':

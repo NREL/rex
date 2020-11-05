@@ -170,12 +170,12 @@ def region(ctx, region, region_col, timestep):
 @click.option('--lat_lon_2', '-ll2', nargs=2, type=click.Tuple([float, float]),
               required=True,
               help='The other corner of the bounding box')
-@click.option('--timestep', '-ts', type=str, default=None,
-              help='Timestep to extract')
 @click.option('--file_suffix', '-fs', default=None,
               help='Filename suffix')
+@click.option('--timestep', '-ts', type=str, default=None,
+              help='Timestep to extract')
 @click.pass_context
-def box(ctx, lat_lon_1, lat_lon_2, timestep, file_suffix):
+def box(ctx, lat_lon_1, lat_lon_2, file_suffix, timestep):
     """
     Extract all pixels in the given bounding box
     """
