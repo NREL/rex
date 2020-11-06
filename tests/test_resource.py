@@ -39,7 +39,6 @@ def NSRDB_2018_list():
     path = os.path.join(TESTDATADIR, 'nsrdb')
     h5_files = MultiH5Path._get_h5_files(path, prefix='nsrdb',
                                          suffix='2018.h5')
-    print(h5_files)
 
     return MultiFileNSRDB(h5_files)
 
@@ -113,13 +112,11 @@ def check_meta(res_cls):
 
     sites = 5
     meta = res_cls['meta', sites]
-    print(meta, meta.shape)
     cols = ['latitude', 'longitude', 'elevation', 'timezone']
     assert np.allclose(baseline[cols].values[sites], meta[cols].values)
 
     sites = sorted(np.random.choice(len(baseline), 5, replace=False))
     meta = res_cls['meta', sites]
-    print(meta, meta.shape)
     cols = ['latitude', 'longitude', 'elevation', 'timezone']
     assert np.allclose(baseline[cols].values[sites], meta[cols].values)
 
