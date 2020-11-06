@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=all
 """
-Multi Year ResourceX Command Line Interface
+US Wave Command Line Interface
 """
 import click
 import logging
@@ -12,10 +12,13 @@ from rex.resource_extraction.resource_cli import dataset as dataset_grp
 from rex.resource_extraction.resource_cli import multi_site as multi_site_cmd
 from rex.resource_extraction.resource_cli import region as region_cmd
 from rex.resource_extraction.resource_cli import site as site_cmd
-from rex.resource_extraction.resource_extraction import (MultiYearResourceX,
-                                                         MultiYearNSRDBX,
-                                                         MultiYearWindX,
-                                                         MultiYearWaveX)
+from rex.resource_extraction.multi_year_resource_cli \
+    import map_means as means_grp
+from rex.resource_extraction.multi_year_resource_cli \
+    import year as yr_means_cmd
+from rex.resource_extraction.multi_year_resource_cli \
+    import multi_year as multi_yr_means_cmd
+from rex.resource_extraction.resource_extraction import MultiYearWaveX
 from rex.utilities.cli_dtypes import STRLIST, INTLIST
 from rex.utilities.loggers import init_mult
 
@@ -23,48 +26,49 @@ logger = logging.getLogger(__name__)
 
 
 @click.group()
-@click.option('--resource_path', '-h5', required=True,
-              type=click.Path(),
-              help=('Path to Resource .h5 files'))
+@click.option('--domain', '-d', required=True,
+              type=click.Choice(['West_Coast', 'Hawaii'],
+                                case_sensitive=False),
+              help=('Geospatial domain to extract data from'))
 @click.option('--out_dir', '-o', required=True, type=click.Path(),
               help='Directory to dump output files')
 @click.option('--years', '-yrs', type=INTLIST, default=None,
               help='List of years to access, by default None')
-@click.option('--hsds', '-hsds', is_flag=True,
-              help=("Boolean flag to use h5pyd to handle .h5 'files' hosted "
-                    "on AWS behind HSDS"))
-@click.option('--res_cls', '-res',
-              type=click.Choice(['Resource', 'NSRDB', 'Wind', 'Wave'],
-                                case_sensitive=False),
-              default='Resource',
-              help='Resource type')
+@click.option('--buoy', '-b', is_flag=True,
+              help="Boolean flag to use access virtual buoy data")
+@click.option('--eagle', '-hpc', is_flag=True,
+              help="Boolean flag to use access data on NRELs HPC vs. via HSDS")
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
 @click.pass_context
-def main(ctx, resource_path, out_dir, years, hsds, res_cls, verbose):
+def main(ctx, domain, out_dir, years, buoy, eagle, verbose):
     """
-    Multi-year ResourceX Command Line Interface
+    US Wave Command Line Interface
     """
     ctx.ensure_object(dict)
-    ctx.obj['H5'] = resource_path
+    if eagle:
+        path = '/datasets/US_wave/v1.0.0'
+        hsds = False
+    else:
+        path = '/nrel/US_wave'
+        hsds = True
+
+    if buoy:
+        path = os.path.join(path, 'virtual_buoy', domain)
+    else:
+        path = os.path.join(path, domain)
+
+    ctx.obj['H5'] = path
     ctx.obj['OUT_DIR'] = out_dir
     ctx.obj['CLS_KWARGS'] = {'years': years, 'hsds': hsds}
+    ctx.obj['CLS'] = MultiYearWaveX
 
-    if res_cls == 'Resource':
-        ctx.obj['CLS'] = MultiYearResourceX
-    elif res_cls == 'NSRDB':
-        ctx.obj['CLS'] = MultiYearNSRDBX
-    elif res_cls == 'Wind':
-        ctx.obj['CLS'] = MultiYearWindX
-    elif res_cls == 'Wave':
-        ctx.obj['CLS'] = MultiYearWaveX
-
-    name = os.path.splitext(os.path.basename(resource_path))[0]
+    name = os.path.splitext(os.path.basename(path))[0]
     init_mult(name, out_dir, verbose=verbose, node=True,
               modules=[__name__, 'rex.resource_extraction',
                        'rex.multi_year_resource'])
 
-    logger.info('Extracting Resource data from {}'.format(resource_path))
+    logger.info('Extracting US wave data for {} from {}'.format(domain, path))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
 
 
@@ -117,12 +121,12 @@ def region(ctx, region, region_col, timestep):
 @click.option('--lat_lon_2', '-ll2', nargs=2, type=click.Tuple([float, float]),
               required=True,
               help='The other corner of the bounding box')
-@click.option('--file_suffix', '-fs', default=None,
-              help='File name suffix')
 @click.option('--timestep', '-ts', type=str, default=None,
               help='Timestep to extract')
+@click.option('--file_suffix', '-fs', default=None,
+              help='File name suffix')
 @click.pass_context
-def box(ctx, lat_lon_1, lat_lon_2, file_suffix, timestep):
+def box(ctx, lat_lon_1, lat_lon_2, timestep, file_suffix):
     """
     Extract all pixels in the given bounding box
     """
@@ -143,28 +147,16 @@ def multi_site(ctx, sites):
     ctx.invoke(multi_site_cmd, sites=sites)
 
 
-@dataset.group(invoke_without_command=True)
+@dataset.group()
 @click.option('--region', '-r', type=str, default=None,
               help='Region to extract')
 @click.option('--region_col', '-col', type=str, default='state',
               help='Meta column to search for region')
 def map_means(ctx, region, region_col):
     """
-    Map temporal means for given dataset in region if given.
+    Map means for given dataset in region if given.
     """
-    if ctx.invoked_subcommand is None:
-        with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-            map_df = f.get_means_map(ctx.obj["DATASET"], year=None,
-                                     region=region,
-                                     region_col=region_col)
-
-        out_path = "{}-means.csv".format(dataset)
-        out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-        logger.info('Saving data to {}'.format(out_path))
-        map_df.to_csv(out_path)
-    else:
-        ctx.obj['REGION'] = region
-        ctx.obj['REGION_COL'] = region_col
+    ctx.invoke(means_grp, region=region, region_col=region_col)
 
 
 @map_means.command()
@@ -175,15 +167,7 @@ def year(ctx, year):
     """
     Map means for a given year
     """
-    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-        map_df = f.get_means_map(ctx.obj["DATASET"], year=year,
-                                 region=ctx.obj['REGION'],
-                                 region_col=ctx.obj["REGION_COL"])
-
-    out_path = "{}-{}.csv".format(dataset, year)
-    out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-    logger.info('Saving data to {}'.format(out_path))
-    map_df.to_csv(out_path)
+    ctx.invoke(yr_means_cmd, year=year)
 
 
 @map_means.command()
@@ -192,22 +176,14 @@ def year(ctx, year):
 @click.pass_context
 def multi_year(ctx, years):
     """
-    Map means for a given subset of years
+    Map means for a given year
     """
-    with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
-        map_df = f.get_means_map(ctx.obj["DATASET"], year=years,
-                                 region=ctx.obj['REGION'],
-                                 region_col=ctx.obj["REGION_COL"])
-
-    out_path = "{}_{}-{}.csv".format(dataset, years[0], years[-1])
-    out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-    logger.info('Saving data to {}'.format(out_path))
-    map_df.to_csv(out_path)
+    ctx.invoke(multi_yr_means_cmd, years=years)
 
 
 if __name__ == '__main__':
     try:
         main(obj={})
     except Exception:
-        logger.exception('Error running MultiYearResourceX CLI')
+        logger.exception('Error running US_wave CLI')
         raise

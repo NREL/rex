@@ -62,6 +62,7 @@ setup(
             "WINDX=rex.resource_extraction.wind_cli:main",
             "WaveX=rex.resource_extraction.wave_cli:main",
             "MultiYearX=rex.resource_extraction.multi_year_resource_cli:main",
+            "US-wave=rex.resource_extraction.US_wave_cli:main",
             "rechunk=rex.rechunk_h5.rechunk_cli:main",
             "combine-h5=rex.rechunk_h5.combine_h5_cli:main"
             "temporal-stats=rex.resource_extraction.temporal_stats.cli:main"

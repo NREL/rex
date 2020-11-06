@@ -11,6 +11,7 @@ Submodules
 
 .. toctree::
 
+   rex.resource_extraction.US_wave_cli
    rex.resource_extraction.multi_year_resource_cli
    rex.resource_extraction.nsrdb_cli
    rex.resource_extraction.resource_cli

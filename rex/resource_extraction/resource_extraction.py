@@ -18,6 +18,7 @@ from rex.multi_year_resource import (MultiYearNSRDB, MultiYearResource,
 from rex.resource import Resource
 from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
                                     WindResource)
+from rex.utilities.exceptions import ResourceValueError
 from rex.utilities.utilities import parse_year, check_tz
 
 TREE_DIR = TemporaryDirectory()
@@ -262,6 +263,38 @@ class ResourceX(Resource):
 
         return tree
 
+    def _check_lat_lon(self, lat_lon):
+        """
+        Check lat lon coordinates against domain
+
+        Parameters
+        ----------
+        lat_lon : ndarray
+            Either a single (lat, lon) pair or series of (lat, lon) pairs
+        """
+        lat_min, lat_max = self.lat_lon[:, 0].min(), self.lat_lon[:, 0].max()
+        lon_min, lon_max = self.lat_lon[:, 1].min(), self.lat_lon[:, 1].max()
+
+        if not isinstance(lat_lon, np.ndarray):
+            lat_lon = np.array(lat_lon)
+
+        if len(lat_lon.shape) == 1:
+            lat_lon = np.expand_dims(lat_lon, axis=0)
+
+        check = lat_lon[:, 0] < lat_min
+        check |= lat_lon[:, 0] > lat_max
+        check |= lat_lon[:, 1] < lon_min
+        check |= lat_lon[:, 1] > lon_max
+
+        if any(check):
+            bad_coords = lat_lon[check]
+            msg = ("Latitude, longitude coordinates ({}) are outsides of the "
+                   "resource domain: (({}, {}), ({}, {}))"
+                   .format(bad_coords, lat_min, lon_min, lat_max, lon_max))
+            raise ResourceValueError(msg)
+
+        return lat_lon
+
     def lat_lon_gid(self, lat_lon):
         """
         Get nearest gid to given (lat, lon) pair or pairs
@@ -276,7 +309,11 @@ class ResourceX(Resource):
         gids : int | ndarray
             Nearest gid(s) to given (lat, lon) pair(s)
         """
+        lat_lon = self._check_lat_lon(lat_lon)
         _, gids = self.tree.query(lat_lon)
+
+        if len(gids) == 1:
+            gids = gids[0]
 
         return gids
 
@@ -317,6 +354,7 @@ class ResourceX(Resource):
         gids : ndarray
             Gids in bounding box
         """
+        self._check_lat_lon(np.vstack((lat_lon_1, lat_lon_2)))
         lat_min, lat_max = sorted([lat_lon_1[0], lat_lon_2[0]])
         lon_min, lon_max = sorted([lat_lon_1[1], lat_lon_2[1]])
 
@@ -385,7 +423,7 @@ class ResourceX(Resource):
             Time-series DataFrame for given site(s) and dataset
         """
         index = pd.Index(data=self.time_index, name='time_index')
-        if isinstance(gid, int):
+        if np.issubdtype(type(gid), int):
             df = pd.DataFrame(self[ds_name, :, gid], columns=[gid],
                               index=index)
             df.name = gid
@@ -712,7 +750,7 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
                          str_decode=str_decode, hsds=hsds, res_cls=res_cls)
         self._tree = tree
 
-    def get_means_map(self, ds_name, year, region=None,
+    def get_means_map(self, ds_name, year=None, region=None,
                       region_col='state'):
         """
         Extract given year(s) and compute means
@@ -721,8 +759,8 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
         ----------
         ds_name : str
             Dataset to extract
-        year : str | list
-            Year(s) to compute means for
+        year : str | list, optional
+            Year(s) to compute means for, by default None
         region : str
             Region to extract all pixels for
         region_col : str
@@ -738,6 +776,9 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
         if region is not None:
             gids = self.region_gids(region, region_col=region_col)
             lat_lons = lat_lons[gids]
+
+        if year is None:
+            year = slice(None)
 
         means_map = self[ds_name, year, gids].mean(axis=0)
         means_map = pd.DataFrame({'longitude': lat_lons[:, 1],

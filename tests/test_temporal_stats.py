@@ -84,8 +84,6 @@ def test_stdevs(max_workers):
                                    res_cls=WindResource,
                                    max_workers=max_workers)
     truth = np.std(RES_DATA, axis=0, ddof=1)
-    print(truth.shape)
-    print(test_stats.shape)
     msg = 'Annual stdevs do not match!'
     assert np.allclose(truth, test_stats['std'].values), msg
 

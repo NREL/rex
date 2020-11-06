@@ -84,13 +84,13 @@ def dataset(ctx, dataset):
 
 
 @dataset.command()
-@click.option('--gid', '-g', type=int, default=None,
-              help='Resource gid of interest')
 @click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
               default=None,
               help='(lat, lon) coordinates of interest')
+@click.option('--gid', '-g', type=int, default=None,
+              help='Resource gid of interest')
 @click.pass_context
-def site(ctx, gid, lat_lon):
+def site(ctx, lat_lon, gid):
     """
     Extract the nearest pixel to the given (lat, lon) coordinates
     OR the given resource gid
@@ -122,12 +122,12 @@ def region(ctx, region, region_col, timestep):
 @click.option('--lat_lon_2', '-ll2', nargs=2, type=click.Tuple([float, float]),
               required=True,
               help='The other corner of the bounding box')
-@click.option('--timestep', '-ts', type=str, default=None,
-              help='Timestep to extract')
 @click.option('--file_suffix', '-fs', default=None,
               help='File name suffix')
+@click.option('--timestep', '-ts', type=str, default=None,
+              help='Timestep to extract')
 @click.pass_context
-def box(ctx, lat_lon_1, lat_lon_2, timestep, file_suffix):
+def box(ctx, lat_lon_1, lat_lon_2, file_suffix, timestep):
     """
     Extract all pixels in the given bounding box
     """

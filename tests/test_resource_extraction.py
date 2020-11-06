@@ -11,6 +11,7 @@ import pytest
 from rex.resource_extraction import (MultiFileWindX, MultiFileNSRDBX,
                                      NSRDBX, WindX, WaveX)
 from rex.resource_extraction.resource_extraction import TREE_DIR
+from rex.utilities.exceptions import ResourceValueError
 from rex import TESTDATADIR
 
 
@@ -67,7 +68,6 @@ def extract_site(res_cls, ds_name):
     """
     time_index = res_cls['time_index']
     meta = res_cls['meta']
-    print(len(meta))
     site = np.random.choice(len(meta), 1)[0]
     lat_lon = meta.loc[site, ['latitude', 'longitude']].values
     truth_ts = res_cls[ds_name, :, site]
@@ -402,6 +402,20 @@ def test_WaveX(gid):
     gids = len(gid) if isinstance(gid, list) else 1
     assert np.allclose(truth.reshape((index_len, gids)), test_df.values)
     assert all(test_df.index == index)
+
+
+def test_check_lat_lon():
+    """
+    Test lat_lon check
+    """
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    with WindX(path) as f:
+        lat_lon = f.lat_lon
+        bad_lat_lon = [lat_lon[:, 0].max() + 1, lat_lon[:, 1].max() + 1]
+        with pytest.raises(ResourceValueError):
+            # pylint: disable=no-member
+            f.lat_lon_gid(bad_lat_lon)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
