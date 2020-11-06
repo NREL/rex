@@ -313,7 +313,7 @@ class ResourceX(Resource):
         _, gids = self.tree.query(lat_lon)
 
         if len(gids) == 1:
-            gids = gids[0]
+            gids = int(gids[0])
 
         return gids
 
@@ -423,7 +423,7 @@ class ResourceX(Resource):
             Time-series DataFrame for given site(s) and dataset
         """
         index = pd.Index(data=self.time_index, name='time_index')
-        if np.issubdtype(type(gid), int):
+        if isinstance(gid, int):
             df = pd.DataFrame(self[ds_name, :, gid], columns=[gid],
                               index=index)
             df.name = gid
