@@ -416,6 +416,7 @@ class MultiFileResource(Resource):
         self._h5 = self._init_multi_h5(h5_source, check_files=check_files)
         self._h5_files = self._h5.h5_files
         self.h5_file = self._h5_files[0]
+        self._i = 0
 
     def __repr__(self):
         msg = "{}".format(self.__class__.__name__)
