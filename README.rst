@@ -54,14 +54,14 @@ or
 
     source activate /datasets/modulefiles/conda_env
 
-or module:
+.. or module:
 
-.. code-block:: bash
+.. .. code-block:: bash
 
-    module use /datasets/modulefiles
-    module load rex
+..     module use /datasets/modulefiles
+..     module load rex
 
-**NOTE: Loading the rex module can take several minutes**
+.. **NOTE: Loading the rex module can take several minutes**
 
 Installing rex
 ==============
