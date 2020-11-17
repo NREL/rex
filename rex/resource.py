@@ -786,8 +786,8 @@ class Resource:
     def __contains__(self, dset):
         return dset in self.datasets
 
-    @staticmethod
-    def _get_datasets(h5_obj, group=None):
+    @classmethod
+    def _get_datasets(cls, h5_obj, group=None):
         """
         Search h5 file instance for Datasets
 
@@ -805,7 +805,7 @@ class Resource:
         for name in h5_obj:
             sub_obj = h5_obj[name]
             if isinstance(sub_obj, h5py.Group):
-                dsets.extend(Resource._get_datasets(sub_obj, group=name))
+                dsets.extend(cls._get_datasets(sub_obj, group=name))
             else:
                 dset_name = name
                 if group is not None:

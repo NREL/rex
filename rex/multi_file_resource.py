@@ -145,8 +145,8 @@ class MultiH5:
 
         return unique_dsets, shared_dsets
 
-    @staticmethod
-    def _map_file_dsets(h5_files):
+    @classmethod
+    def _map_file_dsets(cls, h5_files):
         """
         Map 5min variables to their .h5 files in given directory
 
@@ -162,7 +162,7 @@ class MultiH5:
         """
         dset_map = {}
         for file in h5_files:
-            unique_dsets, shared_dsets = MultiH5._get_dsets(file)
+            unique_dsets, shared_dsets = cls._get_dsets(file)
             for dset in shared_dsets:
                 if dset not in dset_map:
                     dset_map[dset] = file

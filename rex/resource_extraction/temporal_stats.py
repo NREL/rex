@@ -228,8 +228,8 @@ class TemporalStats:
 
         return out
 
-    @staticmethod
-    def _create_names(index, stat):
+    @classmethod
+    def _create_names(cls, index, stat):
         """
         Generate statistics names
 
@@ -252,8 +252,7 @@ class TemporalStats:
         if len(index.shape) != 2 and index.max() > 12:
             month_map = None
 
-        columns = [TemporalStats._format_index_value(i, stat,
-                                                     month_map=month_map)
+        columns = [cls._format_index_value(i, stat, month_map=month_map)
                    for i in index]
 
         return columns
@@ -265,8 +264,8 @@ class TemporalStats:
 
         Parameters
         ----------
-        res_data : ndarray
-            Resource data array
+        res_data : pandas.DataFrame
+            DataFrame or resource data. Index is time_index, columns are sites
         statistics : tuple | list
             Statistics to extract, must be 'mean', 'median', and/or 'std
         diurnal : bool, optional
@@ -304,7 +303,7 @@ class TemporalStats:
                 raise RuntimeError(msg)
 
             if groupby:
-                columns = TemporalStats._create_names(s_data.index, s)
+                columns = cls._create_names(s_data.index, s)
                 s_data = s_data.T
                 s_data.columns = columns
             else:
@@ -316,8 +315,8 @@ class TemporalStats:
 
         return res_stats
 
-    @staticmethod
-    def _extract_stats(res_h5, res_cls, statistics, dataset, hsds=False,
+    @classmethod
+    def _extract_stats(cls, res_h5, res_cls, statistics, dataset, hsds=False,
                        time_index=None, site_slice=None, diurnal=False,
                        month=False, combinations=False):
         """
@@ -363,27 +362,22 @@ class TemporalStats:
             res_data = pd.DataFrame(f[dataset, :, site_slice],
                                     index=time_index)
         if combinations:
-            res_stats = [TemporalStats._compute_stats(res_data, statistics)]
+            res_stats = [cls._compute_stats(res_data, statistics)]
             if month:
-                res_stats.append(TemporalStats._compute_stats(res_data,
-                                                              statistics,
-                                                              month=True))
+                res_stats.append(cls._compute_stats(res_data, statistics,
+                                                    month=True))
 
             if diurnal:
-                res_stats.append(TemporalStats._compute_stats(res_data,
-                                                              statistics,
-                                                              diurnal=True))
+                res_stats.append(cls._compute_stats(res_data, statistics,
+                                                    diurnal=True))
             if month and diurnal:
-                res_stats.append(TemporalStats._compute_stats(res_data,
-                                                              statistics,
-                                                              month=True,
-                                                              diurnal=True))
+                res_stats.append(cls._compute_stats(res_data, statistics,
+                                                    month=True, diurnal=True))
 
             res_stats = pd.concat(res_stats, axis=1)
         else:
-            res_stats = TemporalStats._compute_stats(res_data, statistics,
-                                                     diurnal=diurnal,
-                                                     month=month)
+            res_stats = cls._compute_stats(res_data, statistics,
+                                           diurnal=diurnal, month=month)
 
         if site_slice.stop:
             res_stats.index = list(range(*site_slice.indices(site_slice.stop)))
