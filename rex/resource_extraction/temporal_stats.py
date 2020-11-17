@@ -466,7 +466,7 @@ class TemporalStats:
                                   loggers=loggers) as exe:
                 futures = []
                 for site_slice in slices:
-                    future = exe.submit(TemporalStats._extract_stats,
+                    future = exe.submit(self._extract_stats,
                                         self.res_h5, self.res_cls,
                                         self.statistics, dataset,
                                         hsds=self._hsds,
@@ -488,7 +488,7 @@ class TemporalStats:
             msg = ('Extracting {} for {} in serial'
                    .format(self.statistics, dataset))
             logger.info(msg)
-            res_stats = TemporalStats._extract_stats(
+            res_stats = self._extract_stats(
                 self.res_h5, self.res_cls, self.statistics, dataset,
                 hsds=self._hsds, time_index=self.time_index, diurnal=diurnal,
                 month=month, combinations=combinations)
