@@ -482,10 +482,24 @@ class TemporalStats:
             msg = ('Extracting {} for {} in serial'
                    .format(self.statistics, dataset))
             logger.info(msg)
-            res_stats = self._extract_stats(
-                self.res_h5, self.res_cls, self.statistics, dataset,
-                hsds=self._hsds, time_index=self.time_index, diurnal=diurnal,
-                month=month, combinations=combinations)
+            if chunks_per_worker is not None:
+                slices = self._get_slices(dataset,
+                                          chunks_per_slice=chunks_per_worker)
+                res_stats = []
+                for site_slice in slices:
+                    res_stats.append(self._extract_stats(
+                        self.res_h5, self.res_cls, self.statistics, dataset,
+                        hsds=self._hsds, time_index=self.time_index,
+                        site_slice=site_slice, diurnal=diurnal, month=month,
+                        combinations=combinations))
+
+                res_stats = pd.concat(res_stats).sort_index()
+            else:
+                res_stats = self._extract_stats(
+                    self.res_h5, self.res_cls, self.statistics, dataset,
+                    hsds=self._hsds, time_index=self.time_index,
+                    diurnal=diurnal, month=month,
+                    combinations=combinations)
 
         if lat_lon_only:
             meta = self.lat_lon
