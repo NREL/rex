@@ -258,8 +258,8 @@ class TemporalStats:
 
         return columns
 
-    @staticmethod
-    def _compute_stats(res_data, statistics, diurnal=False, month=False):
+    @classmethod
+    def _compute_stats(cls, res_data, statistics, diurnal=False, month=False):
         """
         Compute desired stats for desired time intervals from res_data
 
@@ -299,9 +299,9 @@ class TemporalStats:
                 s_data = res_data.std()
             else:
                 msg = ("{} is not a valid statistic, must be one of:\n{}"
-                       .format(s, ['mean', 'median', 'std']))
-                warn(msg)
-                logger.warning(msg)
+                       .format(s, cls.STATS))
+                logger.error(msg)
+                raise RuntimeError(msg)
 
             if groupby:
                 columns = TemporalStats._create_names(s_data.index, s)
