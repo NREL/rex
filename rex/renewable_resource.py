@@ -390,8 +390,8 @@ class WindResource(Resource):
 
         return h
 
-    @staticmethod
-    def _parse_name(ds_name):
+    @classmethod
+    def _parse_name(cls, ds_name):
         """
         Extract dataset name and height from dataset name
 
@@ -411,7 +411,7 @@ class WindResource(Resource):
             if ds_name.endswith('m'):
                 name = '_'.join(ds_name.split('_')[:-1])
                 h = ds_name.split('_')[-1]
-                h = WindResource._parse_hub_height(h)
+                h = cls._parse_hub_height(h)
             else:
                 raise ValueError('{} does not end with "_m"'
                                  .format(ds_name))
@@ -487,8 +487,8 @@ class WindResource(Resource):
 
         return nearest_h, extrapolate
 
-    @staticmethod
-    def monin_obukhov_extrapolation(ts_1, h_1, z0, L, h):
+    @classmethod
+    def monin_obukhov_extrapolation(cls, ts_1, h_1, z0, L, h):
         """
         Monin-Obukhov extrapolation
 
@@ -511,11 +511,11 @@ class WindResource(Resource):
             new wind speed from MO extrapolation.
         """
         # Non dimensional stability parameter at h
-        zeta = WindResource.stability_function(h / L)
+        zeta = cls.stability_function(h / L)
         # Non dimensional stability parameter at z0
-        zeta_0 = WindResource.stability_function(z0 / L)
+        zeta_0 = cls.stability_function(z0 / L)
         # Non dimensional stability parameter at h_1
-        zeta_1 = WindResource.stability_function(h_1 / L)
+        zeta_1 = cls.stability_function(h_1 / L)
 
         # Logarithmic extrapolation equation
         out = (ts_1 * (np.log(h / z0) - zeta + zeta_0)
@@ -675,8 +675,8 @@ class WindResource(Resource):
         da = (a1 - a0) % 360
         return 2 * da % 360 - da
 
-    @staticmethod
-    def circular_interp(ts_1, h_1, ts_2, h_2, h):
+    @classmethod
+    def circular_interp(cls, ts_1, h_1, ts_2, h_2, h):
         """
         Circular interpolate/extrapolate time-series data to height h
 
@@ -700,7 +700,7 @@ class WindResource(Resource):
         """
         h_f = (h - h_1) / (h_2 - h_1)
 
-        da = WindResource.shortest_angle(ts_1, ts_2) * h_f
+        da = cls.shortest_angle(ts_1, ts_2) * h_f
         da = np.sign(da) * (np.abs(da) % 360)
 
         out = (ts_2 + da) % 360

@@ -303,8 +303,8 @@ class MultiYearH5:
 
         return new_map
 
-    @staticmethod
-    def _map_file_years(h5_dir, prefix='', suffix='.h5', hsds=False,
+    @classmethod
+    def _map_file_years(cls, h5_dir, prefix='', suffix='.h5', hsds=False,
                         years=None):
         """
         Map file paths to year for which it contains data
@@ -329,14 +329,14 @@ class MultiYearH5:
             Dictionary mapping years to file paths
         """
         if hsds:
-            year_map = MultiYearH5._map_hsds_files(h5_dir, prefix=prefix,
-                                                   suffix=suffix)
+            year_map = cls._map_hsds_files(h5_dir, prefix=prefix,
+                                           suffix=suffix)
         else:
-            year_map = MultiYearH5._map_local_files(h5_dir, prefix=prefix,
-                                                    suffix=suffix)
+            year_map = cls._map_local_files(h5_dir, prefix=prefix,
+                                            suffix=suffix)
 
         if years is not None:
-            year_map = MultiYearH5._get_years(year_map, years)
+            year_map = cls._get_years(year_map, years)
 
         return year_map
 

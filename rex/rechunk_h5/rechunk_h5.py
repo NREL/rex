@@ -312,8 +312,8 @@ class RechunkH5:
         """
         return self._get_attrs('variables')
 
-    @staticmethod
-    def _parse_var_attrs(var_attrs, hub_height=None, version=None):
+    @classmethod
+    def _parse_var_attrs(cls, var_attrs, hub_height=None, version=None):
         """
         Parse variable attributes from file if needed
 
@@ -356,7 +356,7 @@ class RechunkH5:
                 var_attrs.at['global'] = {'attrs': {'version': version}}
 
         if hub_height is not None:
-            var_attrs = RechunkH5._get_hub_height_attrs(var_attrs, hub_height)
+            var_attrs = cls._get_hub_height_attrs(var_attrs, hub_height)
             logger.debug('Reducing variable attributes to variables at hub '
                          'height {}m:\n{}'.format(hub_height, var_attrs.index))
 
@@ -476,8 +476,8 @@ class RechunkH5:
 
         return dset_attrs
 
-    @staticmethod
-    def check_dset_attrs(ds_in, dset_attrs, check_attrs=False):
+    @classmethod
+    def check_dset_attrs(cls, ds_in, dset_attrs, check_attrs=False):
         """
         Check dataset attributes (dtype, scale_factor, units) against source
         Dataset
@@ -492,10 +492,10 @@ class RechunkH5:
             Flag to compare source and specified dataset attributes,
             by default False
         """
-        dset_attrs = RechunkH5._check_dtype(ds_in, dset_attrs)
+        dset_attrs = cls._check_dtype(ds_in, dset_attrs)
 
         if check_attrs:
-            dset_attrs = RechunkH5._check_attrs(ds_in, dset_attrs)
+            dset_attrs = cls._check_attrs(ds_in, dset_attrs)
 
         return dset_attrs
 
