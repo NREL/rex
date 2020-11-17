@@ -278,7 +278,7 @@ class TemporalStats:
         res_stats : pandas.DataFrame
             DataFrame of desired statistics at desired time intervals
         """
-        logger.debug(cls)
+        print(cls)
         groupby = []
         if month:
             groupby.append(res_data.index.month)
@@ -353,7 +353,7 @@ class TemporalStats:
         res_stats : pandas.DataFrame
             DataFrame of desired statistics at desired time intervals
         """
-        logger.debug(cls)
+        print(cls)
         if site_slice is None:
             site_slice = slice(None, None, None)
 
@@ -450,7 +450,7 @@ class TemporalStats:
         res_stats : pandas.DataFrame
             DataFrame of desired statistics at desired time intervals
         """
-        logger.debug(self, self.__class__.__name__)
+        print(self, self.__class__.__name__)
         if self.max_workers > 1:
             msg = ('Extracting {} for {} in parallel using {} workers'
                    .format(self.statistics, dataset, self.max_workers))
@@ -517,7 +517,7 @@ class TemporalStats:
         annual_stats : pandas.DataFrame
             DataFrame of annual statistics
         """
-        logger.debug(self, self.__class__.__name__)
+        print(self, self.__class__.__name__)
         annual_stats = self.compute_statistics(
             dataset,
             chunks_per_worker=chunks_per_worker,
@@ -690,7 +690,7 @@ class TemporalStats:
         annual_stats : pandas.DataFrame
             DataFrame of annual statistics
         """
-        logger.debug(cls)
+        print(cls)
         res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
                         res_cls=res_cls, hsds=hsds)
         annual_stats = res_stats.annual_stats(
