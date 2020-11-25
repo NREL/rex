@@ -23,6 +23,10 @@ rex
 .. image:: https://anaconda.org/nrel/nrel-rex/badges/license.svg
     :target: https://anaconda.org/nrel/nrel-rex
 
+.. image:: https://codecov.io/gh/nrel/rex/branch/master/graph/badge.svg?token=WQ95L11SRS
+    :target: https://codecov.io/gh/nrel/rex
+
+
 The REsource eXtraction (rex) tool
 
 .. inclusion-intro
