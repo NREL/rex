@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
               help='Directory to dump output files')
 @click.option('--statistics', '-stats',
               type=click.Choice(['mean', 'median', 'stdev', 'std'],
-                                case_sensitive=False), default='mean',
+                                case_sensitive=False), default=['mean'],
               multiple=True,
               help=("Statistics to extract, must be 'mean', 'median', 'std', "
                     "and / or 'stdev'")
