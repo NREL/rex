@@ -1056,7 +1056,7 @@ class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
         Parameters
         ----------
         wtk_path : str
-            Path to five minute WTK .h5 files
+            Path to annual WTK .h5 files
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
