@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pytests for multi year resource handlers
+pytests for multi time resource handlers
 """
 import numpy as np
 import os
@@ -8,8 +8,9 @@ from pandas.testing import assert_frame_equal
 import pytest
 
 from rex import TESTDATADIR
-from rex.multi_year_resource import MultiYearNSRDB, MultiYearWindResource
+from rex.multi_time_resource import MultiTimeResource
 from rex.resource import Resource
+from rex.renewable_resource import WindResource, NSRDB
 
 
 @pytest.fixture
@@ -19,7 +20,7 @@ def MultiYearNSRDB_res():
     """
     path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_*.h5')
 
-    return MultiYearNSRDB(path)
+    return MultiTimeResource(path, res_cls=NSRDB)
 
 
 @pytest.fixture
@@ -29,7 +30,7 @@ def MultiYearWind_res():
     """
     path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
 
-    return MultiYearWindResource(path)
+    return MultiTimeResource(path, res_cls=WindResource)
 
 
 def check_res(res_cls):
@@ -38,7 +39,9 @@ def check_res(res_cls):
     """
     time_index = None
     for file in res_cls.h5_files:
+        print(file)
         with Resource(file) as f:
+            print(f.datasets)
             if time_index is None:
                 time_index = f.time_index
             else:
@@ -110,49 +113,6 @@ def check_dset(res_cls, ds_name):
     assert np.allclose(truth[:, [2, 6, 3, 20]], test)
 
 
-def check_years(res_cls, ds_name):
-    """
-    Run tests on dataset ds_name
-    """
-    for years in ['2012', ['2012', '2013'], ['2013', '2012']]:
-        test = res_cls[ds_name, years]
-        if not isinstance(years, list):
-            years = [years]
-
-        truth = []
-        for year in years:
-            truth.append(res_cls.h5[year][ds_name])
-
-        truth = np.concatenate(truth, axis=0)
-        assert np.allclose(truth, test)
-
-
-@pytest.mark.parametrize('years',
-                         [['2012'], [2013], [2012, 2013],
-                          ['2013', '2012']])
-def test_years_kwarg(years):
-    """
-    Test years kwarg
-    """
-    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
-
-    with MultiYearWindResource(path, years=years) as res_cls:
-        check_res(res_cls)
-        check_meta(res_cls)
-        check_time_index(res_cls)
-        check_dset(res_cls, 'windspeed_90m')
-
-
-def test_years_error():
-    """
-    Test years RuntimeError when years don't exist
-    """
-    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
-    years = [2014, 2015]
-    with pytest.raises(RuntimeError):
-        MultiYearWindResource(path, years=years)
-
-
 class TestMultiYearNSRDB:
     """
     Multi Year NSRDB Resource handler tests
@@ -187,7 +147,6 @@ class TestMultiYearNSRDB:
         test extraction of a variable array
         """
         check_dset(MultiYearNSRDB_res, ds_name)
-        check_years(MultiYearNSRDB_res, ds_name)
         MultiYearNSRDB_res.close()
 
 
@@ -225,7 +184,6 @@ class TestMultiYearWindResource:
         test extraction of a variable array
         """
         check_dset(MultiYearWind_res, ds_name)
-        check_years(MultiYearWind_res, ds_name)
         MultiYearWind_res.close()
 
     @staticmethod
@@ -234,7 +192,6 @@ class TestMultiYearWindResource:
         test extraction of a variable array
         """
         check_dset(MultiYearWind_res, ds_name)
-        check_years(MultiYearWind_res, ds_name)
         MultiYearWind_res.close()
 
 
