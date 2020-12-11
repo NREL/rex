@@ -330,7 +330,6 @@ class MultiTimeH5:
         for file in np.unique(files):
             ti = self[file].time_index
             file_slice = np.where(ti.isin(time_index))[0]
-            print(file_slice)
             file_slice = self._check_time_slice(file_slice)
             file_times[file] = file_slice
 
@@ -355,12 +354,23 @@ class MultiTimeH5:
         """
         ds_slice = parse_slice(ds_slice)
         out = []
-        file_times = self._map_time_slice(ds_slice[0])
-        for file, time_slice in file_times.items():
+        time_slice = ds_slice[0]
+        if isinstance(time_slice, (int, np.integer)):
+            time_step = self.time_index[time_slice]
+            file = self._time_slice_map[time_slice]
+            time_index = self[file].time_index
+            time_slice = np.where(time_step == time_index)[0][0]
             file_slice = (time_slice, ) + ds_slice[1:]
-            out.append(self[file]._get_ds(ds_name, file_slice))
+            out = self[file]._get_ds(ds_name, file_slice)
+        else:
+            file_times = self._map_time_slice(ds_slice[0])
+            for file, time_slice in file_times.items():
+                file_slice = (time_slice, ) + ds_slice[1:]
+                out.append(self[file]._get_ds(ds_name, file_slice))
 
-        return np.concatenate(out, axis=0)
+            out = np.concatenate(out, axis=0)
+
+        return out
 
     def close(self):
         """

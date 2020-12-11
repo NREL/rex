@@ -336,8 +336,9 @@ class MultiYearH5(MultiTimeH5):
         """
         ds_slice = parse_slice(ds_slice)
         out = []
-        if self._check_for_years(ds_slice[0]):
-            years = ds_slice[0]
+        time_slice = ds_slice[0]
+        if self._check_for_years(time_slice):
+            years = time_slice
             year_slice = (slice(None), ) + ds_slice[1:]
             if isinstance(years, str):
                 years = [years]
@@ -346,18 +347,28 @@ class MultiYearH5(MultiTimeH5):
                 year = int(year)
                 out.append(self[year]._get_ds(ds_name, year_slice))
 
+            out = np.concatenate(out, axis=0)
+        elif isinstance(time_slice, (int, np.integer)):
+            time_step = self.time_index[time_slice]
+            year = time_step.year
+            year_index = self.year_index(year)
+            year_slice = np.where(time_step == year_index)[0][0]
+            year_slice = (year_slice, ) + ds_slice[1:]
+            out = self[year]._get_ds(ds_name, year_slice)
         else:
-            time_index = self.time_index[ds_slice[0]]
+            time_index = self.time_index[time_slice]
             year_map = time_index.year
             for year in year_map.unique():
                 year_index = self.year_index(year)
+                year_slice = year_index.isin(time_index[year_map == year])
                 year_slice = \
-                    np.where(year_index.isin(time_index[year_map == year]))[0]
-                year_slice = \
-                    (self._check_time_slice(year_slice), ) + ds_slice[1:]
+                    self._check_time_slice(np.where(year_slice)[0])
+                year_slice = (year_slice, ) + ds_slice[1:]
                 out.append(self[year]._get_ds(ds_name, year_slice))
 
-        return np.concatenate(out, axis=0)
+            out = np.concatenate(out, axis=0)
+
+        return out
 
     def close(self):
         """
