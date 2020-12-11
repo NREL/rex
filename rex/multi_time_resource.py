@@ -162,6 +162,15 @@ class MultiTimeH5:
                 else:
                     self._time_index = self._time_index.append(ti)
 
+            if len(self._time_index) != len(np.unique(self._time_index)):
+                unique, duplicates = np.unique(self._time_index,
+                                               return_counts=True)
+                duplicates = np.where(duplicates > 1)[0]
+                duplicates = unique[duplicates]
+                msg = ('The combined time_index has {} duplicate values:\n{}'
+                       .format(len(duplicates), duplicates))
+                raise RuntimeError(msg)
+
             self._time_slice_map = np.concatenate(time_slice_map, axis=0)
 
         return self._time_index
