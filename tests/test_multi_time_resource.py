@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pytests for multi year resource handlers
+pytests for multi time resource handlers
 """
 import numpy as np
 import os
@@ -8,28 +8,28 @@ from pandas.testing import assert_frame_equal
 import pytest
 
 from rex import TESTDATADIR
-from rex.multi_year_resource import MultiYearNSRDB, MultiYearWindResource
+from rex.multi_time_resource import MultiTimeNSRDB, MultiTimeWindResource
 from rex.resource import Resource
 
 
 @pytest.fixture
-def MultiYearNSRDB_res():
+def MultiTimeNSRDB_res():
     """
     Init NSRDB resource handler
     """
     path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_*.h5')
 
-    return MultiYearNSRDB(path)
+    return MultiTimeNSRDB(path)
 
 
 @pytest.fixture
-def MultiYearWind_res():
+def MultiTimeWind_res():
     """
     Init WindResource resource handler
     """
     path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
 
-    return MultiYearWindResource(path)
+    return MultiTimeWindResource(path)
 
 
 def check_res(res_cls):
@@ -38,7 +38,9 @@ def check_res(res_cls):
     """
     time_index = None
     for file in res_cls.h5_files:
+        print(file)
         with Resource(file) as f:
+            print(f.datasets)
             if time_index is None:
                 time_index = f.time_index
             else:
@@ -110,132 +112,96 @@ def check_dset(res_cls, ds_name):
     assert np.allclose(truth[:, [2, 6, 3, 20]], test)
 
 
-def check_years(res_cls, ds_name):
+def test_time_index_error():
     """
-    Run tests on dataset ds_name
+    Test time_index RuntimeError when file time_index overlap
     """
-    for years in ['2012', ['2012', '2013'], ['2013', '2012']]:
-        test = res_cls[ds_name, years]
-        if not isinstance(years, list):
-            years = [years]
-
-        truth = []
-        for year in years:
-            truth.append(res_cls.h5[year][ds_name])
-
-        truth = np.concatenate(truth, axis=0)
-        assert np.allclose(truth, test)
-
-
-@pytest.mark.parametrize('years',
-                         [['2012'], [2013], [2012, 2013],
-                          ['2013', '2012']])
-def test_years_kwarg(years):
-    """
-    Test years kwarg
-    """
-    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
-
-    with MultiYearWindResource(path, years=years) as res_cls:
-        check_res(res_cls)
-        check_meta(res_cls)
-        check_time_index(res_cls)
-        check_dset(res_cls, 'windspeed_90m')
-
-
-def test_years_error():
-    """
-    Test years RuntimeError when years don't exist
-    """
-    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
-    years = [2014, 2015]
+    path = os.path.join(TESTDATADIR, 'wtk/wtk_2010_*m.h5')
     with pytest.raises(RuntimeError):
-        MultiYearWindResource(path, years=years)
+        with MultiTimeWindResource(path) as f:
+            f.time_index  # pylint: disable=pointless-statement
 
 
-class TestMultiYearNSRDB:
+class TestMultiTimeNSRDB:
     """
     Multi Year NSRDB Resource handler tests
     """
     @staticmethod
-    def test_res(MultiYearNSRDB_res):
+    def test_res(MultiTimeNSRDB_res):
         """
         test NSRDB class calls
         """
-        check_res(MultiYearNSRDB_res)
-        MultiYearNSRDB_res.close()
+        check_res(MultiTimeNSRDB_res)
+        MultiTimeNSRDB_res.close()
 
     @staticmethod
-    def test_meta(MultiYearNSRDB_res):
+    def test_meta(MultiTimeNSRDB_res):
         """
         test extraction of NSRDB meta data
         """
-        check_meta(MultiYearNSRDB_res)
-        MultiYearNSRDB_res.close()
+        check_meta(MultiTimeNSRDB_res)
+        MultiTimeNSRDB_res.close()
 
     @staticmethod
-    def test_time_index(MultiYearNSRDB_res):
+    def test_time_index(MultiTimeNSRDB_res):
         """
         test extraction of NSRDB time_index
         """
-        check_time_index(MultiYearNSRDB_res)
-        MultiYearNSRDB_res.close()
+        check_time_index(MultiTimeNSRDB_res)
+        MultiTimeNSRDB_res.close()
 
     @staticmethod
-    def test_ds(MultiYearNSRDB_res, ds_name='dni'):
+    def test_ds(MultiTimeNSRDB_res, ds_name='dni'):
         """
         test extraction of a variable array
         """
-        check_dset(MultiYearNSRDB_res, ds_name)
-        check_years(MultiYearNSRDB_res, ds_name)
-        MultiYearNSRDB_res.close()
+        check_dset(MultiTimeNSRDB_res, ds_name)
+        MultiTimeNSRDB_res.close()
 
 
-class TestMultiYearWindResource:
+class TestMultiTimeWindResource:
     """
     Multi Year WindResource Resource handler tests
     """
     @staticmethod
-    def test_res(MultiYearWind_res):
+    def test_res(MultiTimeWind_res):
         """
         test WindResource class calls
         """
-        check_res(MultiYearWind_res)
-        MultiYearWind_res.close()
+        check_res(MultiTimeWind_res)
+        MultiTimeWind_res.close()
 
     @staticmethod
-    def test_meta(MultiYearWind_res):
+    def test_meta(MultiTimeWind_res):
         """
         test extraction of WindResource meta data
         """
-        check_meta(MultiYearWind_res)
-        MultiYearWind_res.close()
+        check_meta(MultiTimeWind_res)
+        MultiTimeWind_res.close()
 
     @staticmethod
-    def test_time_index(MultiYearWind_res):
+    def test_time_index(MultiTimeWind_res):
         """
         test extraction of WindResource time_index
         """
-        check_time_index(MultiYearWind_res)
-        MultiYearWind_res.close()
+        check_time_index(MultiTimeWind_res)
+        MultiTimeWind_res.close()
 
     @staticmethod
-    def test_ds(MultiYearWind_res, ds_name='windspeed_100m'):
+    def test_ds(MultiTimeWind_res, ds_name='windspeed_100m'):
         """
         test extraction of a variable array
         """
-        check_dset(MultiYearWind_res, ds_name)
-        check_years(MultiYearWind_res, ds_name)
-        MultiYearWind_res.close()
+        check_dset(MultiTimeWind_res, ds_name)
+        MultiTimeWind_res.close()
 
     @staticmethod
-    def test_new_hubheight(MultiYearWind_res, ds_name='windspeed_90m'):
+    def test_new_hubheight(MultiTimeWind_res, ds_name='windspeed_90m'):
         """
         test extraction of a variable array
         """
-        check_dset(MultiYearWind_res, ds_name)
-        check_years(MultiYearWind_res, ds_name)
-        MultiYearWind_res.close()
+        check_dset(MultiTimeWind_res, ds_name)
+        MultiTimeWind_res.close()
 
 
 def execute_pytest(capture='all', flags='-rapP'):

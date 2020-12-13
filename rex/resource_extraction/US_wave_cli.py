@@ -21,6 +21,7 @@ from rex.resource_extraction.multi_year_resource_cli \
 from rex.resource_extraction.resource_extraction import MultiYearWaveX
 from rex.utilities.cli_dtypes import STRLIST, INTLIST
 from rex.utilities.loggers import init_mult
+from rex import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,14 @@ def main(ctx, domain, out_dir, years, buoy, eagle, verbose):
 
     logger.info('Extracting US wave data for {} from {}'.format(domain, path))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
+
+
+@main.command()
+def version():
+    """
+    print version
+    """
+    click.echo(__version__)
 
 
 @main.group()

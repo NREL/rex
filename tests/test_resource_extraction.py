@@ -8,8 +8,13 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 import pytest
 
-from rex.resource_extraction import (MultiFileWindX, MultiFileNSRDBX,
-                                     NSRDBX, WindX, WaveX)
+from rex.resource_extraction.resource_extraction import (MultiFileWindX,
+                                                         MultiFileNSRDBX,
+                                                         MultiTimeWindX,
+                                                         MultiTimeNSRDBX,
+                                                         MultiYearWindX,
+                                                         MultiYearNSRDBX,
+                                                         NSRDBX, WindX, WaveX)
 from rex.resource_extraction.resource_extraction import TREE_DIR
 from rex.utilities.exceptions import ResourceValueError
 from rex import TESTDATADIR
@@ -27,10 +32,28 @@ def NSRDBX_cls():
 @pytest.fixture
 def MultiFileNSRDBX_cls():
     """
-    Init NSRDB resource handler
+    Init MultiFileNSRDB resource handler
     """
     path = os.path.join(TESTDATADIR, 'nsrdb', 'nsrdb*2018.h5')
     return MultiFileNSRDBX(path)
+
+
+@pytest.fixture
+def MultiYearNSRDBX_cls():
+    """
+    Init MultiYearNSRDB resource handler
+    """
+    path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_*.h5')
+    return MultiYearNSRDBX(path)
+
+
+@pytest.fixture
+def MultiTimeNSRDBX_cls():
+    """
+    Init MulitTimeNSRDB resource handler
+    """
+    path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_*.h5')
+    return MultiTimeNSRDBX(path)
 
 
 @pytest.fixture
@@ -51,11 +74,29 @@ def MultiFileWindX_cls():
     return MultiFileWindX(path)
 
 
+@pytest.fixture
+def MultiYearWindX_cls():
+    """
+    Init MultiYearWindResource resource handler
+    """
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+    return MultiYearWindX(path)
+
+
+@pytest.fixture
+def MultiTimeWindX_cls():
+    """
+    Init MultiTimeWindResource resource handler
+    """
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+    return MultiTimeWindX(path)
+
+
 def check_props(res_cls):
     """
     Test extraction class properties
     """
-    meta = res_cls['meta']
+    meta = res_cls.meta
 
     assert np.all(np.in1d(res_cls.countries, meta['country'].unique()))
     assert np.all(np.in1d(res_cls.states, meta['state'].unique()))
@@ -66,8 +107,8 @@ def extract_site(res_cls, ds_name):
     """
     Run tests extracting a single site
     """
-    time_index = res_cls['time_index']
-    meta = res_cls['meta']
+    time_index = res_cls.time_index
+    meta = res_cls.meta
     site = np.random.choice(len(meta), 1)[0]
     lat_lon = meta.loc[site, ['latitude', 'longitude']].values
     truth_ts = res_cls[ds_name, :, site]
@@ -88,8 +129,8 @@ def extract_region(res_cls, ds_name, region, region_col='county'):
     """
     Run tests extracting all gids in a region
     """
-    time_index = res_cls['time_index']
-    meta = res_cls['meta']
+    time_index = res_cls.time_index
+    meta = res_cls.meta
     sites = meta.index[(meta[region_col] == region)].values
     truth_ts = res_cls[ds_name, :, sites]
     truth_df = pd.DataFrame(truth_ts, columns=sites,
@@ -106,7 +147,7 @@ def extract_box(res_cls, ds_name):
     """
     Run tests extracting all gids in a bounding box
     """
-    time_index = res_cls['time_index']
+    time_index = res_cls.time_index
     lat_lon = res_cls.lat_lon
 
     lat_lon_1 = (lat_lon[:, 0].min(), lat_lon[:, 1].min())
@@ -127,9 +168,9 @@ def extract_map(res_cls, ds_name, timestep, region=None, region_col='county'):
     """
     Run tests extracting a single timestep
     """
-    time_index = res_cls['time_index']
-    meta = res_cls['meta']
-    lat_lon = meta[['latitude', 'longitude']].values
+    time_index = res_cls.time_index
+    meta = res_cls.meta
+    lat_lon = res_cls.lat_lon
     idx = np.where(time_index == pd.to_datetime(timestep, utc=True))[0][0]
     gids = slice(None)
     if region is not None:
@@ -263,6 +304,124 @@ class TestMultiFileNSRDBX:
         MultiFileNSRDBX_cls.close()
 
 
+class TestMultiYearNSRDBX:
+    """
+    MultiYearNSRDBX Resource Extractor
+    """
+    @staticmethod
+    def test_props(MultiYearNSRDBX_cls):
+        """
+        test MultiYearNSRDBX properties
+        """
+        check_props(MultiYearNSRDBX_cls)
+        MultiYearNSRDBX_cls.close()
+
+    @staticmethod
+    def test_site(MultiYearNSRDBX_cls, ds_name='dni'):
+        """
+        test site data extraction
+        """
+        extract_site(MultiYearNSRDBX_cls, ds_name)
+        MultiYearNSRDBX_cls.close()
+
+    @staticmethod
+    def test_region(MultiYearNSRDBX_cls, ds_name='ghi', region='Washington',
+                    region_col='county'):
+        """
+        test region data extraction
+        """
+        extract_region(MultiYearNSRDBX_cls, ds_name, region,
+                       region_col=region_col)
+        MultiYearNSRDBX_cls.close()
+
+    @staticmethod
+    def test_full_map(MultiYearNSRDBX_cls, ds_name='ghi',
+                      timestep='2012-07-04 12:00:00'):
+        """
+        test map data extraction for all gids
+        """
+        extract_map(MultiYearNSRDBX_cls, ds_name, timestep)
+        MultiYearNSRDBX_cls.close()
+
+    @staticmethod
+    def test_region_map(MultiYearNSRDBX_cls, ds_name='dhi',
+                        timestep='2012-12-25 12:00:00',
+                        region='Washington', region_col='county'):
+        """
+        test map data extraction for all gids
+        """
+        extract_map(MultiYearNSRDBX_cls, ds_name, timestep, region=region,
+                    region_col=region_col)
+        MultiYearNSRDBX_cls.close()
+
+    @staticmethod
+    def test_box(MultiYearNSRDBX_cls, ds_name='dhi'):
+        """
+        test bounding box extraction
+        """
+        extract_box(MultiYearNSRDBX_cls, ds_name)
+        MultiYearNSRDBX_cls.close()
+
+
+class TestMultiTimeNSRDBX:
+    """
+    MultiTimeNSRDBX Resource Extractor
+    """
+    @staticmethod
+    def test_props(MultiTimeNSRDBX_cls):
+        """
+        test MultiTimeNSRDBX properties
+        """
+        check_props(MultiTimeNSRDBX_cls)
+        MultiTimeNSRDBX_cls.close()
+
+    @staticmethod
+    def test_site(MultiTimeNSRDBX_cls, ds_name='dni'):
+        """
+        test site data extraction
+        """
+        extract_site(MultiTimeNSRDBX_cls, ds_name)
+        MultiTimeNSRDBX_cls.close()
+
+    @staticmethod
+    def test_region(MultiTimeNSRDBX_cls, ds_name='ghi', region='Washington',
+                    region_col='county'):
+        """
+        test region data extraction
+        """
+        extract_region(MultiTimeNSRDBX_cls, ds_name,
+                       region, region_col=region_col)
+        MultiTimeNSRDBX_cls.close()
+
+    @staticmethod
+    def test_full_map(MultiTimeNSRDBX_cls, ds_name='ghi',
+                      timestep='2012-07-04 12:00:00'):
+        """
+        test map data extraction for all gids
+        """
+        extract_map(MultiTimeNSRDBX_cls, ds_name, timestep)
+        MultiTimeNSRDBX_cls.close()
+
+    @staticmethod
+    def test_region_map(MultiTimeNSRDBX_cls, ds_name='dhi',
+                        timestep='2012-12-25 12:00:00',
+                        region='Washington', region_col='county'):
+        """
+        test map data extraction for all gids
+        """
+        extract_map(MultiTimeNSRDBX_cls, ds_name, timestep, region=region,
+                    region_col=region_col)
+        MultiTimeNSRDBX_cls.close()
+
+    @staticmethod
+    def test_box(MultiTimeNSRDBX_cls, ds_name='dhi'):
+        """
+        test bounding box extraction
+        """
+        extract_box(MultiTimeNSRDBX_cls, ds_name)
+        MultiTimeNSRDBX_cls.close()
+
+
 class TestWindX:
     """
     WindX Resource Extractor
@@ -378,6 +537,124 @@ class TestMultiFileWindX:
         """
         extract_box(MultiFileWindX_cls, ds_name)
         MultiFileWindX_cls.close()
+
+
+class TestMultiYearWindX:
+    """
+    MultiYearWindX Resource Extractor
+    """
+    @staticmethod
+    def test_props(MultiYearWindX_cls):
+        """
+        test MultiYearWindX properties
+        """
+        check_props(MultiYearWindX_cls)
+        MultiYearWindX_cls.close()
+
+    @staticmethod
+    def test_site(MultiYearWindX_cls, ds_name='windspeed_100m'):
+        """
+        test site data extraction
+        """
+        extract_site(MultiYearWindX_cls, ds_name)
+        MultiYearWindX_cls.close()
+
+    @staticmethod
+    def test_region(MultiYearWindX_cls, ds_name='windspeed_50m',
+                    region='Providence', region_col='county'):
+        """
+        test region data extraction
+        """
+        extract_region(MultiYearWindX_cls, ds_name, region,
+                       region_col=region_col)
+        MultiYearWindX_cls.close()
+
+    @staticmethod
+    def test_full_map(MultiYearWindX_cls, ds_name='windspeed_100m',
+                      timestep='2012-07-04 12:00:00'):
+        """
+        test map data extraction for all gids
+        """
+        extract_map(MultiYearWindX_cls, ds_name, timestep)
+        MultiYearWindX_cls.close()
+
+    @staticmethod
+    def test_region_map(MultiYearWindX_cls, ds_name='windspeed_50m',
+                        timestep='2012-12-25 12:00:00',
+                        region='Providence', region_col='county'):
+        """
+        test map data extraction for all gids
+        """
+        extract_map(MultiYearWindX_cls, ds_name, timestep, region=region,
+                    region_col=region_col)
+        MultiYearWindX_cls.close()
+
+    @staticmethod
+    def test_box(MultiYearWindX_cls, ds_name='windspeed_100m'):
+        """
+        test bounding box extraction
+        """
+        extract_box(MultiYearWindX_cls, ds_name)
+        MultiYearWindX_cls.close()
+
+
+class TestMultiTimeWindX:
+    """
+    MultiTimeWindX Resource Extractor
+    """
+    @staticmethod
+    def test_props(MultiTimeWindX_cls):
+        """
+        test MultiTimeWindX properties
+        """
+        check_props(MultiTimeWindX_cls)
+        MultiTimeWindX_cls.close()
+
+    @staticmethod
+    def test_site(MultiTimeWindX_cls, ds_name='windspeed_100m'):
+        """
+        test site data extraction
+        """
+        extract_site(MultiTimeWindX_cls, ds_name)
+        MultiTimeWindX_cls.close()
+
+    @staticmethod
+    def test_region(MultiTimeWindX_cls, ds_name='windspeed_50m',
+                    region='Providence', region_col='county'):
+        """
+        test region data extraction
+        """
+        extract_region(MultiTimeWindX_cls, ds_name, region,
+                       region_col=region_col)
+        MultiTimeWindX_cls.close()
+
+    @staticmethod
+    def test_full_map(MultiTimeWindX_cls, ds_name='windspeed_100m',
+                      timestep='2012-07-04 12:00:00'):
+        """
+        test map data extraction for all gids
+        """
+        extract_map(MultiTimeWindX_cls, ds_name, timestep)
+        MultiTimeWindX_cls.close()
+
+    @staticmethod
+    def test_region_map(MultiTimeWindX_cls, ds_name='windspeed_50m',
+                        timestep='2012-12-25 12:00:00',
+                        region='Providence', region_col='county'):
+        """
+        test map data extraction for all gids
+        """
+        extract_map(MultiTimeWindX_cls, ds_name, timestep, region=region,
+                    region_col=region_col)
+        MultiTimeWindX_cls.close()
+
+    @staticmethod
+    def test_box(MultiTimeWindX_cls, ds_name='windspeed_100m'):
+        """
+        test bounding box extraction
+        """
+        extract_box(MultiTimeWindX_cls, ds_name)
+        MultiTimeWindX_cls.close()
 
 
 @pytest.mark.parametrize('gid', [1, [1, 2, 4, 8]])

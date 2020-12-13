@@ -16,6 +16,7 @@ from rex.resource_extraction.resource_cli import sam_datasets as sam_cmd
 from rex.resource_extraction.resource_cli import site as site_cmd
 from rex.utilities.loggers import init_mult
 from rex.utilities.utilities import check_res_file
+from rex import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,14 @@ def main(ctx, wave_h5, out_dir, verbose):
 
     logger.info('Extracting wave data from {}'.format(wave_h5))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
+
+
+@main.command()
+def version():
+    """
+    print version
+    """
+    click.echo(__version__)
 
 
 @main.command()

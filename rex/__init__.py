@@ -7,6 +7,9 @@ import os
 
 from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
                                      MultiFileWTK)
+from rex.multi_time_resource import (MultiTimeResource, MultiTimeNSRDB,
+                                     MultiTimeWindResource,
+                                     MultiTimeWaveResource)
 from rex.multi_year_resource import (MultiYearResource, MultiYearNSRDB,
                                      MultiYearWindResource,
                                      MultiYearWaveResource)

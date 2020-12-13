@@ -21,6 +21,7 @@ Submodules
 .. toctree::
 
    rex.multi_file_resource
+   rex.multi_time_resource
    rex.multi_year_resource
    rex.renewable_resource
    rex.resource

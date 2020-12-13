@@ -12,6 +12,9 @@ from tempfile import TemporaryDirectory
 
 from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
                                      MultiFileWTK)
+from rex.multi_time_resource import (MultiTimeResource, MultiTimeNSRDB,
+                                     MultiTimeWindResource,
+                                     MultiTimeWaveResource)
 from rex.multi_year_resource import (MultiYearNSRDB, MultiYearResource,
                                      MultiYearWindResource,
                                      MultiYearWaveResource)
@@ -788,6 +791,40 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
         return means_map
 
 
+class MultiTimeResourceX(MultiTimeResource, ResourceX):
+    """
+    Resource extraction class for data stored temporaly accross multiple files
+    """
+
+    def __init__(self, resource_path, tree=None, unscale=True,
+                 str_decode=True, hsds=False, res_cls=Resource):
+        """
+        Parameters
+        ----------
+        resource_path : str
+            Path to resource .h5 files
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        res_cls : obj
+            Resource handler to us to open individual .h5 files
+        """
+        super().__init__(resource_path, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds, res_cls=res_cls)
+        self._tree = tree
+
+
 class SolarX(SolarResource, ResourceX):
     """
     Solar Resource extraction class
@@ -849,7 +886,7 @@ class NSRDBX(NSRDB, ResourceX):
         self._tree = tree
 
 
-class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
+class MultiFileNSRDBX(MultiFileNSRDB, NSRDBX):
     """
     Multi-File NSRDB extraction class
     """
@@ -880,7 +917,7 @@ class MultiFileNSRDBX(MultiFileNSRDB, ResourceX):
         self._tree = tree
 
 
-class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
+class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX, NSRDBX):
     """
     Multi Year NSRDB extraction class
     """
@@ -910,6 +947,38 @@ class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX):
         """
         super().__init__(nsrdb_path, years=years, unscale=unscale,
                          str_decode=str_decode, hsds=hsds)
+        self._tree = tree
+
+
+class MultiTimeNSRDBX(MultiTimeNSRDB, NSRDBX):
+    """
+    NSRDB extraction class for data stored temporaly accross multiple files
+    """
+
+    def __init__(self, nsrdb_path, tree=None, unscale=True,
+                 str_decode=True, hsds=False):
+        """
+        Parameters
+        ----------
+        nsrdb_path : str
+            Path to NSRDB .h5 files
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        """
+        super().__init__(nsrdb_path, unscale=unscale, str_decode=str_decode,
+                         hsds=hsds)
         self._tree = tree
 
 
@@ -1046,7 +1115,7 @@ class MultiFileWindX(MultiFileWTK, WindX):
         self._tree = tree
 
 
-class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
+class MultiYearWindX(MultiYearWindResource, MultiYearResourceX, WindX):
     """
     Multi Year Wind Resource extraction class
     """
@@ -1076,6 +1145,39 @@ class MultiYearWindX(MultiYearWindResource, MultiYearResourceX):
         """
         super().__init__(wtk_path, years=years, unscale=unscale,
                          str_decode=str_decode, hsds=hsds)
+        self._tree = tree
+
+
+class MultiTimeWindX(MultiTimeWindResource, WindX):
+    """
+    Wind resource extraction class for data stored temporaly accross multiple
+    files
+    """
+
+    def __init__(self, wtk_path, tree=None, unscale=True, str_decode=True,
+                 hsds=False):
+        """
+        Parameters
+        ----------
+        wtk_path : str
+            Path to annual WTK .h5 files
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        """
+        super().__init__(wtk_path, unscale=unscale, str_decode=str_decode,
+                         hsds=hsds)
         self._tree = tree
 
 
@@ -1173,7 +1275,7 @@ class WaveX(WaveResource, ResourceX):
         return df
 
 
-class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX):
+class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX, WaveX):
     """
     Multi Year Wave extraction class
     """
@@ -1204,4 +1306,37 @@ class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX):
         """
         super().__init__(wave_path, years=years, unscale=unscale,
                          str_decode=str_decode, hsds=hsds)
+        self._tree = tree
+
+
+class MultiTimeWaveX(MultiTimeWaveResource, WaveX):
+    """
+    Wave resource extraction class for data stored temporaly accross multiple
+    files
+    """
+
+    def __init__(self, wave_path, tree=None, unscale=True, str_decode=True,
+                 hsds=False):
+        """
+        Parameters
+        ----------
+        wave_path : str
+            Path to US_Wave .h5 files
+            Available formats:
+                /h5_dir/
+                /h5_dir/prefix*suffix
+        tree : str | cKDTree
+            cKDTree or path to .pkl file containing pre-computed tree
+            of lat, lon coordinates
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        hsds : bool
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS
+        """
+        super().__init__(wave_path, unscale=unscale, str_decode=str_decode,
+                         hsds=hsds)
         self._tree = tree

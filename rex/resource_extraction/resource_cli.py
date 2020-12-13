@@ -11,6 +11,7 @@ from rex.resource_extraction.resource_extraction import (ResourceX,
                                                          MultiFileResourceX)
 from rex.utilities.loggers import init_mult
 from rex.utilities.utilities import check_res_file
+from rex import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +92,14 @@ def main(ctx, resource_h5, out_dir, verbose):
 
     logger.info('Extracting Resource data from {}'.format(resource_h5))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
+
+
+@main.command()
+def version():
+    """
+    print version
+    """
+    click.echo(__version__)
 
 
 @main.command()

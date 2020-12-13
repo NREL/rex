@@ -7,15 +7,16 @@ import os
 from warnings import warn
 
 from rex.multi_file_resource import MultiH5Path
+from rex.multi_time_resource import MultiTimeH5, MultiTimeResource
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
 from rex.resource import Resource
 from rex.utilities.exceptions import ResourceWarning
-from rex.utilities.parse_keys import parse_keys, parse_slice
+from rex.utilities.parse_keys import parse_slice
 from rex.utilities.utilities import parse_year
 
 
-class MultiYearH5:
+class MultiYearH5(MultiTimeH5):
     """
     Class to handle multiple years of h5 Resources
     """
@@ -40,11 +41,11 @@ class MultiYearH5:
             behind HSDS
         """
         self.h5_dir = h5_dir
-        self._year_map = self._map_file_years(h5_dir, prefix=prefix,
-                                              suffix=suffix, hsds=hsds,
-                                              years=years)
+        self._file_map = self._map_files(h5_dir, prefix=prefix,
+                                         suffix=suffix, hsds=hsds,
+                                         years=years)
         res_cls_kwargs.update({'hsds': hsds})
-        self._h5_map = self._map_file_instances(list(self._year_map.values()),
+        self._h5_map = self._map_file_instances(list(self._file_map.values()),
                                                 res_cls=res_cls,
                                                 **res_cls_kwargs)
         self._datasets = None
@@ -65,7 +66,7 @@ class MultiYearH5:
             year = int(year)
 
         if year in self.years:
-            path = self._year_map[year]
+            path = self._file_map[year]
             h5 = self._h5_map[path]
         else:
             raise ValueError('{} is invalid, must be one of: {}'
@@ -90,19 +91,6 @@ class MultiYearH5:
         return year in self.years
 
     @property
-    def attrs(self):
-        """
-        Global .h5 file attributes sourced from first .h5 file
-
-        Returns
-        -------
-        attrs : dict
-            .h5 file attributes sourced from first .h5 file
-        """
-        attrs = dict(self.h5.attrs)
-        return attrs
-
-    @property
     def years(self):
         """
         Available years
@@ -112,59 +100,7 @@ class MultiYearH5:
         list
             List of dataset present in .h5 files
         """
-        return sorted(self._year_map)
-
-    @property
-    def h5_files(self):
-        """
-        .h5 files data is being sourced from
-
-        Returns
-        -------
-        list
-            List of .h5 files data is being sourced form
-        """
-        return sorted(self._h5_map)
-
-    @property
-    def h5(self):
-        """
-        open h5 file handler for a single .h5 file
-
-        Returns
-        -------
-        h5py.File
-        """
-        return self._h5_map[self.h5_files[0]]
-
-    @property
-    def datasets(self):
-        """
-        Available datasets
-
-        Returns
-        -------
-        list
-            List of available datasets
-        """
-        if self._datasets is None:
-            self._datasets = self.h5.datasets
-
-        return self._datasets
-
-    @property
-    def shape(self):
-        """
-        Dataset shape (time, sites)
-
-        Returns
-        -------
-        tuple
-        """
-        if self._shape is None:
-            self._shape = (len(self.time_index), len(self.h5))
-
-        return self._shape
+        return sorted(self._file_map)
 
     @property
     def time_index(self):
@@ -177,52 +113,13 @@ class MultiYearH5:
         """
         if self._time_index is None:
             for year in self.years:
-                path = self._year_map[year]
-                h5 = self._h5_map[path]
+                h5 = self[year]
                 if self._time_index is None:
                     self._time_index = h5.time_index
                 else:
                     self._time_index = self._time_index.append(h5.time_index)
 
         return self._time_index
-
-    @staticmethod
-    def _map_local_files(h5_dir, prefix='', suffix='.h5'):
-        """
-        Map local file paths to year for which it contains data
-
-        Parameters
-        ----------
-        h5_dir : str
-            Path to directory containing Resource .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
-
-        Returns
-        -------
-        year_map : dict
-            Dictionary mapping years to file paths
-        """
-        year_map = {}
-        for file in sorted(os.listdir(h5_dir)):
-            if file.startswith(prefix) and file.endswith(suffix):
-                try:
-                    year = parse_year(file)
-                    path = os.path.join(h5_dir, file)
-                    if year not in year_map:
-                        year_map[year] = path
-                    else:
-                        msg = ('WARNING: Skipping {} as {} has already been '
-                               'parsed'.format(path, year))
-                        warn(msg, ResourceWarning)
-                except RuntimeError:
-                    msg = ('WARNING: Could not find a valid year in {}'
-                           .format(file))
-                    warn(msg, ResourceWarning)
-
-        return year_map
 
     @staticmethod
     def _map_hsds_files(hsds_dir, prefix='', suffix='.h5'):
@@ -240,12 +137,12 @@ class MultiYearH5:
 
         Returns
         -------
-        year_map : dict
+        file_map : dict
             Dictionary mapping years to file paths
         """
         import h5pyd
 
-        year_map = {}
+        file_map = {}
         if not hsds_dir.endswith('/'):
             hsds_dir += '/'
 
@@ -255,8 +152,8 @@ class MultiYearH5:
                     try:
                         year = parse_year(file)
                         path = os.path.join(hsds_dir, file)
-                        if year not in year_map:
-                            year_map[year] = path
+                        if year not in file_map:
+                            file_map[year] = path
                         else:
                             msg = ('WARNING: Skipping {} as {} has already '
                                    ' been parsed'.format(path, year))
@@ -266,19 +163,57 @@ class MultiYearH5:
                                .format(file))
                         warn(msg, ResourceWarning)
 
-        return year_map
+        return file_map
 
     @staticmethod
-    def _get_years(year_map, years):
+    def _map_local_files(h5_dir, prefix='', suffix='.h5'):
         """
-        [summary]
+        Map local file paths to year for which it contains data
 
         Parameters
         ----------
-        year_map : dict
+        h5_dir : str
+            Path to directory containing Resource .h5 files
+        prefix : str
+            Prefix for resource .h5 files
+        suffix : str
+            Suffix for resource .h5 files
+
+        Returns
+        -------
+        file_map : dict
+            Dictionary mapping years to file paths
+        """
+        file_map = {}
+        for file in sorted(os.listdir(h5_dir)):
+            if file.startswith(prefix) and file.endswith(suffix):
+                try:
+                    year = parse_year(file)
+                    path = os.path.join(h5_dir, file)
+                    if year not in file_map:
+                        file_map[year] = path
+                    else:
+                        msg = ('WARNING: Skipping {} as {} has already been '
+                               'parsed'.format(path, year))
+                        warn(msg, ResourceWarning)
+                except RuntimeError:
+                    msg = ('WARNING: Could not find a valid year in {}'
+                           .format(file))
+                    warn(msg, ResourceWarning)
+
+        return file_map
+
+    @staticmethod
+    def _get_years(file_map, years):
+        """
+        Reduce file_map to given years
+
+        Parameters
+        ----------
+        file_map : dict
             Dictionary mapping years to file paths
         years : list
-            List of years of interest. Should be a subset of years in year_map
+            List of years of interest. Should be a subset of years in file_map
 
         Returns
         -------
@@ -290,8 +225,8 @@ class MultiYearH5:
             if not isinstance(year, int):
                 year = int(year)
 
-            if year in year_map:
-                new_map[year] = year_map[year]
+            if year in file_map:
+                new_map[year] = file_map[year]
             else:
                 msg = ('A file for {} is unavailable!'.format(year))
                 warn(msg, ResourceWarning)
@@ -304,8 +239,8 @@ class MultiYearH5:
         return new_map
 
     @classmethod
-    def _map_file_years(cls, h5_dir, prefix='', suffix='.h5', hsds=False,
-                        years=None):
+    def _map_files(cls, h5_dir, prefix='', suffix='.h5', hsds=False,
+                   years=None):
         """
         Map file paths to year for which it contains data
 
@@ -325,40 +260,46 @@ class MultiYearH5:
 
         Returns
         -------
-        year_map : dict
+        file_map : dict
             Dictionary mapping years to file paths
         """
         if hsds:
-            year_map = cls._map_hsds_files(h5_dir, prefix=prefix,
+            file_map = cls._map_hsds_files(h5_dir, prefix=prefix,
                                            suffix=suffix)
         else:
-            year_map = cls._map_local_files(h5_dir, prefix=prefix,
+            file_map = cls._map_local_files(h5_dir, prefix=prefix,
                                             suffix=suffix)
 
         if years is not None:
-            year_map = cls._get_years(year_map, years)
+            file_map = cls._get_years(file_map, years)
 
-        return year_map
+        return file_map
 
     @staticmethod
-    def _map_file_instances(h5_files, res_cls=Resource, **res_cls_kwargs):
+    def _check_for_years(time_slice):
         """
-        Open all .h5 files and map the open h5py instances to the
-        associated file paths
+        Check to see if temporal slice is a year (str) or list of years (strs)
+        to extract data for
+
         Parameters
         ----------
-        h5_files : list
-            List of .h5 files to open
+        time_slice : list | slice | int | str
+            Temporal slice to extract
+
         Returns
         -------
-        h5_map : dict
-            Dictionary mapping file paths to open resource instances
+        check : bool
+            True if temporal slice is a year (str) or list of years (strs),
+            else False
         """
-        h5_map = {}
-        for f_path in h5_files:
-            h5_map[f_path] = res_cls(f_path, **res_cls_kwargs)
+        check = False
+        if isinstance(time_slice, (list, tuple)):
+            time_slice = time_slice[0]
 
-        return h5_map
+        if isinstance(time_slice, str):
+            check = True
+
+        return check
 
     def year_index(self, year):
         """
@@ -376,6 +317,59 @@ class MultiYearH5:
         """
         return self.time_index[self.time_index.year == year]
 
+    def _get_ds(self, ds_name, ds_slice):
+        """
+        Extract data from given dataset
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : int | list | slice
+            tuple describing slice of dataset array to extract
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        ds_slice = parse_slice(ds_slice)
+        out = []
+        time_slice = ds_slice[0]
+        if self._check_for_years(time_slice):
+            years = time_slice
+            year_slice = (slice(None), ) + ds_slice[1:]
+            if isinstance(years, str):
+                years = [years]
+
+            for year in years:
+                year = int(year)
+                out.append(self[year]._get_ds(ds_name, year_slice))
+
+            out = np.concatenate(out, axis=0)
+        elif isinstance(time_slice, (int, np.integer)):
+            time_step = self.time_index[time_slice]
+            year = time_step.year
+            year_index = self.year_index(year)
+            year_slice = np.where(time_step == year_index)[0][0]
+            year_slice = (year_slice, ) + ds_slice[1:]
+            out = self[year]._get_ds(ds_name, year_slice)
+        else:
+            time_index = self.time_index[time_slice]
+            year_map = time_index.year
+            for year in year_map.unique():
+                year_index = self.year_index(year)
+                year_slice = year_index.isin(time_index[year_map == year])
+                year_slice = \
+                    self._check_time_slice(np.where(year_slice)[0])
+                year_slice = (year_slice, ) + ds_slice[1:]
+                out.append(self[year]._get_ds(ds_name, year_slice))
+
+            out = np.concatenate(out, axis=0)
+
+        return out
+
     def close(self):
         """
         Close all h5py.File instances
@@ -384,7 +378,7 @@ class MultiYearH5:
             f.close()
 
 
-class MultiYearResource:
+class MultiYearResource(MultiTimeResource):
     """
     Class to handle multiple years of resource data stored accross multiple
     .h5 files
@@ -511,442 +505,6 @@ class MultiYearResource:
         self.h5_files = self._h5.h5_files
         self.h5_file = self.h5_files[0]
         self._i = 0
-
-    def __repr__(self):
-        msg = "{} for {}".format(self.__class__.__name__, self.h5_dir)
-        return msg
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.close()
-
-        if type is not None:
-            raise
-
-    def __len__(self):
-        return self.h5.shape[0]
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._i >= len(self.datasets):
-            self._i = 0
-            raise StopIteration
-
-        dset = self.datasets[self._i]
-        self._i += 1
-
-        return dset
-
-    def __getitem__(self, keys):
-        ds, ds_slice = parse_keys(keys)
-
-        if ds.endswith('time_index'):
-            out = self._get_time_index(ds_slice)
-        elif ds.endswith('meta'):
-            out = self._get_meta(ds, ds_slice)
-        elif ds.endswith('coordinates'):
-            out = self._get_coords(ds, ds_slice)
-        else:
-            out = self._get_ds(ds, ds_slice)
-
-        return out
-
-    def __contains__(self, dset):
-        return dset in self.datasets
-
-    @property
-    def h5(self):
-        """
-        Open h5py File instance. If _group is not None return open Group
-
-        Returns
-        -------
-        h5 : h5py.File | h5py.Group
-            Open h5py File or Group instance
-        """
-        h5 = self._h5
-
-        return h5
-
-    @property
-    def datasets(self):
-        """
-        Datasets available
-
-        Returns
-        -------
-        list
-            List of datasets
-        """
-        return self._h5.datasets
-
-    @property
-    def dsets(self):
-        """
-        Datasets available
-
-        Returns
-        -------
-        list
-            List of datasets
-        """
-        return self.datasets
-
-    @property
-    def shape(self):
-        """
-        Resource shape (timesteps, sites)
-        shape = (len(time_index), len(meta))
-
-        Returns
-        -------
-        shape : tuple
-            Shape of resource variable arrays (timesteps, sites)
-        """
-        return self.h5.shape
-
-    @property
-    def meta(self):
-        """
-        Meta data DataFrame
-
-        Returns
-        -------
-        meta : pandas.DataFrame
-            Resource Meta Data
-        """
-
-        return self.h5.h5.meta
-
-    @property
-    def time_index(self):
-        """
-        DatetimeIndex
-
-        Returns
-        -------
-        time_index : pandas.DatetimeIndex
-            Resource datetime index
-        """
-        return self.h5.time_index
-
-    @property
-    def lat_lon(self):
-        """
-        Extract (latitude, longitude) pairs
-
-        Returns
-        -------
-        lat_lon : ndarray
-        """
-        return self.h5.h5.lat_lon
-
-    @property
-    def coordinates(self):
-        """
-        Coordinates: (lat, lon) pairs
-
-        Returns
-        -------
-        lat_lon : ndarray
-            Array of (lat, lon) pairs for each site in meta
-        """
-        return self.lat_lon
-
-    @property
-    def global_attrs(self):
-        """
-        Global (file) attributes
-
-        Returns
-        -------
-        global_attrs : dict
-        """
-        return dict(self.h5.attrs)
-
-    def get_attrs(self, dset=None):
-        """
-        Get h5 attributes either from file or dataset
-
-        Parameters
-        ----------
-        dset : str
-            Dataset to get attributes for, if None get file (global) attributes
-
-        Returns
-        -------
-        attrs : dict
-            Dataset or file attributes
-        """
-        if dset is None:
-            attrs = dict(self.h5.attrs)
-        else:
-            attrs = dict(self.h5.h5[dset].attrs)
-
-        return attrs
-
-    def get_dset_properties(self, dset):
-        """
-        Get dataset properties (shape, dtype, chunks)
-
-        Parameters
-        ----------
-        dset : str
-            Dataset to get scale factor for
-
-        Returns
-        -------
-        shape : tuple
-            Dataset array shape
-        dtype : str
-            Dataset array dtype
-        chunks : tuple
-            Dataset chunk size
-        """
-        ds = self.h5.h5[dset]
-        shape, dtype, chunks = ds.shape, ds.dtype, ds.chunks
-        if isinstance(chunks, dict):
-            chunks = tuple(chunks.get('dims', None))
-
-        return shape, dtype, chunks
-
-    def get_scale(self, dset):
-        """
-        Get dataset scale factor
-
-        Parameters
-        ----------
-        dset : str
-            Dataset to get scale factor for
-
-        Returns
-        -------
-        float
-            Dataset scale factor, used to unscale int values to floats
-        """
-        return self.h5.h5[dset].attrs.get('scale_factor', 1)
-
-    def get_units(self, dset):
-        """
-        Get dataset units
-
-        Parameters
-        ----------
-        dset : str
-            Dataset to get units for
-
-        Returns
-        -------
-        str
-            Dataset units, None if not defined
-        """
-        return self.h5.h5[dset].attrs.get('units', None)
-
-    def get_meta_arr(self, rec_name, rows=slice(None)):
-        """Get a meta array by name (faster than DataFrame extraction).
-
-        Parameters
-        ----------
-        rec_name : str
-            Named record from the meta data to retrieve.
-        rows : slice
-            Rows of the record to extract.
-
-        Returns
-        -------
-        meta_arr : np.ndarray
-            Extracted array from the meta data record name.
-        """
-        meta_arr = self.h5.h5.get_meta_arr(rec_name, rows=rows)
-
-        return meta_arr
-
-    def _get_time_index(self, ds_slice):
-        """
-        Extract and convert time_index to pandas Datetime Index
-
-        Parameters
-        ----------
-        ds_name : str
-            Dataset to extract time_index from
-        ds_slice : tuple
-            Tuple of (int, slice, list, ndarray) of what to extract from
-            time_index, each arg is for a sequential axis
-
-        Returns
-        -------
-        time_index : pandas.DatetimeIndex
-            Vector of datetime stamps
-        """
-        ds_slice = parse_slice(ds_slice)
-        time_index = self.h5.time_index[ds_slice[0]]
-
-        return time_index
-
-    def _get_meta(self, ds_name, ds_slice):
-        """
-        Extract and convert meta to a pandas DataFrame
-
-        Parameters
-        ----------
-        ds_name : str
-            Dataset to extract meta from
-        ds_slice : tuple
-            Tuple of (int, slice, list, ndarray, str) of what sites and columns
-            to extract from meta
-
-        Returns
-        -------
-        meta : pandas.Dataframe
-            Dataframe of location meta data
-        """
-        meta = self.h5.h5._get_meta(ds_name, ds_slice)
-
-        return meta
-
-    def _get_coords(self, ds_name, ds_slice):
-        """
-        Extract coordinates (lat, lon) pairs
-
-        Parameters
-        ----------
-        ds_name : str
-            Dataset to extract coordinates from
-        ds_slice : tuple
-            Tuple of (int, slice, list, ndarray) of what to extract from
-            coordinates, each arg is for a sequential axis
-
-        Returns
-        -------
-        coords : ndarray
-            Array of (lat, lon) pairs for each site in meta
-        """
-        coords = self.h5.h5._get_coords(ds_name, ds_slice)
-
-        return coords
-
-    def _get_year_ds(self, ds_name, year, year_slice):
-        """
-        Extract dataset data for given year
-
-        Parameters
-        ----------
-        ds_name : str
-            Variable dataset to be extracted
-        year : int
-            Year to extract data for
-        year_slice : int | list | slice
-            tuple describing slice of dataset array to extract
-
-        Returns
-        -------
-        out : ndarray
-            ndarray of variable timeseries data
-            If unscale, returned in native units else in scaled units
-        """
-        out = self.h5[year]._get_ds(ds_name, year_slice)
-
-        return out
-
-    @staticmethod
-    def _check_year_slice(year_slice):
-        """
-        Check to see if year positions can be represented as a slice
-
-        Parameters
-        ----------
-        year_slice : ndarray | list
-            List of temporal positions
-
-        Returns
-        -------
-        year_slice : ndarray | list | slice
-            Slice covering range of positions to extract if possible
-        """
-        s = year_slice[0]
-        e = year_slice[-1] + 1
-        if (e - s) == len(year_slice):
-            year_slice = slice(s, e, None)
-
-        return year_slice
-
-    @staticmethod
-    def _check_for_years(time_slice):
-        """
-        Check to see if temporal slice is a year (str) or list of years (strs)
-        to extract data for
-
-        Parameters
-        ----------
-        time_slice : list | slice | int | str
-            Temporal slice to extract
-
-        Returns
-        -------
-        check : bool
-            True if temporal slice is a year (str) or list of years (strs),
-            else False
-        """
-        check = False
-        if isinstance(time_slice, (list, tuple)):
-            time_slice = time_slice[0]
-
-        if isinstance(time_slice, str):
-            check = True
-
-        return check
-
-    def _get_ds(self, ds_name, ds_slice):
-        """
-        Extract data from given dataset
-
-        Parameters
-        ----------
-        ds_name : str
-            Variable dataset to be extracted
-        ds_slice : int | list | slice
-            tuple describing slice of dataset array to extract
-
-        Returns
-        -------
-        out : ndarray
-            ndarray of variable timeseries data
-            If unscale, returned in native units else in scaled units
-        """
-        ds_slice = parse_slice(ds_slice)
-        out = []
-        if self._check_for_years(ds_slice[0]):
-            years = ds_slice[0]
-            year_slice = (slice(None), ) + ds_slice[1:]
-            if isinstance(years, str):
-                years = [years]
-
-            for year in years:
-                year = int(year)
-                out.append(self._get_year_ds(ds_name, year, year_slice))
-
-        else:
-            time_index = self.h5.time_index[ds_slice[0]]
-            year_map = time_index.year
-            for year in year_map.unique():
-                year_index = self.h5.year_index(year)
-                year_slice = \
-                    np.where(year_index.isin(time_index[year_map == year]))[0]
-                year_slice = \
-                    (self._check_year_slice(year_slice), ) + ds_slice[1:]
-                out.append(self._get_year_ds(ds_name, year, year_slice))
-
-        return np.concatenate(out, axis=0)
-
-    def close(self):
-        """
-        Close h5 instance
-        """
-        self._h5.close()
 
 
 class MultiYearSolarResource:
