@@ -23,8 +23,8 @@ class TemporalStats:
     """
     STATS = ['mean', 'median', 'std', 'stdev']
 
-    def __init__(self, res_h5, statistics=('mean'), max_workers=None,
-                 res_cls=Resource, hsds=False):
+    def __init__(self, res_h5, statistics=('mean'), res_cls=Resource,
+                 hsds=False):
         """
         Parameters
         ----------
@@ -33,9 +33,6 @@ class TemporalStats:
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
-        max_workers : None | int, optional
-            Number of workers to use, if 1 run in serial, if None use all
-            available cores, by default None
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
         hsds : bool, optional
@@ -46,8 +43,6 @@ class TemporalStats:
         self._stats = None
         self.statistics = statistics
 
-        self._max_workers = None
-        self.max_workers = max_workers
         self._res_cls = res_cls
         self._hsds = hsds
 
@@ -113,32 +108,6 @@ class TemporalStats:
             raise ValueError(msg)
 
         self._stats = stats
-
-    @property
-    def max_workers(self):
-        """
-        Number of workers to use, if 1 run in serial
-
-        Returns
-        -------
-        int
-        """
-        return self._max_workers
-
-    @max_workers.setter
-    def max_workers(self, max_workers):
-        """
-        Number of workers to use, if 1 run in serial, if None use all
-        available cores
-
-        Parameters
-        ----------
-        max_workers : None | int
-        """
-        if max_workers is None:
-            max_workers = os.cpu_count()
-
-        self._max_workers = max_workers
 
     @property
     def res_cls(self):
@@ -386,7 +355,7 @@ class TemporalStats:
 
         return res_stats
 
-    def _get_slices(self, dataset, chunks_per_slice=5):
+    def _get_slices(self, dataset, sites, chunks_per_slice=5):
         """
         Get slices to extract
 
@@ -394,6 +363,8 @@ class TemporalStats:
         ----------
         dataset : str
             Dataset to extract data from
+        sites : list | slice
+            Sites to extract
         chunks_per_slice : int, optional
             Number of chunks to extract in each slice, by default 5
 
@@ -411,19 +382,30 @@ class TemporalStats:
             logger.error(msg)
             raise RuntimeError(msg)
 
-        sites = shape[1]
+        if isinstance(sites, slice):
+            stop = sites.stop
+            if stop is None:
+                stop = shape[1]
+
+            n_sites = len(range(*sites.indices(stop)))
+        elif isinstance(sites, (list, np.ndarray)):
+            n_sites = len(sites)
+        else:
+            n_sites = shape[1]
+
         if chunks is not None:
             slice_size = chunks[1] * chunks_per_slice
         else:
             slice_size = chunks_per_slice
 
         slices = [slice(s, e, None) for s, e
-                  in get_chunk_slices(sites, slice_size)]
+                  in get_chunk_slices(n_sites, slice_size)]
 
         return slices
 
-    def compute_statistics(self, dataset, diurnal=False, month=False,
-                           combinations=False, chunks_per_worker=5,
+    def compute_statistics(self, dataset, sites=slice(None),
+                           diurnal=False, month=False, combinations=False,
+                           max_workers=None, chunks_per_worker=5,
                            lat_lon_only=True):
         """
         Compute statistics
@@ -432,12 +414,17 @@ class TemporalStats:
         ----------
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
         diurnal : bool, optional
             Extract diurnal stats, by default False
         month : bool, optional
             Extract monthly stats, by default False
         combinations : bool, optional
             Extract all combinations of temporal stats, by default False
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -448,15 +435,18 @@ class TemporalStats:
         res_stats : pandas.DataFrame
             DataFrame of desired statistics at desired time intervals
         """
-        if self.max_workers > 1:
+        if max_workers is None:
+            max_workers = os.cpu_count()
+
+        if max_workers > 1:
             msg = ('Extracting {} for {} in parallel using {} workers'
-                   .format(self.statistics, dataset, self.max_workers))
+                   .format(self.statistics, dataset, max_workers))
             logger.info(msg)
 
-            slices = self._get_slices(dataset,
+            slices = self._get_slices(dataset, sites,
                                       chunks_per_slice=chunks_per_worker)
             loggers = [__name__, 'rex']
-            with SpawnProcessPool(max_workers=self.max_workers,
+            with SpawnProcessPool(max_workers=max_workers,
                                   loggers=loggers) as exe:
                 futures = []
                 for site_slice in slices:
@@ -510,7 +500,8 @@ class TemporalStats:
 
         return res_stats
 
-    def annual_stats(self, dataset, chunks_per_worker=5, lat_lon_only=True):
+    def annual_stats(self, dataset, sites=slice(None), max_workers=None,
+                     chunks_per_worker=5, lat_lon_only=True):
         """
         Compute annual stats
 
@@ -518,6 +509,11 @@ class TemporalStats:
         ----------
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -529,13 +525,15 @@ class TemporalStats:
             DataFrame of annual statistics
         """
         annual_stats = self.compute_statistics(
-            dataset,
+            dataset, sites=sites,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
 
         return annual_stats
 
-    def monthly_stats(self, dataset, chunks_per_worker=5, lat_lon_only=True):
+    def monthly_stats(self, dataset, sites=slice(None), max_workers=None,
+                      chunks_per_worker=5, lat_lon_only=True):
         """
         Compute monthly stats
 
@@ -543,6 +541,11 @@ class TemporalStats:
         ----------
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -554,13 +557,15 @@ class TemporalStats:
             DataFrame of monthly statistics
         """
         monthly_stats = self.compute_statistics(
-            dataset, month=True,
+            dataset, sites=sites, month=True,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
 
         return monthly_stats
 
-    def diurnal_stats(self, dataset, chunks_per_worker=5, lat_lon_only=True):
+    def diurnal_stats(self, dataset, sites=slice(None), max_workers=None,
+                      chunks_per_worker=5, lat_lon_only=True):
         """
         Compute diurnal stats
 
@@ -568,6 +573,11 @@ class TemporalStats:
         ----------
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -579,13 +589,15 @@ class TemporalStats:
             DataFrame of diurnal statistics
         """
         diurnal_stats = self.compute_statistics(
-            dataset, diurnal=True,
+            dataset, sites=sites, diurnal=True,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
 
         return diurnal_stats
 
-    def monthly_diurnal_stats(self, dataset, chunks_per_worker=5,
+    def monthly_diurnal_stats(self, dataset, sites=slice(None),
+                              max_workers=None, chunks_per_worker=5,
                               lat_lon_only=True):
         """
         Compute monthly-diurnal stats
@@ -594,6 +606,11 @@ class TemporalStats:
         ----------
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -605,13 +622,15 @@ class TemporalStats:
             DataFrame of monthly-diurnal statistics
         """
         diurnal_stats = self.compute_statistics(
-            dataset, month=True, diurnal=True,
+            dataset, sites=sites, month=True, diurnal=True,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
 
         return diurnal_stats
 
-    def all_stats(self, dataset, chunks_per_worker=5, lat_lon_only=True):
+    def all_stats(self, dataset, sites=slice(None), max_workers=None,
+                  chunks_per_worker=5, lat_lon_only=True):
         """
         Compute annual, monthly, monthly-diurnal, and diurnal stats
 
@@ -619,6 +638,11 @@ class TemporalStats:
         ----------
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -630,7 +654,8 @@ class TemporalStats:
             DataFrame of temporal statistics
         """
         all_stats = self.compute_statistics(
-            dataset, month=True, diurnal=True, combinations=True,
+            dataset, sites=sites, month=True, diurnal=True, combinations=True,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
 
@@ -664,9 +689,9 @@ class TemporalStats:
             raise OSError(msg)
 
     @classmethod
-    def annual(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-               res_cls=Resource, hsds=False, chunks_per_worker=5,
-               lat_lon_only=True, out_path=None):
+    def annual(cls, res_h5, dataset, sites=slice(None), statistics=('mean'),
+               res_cls=Resource, hsds=False, max_workers=None,
+               chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
         Compute annual stats
 
@@ -676,6 +701,8 @@ class TemporalStats:
             Path to resource h5 file(s)
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
@@ -687,6 +714,9 @@ class TemporalStats:
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -700,10 +730,11 @@ class TemporalStats:
         annual_stats : pandas.DataFrame
             DataFrame of annual statistics
         """
-        res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls, hsds=hsds)
+        res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
+                        hsds=hsds)
         annual_stats = res_stats.annual_stats(
-            dataset,
+            dataset, sites=sites,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
         if out_path is not None:
@@ -712,9 +743,9 @@ class TemporalStats:
         return annual_stats
 
     @classmethod
-    def monthly(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-                res_cls=Resource, hsds=False, chunks_per_worker=5,
-                lat_lon_only=True, out_path=None):
+    def monthly(cls, res_h5, dataset, sites=slice(None), statistics=('mean'),
+                res_cls=Resource, hsds=False, max_workers=None,
+                chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
         Compute monthly stats
 
@@ -724,6 +755,8 @@ class TemporalStats:
             Path to resource h5 file(s)
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
@@ -735,6 +768,9 @@ class TemporalStats:
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -748,10 +784,11 @@ class TemporalStats:
         monthly_stats : pandas.DataFrame
             DataFrame of monthly statistics
         """
-        res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls, hsds=hsds)
+        res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
+                        hsds=hsds)
         monthly_stats = res_stats.monthly_stats(
-            dataset,
+            dataset, sites=sites,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
         if out_path is not None:
@@ -760,9 +797,9 @@ class TemporalStats:
         return monthly_stats
 
     @classmethod
-    def diurnal(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-                res_cls=Resource, hsds=False, chunks_per_worker=5,
-                lat_lon_only=True, out_path=None):
+    def diurnal(cls, res_h5, dataset, sites=slice(None), statistics=('mean'),
+                res_cls=Resource, hsds=False, max_workers=None,
+                chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
         Compute diurnal stats
 
@@ -772,6 +809,8 @@ class TemporalStats:
             Path to resource h5 file(s)
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
@@ -783,6 +822,9 @@ class TemporalStats:
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -796,10 +838,11 @@ class TemporalStats:
         diurnal_stats : pandas.DataFrame
             DataFrame of diurnal statistics
         """
-        res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls, hsds=hsds)
+        res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
+                        hsds=hsds)
         diurnal_stats = res_stats.diurnal_stats(
-            dataset,
+            dataset, sites=sites,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
         if out_path is not None:
@@ -808,10 +851,10 @@ class TemporalStats:
         return diurnal_stats
 
     @classmethod
-    def monthly_diurnal(cls, res_h5, dataset, statistics=('mean'),
-                        max_workers=None, res_cls=Resource, hsds=False,
-                        chunks_per_worker=5, lat_lon_only=True,
-                        out_path=None):
+    def monthly_diurnal(cls, res_h5, dataset, sites=slice(None),
+                        statistics=('mean'), res_cls=Resource, hsds=False,
+                        max_workers=None, chunks_per_worker=5,
+                        lat_lon_only=True, out_path=None):
         """
         Compute monthly-diurnal stats
 
@@ -821,6 +864,8 @@ class TemporalStats:
             Path to resource h5 file(s)
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
@@ -832,6 +877,9 @@ class TemporalStats:
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -845,10 +893,11 @@ class TemporalStats:
         monthly_diurnal_stats : pandas.DataFrame
             DataFrame of monthly-diurnal statistics
         """
-        res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls, hsds=hsds)
+        res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
+                        hsds=hsds)
         monthly_diurnal_stats = res_stats.monthly_diurnal_stats(
-            dataset,
+            dataset, sites=sites,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
         if out_path is not None:
@@ -857,9 +906,9 @@ class TemporalStats:
         return monthly_diurnal_stats
 
     @classmethod
-    def all(cls, res_h5, dataset, statistics=('mean'), max_workers=None,
-            res_cls=Resource, hsds=False, chunks_per_worker=5,
-            lat_lon_only=True, out_path=None):
+    def all(cls, res_h5, dataset, sites=slice(None), statistics=('mean'),
+            res_cls=Resource, hsds=False, max_workers=None,
+            chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
         Compute annual, monthly, monthly-diurnal, and diurnal stats
 
@@ -869,6 +918,8 @@ class TemporalStats:
             Path to resource h5 file(s)
         dataset : str
             Dataset to extract stats for
+        sites : list | slice, optional
+            Sites to extract, by default slice(None) or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
@@ -880,6 +931,9 @@ class TemporalStats:
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
         chunks_per_slice : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
@@ -893,10 +947,11 @@ class TemporalStats:
         all_stats : pandas.DataFrame
             DataFrame of temporal statistics
         """
-        res_stats = cls(res_h5, statistics=statistics, max_workers=max_workers,
-                        res_cls=res_cls, hsds=hsds)
+        res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
+                        hsds=hsds)
         all_stats = res_stats.all_stats(
-            dataset,
+            dataset, sites=sites,
+            max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
         if out_path is not None:
