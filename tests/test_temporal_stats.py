@@ -5,6 +5,7 @@ pytests for  Rechunk h5
 import numpy as np
 import os
 import pytest
+from scipy.stats import mode
 
 from rex.renewable_resource import WindResource
 from rex.resource_extraction.temporal_stats import TemporalStats
@@ -19,88 +20,166 @@ with WindResource(RES_H5) as f:
     RES_DATA = f['windspeed_100m']
 
 
-@pytest.mark.parametrize("max_workers", [1, None])
-def test_means(max_workers):
+def mode_func(arr, axis=0):
+    """
+    custom mode stats
+    """
+    return mode(arr, axis=axis).mode[0]
+
+
+@pytest.mark.parametrize(("max_workers", "sites"),
+                         [(1, slice(None)),
+                          (1, slice(None, None, 10)),
+                          (1, list(range(20))),
+                          (1,
+                           np.random.choice(range(100), 20, replace=False)),
+                          (None, slice(None)),
+                          (None, slice(None, None, 10)),
+                          (None, list(range(20))),
+                          (None,
+                           np.random.choice(range(100), 20, replace=False))])
+def test_means(max_workers, sites):
     """
     Test TemporalStats means
     """
-    test_stats = TemporalStats.all(RES_H5, DATASET, statistics=('mean'),
+    test_stats = TemporalStats.all(RES_H5, DATASET, sites=sites,
+                                   statistics='mean',
                                    res_cls=WindResource,
                                    max_workers=max_workers)
-    truth = np.mean(RES_DATA, axis=0)
+    if isinstance(sites, np.ndarray):
+        sites = np.sort(sites)
+
+    res_data = RES_DATA[:, sites]
+    gids = np.arange(RES_DATA.shape[1], dtype=int)[sites]
+
+    msg = ('gids do not match!')
+    assert np.allclose(gids, test_stats.index.values), msg
+
+    truth = np.mean(res_data, axis=0)
     msg = 'Annual means do not match!'
     assert np.allclose(truth, test_stats['mean'].values), msg
 
     mask = TIME_INDEX.month == 1
-    truth = np.mean(RES_DATA[mask], axis=0)
+    truth = np.mean(res_data[mask], axis=0)
     msg = 'January means do not match!'
     assert np.allclose(truth, test_stats['Jan_mean'].values), msg
 
     mask = TIME_INDEX.hour == 0
-    truth = np.mean(RES_DATA[mask], axis=0)
+    truth = np.mean(res_data[mask], axis=0)
     msg = 'Midnight means do not match!'
     assert np.allclose(truth, test_stats['00_mean'].values), msg
 
     mask = (TIME_INDEX.month == 1) & (TIME_INDEX.hour == 0)
-    truth = np.mean(RES_DATA[mask], axis=0)
+    truth = np.mean(res_data[mask], axis=0)
     msg = 'January-midnight means do not match!'
     assert np.allclose(truth, test_stats['Jan-00_mean'].values), msg
 
 
-@pytest.mark.parametrize("max_workers", [1, None])
-def test_medians(max_workers):
+@pytest.mark.parametrize(("max_workers", "sites"),
+                         [(1, slice(None)),
+                          (None, slice(None))])
+def test_medians(max_workers, sites):
     """
     Test TemporalStats medians
     """
-    test_stats = TemporalStats.all(RES_H5, DATASET, statistics=('median'),
+    test_stats = TemporalStats.all(RES_H5, DATASET, sites=sites,
+                                   statistics='median',
                                    res_cls=WindResource,
                                    max_workers=max_workers)
-    truth = np.median(RES_DATA, axis=0)
+    if isinstance(sites, list):
+        sites = sorted(sites)
+
+    res_data = RES_DATA[:, sites]
+    gids = np.arange(RES_DATA.shape[1], dtype=int)[sites]
+
+    msg = ('gids do not match!')
+    assert np.allclose(gids, test_stats.index.values), msg
+
+    truth = np.median(res_data, axis=0)
     msg = 'Annual medians do not match!'
     assert np.allclose(truth, test_stats['median'].values), msg
 
     mask = TIME_INDEX.month == 1
-    truth = np.median(RES_DATA[mask], axis=0)
+    truth = np.median(res_data[mask], axis=0)
     msg = 'January medians do not match!'
     assert np.allclose(truth, test_stats['Jan_median'].values), msg
 
     mask = TIME_INDEX.hour == 0
-    truth = np.median(RES_DATA[mask], axis=0)
+    truth = np.median(res_data[mask], axis=0)
     msg = 'Midnight medians do not match!'
     assert np.allclose(truth, test_stats['00_median'].values), msg
 
     mask = (TIME_INDEX.month == 1) & (TIME_INDEX.hour == 0)
-    truth = np.median(RES_DATA[mask], axis=0)
+    truth = np.median(res_data[mask], axis=0)
     msg = 'January-midnight medians do not match!'
     assert np.allclose(truth, test_stats['Jan-00_median'].values), msg
 
 
-@pytest.mark.parametrize("max_workers", [1, None])
-def test_stdevs(max_workers):
+@pytest.mark.parametrize(("max_workers", "sites"),
+                         [(1, slice(None)),
+                          (None, slice(None))])
+def test_stdevs(max_workers, sites):
     """
     Test TemporalStats stdevs
     """
-    test_stats = TemporalStats.all(RES_H5, DATASET, statistics=('std'),
+    test_stats = TemporalStats.all(RES_H5, DATASET, sites=sites,
+                                   statistics='std',
                                    res_cls=WindResource,
                                    max_workers=max_workers)
-    truth = np.std(RES_DATA, axis=0, ddof=1)
+
+    res_data = RES_DATA[:, sites]
+    gids = np.arange(RES_DATA.shape[1], dtype=int)[sites]
+
+    msg = ('gids do not match!')
+    assert np.allclose(gids, test_stats.index.values), msg
+
+    truth = np.std(res_data, axis=0)
     msg = 'Annual stdevs do not match!'
-    assert np.allclose(truth, test_stats['std'].values), msg
+    assert np.allclose(truth, test_stats['std'].values, rtol=0.0001), msg
 
     mask = TIME_INDEX.month == 1
-    truth = np.std(RES_DATA[mask], axis=0, ddof=1)
+    truth = np.std(res_data[mask], axis=0)
     msg = 'January stdevs do not match!'
     assert np.allclose(truth, test_stats['Jan_std'].values), msg
 
     mask = TIME_INDEX.hour == 0
-    truth = np.std(RES_DATA[mask], axis=0, ddof=1)
+    truth = np.std(res_data[mask], axis=0)
     msg = 'Midnight stdevs do not match!'
     assert np.allclose(truth, test_stats['00_std'].values), msg
 
     mask = (TIME_INDEX.month == 1) & (TIME_INDEX.hour == 0)
-    truth = np.std(RES_DATA[mask], axis=0, ddof=1)
+    truth = np.std(res_data[mask], axis=0)
     msg = 'January-midnight stdevs do not match!'
     assert np.allclose(truth, test_stats['Jan-00_std'].values), msg
+
+
+@pytest.mark.parametrize(("max_workers", "sites"),
+                         [(1, slice(None)),
+                          (None, slice(None))])
+def test_custom_stats(max_workers, sites):
+    """
+    Test custom temporal stats
+    """
+    stats = {'min': {'func': np.min, 'kwargs': {'axis': 0}},
+             'mode': {'func': mode_func, 'kwargs': {'axis': 0}}}
+    test_stats = TemporalStats.annual(RES_H5, DATASET, sites=sites,
+                                      statistics=stats,
+                                      res_cls=WindResource,
+                                      max_workers=max_workers)
+
+    res_data = RES_DATA[:, sites]
+    gids = np.arange(RES_DATA.shape[1], dtype=int)[sites]
+
+    msg = ('gids do not match!')
+    assert np.allclose(gids, test_stats.index.values), msg
+
+    truth = np.min(res_data, axis=0)
+    msg = 'Annual mins do not match!'
+    assert np.allclose(truth, test_stats['min'].values), msg
+
+    truth = mode(res_data, axis=0).mode[0]
+    msg = 'Annual modes do not match!'
+    assert np.allclose(truth, test_stats['mode'].values), msg
 
 
 def execute_pytest(capture='all', flags='-rapP'):
