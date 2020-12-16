@@ -67,14 +67,11 @@ class TemporalStats:
     @property
     def statistics(self):
         """
-        Statistics to extract:
-        - mean
-        - median
-        - std or stdev
+        Dictionary of statistic functions/kwargs to run
 
         Returns
         -------
-        tuple
+        dict
         """
         return self._stats
 
@@ -87,7 +84,7 @@ class TemporalStats:
 
         Parameters
         ----------
-        statistics : str | tuple | dict
+        statistics : dict
         """
         self._stats = self._check_stats(statistics)
 
@@ -249,8 +246,8 @@ class TemporalStats:
         ----------
         res_data : pandas.DataFrame
             DataFrame or resource data. Index is time_index, columns are sites
-        statistics : tuple | list
-            Statistics to extract, must be 'mean', 'median', and/or 'std
+        statistics : dict
+            Dictionary of statistic functions/kwargs to run
         diurnal : bool, optional
             Extract diurnal stats, by default False
         month : bool, optional
@@ -303,8 +300,8 @@ class TemporalStats:
             Path to resource h5 file(s)
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
-        statistics : tuple | list
-            Statistics to extract, must be 'mean', 'median', and/or 'std
+        statistics : dict
+            Dictionary of statistic functions/kwargs to run
         dataset : str
             Dataset to extract stats for
         hsds : bool, optional
@@ -517,13 +514,16 @@ class TemporalStats:
         if max_workers is None:
             max_workers = os.cpu_count()
 
+        slices = self._get_slices(dataset, sites,
+                                  chunks_per_slice=chunks_per_worker)
+        if len(slices) == 1:
+            max_workers = 1
+
         if max_workers > 1:
             msg = ('Extracting {} for {} in parallel using {} workers'
-                   .format(self.statistics, dataset, max_workers))
+                   .format(self.statistics.keys(), dataset, max_workers))
             logger.info(msg)
 
-            slices = self._get_slices(dataset, sites,
-                                      chunks_per_slice=chunks_per_worker)
             loggers = [__name__, 'rex']
             with SpawnProcessPool(max_workers=max_workers,
                                   loggers=loggers) as exe:
@@ -549,11 +549,9 @@ class TemporalStats:
             res_stats = pd.concat(res_stats)
         else:
             msg = ('Extracting {} for {} in serial'
-                   .format(self.statistics, dataset))
+                   .format(self.statistics.keys(), dataset))
             logger.info(msg)
             if chunks_per_worker is not None:
-                slices = self._get_slices(dataset, sites,
-                                          chunks_per_slice=chunks_per_worker)
                 res_stats = []
                 for sites_slice in slices:
                     res_stats.append(self._extract_stats(
