@@ -766,7 +766,7 @@ class TemporalStats:
             raise OSError(msg)
 
     @classmethod
-    def annual(cls, res_h5, dataset, sites=None, statistics=('mean'),
+    def annual(cls, res_h5, dataset, sites=None, statistics='mean',
                res_cls=Resource, hsds=False, max_workers=None,
                chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
@@ -782,7 +782,7 @@ class TemporalStats:
             Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default ('mean')
+            and/or 'stdev', by default 'mean'
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -820,7 +820,7 @@ class TemporalStats:
         return annual_stats
 
     @classmethod
-    def monthly(cls, res_h5, dataset, sites=None, statistics=('mean'),
+    def monthly(cls, res_h5, dataset, sites=None, statistics='mean',
                 res_cls=Resource, hsds=False, max_workers=None,
                 chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
@@ -836,7 +836,7 @@ class TemporalStats:
             Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default ('mean')
+            and/or 'stdev', by default 'mean'
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -874,7 +874,7 @@ class TemporalStats:
         return monthly_stats
 
     @classmethod
-    def diurnal(cls, res_h5, dataset, sites=None, statistics=('mean'),
+    def diurnal(cls, res_h5, dataset, sites=None, statistics='mean',
                 res_cls=Resource, hsds=False, max_workers=None,
                 chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
@@ -890,7 +890,7 @@ class TemporalStats:
             Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default ('mean')
+            and/or 'stdev', by default 'mean'
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -929,7 +929,7 @@ class TemporalStats:
 
     @classmethod
     def monthly_diurnal(cls, res_h5, dataset, sites=None,
-                        statistics=('mean'), res_cls=Resource, hsds=False,
+                        statistics='mean', res_cls=Resource, hsds=False,
                         max_workers=None, chunks_per_worker=5,
                         lat_lon_only=True, out_path=None):
         """
@@ -945,7 +945,7 @@ class TemporalStats:
             Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default ('mean')
+            and/or 'stdev', by default 'mean'
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -983,7 +983,7 @@ class TemporalStats:
         return monthly_diurnal_stats
 
     @classmethod
-    def all(cls, res_h5, dataset, sites=None, statistics=('mean'),
+    def all(cls, res_h5, dataset, sites=None, statistics='mean',
             res_cls=Resource, hsds=False, max_workers=None,
             chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
@@ -999,7 +999,7 @@ class TemporalStats:
             Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default ('mean')
+            and/or 'stdev', by default 'mean'
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None

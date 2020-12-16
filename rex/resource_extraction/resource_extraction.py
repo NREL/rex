@@ -12,15 +12,12 @@ from tempfile import TemporaryDirectory
 
 from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
                                      MultiFileWTK)
-from rex.multi_time_resource import (MultiTimeResource, MultiTimeNSRDB,
-                                     MultiTimeWindResource,
-                                     MultiTimeWaveResource)
-from rex.multi_year_resource import (MultiYearNSRDB, MultiYearResource,
-                                     MultiYearWindResource,
-                                     MultiYearWaveResource)
+from rex.multi_time_resource import MultiTimeResource
+from rex.multi_year_resource import MultiYearResource
 from rex.resource import Resource
 from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
                                     WindResource)
+from rex.resource_extraction.temporal_stats import TemporalStats
 from rex.utilities.exceptions import ResourceValueError
 from rex.utilities.utilities import parse_year, check_tz
 
@@ -28,17 +25,19 @@ TREE_DIR = TemporaryDirectory()
 logger = logging.getLogger(__name__)
 
 
-class ResourceX(Resource):
+class ResourceX:
     """
     Resource data extraction tool
     """
-    def __init__(self, res_h5, tree=None, unscale=True, hsds=False,
-                 str_decode=True, group=None):
+    def __init__(self, res_h5, res_cls=Resource, tree=None, unscale=True,
+                 hsds=False, str_decode=True, group=None):
         """
         Parameters
         ----------
         res_h5 : str
             Path to resource .h5 file of interest
+        res_cls : obj
+            Resource class to use to open and access resource data
         tree : str | cKDTree
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates
@@ -53,9 +52,189 @@ class ResourceX(Resource):
         group : str
             Group within .h5 resource file to open
         """
-        super().__init__(res_h5, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, group=group)
+        self._res = res_cls(res_h5, unscale=unscale, hsds=hsds,
+                            str_decode=str_decode, group=group)
         self._tree = tree
+        self._i = 0
+
+    def __repr__(self):
+        msg = "{} extractor for {}".format(self._res.__class__.__name__,
+                                           self.resource.h5_file)
+
+        return msg
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.close()
+
+        if type is not None:
+            raise
+
+    def __len__(self):
+        return self.h5['meta'].shape[0]
+
+    def __getitem__(self, keys):
+        return self.resource[keys]
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._i >= len(self.datasets):
+            self._i = 0
+            raise StopIteration
+
+        dset = self.datasets[self._i]
+        self._i += 1
+
+        return dset
+
+    def __contains__(self, dset):
+        return dset in self.datasets
+
+    @property
+    def resource(self):
+        """
+        Open res_cls instance to access res_h5 data
+
+        Returns
+        -------
+        res_cls
+        """
+        return self._res
+
+    @property
+    def h5(self):
+        """
+        Open h5py File instance. If _group is not None return open Group
+
+        Returns
+        -------
+        h5 : h5py.File | h5py.Group
+            Open h5py File or Group instance
+        """
+        return self.resource.h5
+
+    @property
+    def datasets(self):
+        """
+        Datasets available
+
+        Returns
+        -------
+        list
+            List of datasets
+        """
+        return self.resource.datasets
+
+    @property
+    def dsets(self):
+        """
+        Datasets available
+
+        Returns
+        -------
+        list
+            List of datasets
+        """
+        return self.datasets
+
+    @property
+    def groups(self):
+        """
+        Groups available
+
+        Returns
+        -------
+        groups : list
+            List of groups
+        """
+        return self.resource.groups
+
+    @property
+    def shape(self):
+        """
+        Resource shape (timesteps, sites)
+        shape = (len(time_index), len(meta))
+
+        Returns
+        -------
+        shape : tuple
+            Shape of resource variable arrays (timesteps, sites)
+        """
+        return self.resource.shape
+
+    @property
+    def meta(self):
+        """
+        Meta data DataFrame
+
+        Returns
+        -------
+        meta : pandas.DataFrame
+            Resource Meta Data
+        """
+        return self.resource.meta
+
+    @property
+    def time_index(self):
+        """
+        DatetimeIndex
+
+        Returns
+        -------
+        time_index : pandas.DatetimeIndex
+            Resource datetime index
+        """
+        return self.resource.time_index
+
+    @property
+    def coordinates(self):
+        """
+        Coordinates: (lat, lon) pairs
+
+        Returns
+        -------
+        lat_lon : ndarray
+            Array of (lat, lon) pairs for each site in meta
+        """
+        return self.resource.lat_lon
+
+    @property
+    def lat_lon(self):
+        """
+        Extract (latitude, longitude) pairs
+
+        Returns
+        -------
+        lat_lon : ndarray
+        """
+        return self.resource.lat_lon
+
+    @property
+    def global_attrs(self):
+        """
+        Global (file) attributes
+
+        Returns
+        -------
+        global_attrs : dict
+        """
+        return self.resource.attrs
+
+    @property
+    def attrs(self):
+        """
+        Global (file) attributes
+
+        Returns
+        -------
+        attrs : dict
+            .h5 file attributes sourced from first .h5 file
+        """
+        return self.global_attrs
 
     @property
     def tree(self):
@@ -245,7 +424,7 @@ class ResourceX(Resource):
         tree : cKDTree
             cKDTree of lat, lon coordinate from wtk .h5 file
         """
-        tree_path = self._get_tree_file(self.h5_file)
+        tree_path = self._get_tree_file(self.resource.h5_file)
         if not isinstance(tree, (cKDTree, str, type(None))):
             tree = None
             logger.warning('Precomputed tree must be supplied as a pickle '
@@ -605,7 +784,7 @@ class ResourceX(Resource):
         SAM_df = []
         for res_id in gid:
             # pylint: disable=E1111
-            df = self._get_SAM_df('SAM', res_id, **kwargs)
+            df = self.resource._get_SAM_df('SAM', res_id, **kwargs)
             SAM_df.append(df)
             if out_path is not None:
                 site_meta = self['meta', res_id]
@@ -688,13 +867,20 @@ class ResourceX(Resource):
 
         return ts_map
 
+    def close(self):
+        """
+        Close res_cls instance
+        """
+        self._res.close()
 
-class MultiFileResourceX(MultiFileResource, ResourceX):
+
+class MultiFileResourceX(ResourceX):
     """
     Multi-File resource extraction class
     """
-    def __init__(self, resource_path, tree=None, unscale=True,
-                 str_decode=True, check_files=False):
+
+    def __init__(self, resource_path, res_cls=MultiFileResource, tree=None,
+                 unscale=True, str_decode=True, check_files=False):
         """
         Parameters
         ----------
@@ -703,6 +889,8 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
             Available formats:
                 /h5_dir/
                 /h5_dir/prefix*suffix
+        res_cls : obj
+            Resource class to use to open and access resource data
         tree : str | cKDTree
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates
@@ -714,12 +902,13 @@ class MultiFileResourceX(MultiFileResource, ResourceX):
         check_files : bool
             Check to ensure files have the same coordinates and time_index
         """
-        super().__init__(resource_path, unscale=unscale, str_decode=str_decode,
-                         check_files=check_files)
+        self._res = res_cls(resource_path, unscale=unscale,
+                            str_decode=str_decode, check_files=check_files)
         self._tree = tree
+        self._i = 0
 
 
-class MultiYearResourceX(MultiYearResource, ResourceX):
+class MultiYearResourceX(ResourceX):
     """
     Multi Year resource extraction class
     """
@@ -747,14 +936,17 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         res_cls : obj
-            Resource handler to us to open individual .h5 files
+            Resource handler to use to open individual .h5 files
         """
-        super().__init__(resource_path, years=years, unscale=unscale,
-                         str_decode=str_decode, hsds=hsds, res_cls=res_cls)
+        self._res = MultiYearResource(resource_path, years=years,
+                                      unscale=unscale, str_decode=str_decode,
+                                      hsds=hsds, res_cls=res_cls)
         self._tree = tree
+        self._i = 0
 
     def get_means_map(self, ds_name, year=None, region=None,
-                      region_col='state'):
+                      region_col='state', max_workers=None,
+                      chunks_per_worker=5):
         """
         Extract given year(s) and compute means
 
@@ -768,30 +960,36 @@ class MultiYearResourceX(MultiYearResource, ResourceX):
             Region to extract all pixels for
         region_col : str
             Region column to search
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
+        chunks_per_slice : int, optional
+            Number of chunks to extract on each worker, by default 5
 
         Returns
         -------
         ts_map : pandas.DataFrame
             DataFrame of map values
         """
-        lat_lons = self.lat_lon
         gids = slice(None)
         if region is not None:
             gids = self.region_gids(region, region_col=region_col)
-            lat_lons = lat_lons[gids]
 
         if year is None:
             year = slice(None)
 
-        means_map = self[ds_name, year, gids].mean(axis=0)
-        means_map = pd.DataFrame({'longitude': lat_lons[:, 1],
-                                  'latitude': lat_lons[:, 0],
-                                  ds_name: means_map})
+        means_map = TemporalStats.annual(self.resource.h5_file, ds_name,
+                                         sites=gids, statistics='mean',
+                                         res_cls=self.resource.__class__,
+                                         hsds=self.resource.hsds,
+                                         max_workers=max_workers,
+                                         chunks_per_worker=chunks_per_worker,
+                                         lat_lon_only=True)
 
         return means_map
 
 
-class MultiTimeResourceX(MultiTimeResource, ResourceX):
+class MultiTimeResourceX(ResourceX):
     """
     Resource extraction class for data stored temporaly accross multiple files
     """
@@ -820,12 +1018,14 @@ class MultiTimeResourceX(MultiTimeResource, ResourceX):
         res_cls : obj
             Resource handler to us to open individual .h5 files
         """
-        super().__init__(resource_path, unscale=unscale,
-                         str_decode=str_decode, hsds=hsds, res_cls=res_cls)
+        self._res = MultiTimeResource(resource_path, unscale=unscale,
+                                      str_decode=str_decode, hsds=hsds,
+                                      res_cls=res_cls)
         self._tree = tree
+        self._i = 0
 
 
-class SolarX(SolarResource, ResourceX):
+class SolarX(ResourceX):
     """
     Solar Resource extraction class
     """
@@ -850,12 +1050,12 @@ class SolarX(SolarResource, ResourceX):
         group : str
             Group within .h5 resource file to open
         """
-        super().__init__(solar_h5, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, group=group)
-        self._tree = tree
+        super().__init__(solar_h5, unscale=unscale, str_decode=str_decode,
+                         group=group, hsds=hsds, tree=tree,
+                         res_cls=SolarResource)
 
 
-class NSRDBX(NSRDB, ResourceX):
+class NSRDBX(ResourceX):
     """
     NSRDB extraction class
     """
@@ -880,13 +1080,12 @@ class NSRDBX(NSRDB, ResourceX):
         group : str
             Group within .h5 resource file to open
         """
-        super().__init__(nsrdb_h5, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, group=group)
-        self._lat_lon = None
-        self._tree = tree
+        super().__init__(nsrdb_h5, unscale=unscale, str_decode=str_decode,
+                         group=group, hsds=hsds, tree=tree,
+                         res_cls=NSRDB)
 
 
-class MultiFileNSRDBX(MultiFileNSRDB, NSRDBX):
+class MultiFileNSRDBX(MultiFileResourceX):
     """
     Multi-File NSRDB extraction class
     """
@@ -913,11 +1112,11 @@ class MultiFileNSRDBX(MultiFileNSRDB, NSRDBX):
             Check to ensure files have the same coordinates and time_index
         """
         super().__init__(nsrdb_source, unscale=unscale, str_decode=str_decode,
-                         check_files=check_files)
-        self._tree = tree
+                         check_files=check_files, tree=tree,
+                         res_cls=MultiFileNSRDB)
 
 
-class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX, NSRDBX):
+class MultiYearNSRDBX(MultiYearResourceX):
     """
     Multi Year NSRDB extraction class
     """
@@ -945,12 +1144,11 @@ class MultiYearNSRDBX(MultiYearNSRDB, MultiYearResourceX, NSRDBX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(nsrdb_path, years=years, unscale=unscale,
-                         str_decode=str_decode, hsds=hsds)
-        self._tree = tree
+        super().__init__(nsrdb_path, years=years, tree=tree, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds, res_cls=NSRDB)
 
 
-class MultiTimeNSRDBX(MultiTimeNSRDB, NSRDBX):
+class MultiTimeNSRDBX(MultiTimeResourceX):
     """
     NSRDB extraction class for data stored temporaly accross multiple files
     """
@@ -977,12 +1175,11 @@ class MultiTimeNSRDBX(MultiTimeNSRDB, NSRDBX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(nsrdb_path, unscale=unscale, str_decode=str_decode,
-                         hsds=hsds)
-        self._tree = tree
+        super().__init__(nsrdb_path, tree=tree, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds, res_cls=NSRDB)
 
 
-class WindX(WindResource, ResourceX):
+class WindX(ResourceX):
     """
     Wind Resource extraction class
     """
@@ -1007,9 +1204,9 @@ class WindX(WindResource, ResourceX):
         group : str
             Group within .h5 resource file to open
         """
-        super().__init__(wind_h5, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, group=group)
-        self._tree = tree
+        super().__init__(wind_h5, unscale=unscale, str_decode=str_decode,
+                         group=group, hsds=hsds, tree=tree,
+                         res_cls=WindResource)
 
     def get_SAM_gid(self, hub_height, gid, out_path=None, **kwargs):
         """
@@ -1042,7 +1239,7 @@ class WindX(WindResource, ResourceX):
 
         SAM_df = []
         for res_id in gid:
-            df = self._get_SAM_df(ds_name, res_id, **kwargs)
+            df = self.resource._get_SAM_df(ds_name, res_id, **kwargs)
             SAM_df.append(df)
             if out_path is not None:
                 site_meta = self['meta', res_id]
@@ -1084,7 +1281,7 @@ class WindX(WindResource, ResourceX):
         return SAM_df
 
 
-class MultiFileWindX(MultiFileWTK, WindX):
+class MultiFileWindX(MultiFileResourceX):
     """
     Multi-File Wind Resource extraction class
     """
@@ -1111,11 +1308,11 @@ class MultiFileWindX(MultiFileWTK, WindX):
             Check to ensure files have the same coordinates and time_index
         """
         super().__init__(wtk_source, unscale=unscale, str_decode=str_decode,
-                         check_files=check_files)
-        self._tree = tree
+                         check_files=check_files, tree=tree,
+                         res_cls=MultiFileWTK)
 
 
-class MultiYearWindX(MultiYearWindResource, MultiYearResourceX, WindX):
+class MultiYearWindX(MultiYearResourceX):
     """
     Multi Year Wind Resource extraction class
     """
@@ -1143,12 +1340,12 @@ class MultiYearWindX(MultiYearWindResource, MultiYearResourceX, WindX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(wtk_path, years=years, unscale=unscale,
-                         str_decode=str_decode, hsds=hsds)
-        self._tree = tree
+        super().__init__(wtk_path, years=years, tree=tree, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds,
+                         res_cls=WindResource)
 
 
-class MultiTimeWindX(MultiTimeWindResource, WindX):
+class MultiTimeWindX(MultiTimeResourceX):
     """
     Wind resource extraction class for data stored temporaly accross multiple
     files
@@ -1176,12 +1373,12 @@ class MultiTimeWindX(MultiTimeWindResource, WindX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(wtk_path, unscale=unscale, str_decode=str_decode,
-                         hsds=hsds)
-        self._tree = tree
+        super().__init__(wtk_path, tree=tree, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds,
+                         res_cls=WindResource)
 
 
-class WaveX(WaveResource, ResourceX):
+class WaveX(ResourceX):
     """
     Wave data extraction class
     """
@@ -1207,9 +1404,9 @@ class WaveX(WaveResource, ResourceX):
         group : str
             Group within .h5 resource file to open
         """
-        super().__init__(wave_h5, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, group=group)
-        self._tree = tree
+        super().__init__(wave_h5, unscale=unscale, str_decode=str_decode,
+                         group=group, hsds=hsds, tree=tree,
+                         res_cls=WaveResource)
 
     def get_gid_ts(self, ds_name, gid):
         """
@@ -1275,7 +1472,7 @@ class WaveX(WaveResource, ResourceX):
         return df
 
 
-class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX, WaveX):
+class MultiYearWaveX(MultiYearResourceX):
     """
     Multi Year Wave extraction class
     """
@@ -1304,12 +1501,12 @@ class MultiYearWaveX(MultiYearWaveResource, MultiYearResourceX, WaveX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(wave_path, years=years, unscale=unscale,
-                         str_decode=str_decode, hsds=hsds)
-        self._tree = tree
+        super().__init__(wave_path, years=years, tree=tree, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds,
+                         res_cls=WaveResource)
 
 
-class MultiTimeWaveX(MultiTimeWaveResource, WaveX):
+class MultiTimeWaveX(MultiTimeResourceX):
     """
     Wave resource extraction class for data stored temporaly accross multiple
     files
@@ -1337,6 +1534,6 @@ class MultiTimeWaveX(MultiTimeWaveResource, WaveX):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
         """
-        super().__init__(wave_path, unscale=unscale, str_decode=str_decode,
-                         hsds=hsds)
-        self._tree = tree
+        super().__init__(wave_path, tree=tree, unscale=unscale,
+                         str_decode=str_decode, hsds=hsds,
+                         res_cls=WindResource)
