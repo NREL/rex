@@ -13,7 +13,6 @@ from rex.rechunk_h5.rechunk_h5 import get_chunk_slices
 from rex.resource import Resource
 from rex.utilities.execution import SpawnProcessPool
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -21,18 +20,22 @@ class TemporalStats:
     """
     Temporal Statistics from Resource Data
     """
-    STATS = ['mean', 'median', 'std', 'stdev']
+    STATS = {'mean': {'func': np.mean, 'kwargs': {'axis': 0}},
+             'median': {'func': np.median, 'kwargs': {'axis': 0}},
+             'std': {'func': np.std, 'kwargs': {'axis': 0}}}
 
-    def __init__(self, res_h5, statistics=('mean'), res_cls=Resource,
+    def __init__(self, res_h5, statistics='mean', res_cls=Resource,
                  hsds=False):
         """
         Parameters
         ----------
         res_h5 : str
             Path to resource h5 file(s)
-        statistics : str | tuple, optional
-            Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default ('mean')
+        statistics : str | tuple | dict, optional
+            Statistics to extract, either a key or tuple of keys in
+            cls.STATS, or a dictionary of the form
+            {'stat_name': {'func': *, 'kwargs: {**}}},
+            by default 'mean'
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
         hsds : bool, optional
@@ -78,36 +81,15 @@ class TemporalStats:
     @statistics.setter
     def statistics(self, statistics):
         """
-        Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev'
+         Statistics to extract, either a key or tuple of keys in
+        cls.STATS, or a dictionary of the form
+        {'stat_name': {'func': *, 'kwargs: {**}}}
 
         Parameters
         ----------
-        statistics : str | tuple | list
+        statistics : str | tuple | dict
         """
-        if isinstance(statistics, str):
-            statistics = [statistics]
-
-        stats = []
-        for s in statistics:
-            if s.lower() in self.STATS:
-                if s.lower().startswith('std'):
-                    s = 'std'
-
-                stats.append(s)
-            else:
-                msg = ("{} is not a valid statistic, must be one of:\n{}"
-                       .format(s, self.STATS))
-                warn(msg)
-                logger.warning(msg)
-
-        stats = list(set(stats))
-        if not stats:
-            msg = ('No valid statistics were supplied!')
-            logger.error(msg)
-            raise ValueError(msg)
-
-        self._stats = stats
+        self._stats = self._check_stats(statistics)
 
     @property
     def res_cls(self):
@@ -159,6 +141,38 @@ class TemporalStats:
                 lat_lon_cols[1] = c
 
         return self.meta[lat_lon_cols]
+
+    @classmethod
+    def _check_stats(cls, statistics):
+        """
+        check desired statistics to make sure inputs are valid
+
+        Parameters
+        ----------
+        statistics : str | tuple | dict
+            Statistics to extract, either a key or tuple of keys in
+            cls.STATS, or a dictionary of the form
+            {'stat_name': {'func': *, 'kwargs: {**}}}
+
+        Returns
+        -------
+        stats : dict
+            Dictionary of statistic functions/kwargs to run
+        """
+        if isinstance(statistics, str):
+            statistics = (statistics, )
+
+        if isinstance(statistics, (tuple, list)):
+            statistics = {s: cls.STATS[s] for s in statistics}
+
+        for stat in statistics.values():
+            msg = 'A "func"(tion) must be provided for each statistic'
+            assert 'func' in stat, msg
+            if 'kwargs' in stat:
+                msg = 'statistic function kwargs must be a dictionary '
+                assert isinstance(stat['kwargs'], dict), msg
+
+        return statistics
 
     @staticmethod
     def _format_index_value(index, stat, month_map=None):
@@ -258,25 +272,17 @@ class TemporalStats:
             res_data = res_data.groupby(groupby)
 
         res_stats = []
-        for s in statistics:
-            if s == 'mean':
-                s_data = res_data.mean()
-            elif s == 'median':
-                s_data = res_data.median()
-            elif s == 'std':
-                s_data = res_data.std()
-            else:
-                msg = ("{} is not a valid statistic, must be one of:\n{}"
-                       .format(s, cls.STATS))
-                logger.error(msg)
-                raise RuntimeError(msg)
+        for name, stat in statistics.items():
+            func = stat['func']
+            kwargs = stat.get('kwargs', {})
+            s_data = res_data.aggregate(func, **kwargs)
 
             if groupby:
-                columns = cls._create_names(s_data.index, s)
+                columns = cls._create_names(s_data.index, name)
                 s_data = s_data.T
                 s_data.columns = columns
             else:
-                s_data = s_data.to_frame(name=s)
+                s_data = s_data.to_frame(name=name)
 
             res_stats.append(s_data)
 
@@ -286,7 +292,7 @@ class TemporalStats:
 
     @classmethod
     def _extract_stats(cls, res_h5, res_cls, statistics, dataset, hsds=False,
-                       time_index=None, site_slice=None, diurnal=False,
+                       time_index=None, sites_slice=None, diurnal=False,
                        month=False, combinations=False):
         """
         Extract stats for given dataset, sites, and temporal extent
@@ -307,7 +313,7 @@ class TemporalStats:
         time_index : pandas.DatatimeIndex | None, optional
             Resource DatetimeIndex, if None extract from res_h5,
             by default None
-        site_slice : slice | None, optional
+        sites_slice : slice | None, optional
             Sites to extract, if None all, by default None
         diurnal : bool, optional
             Extract diurnal stats, by default False
@@ -321,14 +327,14 @@ class TemporalStats:
         res_stats : pandas.DataFrame
             DataFrame of desired statistics at desired time intervals
         """
-        if site_slice is None:
-            site_slice = slice(None, None, None)
+        if sites_slice is None:
+            sites_slice = slice(None, None, None)
 
         with res_cls(res_h5, hsds=hsds) as f:
             if time_index is None:
                 time_index = f.time_index
 
-            res_data = pd.DataFrame(f[dataset, :, site_slice],
+            res_data = pd.DataFrame(f[dataset, :, sites_slice],
                                     index=time_index)
         if combinations:
             res_stats = [cls._compute_stats(res_data, statistics)]
@@ -348,14 +354,89 @@ class TemporalStats:
             res_stats = cls._compute_stats(res_data, statistics,
                                            diurnal=diurnal, month=month)
 
-        if site_slice.stop:
-            res_stats.index = list(range(*site_slice.indices(site_slice.stop)))
+        if isinstance(sites_slice, slice) and sites_slice.stop:
+            res_stats.index = \
+                list(range(*sites_slice.indices(sites_slice.stop)))
+        elif isinstance(sites_slice, (list, np.ndarray)):
+            res_stats.index = sites_slice
 
         res_stats.index.name = 'gid'
 
         return res_stats
 
-    def _get_slices(self, dataset, sites, chunks_per_slice=5):
+    @staticmethod
+    def _slice_sites(sites_slice, n_sites, slice_size):
+        """
+        Break up sites_slice into slices of size slice_size
+
+        Parameters
+        ----------
+        sites_slice : slice
+            Sites to extract as a slice object to extract
+        n_sites : int
+            Total number of sites to extract
+        slice_size : int
+            Number of sites in each slice to extract either on each worker,
+            or in series
+
+        Returns
+        -------
+        slices : list
+            List of slices to extract
+        """
+        stop = sites_slice.stop
+        if stop is None:
+            stop = n_sites
+
+        step = sites_slice.step
+        if step is not None:
+            slice_size *= step
+
+        if slice_size >= n_sites:
+            msg = ('The slice_size {} is >= the number of sites to be '
+                   'extracted {}! A single slice will be extracted.'
+                   .format(slice_size, n_sites))
+            logger.warning(msg)
+            warn(msg)
+            slices = [sites_slice]
+        else:
+            # Create slices of size slice_size
+            slices = [slice(s, e, step) for s, e
+                      in get_chunk_slices(stop, slice_size)]
+
+        return slices
+
+    @staticmethod
+    def _split_sites(sites, slice_size):
+        """
+        Split sites into sub-lists of ~ size slice_size
+
+        Parameters
+        ----------
+        sites : slice
+            Sites to extract as a list or numpy object to extract
+        slice_size : int
+            Number of sites in each slice to extract either on each worker,
+            or in series
+
+        Returns
+        -------
+        slices : list
+            List of slices to extract
+        """
+        if slice_size >= len(sites):
+            msg = ('The slice_size {} is >= the number of sites to be '
+                   'extracted {}! A single slice will be extracted.'
+                   .format(slice_size, len(sites)))
+            logger.warning(msg)
+            warn(msg)
+            slices = [sites]
+        else:
+            slices = np.array_split(sites, len(sites) // slice_size)
+
+        return slices
+
+    def _get_slices(self, dataset, sites=None, chunks_per_slice=5):
         """
         Get slices to extract
 
@@ -363,8 +444,8 @@ class TemporalStats:
         ----------
         dataset : str
             Dataset to extract data from
-        sites : list | slice
-            Sites to extract
+        sites : list | slice, optional
+            Subset of sites to extract, by default None or all sites
         chunks_per_slice : int, optional
             Number of chunks to extract in each slice, by default 5
 
@@ -382,28 +463,26 @@ class TemporalStats:
             logger.error(msg)
             raise RuntimeError(msg)
 
-        if isinstance(sites, slice):
-            stop = sites.stop
-            if stop is None:
-                stop = shape[1]
-
-            n_sites = len(range(*sites.indices(stop)))
-        elif isinstance(sites, (list, np.ndarray)):
-            n_sites = len(sites)
-        else:
-            n_sites = shape[1]
-
         if chunks is not None:
             slice_size = chunks[1] * chunks_per_slice
         else:
             slice_size = chunks_per_slice
 
-        slices = [slice(s, e, None) for s, e
-                  in get_chunk_slices(n_sites, slice_size)]
+        if sites is None:
+            sites = slice(None)
+
+        if isinstance(sites, slice):
+            slices = self._slice_sites(sites, shape[1], slice_size)
+        elif isinstance(sites, (list, tuple, np.ndarray)):
+            slices = self._split_sites(sites, slice_size)
+        else:
+            msg = ('sites must be of type "None", "slice", "list", "tuple", '
+                   'or "np.ndarray", but {} was provided'.format(type(sites)))
+            raise TypeError(msg)
 
         return slices
 
-    def compute_statistics(self, dataset, sites=slice(None),
+    def compute_statistics(self, dataset, sites=None,
                            diurnal=False, month=False, combinations=False,
                            max_workers=None, chunks_per_worker=5,
                            lat_lon_only=True):
@@ -415,7 +494,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         diurnal : bool, optional
             Extract diurnal stats, by default False
         month : bool, optional
@@ -449,13 +528,13 @@ class TemporalStats:
             with SpawnProcessPool(max_workers=max_workers,
                                   loggers=loggers) as exe:
                 futures = []
-                for site_slice in slices:
+                for sites_slice in slices:
                     future = exe.submit(self._extract_stats,
                                         self.res_h5, self.res_cls,
                                         self.statistics, dataset,
                                         hsds=self._hsds,
                                         time_index=self.time_index,
-                                        site_slice=site_slice,
+                                        sites_slice=sites_slice,
                                         diurnal=diurnal,
                                         month=month,
                                         combinations=combinations)
@@ -467,23 +546,23 @@ class TemporalStats:
                     logger.debug('Completed {} out of {} workers'
                                  .format((i + 1), len(futures)))
 
-            res_stats = pd.concat(res_stats).sort_index()
+            res_stats = pd.concat(res_stats)
         else:
             msg = ('Extracting {} for {} in serial'
                    .format(self.statistics, dataset))
             logger.info(msg)
             if chunks_per_worker is not None:
-                slices = self._get_slices(dataset,
+                slices = self._get_slices(dataset, sites,
                                           chunks_per_slice=chunks_per_worker)
                 res_stats = []
-                for site_slice in slices:
+                for sites_slice in slices:
                     res_stats.append(self._extract_stats(
                         self.res_h5, self.res_cls, self.statistics, dataset,
                         hsds=self._hsds, time_index=self.time_index,
-                        site_slice=site_slice, diurnal=diurnal, month=month,
+                        sites_slice=sites_slice, diurnal=diurnal, month=month,
                         combinations=combinations))
 
-                res_stats = pd.concat(res_stats).sort_index()
+                res_stats = pd.concat(res_stats)
             else:
                 res_stats = self._extract_stats(
                     self.res_h5, self.res_cls, self.statistics, dataset,
@@ -496,11 +575,11 @@ class TemporalStats:
         else:
             meta = self.meta
 
-        res_stats = meta.join(res_stats, how='inner')
+        res_stats = meta.join(res_stats.sort_index(), how='inner')
 
         return res_stats
 
-    def annual_stats(self, dataset, sites=slice(None), max_workers=None,
+    def annual_stats(self, dataset, sites=None, max_workers=None,
                      chunks_per_worker=5, lat_lon_only=True):
         """
         Compute annual stats
@@ -510,7 +589,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -532,7 +611,7 @@ class TemporalStats:
 
         return annual_stats
 
-    def monthly_stats(self, dataset, sites=slice(None), max_workers=None,
+    def monthly_stats(self, dataset, sites=None, max_workers=None,
                       chunks_per_worker=5, lat_lon_only=True):
         """
         Compute monthly stats
@@ -542,7 +621,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -564,7 +643,7 @@ class TemporalStats:
 
         return monthly_stats
 
-    def diurnal_stats(self, dataset, sites=slice(None), max_workers=None,
+    def diurnal_stats(self, dataset, sites=None, max_workers=None,
                       chunks_per_worker=5, lat_lon_only=True):
         """
         Compute diurnal stats
@@ -574,7 +653,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -596,7 +675,7 @@ class TemporalStats:
 
         return diurnal_stats
 
-    def monthly_diurnal_stats(self, dataset, sites=slice(None),
+    def monthly_diurnal_stats(self, dataset, sites=None,
                               max_workers=None, chunks_per_worker=5,
                               lat_lon_only=True):
         """
@@ -607,7 +686,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -629,7 +708,7 @@ class TemporalStats:
 
         return diurnal_stats
 
-    def all_stats(self, dataset, sites=slice(None), max_workers=None,
+    def all_stats(self, dataset, sites=None, max_workers=None,
                   chunks_per_worker=5, lat_lon_only=True):
         """
         Compute annual, monthly, monthly-diurnal, and diurnal stats
@@ -639,7 +718,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -689,7 +768,7 @@ class TemporalStats:
             raise OSError(msg)
 
     @classmethod
-    def annual(cls, res_h5, dataset, sites=slice(None), statistics=('mean'),
+    def annual(cls, res_h5, dataset, sites=None, statistics=('mean'),
                res_cls=Resource, hsds=False, max_workers=None,
                chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
@@ -702,7 +781,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
@@ -743,7 +822,7 @@ class TemporalStats:
         return annual_stats
 
     @classmethod
-    def monthly(cls, res_h5, dataset, sites=slice(None), statistics=('mean'),
+    def monthly(cls, res_h5, dataset, sites=None, statistics=('mean'),
                 res_cls=Resource, hsds=False, max_workers=None,
                 chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
@@ -756,7 +835,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
@@ -797,7 +876,7 @@ class TemporalStats:
         return monthly_stats
 
     @classmethod
-    def diurnal(cls, res_h5, dataset, sites=slice(None), statistics=('mean'),
+    def diurnal(cls, res_h5, dataset, sites=None, statistics=('mean'),
                 res_cls=Resource, hsds=False, max_workers=None,
                 chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
@@ -810,7 +889,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
@@ -851,7 +930,7 @@ class TemporalStats:
         return diurnal_stats
 
     @classmethod
-    def monthly_diurnal(cls, res_h5, dataset, sites=slice(None),
+    def monthly_diurnal(cls, res_h5, dataset, sites=None,
                         statistics=('mean'), res_cls=Resource, hsds=False,
                         max_workers=None, chunks_per_worker=5,
                         lat_lon_only=True, out_path=None):
@@ -865,7 +944,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
@@ -906,7 +985,7 @@ class TemporalStats:
         return monthly_diurnal_stats
 
     @classmethod
-    def all(cls, res_h5, dataset, sites=slice(None), statistics=('mean'),
+    def all(cls, res_h5, dataset, sites=None, statistics=('mean'),
             res_cls=Resource, hsds=False, max_workers=None,
             chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
@@ -919,7 +998,7 @@ class TemporalStats:
         dataset : str
             Dataset to extract stats for
         sites : list | slice, optional
-            Sites to extract, by default slice(None) or all sites
+            Subset of sites to extract, by default None or all sites
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default ('mean')
