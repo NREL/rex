@@ -843,7 +843,7 @@ class MultiTimeWindResource(MultiTimeResource):
                          str_decode=str_decode, res_cls=WindResource)
 
 
-class MultiTimeWaveResource:
+class MultiTimeWaveResource(MultiTimeResource):
     """
     Class to handle wave resource data stored temporaly accross multiple .h5
     files

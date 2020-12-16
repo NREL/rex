@@ -601,7 +601,7 @@ class MultiYearWindResource(MultiYearResource):
                          str_decode=str_decode, res_cls=WindResource)
 
 
-class MultiYearWaveResource:
+class MultiYearWaveResource(MultiYearResource):
     """
     Class to handle multiple years of wave resource data stored accross
     multiple .h5 files
