@@ -7,6 +7,7 @@ import os
 import pytest
 from scipy.stats import mode
 
+from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
 from rex.resource_extraction.temporal_stats import TemporalStats
 from rex import TESTDATADIR
@@ -17,7 +18,7 @@ RES_H5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
 DATASET = 'windspeed_100m'
 with WindResource(RES_H5) as f:
     TIME_INDEX = f.time_index
-    RES_DATA = f['windspeed_100m']
+    RES_DATA = f[DATASET]
 
 
 def mode_func(arr, axis=0):
@@ -178,8 +179,37 @@ def test_custom_stats(max_workers, sites):
     assert np.allclose(truth, test_stats['min'].values), msg
 
     truth = mode(res_data, axis=0).mode[0]
-    msg = 'Annual modes do not match!'
+    msg = 'Modes do not match!'
     assert np.allclose(truth, test_stats['mode'].values), msg
+
+
+@pytest.mark.parametrize(("max_workers", "sites"),
+                         [(1, slice(None)),
+                          (None, slice(None))])
+def test_multi_year_stats(max_workers, sites):
+    """
+    Test temporal stats using MultiYearResource
+    """
+    res_h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+    with MultiYearWindResource(res_h5) as f:
+        res_data = f['windspeed_100m']
+
+    test_stats = TemporalStats.all(res_h5, 'windspeed_100m', sites=sites,
+                                   statistics='mean',
+                                   res_cls=MultiYearWindResource,
+                                   max_workers=max_workers)
+    if isinstance(sites, np.ndarray):
+        sites = np.sort(sites)
+
+    res_data = res_data[:, sites]
+    gids = np.arange(res_data.shape[1], dtype=int)[sites]
+
+    msg = ('gids do not match!')
+    assert np.allclose(gids, test_stats.index.values), msg
+
+    truth = np.mean(res_data, axis=0)
+    msg = 'Means do not match!'
+    assert np.allclose(truth, test_stats['mean'].values), msg
 
 
 def execute_pytest(capture='all', flags='-rapP'):
