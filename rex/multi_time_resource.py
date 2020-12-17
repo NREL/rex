@@ -651,7 +651,18 @@ class MultiTimeResource:
         -------
         global_attrs : dict
         """
-        return dict(self.h5.attrs)
+        return self.get_attrs()
+
+    @property
+    def attrs(self):
+        """
+        Global (file) attributes
+
+        Returns
+        -------
+        global_attrs : dict
+        """
+        return self.global_attrs
 
     def get_attrs(self, dset=None):
         """
@@ -667,12 +678,7 @@ class MultiTimeResource:
         attrs : dict
             Dataset or file attributes
         """
-        if dset is None:
-            attrs = dict(self.h5.attrs)
-        else:
-            attrs = dict(self.h5.h5[dset].attrs)
-
-        return attrs
+        return self.h5.h5.get_attrs(dset=dset)
 
     def get_dset_properties(self, dset):
         """
@@ -692,12 +698,7 @@ class MultiTimeResource:
         chunks : tuple
             Dataset chunk size
         """
-        ds = self.h5.h5[dset]
-        shape, dtype, chunks = ds.shape, ds.dtype, ds.chunks
-        if isinstance(chunks, dict):
-            chunks = tuple(chunks.get('dims', None))
-
-        return shape, dtype, chunks
+        return self.h5.h5.get_dset_properties(dset)
 
     def get_scale(self, dset):
         """
@@ -713,7 +714,7 @@ class MultiTimeResource:
         float
             Dataset scale factor, used to unscale int values to floats
         """
-        return self.h5.h5[dset].attrs.get('scale_factor', 1)
+        return self.h5.h5.get_scale(dset)
 
     def get_units(self, dset):
         """
@@ -729,7 +730,7 @@ class MultiTimeResource:
         str
             Dataset units, None if not defined
         """
-        return self.h5.h5[dset].attrs.get('units', None)
+        return self.h5.h5.get_units(dset)
 
     def get_meta_arr(self, rec_name, rows=slice(None)):
         """Get a meta array by name (faster than DataFrame extraction).
@@ -843,7 +844,7 @@ class MultiTimeWindResource(MultiTimeResource):
                          str_decode=str_decode, res_cls=WindResource)
 
 
-class MultiTimeWaveResource:
+class MultiTimeWaveResource(MultiTimeResource):
     """
     Class to handle wave resource data stored temporaly accross multiple .h5
     files

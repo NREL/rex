@@ -506,6 +506,18 @@ class MultiYearResource(MultiTimeResource):
         self.h5_file = self.h5_files[0]
         self._i = 0
 
+    @property
+    def years(self):
+        """
+        Available years
+
+        Returns
+        -------
+        list
+            List of dataset present in .h5 files
+        """
+        return self.h5.years
+
 
 class MultiYearSolarResource:
     """
@@ -601,7 +613,7 @@ class MultiYearWindResource(MultiYearResource):
                          str_decode=str_decode, res_cls=WindResource)
 
 
-class MultiYearWaveResource:
+class MultiYearWaveResource(MultiYearResource):
     """
     Class to handle multiple years of wave resource data stored accross
     multiple .h5 files

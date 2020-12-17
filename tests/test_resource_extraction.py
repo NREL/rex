@@ -121,7 +121,7 @@ def extract_site(res_cls, ds_name):
     site_df = res_cls.get_lat_lon_df(ds_name, lat_lon)
     assert_frame_equal(site_df, truth_df, check_dtype=False)
 
-    tree_file = res_cls._get_tree_file(res_cls.h5_file)
+    tree_file = res_cls._get_tree_file(res_cls.resource.h5_file)
     assert tree_file in os.listdir(TREE_DIR.name)
 
 
