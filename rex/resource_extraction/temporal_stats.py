@@ -577,10 +577,10 @@ class TemporalStats:
 
         return res_stats
 
-    def annual_stats(self, dataset, sites=None, max_workers=None,
-                     chunks_per_worker=5, lat_lon_only=True):
+    def full_stats(self, dataset, sites=None, max_workers=None,
+                   chunks_per_worker=5, lat_lon_only=True):
         """
-        Compute annual stats
+        Compute stats for entire temporal extent of file
 
         Parameters
         ----------
@@ -598,16 +598,16 @@ class TemporalStats:
 
         Returns
         -------
-        annual_stats : pandas.DataFrame
-            DataFrame of annual statistics
+        full_stats : pandas.DataFrame
+            DataFrame of statistics for the entire temporal extent of file
         """
-        annual_stats = self.compute_statistics(
+        full_stats = self.compute_statistics(
             dataset, sites=sites,
             max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
 
-        return annual_stats
+        return full_stats
 
     def monthly_stats(self, dataset, sites=None, max_workers=None,
                       chunks_per_worker=5, lat_lon_only=True):
@@ -766,11 +766,12 @@ class TemporalStats:
             raise OSError(msg)
 
     @classmethod
-    def annual(cls, res_h5, dataset, sites=None, statistics='mean',
-               res_cls=Resource, hsds=False, max_workers=None,
-               chunks_per_worker=5, lat_lon_only=True, out_path=None):
+    def run(cls, res_h5, dataset, sites=None, statistics='mean',
+            diurnal=False, month=False, combinations=False,
+            res_cls=Resource, hsds=False, max_workers=None,
+            chunks_per_worker=5, lat_lon_only=True, out_path=None):
         """
-        Compute annual stats
+        Compute temporal stats, by default full temporal extent stats
 
         Parameters
         ----------
@@ -783,9 +784,12 @@ class TemporalStats:
         statistics : str | tuple, optional
             Statistics to extract, must be 'mean', 'median', 'std',
             and/or 'stdev', by default 'mean'
-        max_workers : None | int, optional
-            Number of workers to use, if 1 run in serial, if None use all
-            available cores, by default None
+        diurnal : bool, optional
+            Extract diurnal stats, by default False
+        month : bool, optional
+            Extract monthly stats, by default False
+        combinations : bool, optional
+            Extract all combinations of temporal stats, by default False
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
         hsds : bool, optional
@@ -809,10 +813,10 @@ class TemporalStats:
         """
         res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
                         hsds=hsds)
-        annual_stats = res_stats.annual_stats(
+        annual_stats = res_stats.compute_statistics(
             dataset, sites=sites,
-            max_workers=max_workers,
-            chunks_per_worker=chunks_per_worker,
+            diurnal=diurnal, month=month, combinations=combinations,
+            max_workers=max_workers, chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
         if out_path is not None:
             res_stats.save_stats(annual_stats, out_path)
@@ -861,15 +865,13 @@ class TemporalStats:
         monthly_stats : pandas.DataFrame
             DataFrame of monthly statistics
         """
-        res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
-                        hsds=hsds)
-        monthly_stats = res_stats.monthly_stats(
-            dataset, sites=sites,
-            max_workers=max_workers,
-            chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
-        if out_path is not None:
-            res_stats.save_stats(monthly_stats, out_path)
+        monthly_stats = cls.run(res_h5, dataset, sites=sites,
+                                statistics=statistics, diurnal=False,
+                                month=True, combinations=False,
+                                res_cls=res_cls, hsds=hsds,
+                                max_workers=max_workers,
+                                chunks_per_worker=chunks_per_worker,
+                                lat_lon_only=lat_lon_only, out_path=out_path)
 
         return monthly_stats
 
@@ -915,15 +917,13 @@ class TemporalStats:
         diurnal_stats : pandas.DataFrame
             DataFrame of diurnal statistics
         """
-        res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
-                        hsds=hsds)
-        diurnal_stats = res_stats.diurnal_stats(
-            dataset, sites=sites,
-            max_workers=max_workers,
-            chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
-        if out_path is not None:
-            res_stats.save_stats(diurnal_stats, out_path)
+        diurnal_stats = cls.run(res_h5, dataset, sites=sites,
+                                statistics=statistics, diurnal=True,
+                                month=False, combinations=False,
+                                res_cls=res_cls, hsds=hsds,
+                                max_workers=max_workers,
+                                chunks_per_worker=chunks_per_worker,
+                                lat_lon_only=lat_lon_only, out_path=out_path)
 
         return diurnal_stats
 
@@ -970,15 +970,14 @@ class TemporalStats:
         monthly_diurnal_stats : pandas.DataFrame
             DataFrame of monthly-diurnal statistics
         """
-        res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
-                        hsds=hsds)
-        monthly_diurnal_stats = res_stats.monthly_diurnal_stats(
-            dataset, sites=sites,
-            max_workers=max_workers,
-            chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
-        if out_path is not None:
-            res_stats.save_stats(monthly_diurnal_stats, out_path)
+        monthly_diurnal_stats = cls.run(res_h5, dataset, sites=sites,
+                                        statistics=statistics, diurnal=True,
+                                        month=True, combinations=False,
+                                        res_cls=res_cls, hsds=hsds,
+                                        max_workers=max_workers,
+                                        chunks_per_worker=chunks_per_worker,
+                                        lat_lon_only=lat_lon_only,
+                                        out_path=out_path)
 
         return monthly_diurnal_stats
 
@@ -1024,14 +1023,12 @@ class TemporalStats:
         all_stats : pandas.DataFrame
             DataFrame of temporal statistics
         """
-        res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
-                        hsds=hsds)
-        all_stats = res_stats.all_stats(
-            dataset, sites=sites,
-            max_workers=max_workers,
-            chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
-        if out_path is not None:
-            res_stats.save_stats(all_stats, out_path)
+        all_stats = cls.run(res_h5, dataset, sites=sites,
+                            statistics=statistics, diurnal=True,
+                            month=True, combinations=True,
+                            res_cls=res_cls, hsds=hsds,
+                            max_workers=max_workers,
+                            chunks_per_worker=chunks_per_worker,
+                            lat_lon_only=lat_lon_only, out_path=out_path)
 
         return all_stats

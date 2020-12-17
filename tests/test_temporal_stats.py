@@ -57,7 +57,7 @@ def test_means(max_workers, sites):
     assert np.allclose(gids, test_stats.index.values), msg
 
     truth = np.mean(res_data, axis=0)
-    msg = 'Annual means do not match!'
+    msg = 'Means do not match!'
     assert np.allclose(truth, test_stats['mean'].values), msg
 
     mask = TIME_INDEX.month == 1
@@ -97,7 +97,7 @@ def test_medians(max_workers, sites):
     assert np.allclose(gids, test_stats.index.values), msg
 
     truth = np.median(res_data, axis=0)
-    msg = 'Annual medians do not match!'
+    msg = 'Medians do not match!'
     assert np.allclose(truth, test_stats['median'].values), msg
 
     mask = TIME_INDEX.month == 1
@@ -135,7 +135,7 @@ def test_stdevs(max_workers, sites):
     assert np.allclose(gids, test_stats.index.values), msg
 
     truth = np.std(res_data, axis=0)
-    msg = 'Annual stdevs do not match!'
+    msg = 'Stdevs do not match!'
     assert np.allclose(truth, test_stats['std'].values, rtol=0.0001), msg
 
     mask = TIME_INDEX.month == 1
@@ -163,10 +163,10 @@ def test_custom_stats(max_workers, sites):
     """
     stats = {'min': {'func': np.min, 'kwargs': {'axis': 0}},
              'mode': {'func': mode_func, 'kwargs': {'axis': 0}}}
-    test_stats = TemporalStats.annual(RES_H5, DATASET, sites=sites,
-                                      statistics=stats,
-                                      res_cls=WindResource,
-                                      max_workers=max_workers)
+    test_stats = TemporalStats.run(RES_H5, DATASET, sites=sites,
+                                   statistics=stats,
+                                   res_cls=WindResource,
+                                   max_workers=max_workers)
 
     res_data = RES_DATA[:, sites]
     gids = np.arange(RES_DATA.shape[1], dtype=int)[sites]
@@ -175,7 +175,7 @@ def test_custom_stats(max_workers, sites):
     assert np.allclose(gids, test_stats.index.values), msg
 
     truth = np.min(res_data, axis=0)
-    msg = 'Annual mins do not match!'
+    msg = 'Mins do not match!'
     assert np.allclose(truth, test_stats['min'].values), msg
 
     truth = mode(res_data, axis=0).mode[0]
@@ -194,7 +194,7 @@ def test_multi_year_stats(max_workers, sites):
     with MultiYearWindResource(res_h5) as f:
         res_data = f['windspeed_100m']
 
-    test_stats = TemporalStats.all(res_h5, 'windspeed_100m', sites=sites,
+    test_stats = TemporalStats.run(res_h5, 'windspeed_100m', sites=sites,
                                    statistics='mean',
                                    res_cls=MultiYearWindResource,
                                    max_workers=max_workers)
