@@ -978,13 +978,13 @@ class MultiYearResourceX(ResourceX):
         if year is None:
             year = slice(None)
 
-        means_map = TemporalStats.annual(self.resource.h5_file, ds_name,
-                                         sites=gids, statistics='mean',
-                                         res_cls=self.resource.__class__,
-                                         hsds=self.resource.hsds,
-                                         max_workers=max_workers,
-                                         chunks_per_worker=chunks_per_worker,
-                                         lat_lon_only=True)
+        means_map = TemporalStats.run(self.resource.h5_file, ds_name,
+                                      sites=gids, statistics='mean',
+                                      res_cls=self.resource.__class__,
+                                      hsds=self.resource.hsds,
+                                      max_workers=max_workers,
+                                      chunks_per_worker=chunks_per_worker,
+                                      lat_lon_only=True)
 
         return means_map
 
