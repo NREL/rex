@@ -2,15 +2,23 @@
 """
 pytests for  Rechunk h5
 """
+from click.testing import CliRunner
 import h5py
 import numpy as np
 import os
 import pytest
+import tempfile
 
-from rex.rechunk_h5.combine_h5 import CombineH5
+from rex.rechunk_h5.combine_h5_cli import main
 from rex import TESTDATADIR
 
-PURGE_OUT = True
+
+@pytest.fixture(scope="module")
+def runner():
+    """
+    cli runner
+    """
+    return CliRunner()
 
 
 def check_combine(src, comb, axis=1):
@@ -64,19 +72,22 @@ def check_combine(src, comb, axis=1):
 
 
 @pytest.mark.parametrize('axis', [0, 1])
-def test_combine_h5(axis):
+def test_combine_h5(runner, axis):
     """
     Test CombineH5
     """
     src_path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
-    combine_path = os.path.join(TESTDATADIR, 'wtk/combine.h5')
 
-    CombineH5.run(combine_path, src_path, src_path, axis=axis)
+    with tempfile.TemporaryDirectory() as td:
+        combine_path = os.path.join(td, 'combine.h5')
 
-    check_combine(src_path, combine_path, axis=axis)
+        result = runner.invoke(main, ['-comb', combine_path,
+                                      '-src', src_path,
+                                      '-src', src_path,
+                                      '-ax', axis])
+        assert result.exit_code == 0
 
-    if PURGE_OUT:
-        os.remove(combine_path)
+        check_combine(src_path, combine_path, axis=axis)
 
 
 def execute_pytest(capture='all', flags='-rapP'):

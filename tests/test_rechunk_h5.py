@@ -2,17 +2,26 @@
 """
 pytests for  Rechunk h5
 """
+from click.testing import CliRunner
 import h5py
 import numpy as np
 import os
 import pytest
+import tempfile
 
 from rex.resource import Resource
 from rex.rechunk_h5.rechunk_h5 import (get_dataset_attributes,
-                                       to_records_array, RechunkH5)
+                                       to_records_array)
+from rex.rechunk_h5.rechunk_cli import main
 from rex import TESTDATADIR
 
-PURGE_OUT = True
+
+@pytest.fixture(scope="module")
+def runner():
+    """
+    cli runner
+    """
+    return CliRunner()
 
 
 def create_var_attrs(h5_file, t_chunk=(8 * 7 * 24)):
@@ -91,57 +100,72 @@ def test_to_records_array():
                                   ['pressure_100m',
                                    'temperature_100m',
                                    'windspeed_100m']])
-def test_rechunk_h5(drop):
+def test_rechunk_h5(runner, drop):
     """
     Test RechunkH5
     """
     src_path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
-    rechunk_path = os.path.join(TESTDATADIR, 'wtk/rechunk.h5')
+
     var_attrs = create_var_attrs(src_path)
     if drop is not None:
         var_attrs = var_attrs.drop(drop)
 
-    RechunkH5.run(src_path, rechunk_path, var_attrs)
+    with tempfile.TemporaryDirectory() as td:
+        rechunk_path = os.path.join(td, 'rechunk.h5')
+        attrs_path = os.path.join(td, 'var_attrs.json')
+        var_attrs.to_json(attrs_path)
 
-    check_rechunk(src_path, rechunk_path, missing=drop)
+        result = runner.invoke(main, ['-src', src_path,
+                                      '-dst', rechunk_path,
+                                      '-vap', attrs_path])
+        assert result.exit_code == 0
 
-    if PURGE_OUT:
-        os.remove(rechunk_path)
+        check_rechunk(src_path, rechunk_path, missing=drop)
 
 
-def test_downscale():
+def test_downscale(runner):
     """
     Test downscaling resolution during RechunkH5
     """
     src_path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     truth_path = os.path.join(TESTDATADIR, 'wtk/rechunk_3hr.h5')
-    rechunk_path = os.path.join(TESTDATADIR, 'wtk/rechunk.h5')
     var_attrs = create_var_attrs(src_path, t_chunk=(7 * 24))
 
-    RechunkH5.run(src_path, rechunk_path, var_attrs, resolution='3h')
+    with tempfile.TemporaryDirectory() as td:
+        rechunk_path = os.path.join(td, 'rechunk.h5')
+        attrs_path = os.path.join(td, 'var_attrs.json')
+        var_attrs.to_json(attrs_path)
 
-    check_rechunk(truth_path, rechunk_path)
+        result = runner.invoke(main, ['-src', src_path,
+                                      '-dst', rechunk_path,
+                                      '-vap', attrs_path,
+                                      '-res', '3h'])
+        assert result.exit_code == 0
 
-    if PURGE_OUT:
-        os.remove(rechunk_path)
+        check_rechunk(truth_path, rechunk_path)
 
 
-def test_hub_height():
+def test_hub_height(runner):
     """
     Test hub_height RechunkH5 kwarg
     """
     src_path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
-    rechunk_path = os.path.join(TESTDATADIR, 'wtk/rechunk_100m.h5')
     var_attrs = create_var_attrs(src_path, t_chunk=(7 * 24))
 
-    RechunkH5.run(src_path, rechunk_path, var_attrs, hub_height=100)
+    with tempfile.TemporaryDirectory() as td:
+        rechunk_path = os.path.join(td, 'rechunk.h5')
+        attrs_path = os.path.join(td, 'var_attrs.json')
+        var_attrs.to_json(attrs_path)
 
-    missing = ['pressure_0m', 'pressure_200m', 'temperature_80m',
-               'winddirection_80m', 'windspeed_80m']
-    check_rechunk(src_path, rechunk_path, missing=missing)
+        result = runner.invoke(main, ['-src', src_path,
+                                      '-dst', rechunk_path,
+                                      '-vap', attrs_path,
+                                      '-hgt', '100'])
+        assert result.exit_code == 0
 
-    if PURGE_OUT:
-        os.remove(rechunk_path)
+        missing = ['pressure_0m', 'pressure_200m', 'temperature_80m',
+                   'winddirection_80m', 'windspeed_80m']
+        check_rechunk(src_path, rechunk_path, missing=missing)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
