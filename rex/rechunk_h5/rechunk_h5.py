@@ -783,6 +783,7 @@ class RechunkH5:
         if dset_name not in self._dst_h5:
             ts = time.time()
             logger.info('Rechunking {}'.format(dset_name))
+            print(dset_name)
             with h5py.File(self._src_path, 'r') as f_in:
                 ds_in = f_in[dset_name]
                 shape = ds_in.shape
@@ -861,6 +862,7 @@ class RechunkH5:
                          .format(self._dst_path, tt))
         except Exception:
             logger.exception('Error creating {:}'.format(self._dst_path))
+            raise
 
     @classmethod
     def run(cls, h5_src, h5_dst, var_attrs, hub_height=None,

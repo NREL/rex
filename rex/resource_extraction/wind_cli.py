@@ -71,12 +71,13 @@ def version():
 @main.command()
 @click.option('--hub_height', '-h', type=int, required=True,
               help='Hub height to extract SAM variables at')
-@click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
-              default=None,
+@click.option('--lat_lon', '-ll', nargs=2, type=float,
+              default=None, show_default=True,
               help='(lat, lon) coordinates of interest')
-@click.option('--gid', '-g', type=int, default=None,
+@click.option('--gid', '-gid', type=int, default=None, show_default=True,
               help='Resource gid of interest')
 @click.option('--sites', '-s', type=click.Path(exists=True), default=None,
+              show_default=True,
               help=('.csv or .json file with columns "latitude", "longitude" '
                     'OR "gid"'))
 @click.pass_context
@@ -85,14 +86,19 @@ def sam_datasets(ctx, hub_height, lat_lon, gid, sites):
     Extract all datasets needed for SAM for the nearest pixel(s) to the given
     (lat, lon) coordinates, the given resource gid, or the give sites
     """
+    if not lat_lon:
+        lat_lon = None
+
     inputs = set((lat_lon, gid, sites))
     if len(inputs) == 1:
-        click.echo("Must supply '--lat-lon', '--gid', or '--sites'!")
-        raise click.Abort()
+        msg = "Must supply '--lat-lon', '--gid', or '--sites'!"
+        click.echo(msg)
+        raise click.Abort(msg)
     elif len(inputs) > 2:
-        click.echo("You must only supply one of '--lat-lon', '--gid', or "
-                   "'--sites'!")
-        raise click.Abort()
+        msg = ("You must only supply one of '--lat-lon', '--gid', or "
+               "'--sites'!")
+        click.echo(msg)
+        raise click.Abort(msg)
 
     if lat_lon or gid:
         logger.info('Saving data to {}'.format(ctx.obj['OUT_DIR']))
@@ -101,7 +107,6 @@ def sam_datasets(ctx, hub_height, lat_lon, gid, sites):
                 f.get_SAM_lat_lon(hub_height, lat_lon,
                                   out_path=ctx.obj['OUT_DIR'])
             elif gid is not None:
-                gid = f._get_nearest(lat_lon)
                 f.get_SAM_gid(hub_height, gid, out_path=ctx.obj['OUT_DIR'])
 
     else:
@@ -140,10 +145,10 @@ def dataset(ctx, dataset):
 
 
 @dataset.command()
-@click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
-              default=None,
+@click.option('--lat_lon', '-ll', nargs=2, type=float,
+              default=None, show_default=True,
               help='(lat, lon) coordinates of interest')
-@click.option('--gid', '-g', type=int, default=None,
+@click.option('--gid', '-gid', type=int, default=None, show_default=True,
               help='Resource gid of interest')
 @click.pass_context
 def site(ctx, lat_lon, gid):
@@ -159,8 +164,9 @@ def site(ctx, lat_lon, gid):
 @click.option('--region', '-r', type=str, required=True,
               help='Region to extract')
 @click.option('--region_col', '-col', type=str, default='state',
+              show_default=True,
               help='Meta column to search for region')
-@click.option('--timestep', '-ts', type=str, default=None,
+@click.option('--timestep', '-ts', type=str, default=None, show_default=True,
               help='Time-step to extract')
 @click.pass_context
 def region(ctx, region, region_col, timestep):
@@ -173,15 +179,15 @@ def region(ctx, region, region_col, timestep):
 
 
 @dataset.command()
-@click.option('--lat_lon_1', '-ll1', nargs=2, type=click.Tuple([float, float]),
+@click.option('--lat_lon_1', '-ll1', nargs=2, type=float,
               required=True,
               help='One corner of the bounding box')
-@click.option('--lat_lon_2', '-ll2', nargs=2, type=click.Tuple([float, float]),
+@click.option('--lat_lon_2', '-ll2', nargs=2, type=float,
               required=True,
               help='The other corner of the bounding box')
-@click.option('--file_suffix', '-fs', default=None,
+@click.option('--file_suffix', '-fs', default=None, show_default=True,
               help='Filename suffix')
-@click.option('--timestep', '-ts', type=str, default=None,
+@click.option('--timestep', '-ts', type=str, default=None, show_default=True,
               help='Timestep to extract')
 @click.pass_context
 def box(ctx, lat_lon_1, lat_lon_2, file_suffix, timestep):

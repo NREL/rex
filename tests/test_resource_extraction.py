@@ -2,12 +2,16 @@
 """
 pytests for resource extractors
 """
+from click.testing import CliRunner
 import numpy as np
 import os
 import pandas as pd
 from pandas.testing import assert_frame_equal
 import pytest
+import tempfile
+import traceback
 
+from rex.resource_extraction.wind_cli import main
 from rex.resource_extraction.resource_extraction import (MultiFileWindX,
                                                          MultiFileNSRDBX,
                                                          MultiTimeWindX,
@@ -18,6 +22,14 @@ from rex.resource_extraction.resource_extraction import (MultiFileWindX,
 from rex.resource_extraction.resource_extraction import TREE_DIR
 from rex.utilities.exceptions import ResourceValueError
 from rex import TESTDATADIR
+
+
+@pytest.fixture(scope="module")
+def runner():
+    """
+    cli runner
+    """
+    return CliRunner()
 
 
 @pytest.fixture
@@ -111,6 +123,7 @@ def extract_site(res_cls, ds_name):
     meta = res_cls.meta
     site = np.random.choice(len(meta), 1)[0]
     lat_lon = meta.loc[site, ['latitude', 'longitude']].values
+
     truth_ts = res_cls[ds_name, :, site]
     truth_df = pd.DataFrame(truth_ts, columns=[site],
                             index=pd.Index(time_index, name='time_index'))
@@ -693,6 +706,118 @@ def test_check_lat_lon():
         with pytest.raises(ResourceValueError):
             # pylint: disable=no-member
             f.lat_lon_gid(bad_lat_lon)
+
+
+def test_cli_site(runner, WindX_cls):
+    """
+    Test rex CLI site get
+    """
+    lat_lon = WindX_cls.lat_lon
+    gid = np.random.choice(len(lat_lon), 1)[0]
+    ds_name = 'windspeed_100m'
+
+    truth = WindX_cls.get_gid_df(ds_name, gid)
+
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    with tempfile.TemporaryDirectory() as td:
+        result = runner.invoke(main, ['-h5', path,
+                                      '-o', td,
+                                      'dataset', '-d', ds_name,
+                                      'site', '-gid', gid])
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
+
+        out_path = "{}-{}.csv".format(ds_name, gid)
+        site_df = pd.read_csv(os.path.join(td, out_path), index_col=0)
+        assert np.allclose(site_df.values, truth.values)
+
+    WindX_cls.close()
+
+
+def test_cli_SAM(runner, WindX_cls):
+    """
+    Test rex CLI SAM get
+    """
+    lat_lon = WindX_cls.lat_lon
+    gid = np.random.choice(len(lat_lon), 1)[0]
+
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    with tempfile.TemporaryDirectory() as td:
+        truth_path = os.path.join(td, 'truth.csv')
+        WindX_cls.get_SAM_gid(100, gid, out_path=truth_path)
+        truth = pd.read_csv(truth_path, skiprows=1)
+
+        result = runner.invoke(main, ['-h5', path,
+                                      '-o', td,
+                                      'sam-datasets', '-h', 100,
+                                      '-gid', gid])
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
+
+        out_path = "SAM_100m-{}.csv".format(gid)
+        test = pd.read_csv(os.path.join(td, out_path), skiprows=1)
+        assert_frame_equal(truth, test)
+
+    WindX_cls.close()
+
+
+def test_cli_region(runner, WindX_cls):
+    """
+    Test rex CLI region get
+    """
+    ds_name = 'windspeed_50m'
+    region = 'Providence'
+    region_col = 'county'
+
+    truth = WindX_cls.get_region_df(ds_name, region, region_col=region_col)
+
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    with tempfile.TemporaryDirectory() as td:
+        result = runner.invoke(main, ['-h5', path,
+                                      '-o', td,
+                                      'dataset', '-d', ds_name,
+                                      'region', '-r', region,
+                                      '-col', region_col])
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
+
+        out_path = "{}-{}.csv".format(ds_name, region)
+        site_df = pd.read_csv(os.path.join(td, out_path), index_col=0)
+        assert np.allclose(site_df.values, truth.values)
+
+    WindX_cls.close()
+
+
+def test_cli_box(runner, WindX_cls):
+    """
+    Test rex CLI bounding box get
+    """
+    lat_lon = WindX_cls.lat_lon
+    ds_name = 'windspeed_100m'
+    lat_lon_1 = (lat_lon[:, 0].min(), lat_lon[:, 1].min())
+    lat_lon_2 = (lat_lon[:, 0].max(), lat_lon[:, 1].max())
+
+    truth = WindX_cls.get_box_df(ds_name, lat_lon_1, lat_lon_2)
+
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    with tempfile.TemporaryDirectory() as td:
+        result = runner.invoke(main, ['-h5', path,
+                                      '-o', td,
+                                      'dataset', '-d', ds_name,
+                                      'box', '-ll1', *lat_lon_1,
+                                      '-ll2', *lat_lon_2])
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
+
+        out_path = "{}-box.csv".format(ds_name)
+        site_df = pd.read_csv(os.path.join(td, out_path), index_col=0)
+        assert np.allclose(site_df.values, truth.values)
+
+    WindX_cls.close()
 
 
 def execute_pytest(capture='all', flags='-rapP'):

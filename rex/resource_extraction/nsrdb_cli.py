@@ -76,9 +76,11 @@ def version():
 @click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
               default=None,
               help='(lat, lon) coordinates of interest')
-@click.option('--gid', '-g', type=int, default=None,
+@click.option('--gid', '-gid', type=int, default=None,
+              show_default=True,
               help='Resource gid of interest')
 @click.option('--sites', '-s', type=click.Path(exists=True), default=None,
+              show_default=True,
               help=('.csv or .json file with columns "latitude", "longitude" '
                     'OR "gid"'))
 @click.pass_context
@@ -102,10 +104,10 @@ def dataset(ctx, dataset):
 
 
 @dataset.command()
-@click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
-              default=None,
+@click.option('--lat_lon', '-ll', nargs=2, type=float,
+              default=None, show_default=True,
               help='(lat, lon) coordinates of interest')
-@click.option('--gid', '-g', type=int, default=None,
+@click.option('--gid', '-gid', type=int, default=None, show_default=True,
               help='Resource gid of interest')
 @click.pass_context
 def site(ctx, lat_lon, gid):
@@ -120,8 +122,10 @@ def site(ctx, lat_lon, gid):
 @click.option('--region', '-r', type=str, required=True,
               help='Region to extract')
 @click.option('--region_col', '-col', type=str, default='state',
+              show_default=True,
               help='Meta column to search for region')
 @click.option('--timestep', '-ts', type=str, default=None,
+              show_default=True,
               help='Timestep to extract')
 @click.pass_context
 def region(ctx, region, region_col, timestep):
@@ -133,15 +137,15 @@ def region(ctx, region, region_col, timestep):
 
 
 @dataset.command()
-@click.option('--lat_lon_1', '-ll1', nargs=2, type=click.Tuple([float, float]),
+@click.option('--lat_lon_1', '-ll1', nargs=2, type=float,
               required=True,
               help='One corner of the bounding box')
-@click.option('--lat_lon_2', '-ll2', nargs=2, type=click.Tuple([float, float]),
+@click.option('--lat_lon_2', '-ll2', nargs=2, type=float,
               required=True,
               help='The other corner of the bounding box')
-@click.option('--file_suffix', '-fs', default=None,
+@click.option('--file_suffix', '-fs', default=None, show_default=True,
               help='Filename suffix')
-@click.option('--timestep', '-ts', type=str, default=None,
+@click.option('--timestep', '-ts', type=str, default=None, show_default=True,
               help='Timestep to extract')
 @click.pass_context
 def box(ctx, lat_lon_1, lat_lon_2, file_suffix, timestep):

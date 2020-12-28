@@ -8,6 +8,7 @@ import numpy as np
 import os
 import pytest
 import tempfile
+import traceback
 
 from rex.rechunk_h5.combine_h5_cli import main
 from rex import TESTDATADIR
@@ -85,7 +86,9 @@ def test_combine_h5(runner, axis):
                                       '-src', src_path,
                                       '-src', src_path,
                                       '-ax', axis])
-        assert result.exit_code == 0
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
 
         check_combine(src_path, combine_path, axis=axis)
 

@@ -8,6 +8,7 @@ import numpy as np
 import os
 import pytest
 import tempfile
+import traceback
 
 from rex.resource import Resource
 from rex.rechunk_h5.rechunk_h5 import (get_dataset_attributes,
@@ -48,6 +49,8 @@ def create_var_attrs(h5_file, t_chunk=(8 * 7 * 24)):
         elif var == 'meta':
             var_attrs.loc[var, 'chunks'] = None
             var_attrs.loc[var, 'dtype'] = None
+        elif var == 'coordinates':
+            var_attrs.loc[var, 'chunks'] = None
         else:
             var_attrs.loc[var, 'chunks'] = (t_chunk, 10)
 
@@ -60,22 +63,25 @@ def check_rechunk(src, dst, missing=None):
     """
     with h5py.File(dst, mode='r') as f_dst:
         with h5py.File(src, mode='r') as f_src:
-            for dset in f_dst:
-                assert dset in f_src
-                ds_dst = f_dst[dset]
-                ds_src = f_src[dset]
-                assert ds_dst.shape == ds_src.shape
-                if dset != 'time_index':
-                    assert ds_dst.dtype == ds_src.dtype
-
-                chunks = ds_dst.chunks
-                if chunks is not None:
-                    assert chunks != ds_src.chunks
-
             if missing is not None:
                 for dset in missing:
                     assert dset in f_src
                     assert dset not in f_dst
+            else:
+                missing = []
+
+            for dset in f_src:
+                if dset not in missing:
+                    assert dset in f_dst
+                    ds_dst = f_dst[dset]
+                    ds_src = f_src[dset]
+                    assert ds_dst.shape == ds_src.shape
+                    if dset != 'time_index':
+                        assert ds_dst.dtype == ds_src.dtype
+
+                    chunks = ds_dst.chunks
+                    if chunks is not None:
+                        assert chunks != ds_src.chunks
 
 
 def test_to_records_array():
@@ -118,7 +124,9 @@ def test_rechunk_h5(runner, drop):
         result = runner.invoke(main, ['-src', src_path,
                                       '-dst', rechunk_path,
                                       '-vap', attrs_path])
-        assert result.exit_code == 0
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
 
         check_rechunk(src_path, rechunk_path, missing=drop)
 
@@ -140,7 +148,9 @@ def test_downscale(runner):
                                       '-dst', rechunk_path,
                                       '-vap', attrs_path,
                                       '-res', '3h'])
-        assert result.exit_code == 0
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
 
         check_rechunk(truth_path, rechunk_path)
 
@@ -161,7 +171,9 @@ def test_hub_height(runner):
                                       '-dst', rechunk_path,
                                       '-vap', attrs_path,
                                       '-hgt', '100'])
-        assert result.exit_code == 0
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
 
         missing = ['pressure_0m', 'pressure_200m', 'temperature_80m',
                    'winddirection_80m', 'windspeed_80m']

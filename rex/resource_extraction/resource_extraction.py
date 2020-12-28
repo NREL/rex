@@ -78,6 +78,9 @@ class ResourceX:
     def __getitem__(self, keys):
         return self.resource[keys]
 
+    def __contains__(self, dset):
+        return dset in self.datasets
+
     def __iter__(self):
         return self
 
@@ -90,9 +93,6 @@ class ResourceX:
         self._i += 1
 
         return dset
-
-    def __contains__(self, dset):
-        return dset in self.datasets
 
     @property
     def resource(self):
@@ -605,14 +605,14 @@ class ResourceX:
             Time-series DataFrame for given site(s) and dataset
         """
         index = pd.Index(data=self.time_index, name='time_index')
-        if isinstance(gid, int):
-            df = pd.DataFrame(self[ds_name, :, gid], columns=[gid],
-                              index=index)
-            df.name = gid
+        if isinstance(gid, (int, np.integer)):
+            columns = [gid]
         else:
-            df = pd.DataFrame(self[ds_name, :, gid], columns=gid,
-                              index=index)
-            df.name = ds_name
+            columns = gid
+
+        df = pd.DataFrame(self[ds_name, :, gid], columns=columns,
+                          index=index)
+        df.name = ds_name
 
         return df
 
@@ -778,7 +778,7 @@ class ResourceX:
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        if isinstance(gid, int):
+        if isinstance(gid, (int, np.integer)):
             gid = [gid, ]
 
         SAM_df = []
@@ -1234,7 +1234,7 @@ class WindX(ResourceX):
             returned
         """
         ds_name = 'SAM_{}m'.format(hub_height)
-        if isinstance(gid, int):
+        if isinstance(gid, (int, np.integer)):
             gid = [gid, ]
 
         SAM_df = []
@@ -1460,7 +1460,7 @@ class WaveX(ResourceX):
             df = self[ds_name, :, gid]
             index = pd.Index(data=self.time_index, name='time_index')
 
-        if isinstance(gid, int):
+        if isinstance(gid, (int, np.integer)):
             df = pd.DataFrame(df, columns=[gid],
                               index=index)
             df.name = gid

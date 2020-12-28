@@ -26,18 +26,19 @@ logger = logging.getLogger(__name__)
 @click.option('--statistics', '-stats',
               type=click.Choice(['mean', 'median', 'stdev', 'std'],
                                 case_sensitive=False), default=['mean'],
-              multiple=True,
+              multiple=True, show_default=True,
               help=("Statistics to extract, must be 'mean', 'median', 'std', "
                     "and / or 'stdev'")
               )
 @click.option('--max_workers', '-mw', type=int, default=None,
+              show_default=True,
               help=('Number of workers to use, if 1 run in serial, if None use'
                     ' all available cores'))
 @click.option('--res_cls', '-res',
               type=click.Choice(['Resource', 'NSRDB', 'Wind', 'Wave',
                                  'MultiFileNSRDB', 'MultiFileWTK'],
                                 case_sensitive=False),
-              default='Resource',
+              default='Resource', show_default=True,
               help='Resource type')
 @click.option('--hsds', '-hsds', is_flag=True,
               help=("Boolean flag to use h5pyd to handle .h5 'files' hosted "
@@ -56,6 +57,15 @@ def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
     """
     ctx.ensure_object(dict)
 
+    name = os.path.splitext(os.path.basename(resource_path))[0]
+    out_fpath = '{}_{}.csv'.format(name, dataset)
+    out_fpath = os.path.join(out_dir, out_fpath)
+    init_mult(name, out_dir, verbose=verbose, node=True,
+              modules=[__name__, 'rex',
+                       'rex.resource_extraction.temporal_stats'])
+    logger.info('Extracting Resource data from {}'.format(resource_path))
+    logger.info('Outputs to be stored in: {}'.format(out_dir))
+
     if res_cls == 'Resource':
         res_cls = Resource
     elif res_cls == 'NSRDB':
@@ -64,27 +74,17 @@ def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
         res_cls = WindResource
     elif res_cls == 'Wave':
         res_cls = WaveResource
-    if res_cls == 'MultiFileNSRDB':
+    elif res_cls == 'MultiFileNSRDB':
         res_cls = MultiFileNSRDB
-    if res_cls == 'MultiFileWTK':
+    elif res_cls == 'MultiFileWTK':
         res_cls = MultiFileWTK
 
     res_stats = TemporalStats(resource_path, statistics=statistics,
-                              max_workers=max_workers, res_cls=res_cls,
-                              hsds=hsds)
-
-    name = os.path.splitext(os.path.basename(resource_path))[0]
-    out_fpath = '{}_{}.csv'.format(name, dataset)
-    out_fpath = os.path.join(out_dir, out_fpath)
-    init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex.resource_extraction.resource_stats'])
-
-    logger.info('Extracting Resource data from {}'.format(resource_path))
-    logger.info('Outputs to be stored in: {}'.format(out_dir))
+                              res_cls=res_cls, hsds=hsds)
 
     if ctx.invoked_subcommand is None:
         all_stats = res_stats.all_stats(
-            dataset,
+            dataset, max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
 
@@ -92,6 +92,7 @@ def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
     else:
         ctx.obj['STATS'] = res_stats
         ctx.obj['DSET'] = dataset
+        ctx.obj['MAX_WORKERS'] = max_workers
         ctx.obj['CPW'] = chunks_per_worker
         ctx.obj['LL'] = lat_lon_only
         ctx.obj['OUT_PATH'] = out_fpath
@@ -99,17 +100,17 @@ def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
 
 @main.command()
 @click.pass_context
-def annual(ctx):
+def full(ctx):
     """
-    Compute Annual Stats
+    Compute Stats for full file time-series
     """
     res_stats = ctx.obj['STATS']
     annual_stats = res_stats.annual_stats(
-        ctx.obj['DSET'],
+        ctx.obj['DSET'], max_workers=ctx.obj["MAX_WORKERS"],
         chunks_per_worker=ctx.obj['CPW'],
         lat_lon_only=ctx.obj['LL'])
 
-    out_fpath = ctx.obj['OUT_PATH'].replace('.csv', '_annual.csv')
+    out_fpath = ctx.obj['OUT_PATH'].replace('.csv', '_stats.csv')
     res_stats.save_stats(annual_stats, out_fpath)
 
 
@@ -121,7 +122,7 @@ def monthly(ctx):
     """
     res_stats = ctx.obj['STATS']
     monthly_stats = res_stats.monthly_stats(
-        ctx.obj['DSET'],
+        ctx.obj['DSET'], max_workers=ctx.obj["MAX_WORKERS"],
         chunks_per_worker=ctx.obj['CPW'],
         lat_lon_only=ctx.obj['LL'])
 
@@ -137,7 +138,7 @@ def diurnal(ctx):
     """
     res_stats = ctx.obj['STATS']
     diurnal_stats = res_stats.diurnal_stats(
-        ctx.obj['DSET'],
+        ctx.obj['DSET'], max_workers=ctx.obj["MAX_WORKERS"],
         chunks_per_worker=ctx.obj['CPW'],
         lat_lon_only=ctx.obj['LL'])
 
@@ -153,7 +154,7 @@ def monthly_diurnal(ctx):
     """
     res_stats = ctx.obj['STATS']
     monthly_diurnal_stats = res_stats.monthly_diurnal_stats(
-        ctx.obj['DSET'],
+        ctx.obj['DSET'], max_workers=ctx.obj["MAX_WORKERS"],
         chunks_per_worker=ctx.obj['CPW'],
         lat_lon_only=ctx.obj['LL'])
 
