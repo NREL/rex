@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 @click.option('--out_dir', '-o', required=True, type=click.Path(),
               help='Directory to dump output files')
 @click.option('--years', '-yrs', type=INTLIST, default=None,
+              show_default=True,
               help='List of years to access, by default None')
 @click.option('--hsds', '-hsds', is_flag=True,
               help=("Boolean flag to use h5pyd to handle .h5 'files' hosted "
@@ -36,7 +37,7 @@ logger = logging.getLogger(__name__)
 @click.option('--res_cls', '-res',
               type=click.Choice(['Resource', 'NSRDB', 'Wind', 'Wave'],
                                 case_sensitive=False),
-              default='Resource',
+              default='Resource', show_default=True,
               help='Resource type')
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
@@ -80,10 +81,10 @@ def dataset(ctx, dataset):
 
 
 @dataset.command()
-@click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
-              default=None,
+@click.option('--lat_lon', '-ll', nargs=2, type=float,
+              default=None, show_default=True,
               help='(lat, lon) coordinates of interest')
-@click.option('--gid', '-g', type=int, default=None,
+@click.option('--gid', '-gid', type=int, default=None, show_default=True,
               help='Resource gid of interest')
 @click.pass_context
 def site(ctx, lat_lon, gid):
@@ -98,8 +99,10 @@ def site(ctx, lat_lon, gid):
 @click.option('--region', '-r', type=str, required=True,
               help='Region to extract')
 @click.option('--region_col', '-col', type=str, default='state',
+              show_default=True,
               help='Meta column to search for region')
 @click.option('--timestep', '-ts', type=str, default=None,
+              show_default=True,
               help='Timestep to extract')
 @click.pass_context
 def region(ctx, region, region_col, timestep):
@@ -111,15 +114,17 @@ def region(ctx, region, region_col, timestep):
 
 
 @dataset.command()
-@click.option('--lat_lon_1', '-ll1', nargs=2, type=click.Tuple([float, float]),
+@click.option('--lat_lon_1', '-ll1', nargs=2, type=float,
               required=True,
               help='One corner of the bounding box')
-@click.option('--lat_lon_2', '-ll2', nargs=2, type=click.Tuple([float, float]),
+@click.option('--lat_lon_2', '-ll2', nargs=2, type=float,
               required=True,
               help='The other corner of the bounding box')
 @click.option('--file_suffix', '-fs', default=None,
+              show_default=True,
               help='File name suffix')
 @click.option('--timestep', '-ts', type=str, default=None,
+              show_default=True,
               help='Timestep to extract')
 @click.pass_context
 def box(ctx, lat_lon_1, lat_lon_2, file_suffix, timestep):
@@ -145,8 +150,10 @@ def multi_site(ctx, sites):
 
 @dataset.group(invoke_without_command=True)
 @click.option('--region', '-r', type=str, default=None,
+              show_default=True,
               help='Region to extract')
 @click.option('--region_col', '-col', type=str, default='state',
+              show_default=True,
               help='Meta column to search for region')
 def map_means(ctx, region, region_col):
     """

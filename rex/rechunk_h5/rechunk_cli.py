@@ -19,21 +19,26 @@ from rex.utilities.loggers import init_logger
               required=True,
               help=".json containing variable attributes")
 @click.option('--hub_height', '-hgt', type=INT, default=None,
+              show_default=True,
               help="Rechunk specific hub_height")
-@click.option('--version', '-ver', default=None,
+@click.option('--version', '-ver', default=None, show_default=True,
               help="File version number")
 @click.option('--overwrite', '-rm', is_flag=True,
               help="Flag to overwrite an existing h5_dst file")
 @click.option('--meta', '-m', default=None, type=click.Path(exists=True),
+              show_default=True,
               help=("Path to .csv or .npy file containing meta to load into "
                     "rechunked .h5 file"))
 @click.option('--process_size', '-s', default=None, type=INT,
+              show_default=True,
               help="Size of each chunk to be processed")
 @click.option('--check_dset_attrs', '-cda', is_flag=True,
               help='Flag to compare source and specified dataset attributes')
 @click.option('--resolution', '-res', default=None, type=STR,
+              show_default=True,
               help='New time resolution')
 @click.option('--log_file', '-log', default=None, type=click.Path(),
+              show_default=True,
               help='Path to .log file')
 @click.option('--verbose', '-v', is_flag=True,
               help='If used upgrade logging to DEBUG')

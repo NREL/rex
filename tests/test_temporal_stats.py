@@ -2,14 +2,19 @@
 """
 pytests for  Rechunk h5
 """
+from click.testing import CliRunner
 import numpy as np
 import os
+import pandas as pd
 import pytest
 from scipy.stats import mode
+import tempfile
+import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
 from rex.resource_extraction.temporal_stats import TemporalStats
+from rex.resource_extraction.temporal_stats_cli import main
 from rex import TESTDATADIR
 
 PURGE_OUT = True
@@ -19,6 +24,14 @@ DATASET = 'windspeed_100m'
 with WindResource(RES_H5) as f:
     TIME_INDEX = f.time_index
     RES_DATA = f[DATASET]
+
+
+@pytest.fixture(scope="module")
+def runner():
+    """
+    cli runner
+    """
+    return CliRunner()
 
 
 def mode_func(arr, axis=0):
@@ -210,6 +223,49 @@ def test_multi_year_stats(max_workers, sites):
     truth = np.mean(res_data, axis=0)
     msg = 'Means do not match!'
     assert np.allclose(truth, test_stats['mean'].values), msg
+
+
+def test_cli(runner):
+    """
+    Test CLI
+    """
+    with tempfile.TemporaryDirectory() as td:
+        result = runner.invoke(main, ['-h5', RES_H5,
+                                      '-dset', DATASET,
+                                      '-o', td,
+                                      '-mw', 1,
+                                      '-res', 'Wind'])
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
+
+        name = os.path.splitext(os.path.basename(RES_H5))[0]
+        out_fpath = '{}_{}.csv'.format(name, DATASET)
+        test_stats = pd.read_csv(os.path.join(td, out_fpath))
+        res_data = RES_DATA
+        gids = np.arange(RES_DATA.shape[1], dtype=int)
+
+        msg = ('gids do not match!')
+        assert np.allclose(gids, test_stats.index.values), msg
+
+        truth = np.mean(res_data, axis=0)
+        msg = 'Means do not match!'
+        assert np.allclose(truth, test_stats['mean'].values), msg
+
+        mask = TIME_INDEX.month == 1
+        truth = np.mean(res_data[mask], axis=0)
+        msg = 'January means do not match!'
+        assert np.allclose(truth, test_stats['Jan_mean'].values), msg
+
+        mask = TIME_INDEX.hour == 0
+        truth = np.mean(res_data[mask], axis=0)
+        msg = 'Midnight means do not match!'
+        assert np.allclose(truth, test_stats['00_mean'].values), msg
+
+        mask = (TIME_INDEX.month == 1) & (TIME_INDEX.hour == 0)
+        truth = np.mean(res_data[mask], axis=0)
+        msg = 'January-midnight means do not match!'
+        assert np.allclose(truth, test_stats['Jan-00_mean'].values), msg
 
 
 def execute_pytest(capture='all', flags='-rapP'):

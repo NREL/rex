@@ -261,7 +261,7 @@ class ResourceDataset:
             if isinstance(s, slice):
                 out_slice += (slice(None), )
                 int_slice += (slice(None), )
-            elif isinstance(s, int):
+            elif isinstance(s, (int, np.integer)):
                 if int_start == int_stop:
                     int_slice += (int_start, )
                     int_stop += 1
@@ -760,7 +760,7 @@ class Resource:
             out = self._get_coords(ds, ds_slice)
         elif 'SAM' in ds_name:
             site = ds_slice[0]
-            if isinstance(site, int):
+            if isinstance(site, (int, np.integer)):
                 out = self._get_SAM_df(ds, site)  # pylint: disable=E1111
             else:
                 msg = "Can only extract SAM DataFrame for a single site"
@@ -1174,7 +1174,7 @@ class Resource:
         """
         ds_slice = parse_slice(ds_slice)
         sites = ds_slice[0]
-        if isinstance(sites, int):
+        if isinstance(sites, (int, np.integer)):
             sites = slice(sites, sites + 1)
 
         meta = self.h5[ds_name]

@@ -16,13 +16,15 @@ from rex.utilities.loggers import init_logger
 @click.option('--source_h5', '-src', type=click.Path(exists=True),
               required=True, multiple=True,
               help="Path to source .h5 file, may supply multiple")
-@click.option('--axis', '-ax', type=int, default=1,
+@click.option('--axis', '-ax', type=int, default=1, show_default=True,
               help='axis to combine datasets along, by default 1')
 @click.option('--overwrite', '-rm', is_flag=True,
               help="Flag to overwrite an existing h5_dst file")
 @click.option('--process_size', '-s', default=None, type=INT,
+              show_default=True,
               help="Size of each chunk to be processed")
 @click.option('--log_file', '-log', default=None, type=click.Path(),
+              show_default=True,
               help='Path to .log file')
 @click.option('--verbose', '-v', is_flag=True,
               help='If used upgrade logging to DEBUG')
