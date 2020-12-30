@@ -129,7 +129,7 @@ class SubprocessManager:
             cmd = nohup_cmd.format(cmd)
             shell = True
 
-        subprocess.run(cmd, shell=shell)
+        subprocess.run(cmd, shell=shell, check=True)
 
     @staticmethod
     def submit(cmd, background=False, background_stdout=False):
@@ -228,7 +228,7 @@ class SpawnProcessPool(cf.ProcessPoolExecutor):
             kwargs['mp_context'] = multiprocessing.get_context('spawn')
 
         if loggers is not None:
-            kwargs['initializer'] = LOGGERS.init_logger
+            kwargs['initializer'] = LOGGERS.init_loggers
             kwargs['initargs'] = (loggers, )
 
         super().__init__(*args, **kwargs)

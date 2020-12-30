@@ -3,13 +3,13 @@
 ResourceX Command Line Interface
 """
 import click
-import logging
 import os
+import logging
 import pandas as pd
 
 from rex.resource_extraction.resource_extraction import (ResourceX,
                                                          MultiFileResourceX)
-from rex.utilities.loggers import init_mult
+from rex.utilities.loggers import init_logger
 from rex.utilities.utilities import check_res_file
 from rex import __version__
 
@@ -61,10 +61,13 @@ def _parse_sites(sites):
               help=('Path to Resource .h5 file'))
 @click.option('--out_dir', '-o', required=True, type=click.Path(),
               help='Directory to dump output files')
+@click.option('--log_file', '-log', default=None, type=click.Path(),
+              show_default=True,
+              help='Path to .log file, if None only log to stdout')
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
 @click.pass_context
-def main(ctx, resource_h5, out_dir, verbose):
+def main(ctx, resource_h5, out_dir, log_file, verbose):
     """
     ResourceX Command Line Interface
     """
@@ -85,10 +88,17 @@ def main(ctx, resource_h5, out_dir, verbose):
 
         ctx.obj['CLS'] = ResourceX
 
-    name = os.path.splitext(os.path.basename(resource_h5))[0]
-    init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex.resource_extraction',
-                       'rex.resource'])
+    if verbose:
+        log_level = 'DEBUG'
+    else:
+        log_level = 'INFO'
+
+    if log_file is not None:
+        log_dir = os.path.dirname(log_file)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+    init_logger('rex', log_file=log_file, log_level=log_level)
 
     logger.info('Extracting Resource data from {}'.format(resource_h5))
     logger.info('Outputs to be stored in: {}'.format(out_dir))

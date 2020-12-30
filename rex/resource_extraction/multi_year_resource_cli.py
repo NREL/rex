@@ -17,7 +17,7 @@ from rex.resource_extraction.resource_extraction import (MultiYearResourceX,
                                                          MultiYearWindX,
                                                          MultiYearWaveX)
 from rex.utilities.cli_dtypes import STRLIST, INTLIST
-from rex.utilities.loggers import init_mult
+from rex.utilities.loggers import init_logger
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +39,14 @@ logger = logging.getLogger(__name__)
                                 case_sensitive=False),
               default='Resource', show_default=True,
               help='Resource type')
+@click.option('--log_file', '-log', default=None, type=click.Path(),
+              show_default=True,
+              help='Path to .log file, if None only log to stdout')
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
 @click.pass_context
-def main(ctx, resource_path, out_dir, years, hsds, res_cls, verbose):
+def main(ctx, resource_path, out_dir, years, hsds, res_cls, log_file,
+         verbose):
     """
     Multi-year ResourceX Command Line Interface
     """
@@ -60,10 +64,17 @@ def main(ctx, resource_path, out_dir, years, hsds, res_cls, verbose):
     elif res_cls == 'Wave':
         ctx.obj['CLS'] = MultiYearWaveX
 
-    name = os.path.splitext(os.path.basename(resource_path))[0]
-    init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex.resource_extraction',
-                       'rex.multi_year_resource'])
+    if verbose:
+        log_level = 'DEBUG'
+    else:
+        log_level = 'INFO'
+
+    if log_file is not None:
+        log_dir = os.path.dirname(log_file)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+    init_logger('rex', log_file=log_file, log_level=log_level)
 
     logger.info('Extracting Resource data from {}'.format(resource_path))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
@@ -159,6 +170,7 @@ def map_means(ctx, region, region_col):
     """
     Map temporal means for given dataset in region if given.
     """
+    logger = ctx.obj["LOGGER"]
     if ctx.invoked_subcommand is None:
         with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
             map_df = f.get_means_map(ctx.obj["DATASET"], year=None,
@@ -182,6 +194,7 @@ def year(ctx, year):
     """
     Map means for a given year
     """
+    logger = ctx.obj["LOGGER"]
     with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
         map_df = f.get_means_map(ctx.obj["DATASET"], year=year,
                                  region=ctx.obj['REGION'],
@@ -201,6 +214,7 @@ def multi_year(ctx, years):
     """
     Map means for a given subset of years
     """
+    logger = ctx.obj["LOGGER"]
     with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
         map_df = f.get_means_map(ctx.obj["DATASET"], year=years,
                                  region=ctx.obj['REGION'],
