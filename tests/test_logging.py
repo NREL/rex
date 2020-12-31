@@ -38,11 +38,16 @@ def test_loggers():
         assert len(logger.handlers) == 3
 
         # re-initilize 'rex.test'
+        for h in logger.handlers:
+            h.close()
+
         logger.handlers.clear()
         log_file = os.path.join(td, 'test.log')
         logger = init_logger('rex.test', log_file=log_file, log_level='DEBUG')
         assert len(logger.handlers) == 2
         assert len(LOGGERS.loggers) == 1
+        for h in logger.handlers:
+            h.close()
 
         # Add parent logger removing 'rex.test' but inheriting handlers and
         # level

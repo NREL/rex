@@ -130,17 +130,18 @@ def setup_logger(logger_name, stream=True, log_level="INFO", log_file=None,
     ----------
     logger_name : str
         Name of logger
-    stream : bool
-        Init stream logger
-    log_level : str
+    stream : bool, optional
+        Add a StreamHandler along with FileHandler, by default True
+    log_level : str, optional
         Level of logging to capture, must be key in LOG_LEVEL. If multiple
         handlers/log_files are requested in a single call of this function,
-        the specified logging level will be applied to all requested handlers.
-    log_file : str | list
+        the specified logging level will be applied to all requested handlers,
+        by default "INFO"
+    log_file : str | list, optional
         Path to file to use for logging, if None use a StreamHandler
-        list of multiple handlers is permitted
-    log_format : str
-        Format for loggings, default is FORMAT
+        list of multiple handlers is permitted, by default None
+    log_format : str, optional
+        Format for loggings, by default FORMAT
 
     Returns
     -------
@@ -186,7 +187,9 @@ class LoggingAttributes:
         return msg
 
     def __setitem__(self, logger_name, attributes):
-        self.setup_logger(logger_name, **attributes)
+        log_attrs = self[logger_name]
+        log_attrs = self._update_attrs(attributes)
+        self._loggers[logger_name] = log_attrs
 
     def __getitem__(self, logger_name):
         return self._loggers.get(logger_name, {}).copy()
@@ -325,18 +328,18 @@ class LoggingAttributes:
         ----------
         logger_name : str
             Name of logger
-        stream : bool
-            Init stream logger
-        log_level : str
+        stream : bool, optional
+            Add a StreamHandler along with FileHandler, by default True
+        log_level : str, optional
             Level of logging to capture, must be key in LOG_LEVEL. If multiple
             handlers/log_files are requested in a single call of this function,
             the specified logging level will be applied to all requested
-            handlers.
-        log_file : str | list
+            handlers, by default "INFO"
+        log_file : str | list, optional
             Path to file to use for logging, if None use a StreamHandler
-            list of multiple handlers is permitted
-        log_format : str
-            Format for loggings, default is FORMAT
+            list of multiple handlers is permitted, by default None
+        log_format : str, optional
+            Format for loggings, by default FORMAT
 
         Returns
         -------
@@ -381,23 +384,29 @@ LOGGERS = LoggingAttributes()
 
 
 def init_logger(logger_name, stream=True, log_level="INFO", log_file=None,
-                log_format=FORMAT):
+                log_format=FORMAT, prune=True):
     """
-    Starts logging instance and adds logging attributes to REV_LOGGERS
+    Starts logging instance and adds logging attributes to LOGGERS
 
     Parameters
     ----------
     logger_name : str
         Name of logger to initialize
-    log_level : str
+    stream : bool, optional
+        Add a StreamHandler along with FileHandler, by default True
+    log_level : str, optional
         Level of logging to capture, must be key in LOG_LEVEL. If multiple
         handlers/log_files are requested in a single call of this function,
-        the specified logging level will be applied to all requested handlers.
-    log_file : str | list
+        the specified logging level will be applied to all requested handlers,
+        by default "INFO"
+    log_file : str | list, optional
         Path to file to use for logging, if None use a StreamHandler
-        list of multiple handlers is permitted
-    log_format : str
-        Format for loggings, default is FORMAT
+        list of multiple handlers is permitted, by default None
+    log_format : str, optional
+        Format for loggings, by default FORMAT
+    prune : bool, optional
+        Remove child logger handlers if parent logger is added, parent will
+        inherit child's handlers, by default True
 
     Returns
     -------
@@ -406,7 +415,11 @@ def init_logger(logger_name, stream=True, log_level="INFO", log_file=None,
     """
     kwargs = {"log_level": log_level, "log_file": log_file,
               "log_format": log_format, 'stream': stream}
-    logger = LOGGERS.setup_logger(logger_name, **kwargs)
+    if prune:
+        logger = LOGGERS.setup_logger(logger_name, **kwargs)
+    else:
+        LOGGERS[logger_name] = kwargs
+        logger = setup_logger(logger_name, **kwargs)
 
     return logger
 
