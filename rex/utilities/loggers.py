@@ -275,8 +275,11 @@ class LoggingAttributes:
                 if handlers is None:
                     handlers = []
 
+                # make the log_file request into a iterable list
+                if not isinstance(handlers, (list, tuple)):
+                    handlers = [handlers]
+
                 if not isinstance(value, (list, tuple)):
-                    # make the log_file request into a iterable list
                     value = [value]
 
                 for v in value:
