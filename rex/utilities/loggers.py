@@ -514,7 +514,7 @@ def init_mult(name, logdir, modules, verbose=False, node=False):
             # Node level info loggers only go to STDOUT/STDERR files
             logger = init_logger(module, log_level=log_level, log_file=None)
         else:
-            logger = init_logger(module, module, log_level=log_level,
+            logger = init_logger(module, log_level=log_level,
                                  log_file=log_file)
 
         loggers.append(logger)

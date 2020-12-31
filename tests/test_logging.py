@@ -46,6 +46,7 @@ def test_loggers():
         assert len(logger.handlers) == 2
         assert len(LOGGERS.loggers) == 1
         for h in logger.handlers:
+            h.flush()
             h.close()
 
         # Add parent logger removing 'rex.test' but inheriting handlers and
