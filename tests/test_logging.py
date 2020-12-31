@@ -45,7 +45,6 @@ def test_loggers():
         logger = init_logger('rex.test', log_file=log_file, log_level='DEBUG')
         assert len(logger.handlers) == 2
         assert len(LOGGERS.loggers) == 1
-        LOGGERS.clear()
 
         # Add parent logger removing 'rex.test' but inheriting handlers and
         # level
