@@ -38,16 +38,14 @@ def test_loggers():
         assert len(logger.handlers) == 3
 
         # re-initilize 'rex.test'
-        for h in logger.handlers:
-            h.close()
+        LOGGERS.clear()
 
         logger.handlers.clear()
         log_file = os.path.join(td, 'test.log')
         logger = init_logger('rex.test', log_file=log_file, log_level='DEBUG')
         assert len(logger.handlers) == 2
         assert len(LOGGERS.loggers) == 1
-        for h in logger.handlers:
-            h.close()
+        LOGGERS.clear()
 
         # Add parent logger removing 'rex.test' but inheriting handlers and
         # level
@@ -55,6 +53,8 @@ def test_loggers():
         assert len(logger.handlers) == 2
         assert logger.level == 10
         assert len(LOGGERS.loggers) == 1
+
+    LOGGERS.clear()
 
 
 def test_bad_log_dir():
@@ -67,8 +67,7 @@ def test_bad_log_dir():
         assert len(logger.handlers) == 1
         assert logger.handlers[0].name == 'stream'
 
-
-LOGGERS.clear()
+    LOGGERS.clear()
 
 
 def execute_pytest(capture='all', flags='-rapP'):

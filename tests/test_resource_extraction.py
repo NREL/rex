@@ -822,6 +822,7 @@ def test_cli_box(runner, WindX_cls):
         assert np.allclose(site_df.values, truth.values)
 
     WindX_cls.close()
+    LOGGERS.clear()
 
 
 def execute_pytest(capture='all', flags='-rapP'):

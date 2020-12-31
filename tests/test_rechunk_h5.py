@@ -159,8 +159,7 @@ def test_downscale(runner):
 
         check_rechunk(truth_path, rechunk_path)
 
-
-LOGGERS.clear()
+    LOGGERS.clear()
 
 
 def test_hub_height(runner):

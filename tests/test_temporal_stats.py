@@ -268,8 +268,7 @@ def test_cli(runner):
         msg = 'January-midnight means do not match!'
         assert np.allclose(truth, test_stats['Jan-00_mean'].values), msg
 
-
-LOGGERS.clear()
+    LOGGERS.clear()
 
 
 def execute_pytest(capture='all', flags='-rapP'):
