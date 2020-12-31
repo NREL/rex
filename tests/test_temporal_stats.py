@@ -15,6 +15,7 @@ from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
 from rex.resource_extraction.temporal_stats import TemporalStats
 from rex.resource_extraction.temporal_stats_cli import main
+from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
 
 PURGE_OUT = True
@@ -266,6 +267,9 @@ def test_cli(runner):
         truth = np.mean(res_data[mask], axis=0)
         msg = 'January-midnight means do not match!'
         assert np.allclose(truth, test_stats['Jan-00_mean'].values), msg
+
+
+LOGGERS.clear()
 
 
 def execute_pytest(capture='all', flags='-rapP'):

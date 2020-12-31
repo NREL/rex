@@ -11,6 +11,7 @@ import tempfile
 import traceback
 
 from rex.rechunk_h5.combine_h5_cli import main
+from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
 
 
@@ -91,6 +92,8 @@ def test_combine_h5(runner, axis):
         assert result.exit_code == 0, msg
 
         check_combine(src_path, combine_path, axis=axis)
+
+    LOGGERS.clear()
 
 
 def execute_pytest(capture='all', flags='-rapP'):

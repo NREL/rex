@@ -68,6 +68,9 @@ def test_bad_log_dir():
         assert logger.handlers[0].name == 'stream'
 
 
+LOGGERS.clear()
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 

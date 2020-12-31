@@ -65,7 +65,7 @@ def get_handler(log_level="INFO", log_file=None, log_format=FORMAT):
     """
     if log_file:
         # file handler with mode "a"
-        log_file = os.path.abspath(log_file)
+        log_file = os.path.normpath(log_file)
         log_dir = os.path.dirname(log_file)
         if os.path.exists(log_dir):
             name = log_file
@@ -97,14 +97,14 @@ def add_handlers(logger, handlers):
 
     Parameters
     ----------
-    logger : logging.Logger
+    logger : logging.logger
         Logger to add handlers to
     handlers : list
         Handlers to add to logger
 
     Returns
     -------
-    logger
+    logger : logging.logger
         Logger with updated handlers
     """
     current_handlers = {h.name: h for h in logger.handlers}
@@ -169,6 +169,37 @@ def setup_logger(logger_name, stream=True, log_level="INFO", log_file=None,
             handlers.append(get_handler())
 
     logger = add_handlers(logger, handlers)
+
+    return logger
+
+
+def clear_handlers(logger):
+    """
+    Clear all handlers from logger
+
+    Parameters
+    ----------
+    logger : logging.logger
+        Logger to remove all handlers from
+
+    Returns
+    -------
+    logger : logging.logger
+        Logger with all handlers removed
+    """
+    handlers = logger.handlers.copy()
+    for handler in handlers:
+        # Copied from `logging.shutdown`.
+        try:
+            handler.acquire()
+            handler.flush()
+            handler.close()
+        except (OSError, ValueError):
+            pass
+        finally:
+            handler.release()
+
+        logger.removeHandler(handler)
 
     return logger
 
@@ -286,8 +317,7 @@ class LoggingAttributes:
                 del loggers[name]
                 # Remove any handlers from child loggers to prevent duplicate
                 # logging
-                logger = logging.getLogger(name)
-                logger.handlers.clear()
+                clear_handlers(logging.getLogger(name))
 
         if parent is not None:
             loggers[parent] = parent_attrs
@@ -319,8 +349,8 @@ class LoggingAttributes:
 
         return parent, parent_attrs
 
-    def setup_logger(self, logger_name, stream=True, log_level="INFO",
-                     log_file=None, log_format=FORMAT):
+    def set_logger(self, logger_name, stream=True, log_level="INFO",
+                   log_file=None, log_format=FORMAT):
         """
         Setup logging instance with given name and attributes
 
@@ -379,6 +409,18 @@ class LoggingAttributes:
                 attrs = self[logger_name]
                 setup_logger(logger_name, **attrs)
 
+    def clear(self):
+        """
+        Clear all log handlers
+        """
+        self._loggers = {}
+        for name, logger in logging.Logger.manager.loggerDict.items():
+            if isinstance(logger, logging.Logger):
+                for p_name in self.logger_names:
+                    if name.startswith(p_name):
+                        clear_handlers(logger)
+                        break
+
 
 LOGGERS = LoggingAttributes()
 
@@ -416,7 +458,7 @@ def init_logger(logger_name, stream=True, log_level="INFO", log_file=None,
     kwargs = {"log_level": log_level, "log_file": log_file,
               "log_format": log_format, 'stream': stream}
     if prune:
-        logger = LOGGERS.setup_logger(logger_name, **kwargs)
+        logger = LOGGERS.set_logger(logger_name, **kwargs)
     else:
         LOGGERS[logger_name] = kwargs
         logger = setup_logger(logger_name, **kwargs)

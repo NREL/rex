@@ -21,6 +21,7 @@ from rex.resource_extraction.resource_extraction import (MultiFileWindX,
                                                          NSRDBX, WindX, WaveX)
 from rex.resource_extraction.resource_extraction import TREE_DIR
 from rex.utilities.exceptions import ResourceValueError
+from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
 
 
@@ -733,6 +734,7 @@ def test_cli_site(runner, WindX_cls):
         assert np.allclose(site_df.values, truth.values)
 
     WindX_cls.close()
+    LOGGERS.clear()
 
 
 def test_cli_SAM(runner, WindX_cls):
@@ -761,6 +763,7 @@ def test_cli_SAM(runner, WindX_cls):
         assert_frame_equal(truth, test)
 
     WindX_cls.close()
+    LOGGERS.clear()
 
 
 def test_cli_region(runner, WindX_cls):
@@ -789,6 +792,7 @@ def test_cli_region(runner, WindX_cls):
         assert np.allclose(site_df.values, truth.values)
 
     WindX_cls.close()
+    LOGGERS.clear()
 
 
 def test_cli_box(runner, WindX_cls):
