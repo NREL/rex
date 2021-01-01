@@ -219,7 +219,7 @@ class LoggingAttributes:
 
     def __setitem__(self, logger_name, attributes):
         log_attrs = self[logger_name]
-        log_attrs = self._update_attrs(attributes)
+        log_attrs = self._update_attrs(log_attrs, attributes)
         self._loggers[logger_name] = log_attrs
 
     def __getitem__(self, logger_name):
@@ -251,7 +251,45 @@ class LoggingAttributes:
         return sorted(self.loggers.keys())
 
     @staticmethod
-    def _update_attrs(log_attrs, new_attrs):
+    def _check_file_handlers(handlers, new_handlers):
+        """
+        Check to see if new file handlers should be added to the logger
+
+        Parameters
+        ----------
+        handlers : None | list
+            None or list of existing file handlers
+        new_handlers : list
+            List of new file handlers to add to logger
+
+        Returns
+        -------
+        handlers : list | None
+           Updated list of valid log files to add to handler
+        """
+        if not isinstance(new_handlers, (list, tuple)):
+            new_handlers = [new_handlers]
+            new_handlers = [os.path.normpath(h) for h in new_handlers
+                            if h is not None]
+
+        for h in new_handlers:
+            if h not in handlers:
+                log_dir = os.path.dirname(h)
+                if os.path.exists(log_dir):
+                    # check if each handler has been previously set
+                    handlers.append(h)
+                else:
+                    warn('{} does not exist, FileHandler will be '
+                         'converted to a StreamHandler'
+                         .format(log_dir), LoggerWarning)
+
+        if not handlers:
+            handlers = None
+
+        return handlers
+
+    @classmethod
+    def _update_attrs(cls, log_attrs, new_attrs):
         """
         Update logger attributes with new attributes
         - Add any new log files
@@ -271,21 +309,14 @@ class LoggingAttributes:
         """
         for attr, value in new_attrs.items():
             if attr == 'log_file' and value:
-                handlers = log_attrs.get('log_file', None)
-                if handlers is None:
-                    handlers = []
+                if value is not None:
+                    handlers = log_attrs.get('log_file', None)
+                    if handlers is None:
+                        handlers = []
 
-                # make the log_file request into a iterable list
-                if not isinstance(handlers, (list, tuple)):
-                    handlers = [handlers]
-
-                if not isinstance(value, (list, tuple)):
-                    value = [value]
-
-                for v in value:
-                    if v not in handlers:
-                        # check if each handler has been previously set
-                        handlers.append(v)
+                    handlers = cls._check_file_handlers(handlers, value)
+                else:
+                    handlers = None
 
                 log_attrs[attr] = handlers
             elif attr == 'log_level':
@@ -382,13 +413,14 @@ class LoggingAttributes:
         """
         attrs = {"log_level": log_level, "log_file": log_file,
                  "log_format": log_format, 'stream': stream}
+        log_attrs = self[logger_name]
         if logger_name not in self:
             parent, parent_attrs = self._check_for_parent(logger_name)
             if parent and attrs != parent_attrs:
                 logger_name = parent
-                attrs = self._update_attrs(parent_attrs, attrs)
-        else:
-            attrs = self._update_attrs(self[logger_name], attrs)
+                log_attrs = parent_attrs
+
+        attrs = self._update_attrs(log_attrs, attrs)
 
         self._loggers[logger_name] = attrs
         self._cleanup()
