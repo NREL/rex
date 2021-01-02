@@ -201,6 +201,8 @@ def clear_handlers(logger):
 
         logger.removeHandler(handler)
 
+    logger.handlers.clear()
+
     return logger
 
 
@@ -257,14 +259,14 @@ class LoggingAttributes:
 
         Parameters
         ----------
-        handlers : None | list
+        handlers : list
             None or list of existing file handlers
         new_handlers : list
             List of new file handlers to add to logger
 
         Returns
         -------
-        handlers : list | None
+        handlers : list
            Updated list of valid log files to add to handler
         """
         if not isinstance(new_handlers, (list, tuple)):
@@ -282,9 +284,6 @@ class LoggingAttributes:
                     warn('{} does not exist, FileHandler will be '
                          'converted to a StreamHandler'
                          .format(log_dir), LoggerWarning)
-
-        if not handlers:
-            handlers = None
 
         return handlers
 
@@ -315,6 +314,8 @@ class LoggingAttributes:
                         handlers = []
 
                     handlers = cls._check_file_handlers(handlers, value)
+                    if not handlers:
+                        handlers = None
                 else:
                     handlers = None
 
@@ -448,13 +449,14 @@ class LoggingAttributes:
         """
         Clear all log handlers
         """
-        self._loggers = {}
         for name, logger in logging.Logger.manager.loggerDict.items():
             if isinstance(logger, logging.Logger):
                 for p_name in self.logger_names:
                     if name.startswith(p_name):
                         clear_handlers(logger)
                         break
+
+        self._loggers = {}
 
 
 LOGGERS = LoggingAttributes()

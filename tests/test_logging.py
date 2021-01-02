@@ -11,12 +11,13 @@ from rex.utilities.loggers import (init_logger, LOGGERS, add_handlers,
                                    get_handler)
 
 
-def test_loggers():
+@pytest.mark.parametrize('prune', [False, True])
+def test_loggers(prune):
     """
     Test logger initilization and handling
     """
     with tempfile.TemporaryDirectory() as td:
-        logger = init_logger('rex.test')
+        logger = init_logger('rex.test', prune=prune)
         assert len(logger.handlers) == 1
         assert len(LOGGERS.loggers) == 1
 
@@ -40,21 +41,24 @@ def test_loggers():
         # re-initilize 'rex.test'
         LOGGERS.clear()
 
-        logger.handlers.clear()
         log_file = os.path.join(td, 'test.log')
-        logger = init_logger('rex.test', log_file=log_file, log_level='DEBUG')
+        logger = init_logger('rex.test', log_file=log_file, log_level='DEBUG',
+                             prune=prune)
         assert len(logger.handlers) == 2
         assert len(LOGGERS.loggers) == 1
-        for h in logger.handlers:
-            h.flush()
-            h.close()
 
-        # Add parent logger removing 'rex.test' but inheriting handlers and
-        # level
-        logger = init_logger('rex')
-        assert len(logger.handlers) == 2
-        assert logger.level == 10
-        assert len(LOGGERS.loggers) == 1
+        # Add parent logger
+        logger = init_logger('rex', prune=prune)
+        if prune:
+            # removing 'rex.test' but inheriting handlers and level
+            assert len(logger.handlers) == 2
+            assert logger.level == 10
+            assert len(LOGGERS.loggers) == 1
+        else:
+            # Add new logger
+            assert len(logger.handlers) == 1
+            assert logger.level == 20
+            assert len(LOGGERS.loggers) == 2
 
         LOGGERS.clear()
 
