@@ -14,7 +14,7 @@ from rex.resource_extraction.resource_cli import multi_site as multi_site_cmd
 from rex.resource_extraction.resource_cli import _parse_sites
 from rex.resource_extraction.resource_cli import region as region_cmd
 from rex.resource_extraction.resource_cli import site as site_cmd
-from rex.utilities.loggers import init_mult
+from rex.utilities.loggers import init_logger
 from rex.utilities.utilities import check_res_file
 from rex import __version__
 
@@ -27,10 +27,13 @@ logger = logging.getLogger(__name__)
               help=('Path to Resource .h5 file'))
 @click.option('--out_dir', '-o', required=True, type=click.Path(exists=True),
               help='Directory to dump output files')
+@click.option('--log_file', '-log', default=None, type=click.Path(),
+              show_default=True,
+              help='Path to .log file, if None only log to stdout')
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
 @click.pass_context
-def main(ctx, wind_h5, out_dir, verbose):
+def main(ctx, wind_h5, out_dir, log_file, verbose):
     """
     WindX Command Line Interface
     """
@@ -51,10 +54,17 @@ def main(ctx, wind_h5, out_dir, verbose):
 
         ctx.obj['CLS'] = WindX
 
-    name = os.path.splitext(os.path.basename(wind_h5))[0]
-    init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex.resource_extraction',
-                       'rex.renewable_resource'])
+    if verbose:
+        log_level = 'DEBUG'
+    else:
+        log_level = 'INFO'
+
+    if log_file is not None:
+        log_dir = os.path.dirname(log_file)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+    init_logger('rex', log_file=log_file, log_level=log_level)
 
     logger.info('Extracting Wind data from {}'.format(wind_h5))
     logger.info('Outputs to be stored in: {}'.format(out_dir))

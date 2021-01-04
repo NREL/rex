@@ -17,10 +17,14 @@ from rex.rechunk_h5 import RechunkH5, to_records_array
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
 from rex.resource import Resource
-from rex.resource_extraction import (ResourceX, MultiYearResourceX,
-                                     NSRDBX, MultiFileNSRDBX, MultiYearNSRDBX,
-                                     WindX, MultiFileWindX, MultiYearWindX,
-                                     WaveX, MultiYearWaveX, TemporalStats)
+from rex.resource_extraction import (ResourceX, MultiTimeResourceX,
+                                     MultiYearResourceX,
+                                     NSRDBX, MultiFileNSRDBX, MultiTimeNSRDBX,
+                                     MultiYearNSRDBX,
+                                     WindX, MultiFileWindX, MultiTimeWindX,
+                                     MultiYearWindX,
+                                     WaveX, MultiTimeWaveX, MultiYearWaveX,
+                                     TemporalStats)
 from rex.utilities import init_logger, init_mult, SpawnProcessPool, SLURM, PBS
 
 from rex.version import __version__

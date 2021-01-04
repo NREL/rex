@@ -10,9 +10,16 @@ from rex.multi_file_resource import MultiFileNSRDB, MultiFileWTK
 from rex.renewable_resource import (NSRDB, WaveResource, WindResource)
 from rex.resource import Resource
 from rex.resource_extraction.temporal_stats import TemporalStats
-from rex.utilities.loggers import init_mult
+from rex.utilities.loggers import init_logger
 
 logger = logging.getLogger(__name__)
+
+RES_CLS = {'Resouce': Resource,
+           'NSRDB': NSRDB,
+           'Wind': WindResource,
+           'Wave': WaveResource,
+           'MultiFileNSRDB': MultiFileNSRDB,
+           'MultiFileWTK': MultiFileWTK}
 
 
 @click.group(invoke_without_command=True, chain=True)
@@ -47,37 +54,38 @@ logger = logging.getLogger(__name__)
               help='Number of chunks to extract on each worker')
 @click.option('--lat_lon_only', '-ll', is_flag=True,
               help='Only append lat, lon coordinates to stats')
+@click.option('--log_file', '-log', default=None, type=click.Path(),
+              show_default=True,
+              help='Path to .log file, if None only log to stdout')
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
 @click.pass_context
 def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
-         res_cls, hsds, chunks_per_worker, lat_lon_only, verbose):
+         res_cls, hsds, chunks_per_worker, lat_lon_only, log_file, verbose):
     """
     TemporalStats Command Line Interface
     """
     ctx.ensure_object(dict)
 
+    if verbose:
+        log_level = 'DEBUG'
+    else:
+        log_level = 'INFO'
+
+    if log_file is not None:
+        log_dir = os.path.dirname(log_file)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
     name = os.path.splitext(os.path.basename(resource_path))[0]
     out_fpath = '{}_{}.csv'.format(name, dataset)
     out_fpath = os.path.join(out_dir, out_fpath)
-    init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex',
-                       'rex.resource_extraction.temporal_stats'])
+
+    init_logger('rex', log_file=log_file, log_level=log_level)
     logger.info('Extracting Resource data from {}'.format(resource_path))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
 
-    if res_cls == 'Resource':
-        res_cls = Resource
-    elif res_cls == 'NSRDB':
-        res_cls = NSRDB
-    elif res_cls == 'Wind':
-        res_cls = WindResource
-    elif res_cls == 'Wave':
-        res_cls = WaveResource
-    elif res_cls == 'MultiFileNSRDB':
-        res_cls = MultiFileNSRDB
-    elif res_cls == 'MultiFileWTK':
-        res_cls = MultiFileWTK
+    res_cls = RES_CLS[res_cls]
 
     res_stats = TemporalStats(resource_path, statistics=statistics,
                               res_cls=res_cls, hsds=hsds)

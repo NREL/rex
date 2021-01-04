@@ -3,11 +3,14 @@
 Rechunk h5 command line interface
 """
 import click
+import logging
 import os
 
 from rex.rechunk_h5.rechunk_h5 import RechunkH5
 from rex.utilities.cli_dtypes import INT, STR
 from rex.utilities.loggers import init_logger
+
+logger = logging.getLogger(__name__)
 
 
 @click.command()
@@ -39,7 +42,7 @@ from rex.utilities.loggers import init_logger
               help='New time resolution')
 @click.option('--log_file', '-log', default=None, type=click.Path(),
               show_default=True,
-              help='Path to .log file')
+              help='Path to .log file, if None only log to stdout')
 @click.option('--verbose', '-v', is_flag=True,
               help='If used upgrade logging to DEBUG')
 def main(src_h5, dst_h5, var_attrs_path, hub_height, version, overwrite,
@@ -57,8 +60,7 @@ def main(src_h5, dst_h5, var_attrs_path, hub_height, version, overwrite,
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 
-    init_logger('rex.rechunk_h5.rechunk_h5', log_file=log_file,
-                log_level=log_level)
+    init_logger('rex', log_file=log_file, log_level=log_level)
 
     dst_dir = os.path.dirname(dst_h5)
     if not os.path.exists(dst_dir):
@@ -72,6 +74,7 @@ def main(src_h5, dst_h5, var_attrs_path, hub_height, version, overwrite,
 
 if __name__ == '__main__':
     try:
-        main()
+        main(obj={})
     except Exception:
+        logger.exception('Error running Combined H5')
         raise

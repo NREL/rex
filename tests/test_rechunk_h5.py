@@ -14,7 +14,10 @@ from rex.resource import Resource
 from rex.rechunk_h5.rechunk_h5 import (get_dataset_attributes,
                                        to_records_array)
 from rex.rechunk_h5.rechunk_cli import main
+from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
+
+LOGGERS.clear()
 
 
 @pytest.fixture(scope="module")
@@ -130,6 +133,8 @@ def test_rechunk_h5(runner, drop):
 
         check_rechunk(src_path, rechunk_path, missing=drop)
 
+    LOGGERS.clear()
+
 
 def test_downscale(runner):
     """
@@ -153,6 +158,8 @@ def test_downscale(runner):
         assert result.exit_code == 0, msg
 
         check_rechunk(truth_path, rechunk_path)
+
+    LOGGERS.clear()
 
 
 def test_hub_height(runner):

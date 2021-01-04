@@ -110,3 +110,9 @@ class SAMInputWarning(Warning):
     """
     Warning for bad SAM inputs
     """
+
+
+class LoggerWarning(Warning):
+    """
+    Warning for bad logger inputs
+    """

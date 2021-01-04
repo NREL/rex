@@ -20,7 +20,7 @@ from rex.resource_extraction.multi_year_resource_cli \
     import multi_year as multi_yr_means_cmd
 from rex.resource_extraction.resource_extraction import MultiYearWaveX
 from rex.utilities.cli_dtypes import STRLIST, INTLIST
-from rex.utilities.loggers import init_mult
+from rex.utilities.loggers import init_logger
 from rex import __version__
 
 logger = logging.getLogger(__name__)
@@ -40,10 +40,13 @@ logger = logging.getLogger(__name__)
               help="Boolean flag to use access virtual buoy data")
 @click.option('--eagle', '-hpc', is_flag=True,
               help="Boolean flag to use access data on NRELs HPC vs. via HSDS")
+@click.option('--log_file', '-log', default=None, type=click.Path(),
+              show_default=True,
+              help='Path to .log file, if None only log to stdout')
 @click.option('-v', '--verbose', is_flag=True,
               help='Flag to turn on debug logging. Default is not verbose.')
 @click.pass_context
-def main(ctx, domain, out_dir, years, buoy, eagle, verbose):
+def main(ctx, domain, out_dir, years, buoy, eagle, log_file, verbose):
     """
     US Wave Command Line Interface
     """
@@ -65,10 +68,17 @@ def main(ctx, domain, out_dir, years, buoy, eagle, verbose):
     ctx.obj['CLS_KWARGS'] = {'years': years, 'hsds': hsds}
     ctx.obj['CLS'] = MultiYearWaveX
 
-    name = os.path.splitext(os.path.basename(path))[0]
-    init_mult(name, out_dir, verbose=verbose, node=True,
-              modules=[__name__, 'rex.resource_extraction',
-                       'rex.multi_year_resource'])
+    if verbose:
+        log_level = 'DEBUG'
+    else:
+        log_level = 'INFO'
+
+    if log_file is not None:
+        log_dir = os.path.dirname(log_file)
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+
+    init_logger('rex', log_file=log_file, log_level=log_level)
 
     logger.info('Extracting US wave data for {} from {}'.format(domain, path))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
