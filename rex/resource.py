@@ -823,7 +823,6 @@ class Resource:
         Returns
         -------
         h5 : h5py.File | h5py.Group
-            Open h5py File or Group instance
         """
         h5 = self._h5
         if self._group is not None:
@@ -839,7 +838,6 @@ class Resource:
         Returns
         -------
         list
-            List of datasets
         """
         return self._get_datasets(self.h5)
 
@@ -851,9 +849,33 @@ class Resource:
         Returns
         -------
         list
-            List of datasets
         """
         return self.datasets
+
+    @property
+    def resource_datasets(self):
+        """
+        Available resource datasets
+
+        Returns
+        -------
+        list
+        """
+        dsets = [ds for ds in self.datasets
+                 if ds not in ['meta', 'time_index', 'coordinates']]
+
+        return dsets
+
+    @property
+    def res_dsets(self):
+        """
+        Available resource datasets
+
+        Returns
+        -------
+        list
+        """
+        return self.resource_datasets
 
     @property
     def groups(self):
@@ -881,7 +903,6 @@ class Resource:
         Returns
         -------
         shape : tuple
-            Shape of resource variable arrays (timesteps, sites)
         """
         _shape = (self.h5['time_index'].shape[0], self.h5['meta'].shape[0])
         return _shape
@@ -889,12 +910,11 @@ class Resource:
     @property
     def meta(self):
         """
-        Meta data DataFrame
+        Resource meta data DataFrame
 
         Returns
         -------
         meta : pandas.DataFrame
-            Resource Meta Data
         """
         if self._meta is None:
             if 'meta' in self.h5:
@@ -907,12 +927,11 @@ class Resource:
     @property
     def time_index(self):
         """
-        DatetimeIndex
+        Resource DatetimeIndex
 
         Returns
         -------
         time_index : pandas.DatetimeIndex
-            Resource datetime index
         """
         if self._time_index is None:
             if 'time_index' in self.h5:
@@ -931,7 +950,6 @@ class Resource:
         Returns
         -------
         lat_lon : ndarray
-            Array of (lat, lon) pairs for each site in meta
         """
         return self.lat_lon
 
@@ -979,7 +997,6 @@ class Resource:
         Returns
         -------
         attrs : dict
-            .h5 file attributes sourced from first .h5 file
         """
         return self.global_attrs
 
