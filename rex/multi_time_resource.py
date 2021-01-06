@@ -71,7 +71,6 @@ class MultiTimeH5:
         Returns
         -------
         attrs : dict
-            .h5 file attributes sourced from first .h5 file
         """
         attrs = dict(self.h5.attrs)
 
@@ -85,7 +84,6 @@ class MultiTimeH5:
         Returns
         -------
         list
-            List of files .h5 datasets are sourced from
         """
         return sorted(self._file_map)
 
@@ -97,7 +95,6 @@ class MultiTimeH5:
         Returns
         -------
         list
-            List of .h5 files data is being sourced form
         """
         return sorted(self._h5_map)
 
@@ -120,12 +117,25 @@ class MultiTimeH5:
         Returns
         -------
         list
-            List of available datasets
         """
         if self._datasets is None:
             self._datasets = self.h5.datasets
 
         return self._datasets
+
+    @property
+    def resource_datasets(self):
+        """
+        Available resource datasets
+
+        Returns
+        -------
+        list
+        """
+        res_dsets = [ds for ds in self.datasets
+                     if ds not in ['meta', 'time_index', 'coordinates']]
+
+        return res_dsets
 
     @property
     def shape(self):
@@ -551,7 +561,6 @@ class MultiTimeResource:
         Returns
         -------
         h5 : h5py.File | h5py.Group
-            Open h5py File or Group instance
         """
         h5 = self._h5
 
@@ -565,7 +574,6 @@ class MultiTimeResource:
         Returns
         -------
         list
-            List of datasets
         """
         return self._h5.datasets
 
@@ -577,9 +585,30 @@ class MultiTimeResource:
         Returns
         -------
         list
-            List of datasets
         """
         return self.datasets
+
+    @property
+    def resource_datasets(self):
+        """
+        Available resource datasets
+
+        Returns
+        -------
+        list
+        """
+        return self._h5.resource_datasets
+
+    @property
+    def res_dsets(self):
+        """
+        Available resource datasets
+
+        Returns
+        -------
+        list
+        """
+        return self.resource_datasets
 
     @property
     def shape(self):
@@ -590,19 +619,17 @@ class MultiTimeResource:
         Returns
         -------
         shape : tuple
-            Shape of resource variable arrays (timesteps, sites)
         """
         return self.h5.shape
 
     @property
     def meta(self):
         """
-        Meta data DataFrame
+        Resource meta data DataFrame
 
         Returns
         -------
         meta : pandas.DataFrame
-            Resource Meta Data
         """
 
         return self.h5.h5.meta
@@ -610,12 +637,11 @@ class MultiTimeResource:
     @property
     def time_index(self):
         """
-        DatetimeIndex
+        Resource DatetimeIndex
 
         Returns
         -------
         time_index : pandas.DatetimeIndex
-            Resource datetime index
         """
         return self.h5.time_index
 
@@ -638,7 +664,6 @@ class MultiTimeResource:
         Returns
         -------
         lat_lon : ndarray
-            Array of (lat, lon) pairs for each site in meta
         """
         return self.lat_lon
 

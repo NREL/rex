@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=all
 """
 pytests for multi time resource handlers
 """
@@ -53,6 +54,11 @@ def check_res(res_cls):
 
     assert len(res_cls) == len(time_index)
     assert res_cls.shape == res_shape
+
+    assert np.all(np.isin(['meta', 'time_index'],
+                          res_cls.datasets))
+    assert np.all(~np.isin(['meta', 'time_index', 'coordinates'],
+                           res_cls.resource_datasets))
 
 
 def check_meta(res_cls):
