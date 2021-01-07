@@ -895,7 +895,8 @@ class ResourceX:
         """
         self._res.close()
 
-    def save_region(self, out_fpath, datasets, region, region_col='state'):
+    def save_region(self, out_fpath, region, datasets=None,
+                    region_col='state'):
         """
         Extract desired datasets from desired region and save to a new
         out_fpath .h5 file
@@ -904,18 +905,23 @@ class ResourceX:
         ----------
         out_fpath : str
             Path to .h5 file to save region datasets to
-        datasets : str | list
-            Dataset(s) to extract from given region and save to out_fpath
         region : str, optional
             Region to extract all pixels for, by default None
+        datasets : str | list, optional
+            Dataset(s) to extract from given region and save to out_fpath,
+            if None extract all datasets, by default None
         region_col : str, optional
             Region column to search, by default 'state'
         """
-        if isinstance(datasets, str):
-            datasets = [datasets]
+        if datasets is None:
+            datasets = self.datasets
+        else:
+            if isinstance(datasets, str):
+                datasets = [datasets]
+
+            datasets += ['meta', 'time_index', 'coordinates']
 
         gids = self.region_gids(region, region_col=region_col)
-        datasets += ['meta', 'time_index', 'coordinates']
         with h5py.File(out_fpath, mode='w-') as f_out:
             for k, v in self.attrs.items():
                 f_out.attrs[k] = v
