@@ -2,6 +2,7 @@
 """
 Resource Extraction Tools
 """
+import h5py
 import logging
 import numpy as np
 import os
@@ -9,6 +10,7 @@ import pandas as pd
 import pickle
 from scipy.spatial import cKDTree
 from tempfile import TemporaryDirectory
+from warnings import warn
 
 from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
                                      MultiFileWTK)
@@ -18,7 +20,7 @@ from rex.resource import Resource
 from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
                                     WindResource)
 from rex.resource_extraction.temporal_stats import TemporalStats
-from rex.utilities.exceptions import ResourceValueError
+from rex.utilities.exceptions import ResourceValueError, ResourceWarning
 from rex.utilities.utilities import parse_year, check_tz
 
 TREE_DIR = TemporaryDirectory()
@@ -36,21 +38,24 @@ class ResourceX:
         ----------
         res_h5 : str
             Path to resource .h5 file of interest
-        res_cls : obj
-            Resource class to use to open and access resource data
-        tree : str | cKDTree
+        res_cls : obj, optional
+            Resource class to use to open and access resource data,
+            by default Resource
+        tree : str | cKDTree, optional
             cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        hsds : bool
+            of lat, lon coordinates, by default None
+        unscale : bool, optional
+            Boolean flag to automatically unscale variables on extraction,
+            by default True
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
-        str_decode : bool
+            behind HSDS, by default False
+        str_decode : bool, optional
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
+            by default True
+        group : str, optional
+            Group within .h5 resource file to open, by default None
         """
         self._res = res_cls(res_h5, unscale=unscale, hsds=hsds,
                             str_decode=str_decode, group=group)
@@ -73,7 +78,7 @@ class ResourceX:
             raise
 
     def __len__(self):
-        return self.h5['meta'].shape[0]
+        return len(self.resource)
 
     def __getitem__(self, keys):
         return self.resource[keys]
@@ -101,7 +106,7 @@ class ResourceX:
 
         Returns
         -------
-        res_cls
+        res_cls : rex.resource.Resource | rex.renewable_resource.*
         """
         return self._res
 
@@ -113,7 +118,6 @@ class ResourceX:
         Returns
         -------
         h5 : h5py.File | h5py.Group
-            Open h5py File or Group instance
         """
         return self.resource.h5
 
@@ -125,7 +129,6 @@ class ResourceX:
         Returns
         -------
         list
-            List of datasets
         """
         return self.resource.datasets
 
@@ -137,9 +140,30 @@ class ResourceX:
         Returns
         -------
         list
-            List of datasets
         """
         return self.datasets
+
+    @property
+    def resource_datasets(self):
+        """
+        Available resource datasets
+
+        Returns
+        -------
+        list
+        """
+        return self.resource.resource_datasets
+
+    @property
+    def res_dsets(self):
+        """
+        Available resource datasets
+
+        Returns
+        -------
+        list
+        """
+        return self.resource_datasets
 
     @property
     def groups(self):
@@ -149,7 +173,6 @@ class ResourceX:
         Returns
         -------
         groups : list
-            List of groups
         """
         return self.resource.groups
 
@@ -162,31 +185,28 @@ class ResourceX:
         Returns
         -------
         shape : tuple
-            Shape of resource variable arrays (timesteps, sites)
         """
         return self.resource.shape
 
     @property
     def meta(self):
         """
-        Meta data DataFrame
+        Resource meta data DataFrame
 
         Returns
         -------
         meta : pandas.DataFrame
-            Resource Meta Data
         """
         return self.resource.meta
 
     @property
     def time_index(self):
         """
-        DatetimeIndex
+        Resource DatetimeIndex
 
         Returns
         -------
         time_index : pandas.DatetimeIndex
-            Resource datetime index
         """
         return self.resource.time_index
 
@@ -198,7 +218,6 @@ class ResourceX:
         Returns
         -------
         lat_lon : ndarray
-            Array of (lat, lon) pairs for each site in meta
         """
         return self.resource.lat_lon
 
@@ -232,17 +251,17 @@ class ResourceX:
         Returns
         -------
         attrs : dict
-            .h5 file attributes sourced from first .h5 file
         """
         return self.global_attrs
 
     @property
     def tree(self):
         """
+        Pre-initialized cKDTree on the resource lat, lon coordinates
+
         Returns
         -------
         tree : cKDTree
-            Lat, lon coordinates cKDTree
         """
         if not isinstance(self._tree, cKDTree):
             self._tree = self._init_tree(self._tree)
@@ -252,10 +271,11 @@ class ResourceX:
     @property
     def countries(self):
         """
+        Available Countires
+
         Returns
         -------
         countries : ndarray
-            Countries available in .h5 file
         """
         if 'country' in self.meta:
             countries = self.meta['country'].unique()
@@ -267,10 +287,11 @@ class ResourceX:
     @property
     def states(self):
         """
+        Available states
+
         Returns
         -------
         states : ndarray
-            States available in .h5 file
         """
         if 'state' in self.meta:
             states = self.meta['state'].unique()
@@ -282,10 +303,11 @@ class ResourceX:
     @property
     def counties(self):
         """
+        Available Counties
+
         Returns
         -------
         counties : ndarray
-            Counties available in .h5 file
         """
         if 'county' in self.meta:
             counties = self.meta['county'].unique()
@@ -873,6 +895,52 @@ class ResourceX:
         """
         self._res.close()
 
+    def save_region(self, out_fpath, datasets, region, region_col='state'):
+        """
+        Extract desired datasets from desired region and save to a new
+        out_fpath .h5 file
+
+        Parameters
+        ----------
+        out_fpath : str
+            Path to .h5 file to save region datasets to
+        datasets : str | list
+            Dataset(s) to extract from given region and save to out_fpath
+        region : str, optional
+            Region to extract all pixels for, by default None
+        region_col : str, optional
+            Region column to search, by default 'state'
+        """
+        if isinstance(datasets, str):
+            datasets = [datasets]
+
+        gids = self.region_gids(region, region_col=region_col)
+        datasets += ['meta', 'time_index', 'coordinates']
+        with h5py.File(out_fpath, mode='w-') as f_out:
+            for k, v in self.attrs.items():
+                f_out.attrs[k] = v
+
+            for dset in datasets:
+                if dset in self:
+                    ds = self.h5[dset]
+                    if dset == 'time_index':
+                        data = ds[...]
+                    elif dset in ['coordinates', 'meta']:
+                        data = ds[gids]
+                    else:
+                        data = ds[:, gids]
+
+                    ds_out = f_out.create_dataset(dset,
+                                                  shape=data.shape,
+                                                  dtype=data.dtype,
+                                                  data=data)
+                    for k, v in ds.attrs.items():
+                        ds_out.attrs[k] = v
+                else:
+                    msg = ("Dataset {} is not available in {} and will "
+                           "not be saved to {}".format(dset, self, out_fpath))
+                    warn(msg, ResourceWarning)
+
 
 class MultiFileResourceX(ResourceX):
     """
@@ -1036,19 +1104,21 @@ class SolarX(ResourceX):
         ----------
         solar_h5 : str
             Path to solar .h5 file of interest
-        tree : str | cKDTree
+        tree : str | cKDTree, optional
             cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        hsds : bool
+            of lat, lon coordinates, by default None
+        unscale : bool, optional
+            Boolean flag to automatically unscale variables on extraction,
+            by default True
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
-        str_decode : bool
+            behind HSDS, by default False
+        str_decode : bool, optional
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
+            by default True
+        group : str, optional
+            Group within .h5 resource file to open, by default None
         """
         super().__init__(solar_h5, unscale=unscale, str_decode=str_decode,
                          group=group, hsds=hsds, tree=tree,
@@ -1066,19 +1136,21 @@ class NSRDBX(ResourceX):
         ----------
         nsrdb_h5 : str
             Path to NSRDB .h5 file of interest
-        tree : str | cKDTree
+        tree : str | cKDTree, optional
             cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        hsds : bool
+            of lat, lon coordinates, by default None
+        unscale : bool, optional
+            Boolean flag to automatically unscale variables on extraction,
+            by default True
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
-        str_decode : bool
+            behind HSDS, by default False
+        str_decode : bool, optional
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
+            by default True
+        group : str, optional
+            Group within .h5 resource file to open, by default None
         """
         super().__init__(nsrdb_h5, unscale=unscale, str_decode=str_decode,
                          group=group, hsds=hsds, tree=tree,
@@ -1190,19 +1262,21 @@ class WindX(ResourceX):
         ----------
         wind_h5 : str
             Path to Wind .h5 file of interest
-        tree : str | cKDTree
+        tree : str | cKDTree, optional
             cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        hsds : bool
+            of lat, lon coordinates, by default None
+        unscale : bool, optional
+            Boolean flag to automatically unscale variables on extraction,
+            by default True
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
-        str_decode : bool
+            behind HSDS, by default False
+        str_decode : bool, optional
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
+            by default True
+        group : str, optional
+            Group within .h5 resource file to open, by default None
         """
         super().__init__(wind_h5, unscale=unscale, str_decode=str_decode,
                          group=group, hsds=hsds, tree=tree,
@@ -1390,19 +1464,21 @@ class WaveX(ResourceX):
         ----------
         wave_h5 : str
             Path to US_Wave .h5 file of interest
-        tree : str | cKDTree
+        tree : str | cKDTree, optional
             cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        hsds : bool
+            of lat, lon coordinates, by default None
+        unscale : bool, optional
+            Boolean flag to automatically unscale variables on extraction,
+            by default True
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
-        str_decode : bool
+            behind HSDS, by default False
+        str_decode : bool, optional
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
+            by default True
+        group : str, optional
+            Group within .h5 resource file to open, by default None
         """
         super().__init__(wave_h5, unscale=unscale, str_decode=str_decode,
                          group=group, hsds=hsds, tree=tree,

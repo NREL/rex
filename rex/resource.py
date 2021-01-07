@@ -747,7 +747,7 @@ class Resource:
             raise
 
     def __len__(self):
-        return self.h5['meta'].shape[0]
+        return self.h5['time_index'].shape[0]
 
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)
