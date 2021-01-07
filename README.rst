@@ -97,7 +97,7 @@ Option 2: Clone repo (recommended for developers)
 
     1) Create a conda env: ``conda create -n rex``
     2) Run the command: ``conda activate rex``
-    3) cd into the repo cloned in .1
+    3) cd into the repo cloned in 1.
     5) prior to running ``pip`` below, make sure the branch is correct (install
        from master!)
     6) Install ``rex`` and its dependencies by running:
