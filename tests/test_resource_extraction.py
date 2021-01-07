@@ -719,12 +719,14 @@ def test_check_lat_lon():
             f.lat_lon_gid(bad_lat_lon)
 
 
-def test_save_region(WindX_cls):
+@pytest.mark.parametrize('datasets', [None, 'windspeed_100m',
+                                      ['pressure_100m',
+                                       'temperature_100m',
+                                       'windspeed_100m']])
+def test_save_region(WindX_cls, datasets):
     """
     test save_region to .h5
     """
-    datasets = ['{}_100m'.format(ds) for ds
-                in ['windspeed', 'winddirection', 'pressure', 'temperature']]
     region = 'Providence'
     region_col = 'county'
 
@@ -735,12 +737,19 @@ def test_save_region(WindX_cls):
              'coordinates': WindX_cls.lat_lon[gids],
              'time_index': WindX_cls.time_index}
 
-    for dset in datasets:
+    if datasets is None:
+        dsets = WindX_cls.resource_datasets
+    else:
+        dsets = datasets
+        if isinstance(dsets, str):
+            dsets = [dsets]
+
+    for dset in dsets:
         truth[dset] = WindX_cls[dset, :, gids]
 
     with tempfile.TemporaryDirectory() as td:
         out_path = os.path.join(td, 'test.h5')
-        WindX_cls.save_region(out_path, datasets, region,
+        WindX_cls.save_region(out_path, region, datasets=datasets,
                               region_col=region_col)
 
         with WindX(out_path) as f:
