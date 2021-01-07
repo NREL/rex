@@ -147,7 +147,7 @@ class MultiTimeH5:
         tuple
         """
         if self._shape is None:
-            self._shape = (len(self.time_index), len(self.h5))
+            self._shape = (len(self.time_index), self.h5.shape[1])
 
         return self._shape
 
@@ -521,7 +521,7 @@ class MultiTimeResource:
             raise
 
     def __len__(self):
-        return len(self.h5.h5)
+        return len(self.h5.time_index)
 
     def __iter__(self):
         return self

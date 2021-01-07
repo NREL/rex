@@ -113,7 +113,7 @@ def check_props(res_cls):
     meta = res_cls.meta
     res_shape = (len(time_index), len(meta))
 
-    assert len(res_cls) == len(meta)
+    assert len(res_cls) == len(time_index)
     assert res_cls.shape == res_shape
 
     assert np.all(np.isin(['meta', 'time_index'],
