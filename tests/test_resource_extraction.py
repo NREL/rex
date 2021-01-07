@@ -109,7 +109,17 @@ def check_props(res_cls):
     """
     Test extraction class properties
     """
+    time_index = res_cls.time_index
     meta = res_cls.meta
+    res_shape = (len(time_index), len(meta))
+
+    assert len(res_cls) == len(meta)
+    assert res_cls.shape == res_shape
+
+    assert np.all(np.isin(['meta', 'time_index'],
+                          res_cls.datasets))
+    assert np.all(~np.isin(['meta', 'time_index', 'coordinates'],
+                           res_cls.resource_datasets))
 
     assert np.all(np.in1d(res_cls.countries, meta['country'].unique()))
     assert np.all(np.in1d(res_cls.states, meta['state'].unique()))
@@ -707,6 +717,43 @@ def test_check_lat_lon():
         with pytest.raises(ResourceValueError):
             # pylint: disable=no-member
             f.lat_lon_gid(bad_lat_lon)
+
+
+def test_save_region(WindX_cls):
+    """
+    test save_region to .h5
+    """
+    datasets = ['{}_100m'.format(ds) for ds
+                in ['windspeed', 'winddirection', 'pressure', 'temperature']]
+    region = 'Providence'
+    region_col = 'county'
+
+    gids = WindX_cls.region_gids(region, region_col=region_col)
+    meta = WindX_cls.meta.loc[gids].reset_index(drop=True)
+    meta.index.name = 'gid'
+    truth = {'meta': meta,
+             'coordinates': WindX_cls.lat_lon[gids],
+             'time_index': WindX_cls.time_index}
+
+    for dset in datasets:
+        truth[dset] = WindX_cls[dset, :, gids]
+
+    with tempfile.TemporaryDirectory() as td:
+        out_path = os.path.join(td, 'test.h5')
+        WindX_cls.save_region(out_path, datasets, region,
+                              region_col=region_col)
+
+        with WindX(out_path) as f:
+            for dset in f:
+                test = f[dset]
+                if dset == 'meta':
+                    assert_frame_equal(truth[dset], test)
+                elif dset == 'time_index':
+                    truth[dset].equals(test)
+                else:
+                    assert np.allclose(truth[dset], test)
+
+    WindX_cls.close()
 
 
 def test_cli_site(runner, WindX_cls):

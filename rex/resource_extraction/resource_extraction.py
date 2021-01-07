@@ -78,7 +78,7 @@ class ResourceX:
             raise
 
     def __len__(self):
-        return self.h5['meta'].shape[0]
+        return len(self.resource)
 
     def __getitem__(self, keys):
         return self.resource[keys]
@@ -106,7 +106,7 @@ class ResourceX:
 
         Returns
         -------
-        res_cls
+        res_cls : rex.resource.Resource | rex.renewable_resource.*
         """
         return self._res
 
@@ -118,7 +118,6 @@ class ResourceX:
         Returns
         -------
         h5 : h5py.File | h5py.Group
-            Open h5py File or Group instance
         """
         return self.resource.h5
 
@@ -130,7 +129,6 @@ class ResourceX:
         Returns
         -------
         list
-            List of datasets
         """
         return self.resource.datasets
 
@@ -142,9 +140,30 @@ class ResourceX:
         Returns
         -------
         list
-            List of datasets
         """
         return self.datasets
+
+    @property
+    def resource_datasets(self):
+        """
+        Available resource datasets
+
+        Returns
+        -------
+        list
+        """
+        return self.resource.resource_datasets
+
+    @property
+    def res_dsets(self):
+        """
+        Available resource datasets
+
+        Returns
+        -------
+        list
+        """
+        return self.resource_datasets
 
     @property
     def groups(self):
@@ -154,7 +173,6 @@ class ResourceX:
         Returns
         -------
         groups : list
-            List of groups
         """
         return self.resource.groups
 
@@ -167,31 +185,28 @@ class ResourceX:
         Returns
         -------
         shape : tuple
-            Shape of resource variable arrays (timesteps, sites)
         """
         return self.resource.shape
 
     @property
     def meta(self):
         """
-        Meta data DataFrame
+        Resource meta data DataFrame
 
         Returns
         -------
         meta : pandas.DataFrame
-            Resource Meta Data
         """
         return self.resource.meta
 
     @property
     def time_index(self):
         """
-        DatetimeIndex
+        Resource DatetimeIndex
 
         Returns
         -------
         time_index : pandas.DatetimeIndex
-            Resource datetime index
         """
         return self.resource.time_index
 
@@ -203,7 +218,6 @@ class ResourceX:
         Returns
         -------
         lat_lon : ndarray
-            Array of (lat, lon) pairs for each site in meta
         """
         return self.resource.lat_lon
 
@@ -237,17 +251,17 @@ class ResourceX:
         Returns
         -------
         attrs : dict
-            .h5 file attributes sourced from first .h5 file
         """
         return self.global_attrs
 
     @property
     def tree(self):
         """
+        Pre-initialized cKDTree on the resource lat, lon coordinates
+
         Returns
         -------
         tree : cKDTree
-            Lat, lon coordinates cKDTree
         """
         if not isinstance(self._tree, cKDTree):
             self._tree = self._init_tree(self._tree)
@@ -257,10 +271,11 @@ class ResourceX:
     @property
     def countries(self):
         """
+        Available Countires
+
         Returns
         -------
         countries : ndarray
-            Countries available in .h5 file
         """
         if 'country' in self.meta:
             countries = self.meta['country'].unique()
@@ -272,10 +287,11 @@ class ResourceX:
     @property
     def states(self):
         """
+        Available states
+
         Returns
         -------
         states : ndarray
-            States available in .h5 file
         """
         if 'state' in self.meta:
             states = self.meta['state'].unique()
@@ -287,10 +303,11 @@ class ResourceX:
     @property
     def counties(self):
         """
+        Available Counties
+
         Returns
         -------
         counties : ndarray
-            Counties available in .h5 file
         """
         if 'county' in self.meta:
             counties = self.meta['county'].unique()
@@ -899,7 +916,7 @@ class ResourceX:
 
         gids = self.region_gids(region, region_col=region_col)
         datasets += ['meta', 'time_index', 'coordinates']
-        with h5py.File(out_fpath, mode='-w') as f_out:
+        with h5py.File(out_fpath, mode='w-') as f_out:
             for k, v in self.attrs.items():
                 f_out.attrs[k] = v
 

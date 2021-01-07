@@ -521,7 +521,7 @@ class MultiTimeResource:
             raise
 
     def __len__(self):
-        return self.h5.shape[0]
+        return len(self.h5.h5)
 
     def __iter__(self):
         return self
@@ -562,9 +562,7 @@ class MultiTimeResource:
         -------
         h5 : h5py.File | h5py.Group
         """
-        h5 = self._h5
-
-        return h5
+        return self._h5
 
     @property
     def datasets(self):
@@ -575,7 +573,7 @@ class MultiTimeResource:
         -------
         list
         """
-        return self._h5.datasets
+        return self.h5.datasets
 
     @property
     def dsets(self):
@@ -597,7 +595,7 @@ class MultiTimeResource:
         -------
         list
         """
-        return self._h5.resource_datasets
+        return self.h5.resource_datasets
 
     @property
     def res_dsets(self):
