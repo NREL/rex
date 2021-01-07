@@ -57,7 +57,7 @@ The following variables are provided by the NSRDB:
 ## Directory structure
 
 Solar resource data is made available as a series of .h5 files corresponding
-to each year and can be found at `/datasets/NSRDB/v3.0.1/nsrdb_${year}.h5`
+to each year and can be found at `/datasets/NSRDB/v3/nsrdb_${year}.h5`
 
 ## Data Format
 
@@ -71,10 +71,8 @@ The units for the variable data is also provided as an attribute (`psm_units`).
 
 ## Data Access Examples
 
-An extraction utility for the US Wave data has been created with in
-[`rex`](https://github.com/nrel/rex) and is available on Eagle as a module:
-`module use /datasets/modulefiles`
-`module load rex`
+An extraction utility for the NSRDB data is available in the Resource
+eXtraction tool: [`rex`](https://nrel.github.io/rex/).
 
 ### NSRDB CLI
 
@@ -104,15 +102,10 @@ Commands:
 Example scripts to extract solar resource data using python are provided below:
 
 The easiest way to access and extract data from the Resource eXtraction tool
-(`rex`) which is available on Eagle by running:
+(`rex`).
 
-```bash
-module use /datasets/modulefiles
-module load rex
-```
-
-Once the `rex` module is loaded you can access `rex` in python which can be used
-to access the NSRDB files:
+Once `rex` is [installed](https://nrel.github.io/rex/misc/installation.html#)
+you can access `rex` in python which can be used to access the NSRDB files:
 
 ```python
 from rex import NSRDBX

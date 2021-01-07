@@ -76,7 +76,7 @@ Example scripts to extract wave resource data using the command line or python
 are provided below:
 
 The easiest way to access and extract data is by using the Resource eXtraction
-tool `rex <https://github.com/nrel/rex>`_
+tool `rex <https://nrel.github.io/rex/>`_.
 
 To use `rex` with `HSDS <https://github.com/NREL/hsds-examples>`_ you will need
 to install `h5pyd`:

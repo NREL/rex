@@ -57,10 +57,8 @@ units for the variable data is also provided as an attribute (`units`).
 
 ## Data Access Examples
 
-An extraction utility for the WIND (WTK) data has been created with in
-[`rex`](https://github.com/nrel/rex) and is available on Eagle as a module:
-`module use /datasets/modulefiles`
-`module load rex`
+An extraction utility for the WTK data is available in the Resource
+eXtraction tool: [`rex`](https://nrel.github.io/rex/).
 
 ### WINDX CLI
 
@@ -90,15 +88,10 @@ Commands:
 Example scripts to extract wind resource data using python are provided below:
 
 The easiest way to access and extract data from the Resource eXtraction tool
-(`rex`) which is available on Eagle by running:
+(`rex`).
 
-```bash
-module use /datasets/modulefiles
-module load rex
-```
-
-Once the `rex` module is loaded you can access `rex` in python which can be
-used to access the WTK files:
+Once `rex` is [installed](https://nrel.github.io/rex/misc/installation.html#)
+you can access `rex` in python which can be used to access the WTK files:
 
 ```python
 from rex import WindX

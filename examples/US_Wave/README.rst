@@ -79,7 +79,11 @@ Directory structure
 
 High Resolution Ocean Surface Wave Hindcast data is made available as a series
 of hourly .h5 and can be found at:
-``/nrel/us-wave/US_wave_${year}.h5``
+``/nrel/US_wave/``
+
+Currently 2 domains of data are available:
+- West Coast: ``/nrel/US_wave/West_Coast/West_Coast_wave_${year}.h5``
+- Hawaii: ``/nrel/US_wave/Hawaii/Hawaii_wave_${year}.h5``
 
 Data Format
 -----------
@@ -99,7 +103,7 @@ Example scripts to extract wave resource data using the command line or python
 are provided below:
 
 The easiest way to access and extract data is by using the Resource eXtraction
-tool `rex <https://github.com/nrel/rex>`_
+tool `rex <https://nrel.github.io/rex/>`_
 
 To use `rex` with `HSDS <https://github.com/NREL/hsds-examples>`_ you will need
 to install `h5pyd`:
@@ -141,7 +145,7 @@ WaveX python class
 
     from rex import WaveX
 
-    wave_file = '/nrel/us-wave/US_wave_2010.h5'
+    wave_file = '/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5'
     with WaveX(wave_file, hsds=True) as f:
         meta = f.meta
         time_index = f.time_index
@@ -155,7 +159,7 @@ location:
 
     from rex import WaveX
 
-    wave_file = '/nrel/us-wave/US_wave_2010.h5'
+    wave_file = '/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5'
     lat_lon = (34.399408, -119.841181)
     with WaveX(wave_file, hsds=True) as f:
         lat_lon_swh = f.get_lat_lon_df('significant_wave_height', nwtc)
@@ -167,7 +171,7 @@ or to extract all sites in a given region:
 
     from rex import WaveX
 
-    wave_file = '/nrel/us-wave/US_wave_2010.h5'
+    wave_file = '/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5'
     jurisdication='California'
     with WaveX(wave_file, hsds=True) as f:
         date = '2010-07-04 18:00:00'
@@ -184,7 +188,7 @@ If you would rather access the US Wave data directly using h5pyd:
     import pandas as pd
 
     # Open .h5 file
-    with h5pyd.File('/nrel/us-wave/US_wave_2010.h5', mode='r') as f:
+    with h5pyd.File('/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5', mode='r') as f:
         # Extract meta data and convert from records array to DataFrame
         meta = pd.DataFrame(f['meta'][...])
         # Significant Wave Height
@@ -204,7 +208,7 @@ If you would rather access the US Wave data directly using h5pyd:
     import pandas as pd
 
     # Open .h5 file
-    with h5pyd.File('/nrel/us-wave/US_wave_2010.h5', mode='r') as f:
+    with h5pyd.File('/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5', mode='r') as f:
         # Extract time_index and convert to datetime
         # NOTE: time_index is saved as byte-strings and must be decoded
         time_index = pd.to_datetime(f['time_index'][...].astype(str))

@@ -8,7 +8,7 @@ Usage on Eagle
 ==============
 
 .. include:: ../../../README.rst
-   :start-after: Using Eagle Module
+   :start-after: Using Eagle Env
    :end-before: Installing rex
 
 Command Line Tools
@@ -16,4 +16,4 @@ Command Line Tools
 
 .. include:: ../../../README.rst
    :start-after: rex command line tools
-   :end-before: Using Eagle Module
+   :end-before: Using Eagle Env
