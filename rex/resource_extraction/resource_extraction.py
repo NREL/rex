@@ -895,6 +895,56 @@ class ResourceX:
         """
         self._res.close()
 
+    @staticmethod
+    def _get_ds_slice(dset, gids):
+        """
+        Get dataset region slice
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to extract region from
+        gids : ndarray | list
+            Gids associated with region
+
+        Returns
+        -------
+        ds_slice : tuple
+            ds slice tuple to properly extract region from given dataset
+        """
+        if dset == 'time_index':
+            ds_slice = (slice(None), )
+        elif dset in ['coordinates', 'meta']:
+            ds_slice = (gids, )
+        else:
+            ds_slice = (slice(None), gids)
+
+        return ds_slice
+
+    def _get_datasets(self, datasets=None):
+        """
+        Get datasets to extract, if None extract all datasets
+
+        Parameters
+        ----------
+        datasets : list | str, optional
+            Dataset(s) to extract, by default None
+
+        Returns
+        -------
+        datasets : list
+            Unique set of datasets in alphabetical order
+        """
+        if datasets is None:
+            datasets = self.datasets
+        else:
+            if isinstance(datasets, str):
+                datasets = [datasets]
+
+            datasets += ['meta', 'time_index', 'coordinates']
+
+        return sorted(set(datasets))
+
     def save_region(self, out_fpath, region, datasets=None,
                     region_col='state'):
         """
@@ -916,44 +966,38 @@ class ResourceX:
         scale_attr = self.resource.SCALE_ATTR
         add_attr = self.resource.ADD_ATTR
         unscale = False
-        if datasets is None:
-            datasets = self.datasets
-        else:
-            if isinstance(datasets, str):
-                datasets = [datasets]
 
-            datasets += ['meta', 'time_index', 'coordinates']
-
+        datasets = self._get_datasets(datasets=datasets)
         gids = self.region_gids(region, region_col=region_col)
         with h5py.File(out_fpath, mode='w-') as f_out:
             for k, v in self.attrs.items():
-                f_out.attrs[k] = v
+                try:
+                    f_out.attrs[k] = v
+                except Exception as ex:
+                    msg = ('Could not transfer global attribute {}: {}\n{}'
+                           .format(k, v, ex))
+                    warn(msg)
 
             for dset in datasets:
                 if dset in self:
                     ds = self.h5[dset]
-                    if dset == 'time_index':
-                        data = ResourceDataset.extract(ds, slice(None),
-                                                       scale_attr=scale_attr,
-                                                       add_attr=add_attr,
-                                                       unscale=unscale)
-                    elif dset in ['coordinates', 'meta']:
-                        data = ResourceDataset.extract(ds, gids,
-                                                       scale_attr=scale_attr,
-                                                       add_attr=add_attr,
-                                                       unscale=unscale)
-                    else:
-                        data = ResourceDataset.extract(ds, (slice(None), gids),
-                                                       scale_attr=scale_attr,
-                                                       add_attr=add_attr,
-                                                       unscale=unscale)
+                    ds_slice = self._get_ds_slice(dset, gids)
+                    data = ResourceDataset.extract(ds, ds_slice,
+                                                   scale_attr=scale_attr,
+                                                   add_attr=add_attr,
+                                                   unscale=unscale)
 
                     ds_out = f_out.create_dataset(dset,
                                                   shape=data.shape,
                                                   dtype=data.dtype,
                                                   data=data)
                     for k, v in ds.attrs.items():
-                        ds_out.attrs[k] = v
+                        try:
+                            ds_out.attrs[k] = v
+                        except Exception as ex:
+                            msg = ('Could not transfer {} attribute {}: {}\n{}'
+                                   .format(dset, k, v, ex))
+                            warn(msg)
                 else:
                     msg = ("Dataset {} is not available in {} and will "
                            "not be saved to {}".format(dset, self, out_fpath))
