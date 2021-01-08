@@ -16,7 +16,7 @@ from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
                                      MultiFileWTK)
 from rex.multi_time_resource import MultiTimeResource
 from rex.multi_year_resource import MultiYearResource
-from rex.resource import Resource
+from rex.resource import Resource, ResourceDataset
 from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
                                     WindResource)
 from rex.resource_extraction.temporal_stats import TemporalStats
@@ -913,6 +913,9 @@ class ResourceX:
         region_col : str, optional
             Region column to search, by default 'state'
         """
+        scale_attr = self.resource.SCALE_ATTR
+        add_attr = self.resource.ADD_ATTR
+        unscale = False
         if datasets is None:
             datasets = self.datasets
         else:
@@ -930,11 +933,20 @@ class ResourceX:
                 if dset in self:
                     ds = self.h5[dset]
                     if dset == 'time_index':
-                        data = ds[...]
+                        data = ResourceDataset.extract(ds, slice(None),
+                                                       scale_attr=scale_attr,
+                                                       add_attr=add_attr,
+                                                       unscale=unscale)
                     elif dset in ['coordinates', 'meta']:
-                        data = ds[gids]
+                        data = ResourceDataset.extract(ds, gids,
+                                                       scale_attr=scale_attr,
+                                                       add_attr=add_attr,
+                                                       unscale=unscale)
                     else:
-                        data = ds[:, gids]
+                        data = ResourceDataset.extract(ds, (slice(None), gids),
+                                                       scale_attr=scale_attr,
+                                                       add_attr=add_attr,
+                                                       unscale=unscale)
 
                     ds_out = f_out.create_dataset(dset,
                                                   shape=data.shape,
