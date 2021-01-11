@@ -752,6 +752,9 @@ def test_save_region(WindX_cls, datasets):
         WindX_cls.save_region(out_path, region, datasets=datasets,
                               region_col=region_col)
 
+        if datasets is not None:
+            assert 'meta' not in datasets
+
         with WindX(out_path) as f:
             for dset in f:
                 test = f[dset]
