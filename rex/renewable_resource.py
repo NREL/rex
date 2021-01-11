@@ -779,14 +779,15 @@ class WindResource(Resource):
         """
         var_name, h = self._parse_name(ds_name)
         heights = self.heights[var_name]
-        if len(heights) == 1:
+
+        if h in heights:
+            ds_name = '{}_{}m'.format(var_name, int(h))
+            out = super()._get_ds(ds_name, ds_slice)
+        elif len(heights) == 1:
             h = heights[0]
             ds_name = '{}_{}m'.format(var_name, h)
             warnings.warn('Only one hub-height available, returning {}'
                           .format(ds_name), ResourceWarning)
-
-        if h in heights:
-            ds_name = '{}_{}m'.format(var_name, int(h))
             out = super()._get_ds(ds_name, ds_slice)
         else:
             (h1, h2), extrapolate = self.get_nearest_h(h, heights)

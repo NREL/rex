@@ -940,6 +940,8 @@ class ResourceX:
         else:
             if isinstance(datasets, str):
                 datasets = [datasets]
+            else:
+                datasets = datasets.copy()
 
             datasets += ['meta', 'time_index', 'coordinates']
 
