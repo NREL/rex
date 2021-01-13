@@ -35,6 +35,8 @@ class ResourceDataset:
         self._scale_factor = self.ds.attrs.get(scale_attr, 1)
         self._adder = self.ds.attrs.get(add_attr, 0)
         self._unscale = unscale
+        if self._scale_factor == 1 and self._adder == 0:
+            self._unscale = False
 
     def __repr__(self):
         msg = "{} for {}".format(self.__class__.__name__, self.ds.name)
