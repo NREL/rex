@@ -33,7 +33,7 @@ jobs:
       working-directory: ./reVX
       shell: bash -l {0}
       run: |
-        conda install rtree
+        conda install rtree geopandas
         pip install -e .
     - name: Run reVX pytest
       working-directory: ./reVX
