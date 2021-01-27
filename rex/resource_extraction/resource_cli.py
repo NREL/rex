@@ -328,9 +328,12 @@ def multi_site(ctx, sites):
 
     out_path = "{}-meta.csv".format(name)
     out_path = os.path.join(ctx.obj['OUT_DIR'], out_path)
-    meta = meta.loc[site_df.columns]
-    logger.info('Saving meta data to {}'.format(out_path))
-    meta.to_csv(out_path)
+    if not os.path.exists(out_path):
+        meta = meta.loc[site_df.columns]
+        logger.info('Saving meta data to {}'.format(out_path))
+        meta.to_csv(out_path)
+    else:
+        logger.debug('Meta data has already been saved: {}'.format(out_path))
 
 
 if __name__ == '__main__':
