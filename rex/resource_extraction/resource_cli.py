@@ -316,7 +316,7 @@ def multi_site(ctx, sites):
     "latitude", "longitude" pairs OR "gid"s
     """
     name, gid, lat_lon = _parse_sites(sites)
-    dataset = ctx['DATASET']
+    dataset = ctx.obj['DATASET']
     with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
         meta = f['meta']
         if lat_lon is not None:
