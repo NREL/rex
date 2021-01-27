@@ -64,6 +64,10 @@ def main(ctx, domain, out_dir, years, buoy, eagle, log_file, verbose):
         path = os.path.join(path, domain)
 
     ctx.obj['H5'] = path
+
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
     ctx.obj['OUT_DIR'] = out_dir
     ctx.obj['CLS_KWARGS'] = {'years': years, 'hsds': hsds}
     ctx.obj['CLS'] = MultiYearWaveX

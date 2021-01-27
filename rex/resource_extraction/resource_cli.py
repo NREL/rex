@@ -72,6 +72,9 @@ def main(ctx, resource_h5, out_dir, log_file, verbose):
     ResourceX Command Line Interface
     """
     ctx.ensure_object(dict)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
     ctx.obj['H5'] = resource_h5
     ctx.obj['OUT_DIR'] = out_dir
     ctx.obj['CLS_KWARGS'] = {}

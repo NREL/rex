@@ -24,7 +24,7 @@ RES_CLS = {'Resouce': Resource,
 
 @click.group(invoke_without_command=True, chain=True)
 @click.option('--resource_path', '-h5', required=True,
-              type=click.Path(),
+              type=click.Path(exists=True),
               help=('Path to Resource .h5 files'))
 @click.option('--dataset', '-dset', required=True,
               help='Dataset to extract stats for')
@@ -66,6 +66,8 @@ def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
     TemporalStats Command Line Interface
     """
     ctx.ensure_object(dict)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
 
     if verbose:
         log_level = 'DEBUG'

@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 @click.option('--wind_h5', '-h5', required=True,
               type=click.Path(),
               help=('Path to Resource .h5 file'))
-@click.option('--out_dir', '-o', required=True, type=click.Path(exists=True),
+@click.option('--out_dir', '-o', required=True, type=click.Path(),
               help='Directory to dump output files')
 @click.option('--log_file', '-log', default=None, type=click.Path(),
               show_default=True,
@@ -38,6 +38,9 @@ def main(ctx, wind_h5, out_dir, log_file, verbose):
     WindX Command Line Interface
     """
     ctx.ensure_object(dict)
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
+
     ctx.obj['H5'] = wind_h5
     ctx.obj['OUT_DIR'] = out_dir
     ctx.obj['CLS_KWARGS'] = {}
