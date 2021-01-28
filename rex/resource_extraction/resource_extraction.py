@@ -467,7 +467,7 @@ class ResourceX:
 
         return tree
 
-    def _check_lat_lon(self, lat_lon):
+    def _check_lat_lon(self, lat_lon, decimals=2):
         """
         Check lat lon coordinates against domain
 
@@ -475,9 +475,13 @@ class ResourceX:
         ----------
         lat_lon : ndarray
             Either a single (lat, lon) pair or series of (lat, lon) pairs
+        decimals : int
+            Number of decimals to round to
         """
-        lat_min, lat_max = self.lat_lon[:, 0].min(), self.lat_lon[:, 0].max()
-        lon_min, lon_max = self.lat_lon[:, 1].min(), self.lat_lon[:, 1].max()
+        lat_min = round(self.lat_lon[:, 0].min(), decimals)
+        lat_max = round(self.lat_lon[:, 0].max(), decimals)
+        lon_min = round(self.lat_lon[:, 1].min(), decimals)
+        lon_max = round(self.lat_lon[:, 1].max(), decimals)
 
         if not isinstance(lat_lon, np.ndarray):
             lat_lon = np.array(lat_lon)
@@ -485,10 +489,10 @@ class ResourceX:
         if len(lat_lon.shape) == 1:
             lat_lon = np.expand_dims(lat_lon, axis=0)
 
-        check = lat_lon[:, 0] < lat_min
-        check |= lat_lon[:, 0] > lat_max
-        check |= lat_lon[:, 1] < lon_min
-        check |= lat_lon[:, 1] > lon_max
+        check = lat_lon[:, 0].round(decimals) < lat_min
+        check |= lat_lon[:, 0].round(decimals) > lat_max
+        check |= lat_lon[:, 1].round(decimals) < lon_min
+        check |= lat_lon[:, 1].round(decimals) > lon_max
 
         if any(check):
             bad_coords = lat_lon[check]
