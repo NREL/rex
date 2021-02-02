@@ -27,7 +27,7 @@ rex
     :target: https://codecov.io/gh/nrel/rex
 
 .. image:: https://mybinder.org/badge_logo.svg
- :target: https://mybinder.org/v2/gh/NREL/rex/master
+    :target: https://mybinder.org/v2/gh/NREL/rex/master
 
 The REsource eXtraction (rex) tool
 
