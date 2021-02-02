@@ -808,20 +808,20 @@ class TemporalStats:
 
         Returns
         -------
-        annual_stats : pandas.DataFrame
-            DataFrame of annual statistics
+        res_stats : pandas.DataFrame
+            DataFrame of resource statistics
         """
         res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
                         hsds=hsds)
-        annual_stats = res_stats.compute_statistics(
+        res_stats = res_stats.compute_statistics(
             dataset, sites=sites,
             diurnal=diurnal, month=month, combinations=combinations,
             max_workers=max_workers, chunks_per_worker=chunks_per_worker,
             lat_lon_only=lat_lon_only)
         if out_path is not None:
-            res_stats.save_stats(annual_stats, out_path)
+            res_stats.save_stats(res_stats, out_path)
 
-        return annual_stats
+        return res_stats
 
     @classmethod
     def monthly(cls, res_h5, dataset, sites=None, statistics='mean',
