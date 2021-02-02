@@ -1,0 +1,446 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>National Solar Radiation Database (NSRDB) &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Wind Integration National Dataset (WIND) Toolkit" href="examples.wind.html" />
+    <link rel="prev" title="Installation" href="installation.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="misc.html#examples">Examples</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../rex/rex.html">rex package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../rex/rex.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../rex/rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../rex/rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../rex/rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../rex/rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="misc.html">Installation and Usage</a> &raquo;</li>
+        
+      <li>National Solar Radiation Database (NSRDB)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/nrel/rex/blob/master/docs/source/misc/examples.nsrdb.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="national-solar-radiation-database-nsrdb">
+<h1>National Solar Radiation Database (NSRDB)<a class="headerlink" href="#national-solar-radiation-database-nsrdb" title="Permalink to this headline">¶</a></h1>
+<p>The National Solar Radiation Database (NSRDB) is a serially complete
+collection of meteorological and solar irradiance data sets for the
+United States and a growing list of international locations for 1998-2017. The
+NSRDB provides foundational information to support U.S. Department of Energy
+programs, research, and the general public.</p>
+<p>The NSRDB provides time-series data at 30 minute resolution of resource
+averaged over surface cells of 0.038 degrees in both latitude and longitude,
+or nominally 4 km in size. The solar radiation values represent the resource
+available to solar energy systems. The data was created using cloud properties
+which are generated using the AVHRR Pathfinder Atmospheres-Extended (PATMOS-x)
+algorithms developed by the University of Wisconsin. Fast all-sky radiation
+model for solar applications (FARMS) in conjunction with the cloud properties,
+and aerosol optical depth (AOD) and precipitable water vapor (PWV) from
+ancillary source are used to estimate solar irradiance (GHI, DNI, and DHI).
+The Global Horizontal Irradiance (GHI) is computed for clear skies using the
+REST2 model. For cloud scenes identified by the cloud mask, FARMS is used to
+compute GHI. The Direct Normal Irradiance (DNI) for cloud scenes is then
+computed using the DISC model. The PATMOS-X model uses half-hourly radiance
+images in visible and infrared channels from the GOES series of geostationary
+weather satellites.  Ancillary variables needed to run REST2 and FARMS (e.g.,
+aerosol optical depth, precipitable water vapor, and albedo) are derived from
+the the Modern Era-Retrospective Analysis (MERRA-2) dataset. Temperature and
+wind speed data are also derived from MERRA-2 and provided for use in SAM to
+compute PV generation.</p>
+<p>The following variables are provided by the NSRDB:</p>
+<ul>
+<li><p>Irradiance:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Global Horizontal (ghi)</p></li>
+<li><p>Direct Normal (dni)</p></li>
+<li><p>Diffuse (dhi)</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Clear-sky Irradiance</p></li>
+<li><p>Cloud Type</p></li>
+<li><p>Dew Point</p></li>
+<li><p>Temperature</p></li>
+<li><p>Surface Albedo</p></li>
+<li><p>Pressure</p></li>
+<li><p>Relative Humidity</p></li>
+<li><p>Solar Zenith Angle</p></li>
+<li><p>Precipitable Water</p></li>
+<li><p>Wind Direction</p></li>
+<li><p>Wind Speed</p></li>
+<li><p>Fill Flag</p></li>
+<li><p>Angstrom wavelength exponent (alpha)</p></li>
+<li><p>Aerosol optical depth (aod)</p></li>
+<li><p>Aerosol asymmetry parameter (asymmetry)</p></li>
+<li><p>Cloud optical depth (cld_opd_dcomp)</p></li>
+<li><p>Cloud effective radius (cld_ref_dcomp)</p></li>
+<li><p>cloud_press_acha</p></li>
+<li><p>Reduced ozone vertical pathlength (ozone)</p></li>
+<li><p>Aerosol single-scatter albedo (ssa)</p></li>
+</ul>
+<div class="section" id="data-format">
+<h2>Data Format<a class="headerlink" href="#data-format" title="Permalink to this headline">¶</a></h2>
+<p>The data is provided in high density data file (.h5) separated by year. The
+variables mentioned above are provided in 2 dimensional time-series arrays
+with dimensions (time x location). The temporal axis is defined by the
+<code class="docutils literal notranslate"><span class="pre">time_index</span></code> dataset, while the positional axis is defined by the <code class="docutils literal notranslate"><span class="pre">meta</span></code>
+dataset. For storage efficiency each variable has been scaled and stored as an
+integer. The scale-factor is provided in the <code class="docutils literal notranslate"><span class="pre">psm_scale-factor</span></code> attribute.
+The units for the variable data is also provided as an attribute
+(<code class="docutils literal notranslate"><span class="pre">psm_units</span></code>).</p>
+</div>
+<div class="section" id="data-access-examples">
+<h2>Data Access Examples<a class="headerlink" href="#data-access-examples" title="Permalink to this headline">¶</a></h2>
+<p>Example scripts to extract wave resource data using the command line or python
+are provided below:</p>
+<p>The easiest way to access and extract data is by using the Resource eXtraction
+tool <a class="reference external" href="https://nrel.github.io/rex/">rex</a>.</p>
+<p>To use <cite>rex</cite> with <a class="reference external" href="https://github.com/NREL/hsds-examples">HSDS</a> you will need
+to install <cite>h5pyd</cite>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install h5pyd
+</pre></div>
+</div>
+<div class="section" id="nsrdb-cli">
+<h3>NSRDB CLI<a class="headerlink" href="#nsrdb-cli" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="https://nrel.github.io/rex/rex/rex.resource_extaction.nsrdb_cli.html#nsrdbx">NSRDBX</a>
+command line utility provides the following options and commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>NSRDBX --help
+
+Usage: NSRDBX <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+
+  NSRDBX Command Line Interface
+
+Options:
+  -h5, --solar_h5 PATH  Path to Resource .h5 file  <span class="o">[</span>required<span class="o">]</span>
+  -o, --out_dir PATH    Directory to dump output files  <span class="o">[</span>required<span class="o">]</span>
+  -v, --verbose         Flag to turn on debug logging. Default is not verbose.
+  --help                Show this message and exit.
+
+Commands:
+  dataset     Extract a single dataset
+  multi-site  Extract multiple sites given <span class="k">in</span> <span class="s1">&#39;--sites&#39;</span> .csv or .json as...
+  sam-file    Extract all datasets needed <span class="k">for</span> SAM <span class="k">for</span> the nearest pixel to...
+</pre></div>
+</div>
+</div>
+<div class="section" id="nsrdbx-python-class">
+<h3>NSRDBX python class<a class="headerlink" href="#nsrdbx-python-class" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rex</span> <span class="kn">import</span> <span class="n">NSRDBX</span>
+
+<span class="n">nsrdb_file</span> <span class="o">=</span> <span class="s1">&#39;/nrel/nsrdb/v3/nsrdb_2018.h5&#39;</span>
+<span class="k">with</span> <span class="n">NSRDBX</span><span class="p">(</span><span class="n">nsrdb_file</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">meta</span>
+    <span class="n">time_index</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">time_index</span>
+    <span class="n">dni</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;dni&#39;</span><span class="p">,</span> <span class="p">:,</span> <span class="p">::</span><span class="mi">1000</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><cite>NSRDBX</cite> also allows easy extraction of the nearest site to a desired
+(lat, lon) location:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rex</span> <span class="kn">import</span> <span class="n">NSRDBX</span>
+
+<span class="n">nsrdb_file</span> <span class="o">=</span> <span class="s1">&#39;/nrel/nsrdb/v3/nsrdb_2018.h5&#39;</span>
+<span class="n">nrel</span> <span class="o">=</span> <span class="p">(</span><span class="mf">39.741931</span><span class="p">,</span> <span class="o">-</span><span class="mf">105.169891</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">NSRDBX</span><span class="p">(</span><span class="n">nsrdb_file</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">nrel_dni</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_lat_lon_df</span><span class="p">(</span><span class="s1">&#39;dni&#39;</span><span class="p">,</span> <span class="n">nrel</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or to extract all sites in a given region:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rex</span> <span class="kn">import</span> <span class="n">NSRDBX</span>
+
+<span class="n">nsrdb_file</span> <span class="o">=</span> <span class="s1">&#39;/nrel/nsrdb/v3/nsrdb_2018.h5&#39;</span>
+<span class="n">state</span><span class="o">=</span><span class="s1">&#39;Colorado&#39;</span>
+<span class="k">with</span> <span class="n">NSRDBX</span><span class="p">(</span><span class="n">nsrdb_file</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="s1">&#39;2018-07-04 18:00:00&#39;</span>
+    <span class="n">dni_map</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_timestep_map</span><span class="p">(</span><span class="s1">&#39;dni&#39;</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="n">region</span><span class="p">,</span>
+                                 <span class="n">region_col</span><span class="o">=</span><span class="s1">&#39;state&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Lastly, <cite>NSRDBX</cite> can be used to extract all variables needed to run SAM at a
+given location:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rex</span> <span class="kn">import</span> <span class="n">NSRDBX</span>
+
+<span class="n">nsrdb_file</span> <span class="o">=</span> <span class="s1">&#39;/nrel/nsrdb/v3/nsrdb_2018.h5&#39;</span>
+<span class="n">nrel</span> <span class="o">=</span> <span class="p">(</span><span class="mf">39.741931</span><span class="p">,</span> <span class="o">-</span><span class="mf">105.169891</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">NSRDBX</span><span class="p">(</span><span class="n">nsrdb_file</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">nrel_sam_vars</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_SAM_lat_lon</span><span class="p">(</span><span class="n">nrel</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>For more information about the NSRDB please see the <a class="reference external" href="https://nsrdb.nrel.gov/">website</a>
+Users of the NSRDB should please cite:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S136403211830087X?via%3Dihub">Sengupta, M., Y. Xie, A. Lopez, A. Habte, G. Maclaurin, and J. Shelby. 2018. “The National Solar Radiation Data Base (NSRDB).” Renewable and Sustainable Energy Reviews  89 (June): 51-60.</a></p></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="examples.wind.html" class="btn btn-neutral float-right" title="Wind Integration National Dataset (WIND) Toolkit" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-left" title="Installation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

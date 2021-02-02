@@ -1,0 +1,924 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex.multi_file_resource &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../rex/rex.html">rex package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../rex/rex.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../rex/rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../rex/rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../rex/rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../rex/rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>rex.multi_file_resource</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for rex.multi_file_resource</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Classes to handle resource data</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">rex.renewable_resource</span> <span class="kn">import</span> <span class="n">NSRDB</span><span class="p">,</span> <span class="n">WindResource</span>
+<span class="kn">from</span> <span class="nn">rex.resource</span> <span class="kn">import</span> <span class="n">Resource</span>
+<span class="kn">from</span> <span class="nn">rex.utilities.exceptions</span> <span class="kn">import</span> <span class="n">ResourceRuntimeError</span>
+
+
+<div class="viewcode-block" id="MultiH5"><a class="viewcode-back" href="../../rex/rex.multi_file_resource.html#rex.multi_file_resource.MultiH5">[docs]</a><span class="k">class</span> <span class="nc">MultiH5</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle multiple h5 file Resources</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_files</span><span class="p">,</span> <span class="n">check_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_files : list</span>
+<span class="sd">            List of .h5 files to source data from</span>
+<span class="sd">        check_files : bool</span>
+<span class="sd">            Check to ensure files have the same coordinates and time_index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dset_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_file_dsets</span><span class="p">(</span><span class="n">h5_files</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h5_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_file_instances</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dset_map</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="k">if</span> <span class="n">check_files</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_preflight_check</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> contains </span><span class="si">{}</span><span class="s2"> files and </span><span class="si">{}</span><span class="s2"> datasets&quot;</span>
+               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
+                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dset_map</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5_map</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dset</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dset</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dset_map</span><span class="p">[</span><span class="n">dset</span><span class="p">]</span>
+            <span class="n">h5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5_map</span><span class="p">[</span><span class="n">path</span><span class="p">]</span>
+            <span class="n">ds</span> <span class="o">=</span> <span class="n">h5</span><span class="p">[</span><span class="n">dset</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> is invalid must be one of: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span>
+
+        <span class="n">dset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_i</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">dset</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dset</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">dset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Global .h5 file attributes sourced from first .h5 file</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        attrs : dict</span>
+<span class="sd">            .h5 file attributes sourced from first .h5 file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5_map</span><span class="p">[</span><span class="n">path</span><span class="p">]</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">attrs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Available datasets</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            List of dataset present in .h5 files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dset_map</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">h5_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        .h5 files data is being sourced from</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            List of .h5 files data is being sourced from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_h5_map</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_dsets</span><span class="p">(</span><span class="n">h5_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get datasets in given .h5 file</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_path : str</span>
+<span class="sd">            Path to .h5 file to get variables for</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        unique_dsets : list</span>
+<span class="sd">            List of unique datasets in .h5 file</span>
+<span class="sd">        shared_dsets : list</span>
+<span class="sd">            List of shared datasets in .h5 file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">unique_dsets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">shared_dsets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">h5_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dset</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dset</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="s1">&#39;time_index&#39;</span><span class="p">,</span> <span class="s1">&#39;coordinates&#39;</span><span class="p">]:</span>
+                    <span class="n">unique_dsets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">shared_dsets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">unique_dsets</span><span class="p">,</span> <span class="n">shared_dsets</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_map_file_dsets</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">h5_files</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map 5min variables to their .h5 files in given directory</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_files : list</span>
+<span class="sd">            List of h5_files to source data from</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dset_map : dict</span>
+<span class="sd">            Dictionary mapping datasets to file paths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dset_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">h5_files</span><span class="p">:</span>
+            <span class="n">unique_dsets</span><span class="p">,</span> <span class="n">shared_dsets</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_dsets</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">dset</span> <span class="ow">in</span> <span class="n">shared_dsets</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dset</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dset_map</span><span class="p">:</span>
+                    <span class="n">dset_map</span><span class="p">[</span><span class="n">dset</span><span class="p">]</span> <span class="o">=</span> <span class="n">file</span>
+
+            <span class="k">for</span> <span class="n">dset</span> <span class="ow">in</span> <span class="n">unique_dsets</span><span class="p">:</span>
+                <span class="n">dset_map</span><span class="p">[</span><span class="n">dset</span><span class="p">]</span> <span class="o">=</span> <span class="n">file</span>
+
+        <span class="k">return</span> <span class="n">dset_map</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_map_file_instances</span><span class="p">(</span><span class="n">h5_files</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Open all .h5 files and map the open h5py instances to the</span>
+<span class="sd">        associated file paths</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_files : list</span>
+<span class="sd">            List of .h5 files to open</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        h5_map : dict</span>
+<span class="sd">            Dictionary mapping file paths to open resource instances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">h5_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">f_path</span> <span class="ow">in</span> <span class="n">h5_files</span><span class="p">:</span>
+            <span class="n">h5_map</span><span class="p">[</span><span class="n">f_path</span><span class="p">]</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">f_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">h5_map</span>
+
+    <span class="k">def</span> <span class="nf">_preflight_check</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check time_index and coordinates accross files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">time_index</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">lat_lon</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">bad_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5_files</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="n">file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s1">&#39;time_index&#39;</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">ti</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">time_index</span>
+                    <span class="k">if</span> <span class="n">time_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">time_index</span> <span class="o">=</span> <span class="n">ti</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">check</span> <span class="o">=</span> <span class="n">time_index</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">ti</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">check</span><span class="p">:</span>
+                            <span class="n">bad_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+                <span class="n">ll</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">lat_lon</span>
+                <span class="k">if</span> <span class="n">lat_lon</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">lat_lon</span> <span class="o">=</span> <span class="n">ll</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">check</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">lat_lon</span><span class="p">,</span> <span class="n">ll</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">check</span><span class="p">:</span>
+                        <span class="n">bad_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+        <span class="n">bad_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">bad_files</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">bad_files</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;The following files&#39; coordinates and time-index do not &quot;</span>
+                   <span class="s2">&quot;match:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bad_files</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="n">ResourceRuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MultiH5.close"><a class="viewcode-back" href="../../rex/rex.multi_file_resource.html#rex.multi_file_resource.MultiH5.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close all h5py.File instances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5_map</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="MultiH5Path"><a class="viewcode-back" href="../../rex/rex.multi_file_resource.html#rex.multi_file_resource.MultiH5Path">[docs]</a><span class="k">class</span> <span class="nc">MultiH5Path</span><span class="p">(</span><span class="n">MultiH5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle multiple h5 file Resources derived from a path</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_path</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.h5&#39;</span><span class="p">,</span> <span class="n">check_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_path : str</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">        prefix : str</span>
+<span class="sd">            Prefix for resource .h5 files</span>
+<span class="sd">        suffix : str</span>
+<span class="sd">            Suffix for resource .h5 files</span>
+<span class="sd">        check_files : bool</span>
+<span class="sd">            Check to ensure files have the same coordinates and time_index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">suf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_file_args</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">pre</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pre</span> <span class="o">=</span> <span class="n">prefix</span>
+
+        <span class="k">if</span> <span class="n">suf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">suf</span> <span class="o">=</span> <span class="n">suffix</span>
+
+        <span class="n">h5_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_h5_files</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">pre</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="n">suf</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">h5_files</span><span class="p">,</span> <span class="n">check_files</span><span class="o">=</span><span class="n">check_files</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> for </span><span class="si">{}</span><span class="s2">:</span><span class="se">\n</span><span class="s2"> Contains </span><span class="si">{}</span><span class="s2"> files and </span><span class="si">{}</span><span class="s2"> datasets&quot;</span>
+               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5_dir</span><span class="p">,</span>
+                       <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dset_map</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="n">msg</span>
+
+<div class="viewcode-block" id="MultiH5Path.multi_file_args"><a class="viewcode-back" href="../../rex/rex.multi_file_resource.html#rex.multi_file_resource.MultiH5Path.multi_file_args">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">multi_file_args</span><span class="p">(</span><span class="n">h5_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get multi-h5 directory arguments for multi file resource paths.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_path : str</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        h5_dir : str</span>
+<span class="sd">            Directory containing multi-file resource files.</span>
+<span class="sd">        prefix : str</span>
+<span class="sd">            File prefix for files in h5_dir.</span>
+<span class="sd">        suffix : str</span>
+<span class="sd">            File suffix for files in h5_dir.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s1">&#39;*&#39;</span> <span class="ow">in</span> <span class="n">h5_path</span><span class="p">:</span>
+            <span class="n">h5_dir</span><span class="p">,</span> <span class="n">fn</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span>
+            <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">fn</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">h5_path</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;MultiFileResource cannot handle a single file&quot;</span>
+                               <span class="s2">&quot; use Resource instead.&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">h5_dir</span> <span class="o">=</span> <span class="n">h5_path</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">return</span> <span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_h5_files</span><span class="p">(</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.h5&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map 5min variables to their .h5 files in given directory</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_dir : str</span>
+<span class="sd">            Path to directory containing 5min .h5 files</span>
+<span class="sd">        prefix : str</span>
+<span class="sd">            Prefix for resource .h5 files</span>
+<span class="sd">        suffix : str</span>
+<span class="sd">            Suffix for resource .h5 files</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        h5_files : list</span>
+<span class="sd">            List of .h5 files to source data from</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">h5_files</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">h5_dir</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="ow">and</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+                <span class="n">h5_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">file</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">h5_files</span></div>
+
+
+<div class="viewcode-block" id="MultiFileResource"><a class="viewcode-back" href="../../rex/rex.multi_file_resource.html#rex.multi_file_resource.MultiFileResource">[docs]</a><span class="k">class</span> <span class="nc">MultiFileResource</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle fine spatial resolution resource data stored in</span>
+<span class="sd">    multiple .h5 files</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    resource.Resource : Parent class</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Due to the size of the 2018 NSRDB and 5min WTK, datasets are stored in</span>
+<span class="sd">    multiple files. MultiFileResource and it&#39;s sub-classes allow for</span>
+<span class="sd">    interaction with all datasets as if they are in a single file.</span>
+<span class="sd">    MultiFileResource can take a directory containing all files to source</span>
+<span class="sd">    data from, or a filepath with a wildcard (*) indicating the filename</span>
+<span class="sd">    format.</span>
+<span class="sd">    &gt;&gt;&gt; file = &#39;$TESTDATADIR/wtk/wtk_2010_*m.h5&#39;</span>
+<span class="sd">    &gt;&gt;&gt; with MultiFileResource(file) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     print(self._h5_files)</span>
+<span class="sd">    [&#39;$TESTDATADIR/wtk_2010_200m.h5&#39;,</span>
+<span class="sd">     &#39;$TESTDATADIR/wtk_2010_100m.h5&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; file_100m = &#39;$TESTDATADIR/wtk_2010_100m.h5&#39;</span>
+<span class="sd">    &gt;&gt;&gt; with Resource(file_100m) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     print(res.datasets)</span>
+<span class="sd">    [&#39;coordinates&#39;, &#39;meta&#39;, &#39;pressure_100m&#39;, &#39;temperature_100m&#39;, &#39;time_index&#39;,</span>
+<span class="sd">     &#39;winddirection_100m&#39;, &#39;windspeed_100m&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; file_200m = &#39;$TESTDATADIR/wtk_2010_200m.h5&#39;</span>
+<span class="sd">    &gt;&gt;&gt; with Resource(file_200m) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     print(res.datasets)</span>
+<span class="sd">    [&#39;coordinates&#39;, &#39;meta&#39;, &#39;pressure_200m&#39;, &#39;temperature_200m&#39;, &#39;time_index&#39;,</span>
+<span class="sd">     &#39;winddirection_200m&#39;, &#39;windspeed_200m&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; with MultiFileResource(file) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     print(res.datasets)</span>
+<span class="sd">    [&#39;coordinates&#39;, &#39;meta&#39;, &#39;pressure_100m&#39;, &#39;pressure_200m&#39;,</span>
+<span class="sd">     &#39;temperature_100m&#39;, &#39;temperature_200m&#39;, &#39;time_index&#39;,</span>
+<span class="sd">     &#39;winddirection_100m&#39;, &#39;winddirection_200m&#39;, &#39;windspeed_100m&#39;,</span>
+<span class="sd">     &#39;windspeed_200m&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; with MultiFileResource(file) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     wspd = res[&#39;windspeed_100m&#39;]</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; wspd</span>
+<span class="sd">    [[15.13 15.17 15.21 ... 15.3  15.32 15.31]</span>
+<span class="sd">     [15.09 15.13 15.16 ... 15.26 15.29 15.31]</span>
+<span class="sd">     [15.09 15.12 15.15 ... 15.24 15.23 15.26]</span>
+<span class="sd">     ...</span>
+<span class="sd">     [10.29 11.08 11.51 ... 14.43 14.41 14.19]</span>
+<span class="sd">     [11.   11.19 11.79 ... 13.27 11.93 11.8 ]</span>
+<span class="sd">     [12.16 12.44 13.09 ... 11.94 10.88 11.12]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">PREFIX</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">SUFFIX</span> <span class="o">=</span> <span class="s1">&#39;.h5&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_source</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">check_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_source : str | list</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">            Or list of source .h5 files</span>
+<span class="sd">        unscale : bool</span>
+<span class="sd">            Boolean flag to automatically unscale variables on extraction</span>
+<span class="sd">        str_decode : bool</span>
+<span class="sd">            Boolean flag to decode the bytestring meta data into normal</span>
+<span class="sd">            strings. Setting this to False will speed up the meta data read.</span>
+<span class="sd">        check_files : bool</span>
+<span class="sd">            Check to ensure files have the same coordinates and time_index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unscale</span> <span class="o">=</span> <span class="n">unscale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_meta</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_index</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lat_lon</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_str_decode</span> <span class="o">=</span> <span class="n">str_decode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_group</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Map variables to their .h5 files</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_multi_h5</span><span class="p">(</span><span class="n">h5_source</span><span class="p">,</span> <span class="n">check_files</span><span class="o">=</span><span class="n">check_files</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h5_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5</span><span class="o">.</span><span class="n">h5_files</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h5_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="nf">_init_multi_h5</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_source</span><span class="p">,</span> <span class="n">check_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize MultiH5 handler class based on input type</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_source : str | list</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">            Or list of source .h5 files</span>
+<span class="sd">        check_files : bool</span>
+<span class="sd">            Check to ensure files have the same coordinates and time_index</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        multi_h5 : MultiH5 | MultiH5Path</span>
+<span class="sd">            Initialized multi h5 handler</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">h5_source</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">multi_h5</span> <span class="o">=</span> <span class="n">MultiH5Path</span><span class="p">(</span><span class="n">h5_source</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">PREFIX</span><span class="p">,</span>
+                                   <span class="n">suffix</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">SUFFIX</span><span class="p">,</span> <span class="n">check_files</span><span class="o">=</span><span class="n">check_files</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">h5_source</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">multi_h5</span> <span class="o">=</span> <span class="n">MultiH5</span><span class="p">(</span><span class="n">h5_source</span><span class="p">,</span> <span class="n">check_files</span><span class="o">=</span><span class="n">check_files</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Cannot initialize MultiH5 from </span><span class="si">{}</span><span class="s1">, expecting a path or a &#39;</span>
+                   <span class="s1">&#39;list of .h5 file paths&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">h5_source</span><span class="p">)))</span>
+            <span class="k">raise</span> <span class="n">ResourceRuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">multi_h5</span></div>
+
+
+<div class="viewcode-block" id="MultiFileNSRDB"><a class="viewcode-back" href="../../rex/rex.multi_file_resource.html#rex.multi_file_resource.MultiFileNSRDB">[docs]</a><span class="k">class</span> <span class="nc">MultiFileNSRDB</span><span class="p">(</span><span class="n">MultiFileResource</span><span class="p">,</span> <span class="n">NSRDB</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle 2018 and beyond NSRDB data that is at 2km and</span>
+<span class="sd">    sub 30 min resolution</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    resource.MultiFileResource : Parent class</span>
+<span class="sd">    resource.NSRDB : Parent class</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="MultiFileNSRDB.preload_SAM"><a class="viewcode-back" href="../../rex/rex.multi_file_resource.html#rex.multi_file_resource.MultiFileNSRDB.preload_SAM">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">preload_SAM</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">h5_source</span><span class="p">,</span> <span class="n">sites</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">tech</span><span class="o">=</span><span class="s1">&#39;pvwattsv7&#39;</span><span class="p">,</span> <span class="n">time_index_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">means</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">clearsky</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">bifacial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">downscale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">check_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pre-load project_points for SAM</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_source : str | list</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">            Or list of source .h5 files</span>
+<span class="sd">        sites : list</span>
+<span class="sd">            List of sites to be provided to SAM</span>
+<span class="sd">        unscale : bool</span>
+<span class="sd">            Boolean flag to automatically unscale variables on extraction</span>
+<span class="sd">        str_decode : bool</span>
+<span class="sd">            Boolean flag to decode the bytestring meta data into normal</span>
+<span class="sd">            strings. Setting this to False will speed up the meta data read.</span>
+<span class="sd">        tech : str, optional</span>
+<span class="sd">            SAM technology string, by default &#39;pvwattsv7&#39;</span>
+<span class="sd">        time_index_step: int, optional</span>
+<span class="sd">            Step size for time_index, used to reduce temporal resolution,</span>
+<span class="sd">            by default None</span>
+<span class="sd">        means : bool, optional</span>
+<span class="sd">            Boolean flag to compute mean resource when res_array is set,</span>
+<span class="sd">            by default False</span>
+<span class="sd">        clearsky : bool</span>
+<span class="sd">            Boolean flag to pull clearsky instead of real irradiance</span>
+<span class="sd">        bifacial : bool</span>
+<span class="sd">            Boolean flag to pull surface albedo for bifacial modeling.</span>
+<span class="sd">        downscale : NoneType | str</span>
+<span class="sd">            Option for NSRDB resource downscaling to higher temporal</span>
+<span class="sd">            resolution. Expects a string in the Pandas frequency format,</span>
+<span class="sd">            e.g. &#39;5min&#39;.</span>
+<span class="sd">        check_files : bool</span>
+<span class="sd">            Check to ensure files have the same coordinates and time_index</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SAM_res : SAMResource</span>
+<span class="sd">            Instance of SAMResource pre-loaded with Solar resource for sites</span>
+<span class="sd">            in project_points</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">cls</span><span class="p">(</span><span class="n">h5_source</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="n">unscale</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="n">str_decode</span><span class="p">,</span>
+                 <span class="n">check_files</span><span class="o">=</span><span class="n">check_files</span><span class="p">)</span> <span class="k">as</span> <span class="n">res</span><span class="p">:</span>
+            <span class="c1"># pylint: disable=assignment-from-no-return</span>
+            <span class="n">SAM_res</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">_preload_SAM</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">tech</span><span class="o">=</span><span class="n">tech</span><span class="p">,</span>
+                                       <span class="n">time_index_step</span><span class="o">=</span><span class="n">time_index_step</span><span class="p">,</span>
+                                       <span class="n">means</span><span class="o">=</span><span class="n">means</span><span class="p">,</span> <span class="n">clearsky</span><span class="o">=</span><span class="n">clearsky</span><span class="p">,</span>
+                                       <span class="n">bifacial</span><span class="o">=</span><span class="n">bifacial</span><span class="p">,</span> <span class="n">downscale</span><span class="o">=</span><span class="n">downscale</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SAM_res</span></div></div>
+
+
+<div class="viewcode-block" id="MultiFileWTK"><a class="viewcode-back" href="../../rex/rex.multi_file_resource.html#rex.multi_file_resource.MultiFileWTK">[docs]</a><span class="k">class</span> <span class="nc">MultiFileWTK</span><span class="p">(</span><span class="n">MultiFileResource</span><span class="p">,</span> <span class="n">WindResource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle 5min WIND Toolkit data</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    resource.MultiFileResource : Parent class</span>
+<span class="sd">    resource.WindResource : Parent class</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    MultiFileWTK automatically searches for files of the form *m.h5</span>
+
+<span class="sd">    &gt;&gt;&gt; file = &#39;$TESTDATADIR/wtk&#39;</span>
+<span class="sd">    &gt;&gt;&gt; with MultiFileWTK(file) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     print(list(res._h5_files)</span>
+<span class="sd">    &gt;&gt;&gt;     print(res.datasets)</span>
+<span class="sd">    [&#39;$TESTDATADIR/wtk_2010_200m.h5&#39;,</span>
+<span class="sd">     &#39;$TESTDATADIR/wtk_2010_100m.h5&#39;]</span>
+<span class="sd">    [&#39;coordinates&#39;, &#39;meta&#39;, &#39;pressure_100m&#39;, &#39;pressure_200m&#39;,</span>
+<span class="sd">     &#39;temperature_100m&#39;, &#39;temperature_200m&#39;, &#39;time_index&#39;,</span>
+<span class="sd">     &#39;winddirection_100m&#39;, &#39;winddirection_200m&#39;, &#39;windspeed_100m&#39;,</span>
+<span class="sd">     &#39;windspeed_200m&#39;]</span>
+
+<span class="sd">    MultiFileWTK, like WindResource can interpolate / extrapolate hub-heights</span>
+
+<span class="sd">    &gt;&gt;&gt; with MultiFileWTK(file) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     wspd = res[&#39;windspeed_150m&#39;]</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; wspd</span>
+<span class="sd">    [[16.19     16.25     16.305    ... 16.375    16.39     16.39    ]</span>
+<span class="sd">     [16.15     16.205    16.255001 ... 16.35     16.365    16.39    ]</span>
+<span class="sd">     [16.154999 16.195    16.23     ... 16.335    16.32     16.34    ]</span>
+<span class="sd">     ...</span>
+<span class="sd">     [10.965    11.675    12.08     ... 15.18     14.805    14.42    ]</span>
+<span class="sd">     [11.66     11.91     12.535    ... 13.31     12.23     12.335   ]</span>
+<span class="sd">     [12.785    13.295    14.014999 ... 12.205    11.360001 11.64    ]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">SUFFIX</span> <span class="o">=</span> <span class="s1">&#39;m.h5&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_source</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">check_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_source : str | list</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">            Or list of source .h5 files</span>
+<span class="sd">        unscale : bool</span>
+<span class="sd">            Boolean flag to automatically unscale variables on extraction</span>
+<span class="sd">        str_decode : bool</span>
+<span class="sd">            Boolean flag to decode the bytestring meta data into normal</span>
+<span class="sd">            strings. Setting this to False will speed up the meta data read.</span>
+<span class="sd">        check_files : bool</span>
+<span class="sd">            Check to ensure files have the same coordinates and time_index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">h5_source</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="n">unscale</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="n">str_decode</span><span class="p">,</span>
+                         <span class="n">check_files</span><span class="o">=</span><span class="n">check_files</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_heights</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="MultiFileWTK.preload_SAM"><a class="viewcode-back" href="../../rex/rex.multi_file_resource.html#rex.multi_file_resource.MultiFileWTK.preload_SAM">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">preload_SAM</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">h5_source</span><span class="p">,</span> <span class="n">sites</span><span class="p">,</span> <span class="n">hub_heights</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                    <span class="n">str_decode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">time_index_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">means</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">require_wind_dir</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">precip_rate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">icing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                    <span class="n">check_files</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Placeholder for classmethod that will pre-load project_points for SAM</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_source : str | list</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">            Or list of source .h5 files</span>
+<span class="sd">        sites : list</span>
+<span class="sd">            List of sites to be provided to SAM</span>
+<span class="sd">        hub_heights : int | float | list</span>
+<span class="sd">            Hub heights to extract for SAM</span>
+<span class="sd">        unscale : bool</span>
+<span class="sd">            Boolean flag to automatically unscale variables on extraction</span>
+<span class="sd">        str_decode : bool</span>
+<span class="sd">            Boolean flag to decode the bytestring meta data into normal</span>
+<span class="sd">            strings. Setting this to False will speed up the meta data read.</span>
+<span class="sd">        time_index_step: int, optional</span>
+<span class="sd">            Step size for time_index, used to reduce temporal resolution,</span>
+<span class="sd">            by default None</span>
+<span class="sd">        means : bool, optional</span>
+<span class="sd">            Boolean flag to compute mean resource when res_array is set,</span>
+<span class="sd">            by default False</span>
+<span class="sd">        require_wind_dir : bool</span>
+<span class="sd">            Boolean flag as to whether wind direction will be loaded.</span>
+<span class="sd">        precip_rate : bool</span>
+<span class="sd">            Boolean flag as to whether precipitationrate_0m will be preloaded</span>
+<span class="sd">        icing : bool</span>
+<span class="sd">            Boolean flag as to whether icing is analyzed.</span>
+<span class="sd">            This will preload relative humidity.</span>
+<span class="sd">        check_files : bool</span>
+<span class="sd">            Check to ensure files have the same coordinates and time_index</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        SAM_res : SAMResource</span>
+<span class="sd">            Instance of SAMResource pre-loaded with Solar resource for sites</span>
+<span class="sd">            in project_points</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="bp">cls</span><span class="p">(</span><span class="n">h5_source</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="n">unscale</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="n">str_decode</span><span class="p">,</span>
+                 <span class="n">check_files</span><span class="o">=</span><span class="n">check_files</span><span class="p">)</span> <span class="k">as</span> <span class="n">res</span><span class="p">:</span>
+            <span class="c1"># pylint: disable=assignment-from-no-return</span>
+            <span class="n">SAM_res</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">_preload_SAM</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">hub_heights</span><span class="p">,</span>
+                                       <span class="n">time_index_step</span><span class="o">=</span><span class="n">time_index_step</span><span class="p">,</span>
+                                       <span class="n">means</span><span class="o">=</span><span class="n">means</span><span class="p">,</span>
+                                       <span class="n">require_wind_dir</span><span class="o">=</span><span class="n">require_wind_dir</span><span class="p">,</span>
+                                       <span class="n">precip_rate</span><span class="o">=</span><span class="n">precip_rate</span><span class="p">,</span> <span class="n">icing</span><span class="o">=</span><span class="n">icing</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">SAM_res</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

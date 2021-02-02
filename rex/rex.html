@@ -1,0 +1,443 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex package &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="rex.rechunk_h5 package" href="rex.rechunk_h5.html" />
+    <link rel="prev" title="High Resolution Ocean Surface Wave Hindcast (US Wave) Data" href="../misc/examples.us_wave.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">rex package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>rex package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/nrel/rex/blob/master/docs/source/rex/rex.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-rex">
+<span id="rex-package"></span><h1>rex package<a class="headerlink" href="#module-rex" title="Permalink to this headline">¶</a></h1>
+<p>The REsource eXtraction tool (rex)</p>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rex.rechunk_h5.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.combine_h5.html">rex.rechunk_h5.combine_h5 module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.combine_h5_cli.html">rex.rechunk_h5.combine_h5_cli module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.rechunk_cli.html">rex.rechunk_h5.rechunk_cli module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.rechunk_cli.html#rechunk">rechunk</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.rechunk_h5.html">rex.rechunk_h5.rechunk_h5 module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rex.resource_extraction.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html">rex.resource_extraction.US_wave_cli module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave">US-wave</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave-dataset">dataset</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave-dataset-box">box</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave-dataset-map-means">map-means</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave-dataset-map-means-multi-year">multi-year</a></li>
+<li class="toctree-l7"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave-dataset-map-means-year">year</a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave-dataset-region">region</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave-dataset-site">site</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html#us-wave-version">version</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html">rex.resource_extraction.multi_year_resource_cli module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html#multiyearx">MultiYearX</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html#multiyearx-dataset">dataset</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html#multiyearx-dataset-box">box</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html#multiyearx-dataset-map-means">map-means</a><ul>
+<li class="toctree-l7"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html#multiyearx-dataset-map-means-multi-year">multi-year</a></li>
+<li class="toctree-l7"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html#multiyearx-dataset-map-means-year">year</a></li>
+</ul>
+</li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html#multiyearx-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html#multiyearx-dataset-region">region</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html#multiyearx-dataset-site">site</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.nsrdb_cli.html">rex.resource_extraction.solar_cli module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.resource_cli.html">rex.resource_extraction.resource_cli module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_cli.html#rex">rex</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.resource_cli.html#rex-dataset">dataset</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.resource_cli.html#rex-dataset-box">box</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.resource_cli.html#rex-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.resource_cli.html#rex-dataset-region">region</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.resource_cli.html#rex-dataset-site">site</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.resource_cli.html#rex-sam-datasets">sam-datasets</a></li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.resource_cli.html#rex-version">version</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.resource_extraction.html">rex.resource_extraction.resource_extraction module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.temporal_stats.html">rex.resource_extraction.temporal_stats module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.temporal_stats_cli.html">rex.resource_extraction.temporal_stats_cli module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.temporal_stats_cli.html#temporal-stats">temporal-stats</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.temporal_stats_cli.html#temporal-stats-diurnal">diurnal</a></li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.temporal_stats_cli.html#temporal-stats-full">full</a></li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.temporal_stats_cli.html#temporal-stats-monthly">monthly</a></li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.temporal_stats_cli.html#temporal-stats-monthly-diurnal">monthly-diurnal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.wave_cli.html">rex.resource_extraction.wave_cli module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.wave_cli.html#wavex">WaveX</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.wave_cli.html#wavex-dataset">dataset</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.wave_cli.html#wavex-dataset-box">box</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.wave_cli.html#wavex-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.wave_cli.html#wavex-dataset-region">region</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.wave_cli.html#wavex-dataset-site">site</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.wave_cli.html#wavex-sam-datasets">sam-datasets</a></li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.wave_cli.html#wavex-version">version</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.wind_cli.html">rex.resource_extraction.wind_cli module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.wind_cli.html#windx">WINDX</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.wind_cli.html#windx-dataset">dataset</a><ul>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.wind_cli.html#windx-dataset-box">box</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.wind_cli.html#windx-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.wind_cli.html#windx-dataset-region">region</a></li>
+<li class="toctree-l6"><a class="reference internal" href="rex.resource_extraction.wind_cli.html#windx-dataset-site">site</a></li>
+</ul>
+</li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.wind_cli.html#windx-sam-datasets">sam-datasets</a></li>
+<li class="toctree-l5"><a class="reference internal" href="rex.resource_extraction.wind_cli.html#windx-version">version</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rex.utilities.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.cli_dtypes.html">rex.utilities.cli_dtypes module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.downscale.html">rex.utilities.downscale module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.exceptions.html">rex.utilities.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.execution.html">rex.utilities.execution module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.hpc.html">rex.utilities.hpc module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.loggers.html">rex.utilities.loggers module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.parse_keys.html">rex.utilities.parse_keys module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.solar_position.html">rex.utilities.solar_position module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.toml_parser.html">rex.utilities.toml_parser module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.utilities.html">rex.utilities.utilities module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rex.version.html">rex.version module</a></li>
+</ul>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="rex.rechunk_h5.html" class="btn btn-neutral float-right" title="rex.rechunk_h5 package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../misc/examples.us_wave.html" class="btn btn-neutral float-left" title="High Resolution Ocean Surface Wave Hindcast (US Wave) Data" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

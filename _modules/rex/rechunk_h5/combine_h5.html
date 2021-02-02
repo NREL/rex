@@ -1,0 +1,756 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex.rechunk_h5.combine_h5 &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../rex/rex.html">rex package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../rex/rex.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../rex/rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../rex/rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../rex/rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../rex/rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>rex.rechunk_h5.combine_h5</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for rex.rechunk_h5.combine_h5</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Module to rechunk existing .h5 files</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">rex.resource</span> <span class="kn">import</span> <span class="n">Resource</span>
+<span class="kn">from</span> <span class="nn">rex.rechunk_h5.rechunk_h5</span> <span class="kn">import</span> <span class="n">get_chunk_slices</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CombineH5"><a class="viewcode-back" href="../../../rex/rex.rechunk_h5.combine_h5.html#rex.rechunk_h5.combine_h5.CombineH5">[docs]</a><span class="k">class</span> <span class="nc">CombineH5</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to combine multiple .h5 files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">combined_h5</span><span class="p">,</span> <span class="o">*</span><span class="n">source_h5</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        combined_h5 : str</span>
+<span class="sd">            Path to save combined .h5 file to</span>
+<span class="sd">        source_h5 : str</span>
+<span class="sd">            Path to source .h5 files</span>
+<span class="sd">        axis : int, optional</span>
+<span class="sd">            axis to combine datasets along, by default 1</span>
+<span class="sd">        overwrite : bool, optional</span>
+<span class="sd">            Flag to overwrite an existing h5_dst file, by default True</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_combined_h5</span> <span class="o">=</span> <span class="n">combined_h5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_source_h5</span> <span class="o">=</span> <span class="n">source_h5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_axis</span> <span class="o">=</span> <span class="n">axis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dset_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_datasets</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dst_h5</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">combined_h5</span><span class="p">,</span>
+                                 <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span> <span class="k">if</span> <span class="n">overwrite</span> <span class="k">else</span> <span class="s1">&#39;w-&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transfer_global_attrs</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span>
+
+<div class="viewcode-block" id="CombineH5.close"><a class="viewcode-back" href="../../../rex/rex.rechunk_h5.combine_h5.html#rex.rechunk_h5.combine_h5.CombineH5.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close h5 instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dst_h5</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">combined_h5</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Path to combined .h5 file</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_combined_h5</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">source_h5</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Paths to source .h5 files</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_h5</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Datasets to combine</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">datasets</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">h5_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source_h5</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">datasets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">datasets</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="o">*</span><span class="n">datasets</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span>
+
+    <span class="k">def</span> <span class="nf">_check_dset_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dset_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check to ensure dataset is in both domains and extract</span>
+<span class="sd">        dataset attributes</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dset_name : str</span>
+<span class="sd">            Dataset to check</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        attrs : dict</span>
+<span class="sd">            Dataset attributes {k: v}</span>
+<span class="sd">        shape : tuple</span>
+<span class="sd">            Dataset shape</span>
+<span class="sd">        dtype : str | np.dtype</span>
+<span class="sd">            Dataset dtype</span>
+<span class="sd">        chunks : tuple | None</span>
+<span class="sd">            Dataset chunk size</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">chunks</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">h5_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dset_name</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">dset_attrs</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_attrs</span><span class="p">(</span><span class="n">dset</span><span class="o">=</span><span class="n">dset_name</span><span class="p">)</span>
+                    <span class="n">dset_shape</span><span class="p">,</span> <span class="n">dset_dtype</span><span class="p">,</span> <span class="n">dset_chunks</span> <span class="o">=</span> \
+                        <span class="n">f</span><span class="o">.</span><span class="n">get_dset_properties</span><span class="p">(</span><span class="n">dset_name</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> not in </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset_name</span><span class="p">,</span> <span class="n">h5_path</span><span class="p">)</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+            <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">dset_attrs</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dset_shape</span><span class="p">)</span>
+                <span class="n">chunks</span> <span class="o">=</span> <span class="n">dset_chunks</span>
+                <span class="n">dtype</span> <span class="o">=</span> <span class="n">dset_dtype</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dset_chunks</span> <span class="o">!=</span> <span class="n">chunks</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> chunks (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">) do not match between source &quot;</span>
+                           <span class="s2">&quot;files!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset_name</span><span class="p">,</span> <span class="n">chunks</span><span class="p">,</span> <span class="n">dset_chunks</span><span class="p">))</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">dset_dtype</span> <span class="o">!=</span> <span class="n">dtype</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> dtypes (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">) do not match between source &quot;</span>
+                           <span class="s2">&quot;files!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset_name</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">dset_dtype</span><span class="p">))</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dset_shape</span><span class="p">):</span>
+                    <span class="c1"># pylint: disable=unsubscriptable-object</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axis</span> <span class="ow">and</span> <span class="n">s</span> <span class="o">!=</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> shape (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">) does not match between &quot;</span>
+                               <span class="s2">&quot;source files!&quot;</span>
+                               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset_name</span><span class="p">,</span> <span class="n">dset_shape</span><span class="p">,</span> <span class="n">shape</span><span class="p">))</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axis</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+                    <span class="c1"># pylint: disable=unsupported-assignment-operation</span>
+                    <span class="n">shape</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_axis</span><span class="p">]</span> <span class="o">+=</span> <span class="n">dset_shape</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_axis</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">attrs</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">chunks</span>
+
+    <span class="k">def</span> <span class="nf">_check_datasets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check datasets to ensure compatible dtype and shape</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dset_attrs : dict</span>
+<span class="sd">            Dictionary of combined dataset properties and attributes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">dset_attrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">dset</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dset</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span> <span class="s1">&#39;coordinates&#39;</span><span class="p">,</span> <span class="s1">&#39;time_index&#39;</span><span class="p">]:</span>
+                <span class="n">attrs</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">chunks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_dset_properties</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>
+                <span class="n">dset_attrs</span><span class="p">[</span><span class="n">dset</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;attrs&quot;</span><span class="p">:</span> <span class="n">attrs</span><span class="p">,</span>
+                                    <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="n">shape</span><span class="p">,</span>
+                                    <span class="s2">&quot;dtype&quot;</span><span class="p">:</span> <span class="n">dtype</span><span class="p">,</span>
+                                    <span class="s2">&quot;chunks&quot;</span><span class="p">:</span> <span class="n">chunks</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">dset_attrs</span>
+
+    <span class="k">def</span> <span class="nf">_transfer_global_attrs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Transfer global attributes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">global_attrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">h5_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">global_attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">get_attrs</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">global_attrs</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Transfering global attributes&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">global_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;- Transfering </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_dst_h5</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">_combine_time_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combine time_index</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Combining time_index&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axis</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">time_index</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">h5_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">ti</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">h5</span><span class="p">[</span><span class="s1">&#39;time_index&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+                    <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">get_attrs</span><span class="p">(</span><span class="s1">&#39;time_index&#39;</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">time_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">time_index</span> <span class="o">=</span> <span class="n">ti</span>
+                        <span class="n">chunks</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_dset_properties</span><span class="p">(</span><span class="s1">&#39;time_index&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">time_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">time_index</span><span class="p">,</span> <span class="n">ti</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">time_index</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">h5</span><span class="p">[</span><span class="s1">&#39;time_index&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_attrs</span><span class="p">(</span><span class="s1">&#39;time_index&#39;</span><span class="p">)</span>
+                <span class="n">chunks</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_dset_properties</span><span class="p">(</span><span class="s1">&#39;time_index&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Combined time_index has:</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;shape: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;dtype: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;chunks: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time_index</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">time_index</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">chunks</span><span class="p">))</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dst_h5</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;time_index&#39;</span><span class="p">,</span>
+                                         <span class="n">shape</span><span class="o">=</span><span class="n">time_index</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                         <span class="n">dtype</span><span class="o">=</span><span class="n">time_index</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                                         <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span>
+                                         <span class="n">data</span><span class="o">=</span><span class="n">time_index</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;- Transfering attr </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">_combine_meta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combine meta</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Combining meta&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axis</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">h5_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">h5</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+                    <span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">get_attrs</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">meta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">meta</span> <span class="o">=</span> <span class="n">m</span>
+                        <span class="n">chunks</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_dset_properties</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">meta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">meta</span><span class="p">,</span> <span class="n">m</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">meta</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">h5</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_attrs</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">)</span>
+                <span class="n">chunks</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_dset_properties</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Combined meta has:</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;shape: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;dtype: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;chunks: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">meta</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">meta</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">chunks</span><span class="p">))</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dst_h5</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;meta&#39;</span><span class="p">,</span>
+                                         <span class="n">shape</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                         <span class="n">dtype</span><span class="o">=</span><span class="n">meta</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                                         <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span>
+                                         <span class="n">data</span><span class="o">=</span><span class="n">meta</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;- Transfering attr </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">_combine_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        combine coordinates</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Combining coordinates&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;coordinates&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">datasets</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">chunks</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_dset_properties</span><span class="p">(</span><span class="s1">&#39;coordinates&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_attrs</span><span class="p">(</span><span class="s1">&#39;coordinates&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">chunks</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axis</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">coords</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">h5_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">c</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">lat_lon</span>
+                    <span class="k">if</span> <span class="n">coords</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">coords</span> <span class="o">=</span> <span class="n">c</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">coords</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">lat_lon</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Combined coordinates have:</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;shape: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;dtype: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;chunks: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">coords</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">chunks</span><span class="p">))</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dst_h5</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;coordinates&#39;</span><span class="p">,</span>
+                                         <span class="n">shape</span><span class="o">=</span><span class="n">coords</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                         <span class="n">dtype</span><span class="o">=</span><span class="n">coords</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                                         <span class="n">chunks</span><span class="o">=</span><span class="n">chunks</span><span class="p">,</span>
+                                         <span class="n">data</span><span class="o">=</span><span class="n">coords</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;- Transfering attr </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">def</span> <span class="nf">_init_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dset_name</span><span class="p">,</span> <span class="n">dset_attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize dataset</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dset_name : str</span>
+<span class="sd">            Name of dataset to initialize</span>
+<span class="sd">        dset_attrs : dict</span>
+<span class="sd">            Dictionary of dataset and properties and attributes</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ds : h5py.Dataset</span>
+<span class="sd">            Initialized Dataset instance</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Initializing </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset_name</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;- has:</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;shape: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;dtype: </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span>
+                     <span class="s1">&#39;chunks: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                     <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset_attrs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">],</span>
+                             <span class="n">dset_attrs</span><span class="p">[</span><span class="s1">&#39;dtype&#39;</span><span class="p">],</span>
+                             <span class="n">dset_attrs</span><span class="p">[</span><span class="s1">&#39;chunks&#39;</span><span class="p">]))</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dst_h5</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="n">dset_name</span><span class="p">,</span>
+                                         <span class="n">shape</span><span class="o">=</span><span class="n">dset_attrs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">],</span>
+                                         <span class="n">dtype</span><span class="o">=</span><span class="n">dset_attrs</span><span class="p">[</span><span class="s1">&#39;dtype&#39;</span><span class="p">],</span>
+                                         <span class="n">chunks</span><span class="o">=</span><span class="n">dset_attrs</span><span class="p">[</span><span class="s1">&#39;chunks&#39;</span><span class="p">])</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="n">dset_attrs</span><span class="p">[</span><span class="s1">&#39;attrs&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">attrs</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;- Transfering attr </span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+                <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span> <span class="n">ds</span>
+
+    <span class="k">def</span> <span class="nf">_load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds_in</span><span class="p">,</span> <span class="n">ds_out</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">process_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load data from ds_in to ds_out</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ds_in : h5py.Dataset</span>
+<span class="sd">            Open dataset instance for source data</span>
+<span class="sd">        ds_out : h5py.Dataset</span>
+<span class="sd">            Open dataset instance for rechunked data</span>
+<span class="sd">        start : int</span>
+<span class="sd">            Start position in combined dataset</span>
+<span class="sd">        dset_attrs : dict</span>
+<span class="sd">            Dictionary of dataset attributes (dtype, chunks, attrs)</span>
+<span class="sd">        process_size : int, optional</span>
+<span class="sd">            Ammount of data to be transfered at a time, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ts</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">shape</span> <span class="o">=</span> <span class="n">ds_in</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">sites</span> <span class="o">=</span> <span class="n">shape</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_axis</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">process_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">slice_map</span> <span class="o">=</span> <span class="n">get_chunk_slices</span><span class="p">(</span><span class="n">sites</span><span class="p">,</span> <span class="n">process_size</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">slice_map</span><span class="p">):</span>
+                <span class="n">dset_slice</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">s</span> <span class="o">+=</span> <span class="n">start</span>
+                <span class="n">e</span> <span class="o">+=</span> <span class="n">start</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axis</span><span class="p">:</span>
+                        <span class="n">dset_slice</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">dset_slice</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+
+                <span class="n">dset_slice</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">dset_slice</span><span class="p">)</span>
+                <span class="n">ds_out</span><span class="p">[</span><span class="n">dset_slice</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds_in</span><span class="p">[</span><span class="n">dset_slice</span><span class="p">]</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">- chunk # </span><span class="si">{}</span><span class="s1"> (</span><span class="si">{}</span><span class="s1">:</span><span class="si">{}</span><span class="s1">) transfered&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dset_slice</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">shape</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_axis</span><span class="p">:</span>
+                    <span class="n">end</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">s</span>
+                    <span class="n">dset_slice</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">dset_slice</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+
+            <span class="n">ds_out</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">dset_slice</span><span class="p">)]</span> <span class="o">=</span> <span class="n">ds_in</span><span class="p">[:]</span>
+
+        <span class="n">tt</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">ts</span><span class="p">)</span> <span class="o">/</span> <span class="mi">60</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Data transfered in </span><span class="si">{:.4f}</span><span class="s1"> min&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tt</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_combine_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dset_name</span><span class="p">,</span> <span class="n">dset_attrs</span><span class="p">,</span> <span class="n">process_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load data from ds_in to ds_out</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dset_name : str</span>
+<span class="sd">            Name of dataset to initialize</span>
+<span class="sd">        dset_attrs : dict</span>
+<span class="sd">            Dictionary of dataset and properties and attributes</span>
+<span class="sd">        process_size : int, optional</span>
+<span class="sd">            Ammount of data to be transfered at a time, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Combining </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dset_name</span><span class="p">))</span>
+        <span class="n">ds_comb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_dataset</span><span class="p">(</span><span class="n">dset_name</span><span class="p">,</span> <span class="n">dset_attrs</span><span class="p">)</span>
+        <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">h5_path</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_h5</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;Transfering data from </span><span class="si">{}</span><span class="s1">&#39;</span>
+                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)))</span>
+            <span class="k">with</span> <span class="n">Resource</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">ds_in</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">h5</span><span class="p">[</span><span class="n">dset_name</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_load_data</span><span class="p">(</span><span class="n">ds_in</span><span class="p">,</span> <span class="n">ds_comb</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span>
+                                <span class="n">process_size</span><span class="o">=</span><span class="n">process_size</span><span class="p">)</span>
+                <span class="n">start</span> <span class="o">+=</span> <span class="n">ds_in</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_axis</span><span class="p">]</span>
+
+<div class="viewcode-block" id="CombineH5.combine"><a class="viewcode-back" href="../../../rex/rex.rechunk_h5.combine_h5.html#rex.rechunk_h5.combine_h5.CombineH5.combine">[docs]</a>    <span class="k">def</span> <span class="nf">combine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">process_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combine source .h5 files</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        process_size : int, optional</span>
+<span class="sd">            Ammount of data to be transfered at a time, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_combine_time_index</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_combine_meta</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_combine_coordinates</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">dset_name</span><span class="p">,</span> <span class="n">dset_attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dset_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_combine_dataset</span><span class="p">(</span><span class="n">dset_name</span><span class="p">,</span> <span class="n">dset_attrs</span><span class="p">,</span>
+                                  <span class="n">process_size</span><span class="o">=</span><span class="n">process_size</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CombineH5.run"><a class="viewcode-back" href="../../../rex/rex.rechunk_h5.combine_h5.html#rex.rechunk_h5.combine_h5.CombineH5.run">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">combined_h5</span><span class="p">,</span> <span class="o">*</span><span class="n">source_h5</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">process_size</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Combine source .h5 files</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        combined_h5 : str</span>
+<span class="sd">            Path to save combined .h5 file to</span>
+<span class="sd">        source_h5 : str</span>
+<span class="sd">            Path to source .h5 files</span>
+<span class="sd">        axis : int, optional</span>
+<span class="sd">            axis to combine datasets along, by default 1</span>
+<span class="sd">        overwrite : bool, optional</span>
+<span class="sd">            Flag to overwrite an existing h5_dst file, by default True</span>
+<span class="sd">        process_size : int, optional</span>
+<span class="sd">            Ammount of data to be transfered at a time, by default None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Combining data from </span><span class="si">{}</span><span class="s1"> into </span><span class="si">{}</span><span class="s1">&#39;</span>
+                    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">source_h5</span><span class="p">,</span> <span class="n">combined_h5</span><span class="p">))</span>
+        <span class="k">with</span> <span class="bp">cls</span><span class="p">(</span><span class="n">combined_h5</span><span class="p">,</span> <span class="o">*</span><span class="n">source_h5</span><span class="p">,</span>
+                 <span class="n">axis</span><span class="o">=</span><span class="n">axis</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="n">overwrite</span><span class="p">)</span> <span class="k">as</span> <span class="n">comb</span><span class="p">:</span>
+            <span class="n">comb</span><span class="o">.</span><span class="n">combine</span><span class="p">(</span><span class="n">process_size</span><span class="o">=</span><span class="n">process_size</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

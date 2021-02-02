@@ -1,0 +1,923 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex.multi_year_resource &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../rex/rex.html">rex package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../rex/rex.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../rex/rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../rex/rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../rex/rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../rex/rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../rex/rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>rex.multi_year_resource</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for rex.multi_year_resource</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Classes to handle multiple years of resource data</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">from</span> <span class="nn">rex.multi_file_resource</span> <span class="kn">import</span> <span class="n">MultiH5Path</span>
+<span class="kn">from</span> <span class="nn">rex.multi_time_resource</span> <span class="kn">import</span> <span class="n">MultiTimeH5</span><span class="p">,</span> <span class="n">MultiTimeResource</span>
+<span class="kn">from</span> <span class="nn">rex.renewable_resource</span> <span class="kn">import</span> <span class="p">(</span><span class="n">NSRDB</span><span class="p">,</span> <span class="n">SolarResource</span><span class="p">,</span> <span class="n">WindResource</span><span class="p">,</span>
+                                    <span class="n">WaveResource</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">rex.resource</span> <span class="kn">import</span> <span class="n">Resource</span>
+<span class="kn">from</span> <span class="nn">rex.utilities.exceptions</span> <span class="kn">import</span> <span class="ne">ResourceWarning</span>
+<span class="kn">from</span> <span class="nn">rex.utilities.parse_keys</span> <span class="kn">import</span> <span class="n">parse_slice</span>
+<span class="kn">from</span> <span class="nn">rex.utilities.utilities</span> <span class="kn">import</span> <span class="n">parse_year</span>
+
+
+<div class="viewcode-block" id="MultiYearH5"><a class="viewcode-back" href="../../rex/rex.multi_year_resource.html#rex.multi_year_resource.MultiYearH5">[docs]</a><span class="k">class</span> <span class="nc">MultiYearH5</span><span class="p">(</span><span class="n">MultiTimeH5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle multiple years of h5 Resources</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.h5&#39;</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">res_cls</span><span class="o">=</span><span class="n">Resource</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">res_cls_kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_dir : str</span>
+<span class="sd">            Path to directory containing 5min .h5 files</span>
+<span class="sd">        prefix : str</span>
+<span class="sd">            Prefix for resource .h5 files</span>
+<span class="sd">        suffix : str</span>
+<span class="sd">            Suffix for resource .h5 files</span>
+<span class="sd">        years : list, optional</span>
+<span class="sd">            List of years to access, by default None</span>
+<span class="sd">        res_cls : obj</span>
+<span class="sd">            Resource class to use to open and access resource data</span>
+<span class="sd">        hsds : bool</span>
+<span class="sd">            Boolean flag to use h5pyd to handle .h5 &#39;files&#39; hosted on AWS</span>
+<span class="sd">            behind HSDS</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h5_dir</span> <span class="o">=</span> <span class="n">h5_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_files</span><span class="p">(</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+                                         <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="n">hsds</span><span class="p">,</span>
+                                         <span class="n">years</span><span class="o">=</span><span class="n">years</span><span class="p">)</span>
+        <span class="n">res_cls_kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;hsds&#39;</span><span class="p">:</span> <span class="n">hsds</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h5_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_file_instances</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_map</span><span class="o">.</span><span class="n">values</span><span class="p">()),</span>
+                                                <span class="n">res_cls</span><span class="o">=</span><span class="n">res_cls</span><span class="p">,</span>
+                                                <span class="o">**</span><span class="n">res_cls_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_datasets</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_shape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_index</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> for </span><span class="si">{}</span><span class="s2">:</span><span class="se">\n</span><span class="s2"> Contains data for </span><span class="si">{}</span><span class="s2"> year&quot;</span>
+               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5_dir</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">year</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">year</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_map</span><span class="p">[</span><span class="n">year</span><span class="p">]</span>
+            <span class="n">h5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5_map</span><span class="p">[</span><span class="n">path</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> is invalid, must be one of: </span><span class="si">{}</span><span class="s1">&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">h5</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="fm">__next__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">raise</span> <span class="ne">StopIteration</span>
+
+        <span class="n">year</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_i</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">year</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">year</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">year</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">years</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Available years</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            List of dataset present in .h5 files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_map</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">time_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Multi-year datetime index</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pandas.DatatimeIndex</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">years</span><span class="p">:</span>
+                <span class="n">h5</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">year</span><span class="p">]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_time_index</span> <span class="o">=</span> <span class="n">h5</span><span class="o">.</span><span class="n">time_index</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_time_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h5</span><span class="o">.</span><span class="n">time_index</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_index</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_map_hsds_files</span><span class="p">(</span><span class="n">hsds_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.h5&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map hsds file paths to year for which it contains data</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        hsds_dir : str</span>
+<span class="sd">            HSDS directory containing Resource .h5 files</span>
+<span class="sd">        prefix : str</span>
+<span class="sd">            Prefix for resource .h5 files</span>
+<span class="sd">        suffix : str</span>
+<span class="sd">            Suffix for resource .h5 files</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        file_map : dict</span>
+<span class="sd">            Dictionary mapping years to file paths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">h5pyd</span>
+
+        <span class="n">file_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">hsds_dir</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
+            <span class="n">hsds_dir</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+
+        <span class="k">with</span> <span class="n">h5pyd</span><span class="o">.</span><span class="n">Folder</span><span class="p">(</span><span class="n">hsds_dir</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="ow">and</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">year</span> <span class="o">=</span> <span class="n">parse_year</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">hsds_dir</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">year</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_map</span><span class="p">:</span>
+                            <span class="n">file_map</span><span class="p">[</span><span class="n">year</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;WARNING: Skipping </span><span class="si">{}</span><span class="s1"> as </span><span class="si">{}</span><span class="s1"> has already &#39;</span>
+                                   <span class="s1">&#39; been parsed&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">year</span><span class="p">))</span>
+                            <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">ResourceWarning</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;WARNING: Could not find a valid year in </span><span class="si">{}</span><span class="s1">&#39;</span>
+                               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+                        <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">ResourceWarning</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">file_map</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_map_local_files</span><span class="p">(</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.h5&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map local file paths to year for which it contains data</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_dir : str</span>
+<span class="sd">            Path to directory containing Resource .h5 files</span>
+<span class="sd">        prefix : str</span>
+<span class="sd">            Prefix for resource .h5 files</span>
+<span class="sd">        suffix : str</span>
+<span class="sd">            Suffix for resource .h5 files</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        file_map : dict</span>
+<span class="sd">            Dictionary mapping years to file paths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">file_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">h5_dir</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span> <span class="ow">and</span> <span class="n">file</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">year</span> <span class="o">=</span> <span class="n">parse_year</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+                    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">year</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">file_map</span><span class="p">:</span>
+                        <span class="n">file_map</span><span class="p">[</span><span class="n">year</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;WARNING: Skipping </span><span class="si">{}</span><span class="s1"> as </span><span class="si">{}</span><span class="s1"> has already been &#39;</span>
+                               <span class="s1">&#39;parsed&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">year</span><span class="p">))</span>
+                        <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">ResourceWarning</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;WARNING: Could not find a valid year in </span><span class="si">{}</span><span class="s1">&#39;</span>
+                           <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">ResourceWarning</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">file_map</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_get_years</span><span class="p">(</span><span class="n">file_map</span><span class="p">,</span> <span class="n">years</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reduce file_map to given years</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        file_map : dict</span>
+<span class="sd">            Dictionary mapping years to file paths</span>
+<span class="sd">        years : list</span>
+<span class="sd">            List of years of interest. Should be a subset of years in file_map</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        new_map : dict</span>
+<span class="sd">            Dictionary mapping requested years to file paths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_map</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">file_map</span><span class="p">:</span>
+                <span class="n">new_map</span><span class="p">[</span><span class="n">year</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_map</span><span class="p">[</span><span class="n">year</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;A file for </span><span class="si">{}</span><span class="s1"> is unavailable!&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">year</span><span class="p">))</span>
+                <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="ne">ResourceWarning</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">new_map</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;No files were found for the given years:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span>
+                   <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">years</span><span class="p">))</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">new_map</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_map_files</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s1">&#39;.h5&#39;</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                   <span class="n">years</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Map file paths to year for which it contains data</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_dir : str</span>
+<span class="sd">            Path to directory containing Resource .h5 files</span>
+<span class="sd">        prefix : str</span>
+<span class="sd">            Prefix for resource .h5 files</span>
+<span class="sd">        suffix : str</span>
+<span class="sd">            Suffix for resource .h5 files</span>
+<span class="sd">        hsds : bool</span>
+<span class="sd">            Boolean flag to use h5pyd to handle .h5 &#39;files&#39; hosted on AWS</span>
+<span class="sd">            behind HSDS</span>
+<span class="sd">        years : list, optional</span>
+<span class="sd">            List of years to access, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        file_map : dict</span>
+<span class="sd">            Dictionary mapping years to file paths</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">hsds</span><span class="p">:</span>
+            <span class="n">file_map</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_map_hsds_files</span><span class="p">(</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+                                           <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file_map</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_map_local_files</span><span class="p">(</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span>
+                                            <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">years</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">file_map</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_get_years</span><span class="p">(</span><span class="n">file_map</span><span class="p">,</span> <span class="n">years</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">file_map</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_check_for_years</span><span class="p">(</span><span class="n">time_slice</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check to see if temporal slice is a year (str) or list of years (strs)</span>
+<span class="sd">        to extract data for</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        time_slice : list | slice | int | str</span>
+<span class="sd">            Temporal slice to extract</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        check : bool</span>
+<span class="sd">            True if temporal slice is a year (str) or list of years (strs),</span>
+<span class="sd">            else False</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">check</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_slice</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">time_slice</span> <span class="o">=</span> <span class="n">time_slice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_slice</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">check</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="n">check</span>
+
+<div class="viewcode-block" id="MultiYearH5.year_index"><a class="viewcode-back" href="../../rex/rex.multi_year_resource.html#rex.multi_year_resource.MultiYearH5.year_index">[docs]</a>    <span class="k">def</span> <span class="nf">year_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">year</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract time_index for a specific year</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        year : int</span>
+<span class="sd">            Year to extract time_index for</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        time_index : pandas.DatetimeIndex</span>
+<span class="sd">            Resource datetime index for desired year</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_index</span><span class="o">.</span><span class="n">year</span> <span class="o">==</span> <span class="n">year</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_ds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ds_name</span><span class="p">,</span> <span class="n">ds_slice</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract data from given dataset</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ds_name : str</span>
+<span class="sd">            Variable dataset to be extracted</span>
+<span class="sd">        ds_slice : int | list | slice</span>
+<span class="sd">            tuple describing slice of dataset array to extract</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out : ndarray</span>
+<span class="sd">            ndarray of variable timeseries data</span>
+<span class="sd">            If unscale, returned in native units else in scaled units</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ds_slice</span> <span class="o">=</span> <span class="n">parse_slice</span><span class="p">(</span><span class="n">ds_slice</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">time_slice</span> <span class="o">=</span> <span class="n">ds_slice</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_years</span><span class="p">(</span><span class="n">time_slice</span><span class="p">):</span>
+            <span class="n">years</span> <span class="o">=</span> <span class="n">time_slice</span>
+            <span class="n">year_slice</span> <span class="o">=</span> <span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="p">)</span> <span class="o">+</span> <span class="n">ds_slice</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">years</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">years</span> <span class="o">=</span> <span class="p">[</span><span class="n">years</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">years</span><span class="p">:</span>
+                <span class="n">year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">year</span><span class="p">]</span><span class="o">.</span><span class="n">_get_ds</span><span class="p">(</span><span class="n">ds_name</span><span class="p">,</span> <span class="n">year_slice</span><span class="p">))</span>
+
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time_slice</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">)):</span>
+            <span class="n">time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_index</span><span class="p">[</span><span class="n">time_slice</span><span class="p">]</span>
+            <span class="n">year</span> <span class="o">=</span> <span class="n">time_step</span><span class="o">.</span><span class="n">year</span>
+            <span class="n">year_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">year_index</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+            <span class="n">year_slice</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">time_step</span> <span class="o">==</span> <span class="n">year_index</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">year_slice</span> <span class="o">=</span> <span class="p">(</span><span class="n">year_slice</span><span class="p">,</span> <span class="p">)</span> <span class="o">+</span> <span class="n">ds_slice</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">year</span><span class="p">]</span><span class="o">.</span><span class="n">_get_ds</span><span class="p">(</span><span class="n">ds_name</span><span class="p">,</span> <span class="n">year_slice</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">time_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_index</span><span class="p">[</span><span class="n">time_slice</span><span class="p">]</span>
+            <span class="n">year_map</span> <span class="o">=</span> <span class="n">time_index</span><span class="o">.</span><span class="n">year</span>
+            <span class="k">for</span> <span class="n">year</span> <span class="ow">in</span> <span class="n">year_map</span><span class="o">.</span><span class="n">unique</span><span class="p">():</span>
+                <span class="n">year_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">year_index</span><span class="p">(</span><span class="n">year</span><span class="p">)</span>
+                <span class="n">year_slice</span> <span class="o">=</span> <span class="n">year_index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">time_index</span><span class="p">[</span><span class="n">year_map</span> <span class="o">==</span> <span class="n">year</span><span class="p">])</span>
+                <span class="n">year_slice</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_check_time_slice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">year_slice</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">year_slice</span> <span class="o">=</span> <span class="p">(</span><span class="n">year_slice</span><span class="p">,</span> <span class="p">)</span> <span class="o">+</span> <span class="n">ds_slice</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">year</span><span class="p">]</span><span class="o">.</span><span class="n">_get_ds</span><span class="p">(</span><span class="n">ds_name</span><span class="p">,</span> <span class="n">year_slice</span><span class="p">))</span>
+
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">out</span>
+
+<div class="viewcode-block" id="MultiYearH5.close"><a class="viewcode-back" href="../../rex/rex.multi_year_resource.html#rex.multi_year_resource.MultiYearH5.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close all h5py.File instances</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5_map</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="MultiYearResource"><a class="viewcode-back" href="../../rex/rex.multi_year_resource.html#rex.multi_year_resource.MultiYearResource">[docs]</a><span class="k">class</span> <span class="nc">MultiYearResource</span><span class="p">(</span><span class="n">MultiTimeResource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle multiple years of resource data stored accross multiple</span>
+<span class="sd">    .h5 files</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+
+<span class="sd">    Extracting the resource&#39;s Datetime Index</span>
+
+<span class="sd">    &gt;&gt;&gt; path = &#39;$TESTDATADIR/nsrdb/ri_100_nsrdb_*.h5&#39;</span>
+<span class="sd">    &gt;&gt;&gt; with MultiYearResource(path) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     ti = res.time_index</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; ti</span>
+<span class="sd">    DatetimeIndex([&#39;2012-01-01 00:00:00&#39;, &#39;2012-01-01 00:30:00&#39;,</span>
+<span class="sd">                   &#39;2012-01-01 01:00:00&#39;, &#39;2012-01-01 01:30:00&#39;,</span>
+<span class="sd">                   &#39;2012-01-01 02:00:00&#39;, &#39;2012-01-01 02:30:00&#39;,</span>
+<span class="sd">                   &#39;2012-01-01 03:00:00&#39;, &#39;2012-01-01 03:30:00&#39;,</span>
+<span class="sd">                   &#39;2012-01-01 04:00:00&#39;, &#39;2012-01-01 04:30:00&#39;,</span>
+<span class="sd">                   ...</span>
+<span class="sd">                   &#39;2013-12-31 19:00:00&#39;, &#39;2013-12-31 19:30:00&#39;,</span>
+<span class="sd">                   &#39;2013-12-31 20:00:00&#39;, &#39;2013-12-31 20:30:00&#39;,</span>
+<span class="sd">                   &#39;2013-12-31 21:00:00&#39;, &#39;2013-12-31 21:30:00&#39;,</span>
+<span class="sd">                   &#39;2013-12-31 22:00:00&#39;, &#39;2013-12-31 22:30:00&#39;,</span>
+<span class="sd">                   &#39;2013-12-31 23:00:00&#39;, &#39;2013-12-31 23:30:00&#39;],</span>
+<span class="sd">                  dtype=&#39;datetime64[ns]&#39;, length=35088, freq=None)</span>
+
+<span class="sd">    NOTE: time_index covers data from 2012 and 2013</span>
+
+<span class="sd">    &gt;&gt;&gt; with MultiYearResource(path) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     print(res.h5_files)</span>
+
+<span class="sd">    [&#39;/Users/mrossol/Git_Repos/rex/tests/data/nsrdb/ri_100_nsrdb_2012.h5&#39;,</span>
+<span class="sd">     &#39;/Users/mrossol/Git_Repos/rex/tests/data/nsrdb/ri_100_nsrdb_2013.h5&#39;]</span>
+
+<span class="sd">    Data slicing works the same as with &quot;Resource&quot; except axis 0 now covers</span>
+<span class="sd">    2012 and 2013</span>
+
+<span class="sd">    &gt;&gt;&gt; with MultiYearResource(path) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     temperature = res[&#39;air_temperature&#39;]</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; temperature</span>
+<span class="sd">    [[ 4.  5.  5. ...  4.  3.  4.]</span>
+<span class="sd">     [ 4.  4.  5. ...  4.  3.  4.]</span>
+<span class="sd">     [ 4.  4.  5. ...  4.  3.  4.]</span>
+<span class="sd">     ...</span>
+<span class="sd">     [-1. -1.  0. ... -2. -3. -2.]</span>
+<span class="sd">     [-1. -1.  0. ... -2. -3. -2.]</span>
+<span class="sd">     [-1. -1.  0. ... -2. -3. -2.]]</span>
+<span class="sd">    &gt;&gt;&gt; temperature.shape</span>
+<span class="sd">    (35088, 100)</span>
+
+<span class="sd">    &gt;&gt;&gt; with MultiYearResource(path) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     temperature = res[&#39;air_temperature&#39;, ::100] # every 100th timestep</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; temperature</span>
+<span class="sd">    [[ 4.  5.  5. ...  4.  3.  4.]</span>
+<span class="sd">     [ 1.  1.  2. ...  0.  0.  1.]</span>
+<span class="sd">     [-2. -1. -1. ... -2. -4. -2.]</span>
+<span class="sd">     ...</span>
+<span class="sd">     [-3. -2. -2. ... -3. -4. -3.]</span>
+<span class="sd">     [ 0.  0.  1. ...  0. -1.  0.]</span>
+<span class="sd">     [ 3.  3.  3. ...  2.  2.  3.]]</span>
+<span class="sd">    &gt;&gt;&gt; temperature.shape</span>
+<span class="sd">    (351, 100)</span>
+
+<span class="sd">    You can also request a specific year of data using a string representation</span>
+<span class="sd">    of the year of interest</span>
+<span class="sd">    NOTE: you can also request a list of years using strings</span>
+
+<span class="sd">    &gt;&gt;&gt; with MultiYearResource(path) as res:</span>
+<span class="sd">    &gt;&gt;&gt;     temperature = res[&#39;air_temperature&#39;, &#39;2012&#39;] # every 100th timestep</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+<span class="sd">    &gt;&gt;&gt; temperature</span>
+<span class="sd">    [[4. 5. 5. ... 4. 3. 4.]</span>
+<span class="sd">     [4. 4. 5. ... 4. 3. 4.]</span>
+<span class="sd">     [4. 4. 5. ... 4. 3. 4.]</span>
+<span class="sd">     ...</span>
+<span class="sd">     [1. 1. 2. ... 0. 0. 0.]</span>
+<span class="sd">     [1. 1. 2. ... 0. 0. 1.]</span>
+<span class="sd">     [1. 1. 2. ... 0. 0. 1.]]</span>
+<span class="sd">    &gt;&gt;&gt; temperature.shape</span>
+<span class="sd">    (17520, 100)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">PREFIX</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">SUFFIX</span> <span class="o">=</span> <span class="s1">&#39;.h5&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_path</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">hsds</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">res_cls</span><span class="o">=</span><span class="n">Resource</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_path : str</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">        years : list, optional</span>
+<span class="sd">            List of years to access, by default None</span>
+<span class="sd">        unscale : bool</span>
+<span class="sd">            Boolean flag to automatically unscale variables on extraction</span>
+<span class="sd">        str_decode : bool</span>
+<span class="sd">            Boolean flag to decode the bytestring meta data into normal</span>
+<span class="sd">            strings. Setting this to False will speed up the meta data read.</span>
+<span class="sd">        hsds : bool</span>
+<span class="sd">            Boolean flag to use h5pyd to handle .h5 &#39;files&#39; hosted on AWS</span>
+<span class="sd">            behind HSDS</span>
+<span class="sd">        res_cls : obj</span>
+<span class="sd">            Resource handler to us to open individual .h5 files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span> <span class="o">=</span> <span class="n">MultiH5Path</span><span class="o">.</span><span class="n">multi_file_args</span><span class="p">(</span><span class="n">h5_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">prefix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">PREFIX</span>
+
+        <span class="k">if</span> <span class="n">suffix</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">suffix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SUFFIX</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_time_index</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Map variables to their .h5 files</span>
+        <span class="n">cls_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;unscale&#39;</span><span class="p">:</span> <span class="n">unscale</span><span class="p">,</span> <span class="s1">&#39;str_decode&#39;</span><span class="p">:</span> <span class="n">str_decode</span><span class="p">,</span>
+                      <span class="s1">&#39;hsds&#39;</span><span class="p">:</span> <span class="n">hsds</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_h5</span> <span class="o">=</span> <span class="n">MultiYearH5</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">h5_dir</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="n">suffix</span><span class="p">,</span>
+                               <span class="n">years</span><span class="o">=</span><span class="n">years</span><span class="p">,</span> <span class="n">res_cls</span><span class="o">=</span><span class="n">res_cls</span><span class="p">,</span> <span class="o">**</span><span class="n">cls_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h5_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_h5</span><span class="o">.</span><span class="n">h5_files</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h5_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_i</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">years</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Available years</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">            List of dataset present in .h5 files</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">h5</span><span class="o">.</span><span class="n">years</span></div>
+
+
+<div class="viewcode-block" id="MultiYearSolarResource"><a class="viewcode-back" href="../../rex/rex.multi_year_resource.html#rex.multi_year_resource.MultiYearSolarResource">[docs]</a><span class="k">class</span> <span class="nc">MultiYearSolarResource</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle multiple years of solar resource data stored accross</span>
+<span class="sd">    multiple .h5 files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_path</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">hsds</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_path : str</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">        years : list, optional</span>
+<span class="sd">            List of years to access, by default None</span>
+<span class="sd">        unscale : bool</span>
+<span class="sd">            Boolean flag to automatically unscale variables on extraction</span>
+<span class="sd">        str_decode : bool</span>
+<span class="sd">            Boolean flag to decode the bytestring meta data into normal</span>
+<span class="sd">            strings. Setting this to False will speed up the meta data read.</span>
+<span class="sd">        hsds : bool</span>
+<span class="sd">            Boolean flag to use h5pyd to handle .h5 &#39;files&#39; hosted on AWS</span>
+<span class="sd">            behind HSDS</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">h5_path</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="n">years</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="n">unscale</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="n">hsds</span><span class="p">,</span>
+                         <span class="n">str_decode</span><span class="o">=</span><span class="n">str_decode</span><span class="p">,</span> <span class="n">res_cls</span><span class="o">=</span><span class="n">SolarResource</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultiYearNSRDB"><a class="viewcode-back" href="../../rex/rex.multi_year_resource.html#rex.multi_year_resource.MultiYearNSRDB">[docs]</a><span class="k">class</span> <span class="nc">MultiYearNSRDB</span><span class="p">(</span><span class="n">MultiYearResource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle multiple years of NSRDB data stored accross</span>
+<span class="sd">    multiple .h5 files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">PREFIX</span> <span class="o">=</span> <span class="s1">&#39;nsrdb&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_path</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">hsds</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_path : str</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">        years : list, optional</span>
+<span class="sd">            List of years to access, by default None</span>
+<span class="sd">        unscale : bool</span>
+<span class="sd">            Boolean flag to automatically unscale variables on extraction</span>
+<span class="sd">        str_decode : bool</span>
+<span class="sd">            Boolean flag to decode the bytestring meta data into normal</span>
+<span class="sd">            strings. Setting this to False will speed up the meta data read.</span>
+<span class="sd">        hsds : bool</span>
+<span class="sd">            Boolean flag to use h5pyd to handle .h5 &#39;files&#39; hosted on AWS</span>
+<span class="sd">            behind HSDS</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">h5_path</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="n">years</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="n">unscale</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="n">hsds</span><span class="p">,</span>
+                         <span class="n">str_decode</span><span class="o">=</span><span class="n">str_decode</span><span class="p">,</span> <span class="n">res_cls</span><span class="o">=</span><span class="n">NSRDB</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultiYearWindResource"><a class="viewcode-back" href="../../rex/rex.multi_year_resource.html#rex.multi_year_resource.MultiYearWindResource">[docs]</a><span class="k">class</span> <span class="nc">MultiYearWindResource</span><span class="p">(</span><span class="n">MultiYearResource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle multiple years of wind resource data stored accross</span>
+<span class="sd">    multiple .h5 files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">PREFIX</span> <span class="o">=</span> <span class="s1">&#39;wtk&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_path</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">hsds</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_path : str</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">        years : list, optional</span>
+<span class="sd">            List of years to access, by default None</span>
+<span class="sd">        unscale : bool</span>
+<span class="sd">            Boolean flag to automatically unscale variables on extraction</span>
+<span class="sd">        str_decode : bool</span>
+<span class="sd">            Boolean flag to decode the bytestring meta data into normal</span>
+<span class="sd">            strings. Setting this to False will speed up the meta data read.</span>
+<span class="sd">        hsds : bool</span>
+<span class="sd">            Boolean flag to use h5pyd to handle .h5 &#39;files&#39; hosted on AWS</span>
+<span class="sd">            behind HSDS</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">h5_path</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="n">years</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="n">unscale</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="n">hsds</span><span class="p">,</span>
+                         <span class="n">str_decode</span><span class="o">=</span><span class="n">str_decode</span><span class="p">,</span> <span class="n">res_cls</span><span class="o">=</span><span class="n">WindResource</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultiYearWaveResource"><a class="viewcode-back" href="../../rex/rex.multi_year_resource.html#rex.multi_year_resource.MultiYearWaveResource">[docs]</a><span class="k">class</span> <span class="nc">MultiYearWaveResource</span><span class="p">(</span><span class="n">MultiYearResource</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to handle multiple years of wave resource data stored accross</span>
+<span class="sd">    multiple .h5 files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h5_path</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">str_decode</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">hsds</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        h5_path : str</span>
+<span class="sd">            Path to directory containing multi-file resource file sets.</span>
+<span class="sd">            Available formats:</span>
+<span class="sd">                /h5_dir/</span>
+<span class="sd">                /h5_dir/prefix*suffix</span>
+<span class="sd">        years : list, optional</span>
+<span class="sd">            List of years to access, by default None</span>
+<span class="sd">        unscale : bool</span>
+<span class="sd">            Boolean flag to automatically unscale variables on extraction</span>
+<span class="sd">        str_decode : bool</span>
+<span class="sd">            Boolean flag to decode the bytestring meta data into normal</span>
+<span class="sd">            strings. Setting this to False will speed up the meta data read.</span>
+<span class="sd">        hsds : bool</span>
+<span class="sd">            Boolean flag to use h5pyd to handle .h5 &#39;files&#39; hosted on AWS</span>
+<span class="sd">            behind HSDS</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">h5_path</span><span class="p">,</span> <span class="n">years</span><span class="o">=</span><span class="n">years</span><span class="p">,</span> <span class="n">unscale</span><span class="o">=</span><span class="n">unscale</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="n">hsds</span><span class="p">,</span>
+                         <span class="n">str_decode</span><span class="o">=</span><span class="n">str_decode</span><span class="p">,</span> <span class="n">res_cls</span><span class="o">=</span><span class="n">WaveResource</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,1020 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex.utilities.hpc &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../rex/rex.html">rex package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../rex/rex.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../rex/rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../rex/rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../rex/rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../rex/rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>rex.utilities.hpc</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for rex.utilities.hpc</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Execution utilities.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">getpass</span>
+<span class="kn">import</span> <span class="nn">shlex</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">from</span> <span class="nn">rex.utilities.execution</span> <span class="kn">import</span> <span class="n">SubprocessManager</span>
+<span class="kn">from</span> <span class="nn">rex.utilities.exceptions</span> <span class="kn">import</span> <span class="p">(</span><span class="n">ExecutionError</span><span class="p">,</span> <span class="n">HpcError</span><span class="p">,</span> <span class="n">SlurmWarning</span><span class="p">,</span>
+                                      <span class="n">PbsWarning</span><span class="p">)</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="HpcJobManager"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.HpcJobManager">[docs]</a><span class="k">class</span> <span class="nc">HpcJobManager</span><span class="p">(</span><span class="n">SubprocessManager</span><span class="p">,</span> <span class="n">ABC</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract HPC job manager framework&quot;&quot;&quot;</span>
+
+    <span class="c1"># get username as class attribute.</span>
+    <span class="n">USER</span> <span class="o">=</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getuser</span><span class="p">()</span>
+
+    <span class="c1"># HPC queue column headers</span>
+    <span class="n">QCOL_NAME</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Job name column</span>
+    <span class="n">QCOL_ID</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Job integer ID column</span>
+    <span class="n">QCOL_STATUS</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Job status column</span>
+
+    <span class="c1"># set a max job name length, will raise error if too long.</span>
+    <span class="n">MAX_NAME_LEN</span> <span class="o">=</span> <span class="mi">100</span>
+
+    <span class="c1"># default rows to skip in queue stdout</span>
+    <span class="n">QSKIP</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">queue_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        user : str | None</span>
+<span class="sd">            HPC username. None will get your username using getpass.getuser()</span>
+<span class="sd">        queue_dict : dict | None</span>
+<span class="sd">            Parsed HPC queue dictionary (qstat for PBS or squeue for SLURM)</span>
+<span class="sd">            from parse_queue_str(). None will get the queue from PBS or SLURM.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_user</span> <span class="o">=</span> <span class="n">user</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">USER</span>
+
+        <span class="k">if</span> <span class="n">queue_dict</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">queue_dict</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;HPC queue_dict arg must be None or Dict but received: &#39;</span>
+                    <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">queue_dict</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">queue_dict</span><span class="p">)))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HpcError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="n">queue_dict</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_skip_q_rows</span><span class="p">(</span><span class="n">queue_str</span><span class="p">,</span> <span class="n">skip_rows</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Remove rows from the queue_str that are to be skipped.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        queue_str : str</span>
+<span class="sd">            HPC queue output string. Can be split on line breaks to get list.</span>
+<span class="sd">        skip_rows : int | list | None</span>
+<span class="sd">            Optional row index values to skip.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        queue_str : str</span>
+<span class="sd">            HPC queue output string. Can be split on line breaks to get list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">skip_rows</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">skip_rows</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">skip_rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">skip_rows</span><span class="p">]</span>
+
+            <span class="n">queue_str</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">queue_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">))</span>
+                         <span class="k">if</span> <span class="n">i</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">skip_rows</span><span class="p">]</span>
+            <span class="n">queue_str</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">queue_str</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">queue_str</span>
+
+<div class="viewcode-block" id="HpcJobManager.parse_queue_str"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.HpcJobManager.parse_queue_str">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">parse_queue_str</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">queue_str</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse the qstat or squeue output string into a dict format keyed by</span>
+<span class="sd">        integer job id with nested dictionary of job properties (queue</span>
+<span class="sd">        printout columns).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        queue_str : str</span>
+<span class="sd">            HPC queue output string (qstat for PBS or squeue for SLURM).</span>
+<span class="sd">            Typically a space-delimited string with line breaks.</span>
+<span class="sd">        keys : list | int</span>
+<span class="sd">            Argument to set the queue job attributes (column headers).</span>
+<span class="sd">            This defaults to an integer which says which row index contains</span>
+<span class="sd">            the space-delimited column headers. Can also be a list to</span>
+<span class="sd">            explicitly set the column headers.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        queue_dict : dict</span>
+<span class="sd">            HPC queue parsed into dictionary format keyed by integer job id</span>
+<span class="sd">            with nested dictionary of job properties (queue printout columns).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">queue_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">queue_rows</span> <span class="o">=</span> <span class="n">queue_str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">del_index</span> <span class="o">=</span> <span class="n">keys</span>
+            <span class="n">keys</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">queue_rows</span><span class="p">[</span><span class="n">keys</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">queue_rows</span><span class="p">[</span><span class="n">del_index</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">queue_rows</span><span class="p">:</span>
+            <span class="n">job</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">]</span>
+            <span class="n">job_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">job</span><span class="p">[</span><span class="n">keys</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">QCOL_ID</span><span class="p">)])</span>
+            <span class="n">queue_dict</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">job</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">)}</span>
+
+        <span class="k">return</span> <span class="n">queue_dict</span></div>
+
+<div class="viewcode-block" id="HpcJobManager.query_queue"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.HpcJobManager.query_queue">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">query_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">skip_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run the HPC queue command and return the raw stdout string.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        job_name : str | None</span>
+<span class="sd">            Optional to check the squeue for a specific job name (not limited</span>
+<span class="sd">            to the 8 shown characters) or None to show user&#39;s whole queue.</span>
+<span class="sd">        user : str | None</span>
+<span class="sd">            HPC username. None will get your username using getpass.getuser()</span>
+<span class="sd">        qformat : str | None</span>
+<span class="sd">            Queue format string specification. Changing this form the</span>
+<span class="sd">            default (None) could have adverse effects!</span>
+<span class="sd">        skip_rows : int | list | None</span>
+<span class="sd">            Optional row index values to skip.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        stdout : str</span>
+<span class="sd">            HPC queue output string. Can be split on line breaks to get list.</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the HPC queue parsed into dict format keyed by integer job id</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        queue : dict</span>
+<span class="sd">            HPC queue parsed into dictionary format keyed by integer job id</span>
+<span class="sd">            with nested dictionary of job properties (queue printout columns).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">qstr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_queue</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_user</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_queue_str</span><span class="p">(</span><span class="n">qstr</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">queue_job_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of the job names in the queue&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">attrs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">QCOL_NAME</span><span class="p">]</span> <span class="k">for</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">queue_job_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of the job integer ids in the queue&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+<div class="viewcode-block" id="HpcJobManager.check_status"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.HpcJobManager.check_status">[docs]</a>    <span class="k">def</span> <span class="nf">check_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">job_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">job_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check the status of an HPC job using the HPC queue.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        job_id : int | None</span>
+<span class="sd">            Job integer ID number (preferred input)</span>
+<span class="sd">        job_name : str</span>
+<span class="sd">            Job name string.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        status : str | NoneType</span>
+<span class="sd">            Queue job status str or None if not found.</span>
+<span class="sd">            SLURM status strings: PD, R, CG (pending, running, complete).</span>
+<span class="sd">            PBS status strings: Q, R, C (queued, running, complete).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">status</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">job_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="p">:</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">job_id</span><span class="p">)][</span><span class="bp">self</span><span class="o">.</span><span class="n">QCOL_STATUS</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">job_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">job_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_job_names</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">attrs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">QCOL_NAME</span><span class="p">]</span> <span class="o">==</span> <span class="n">job_name</span><span class="p">:</span>
+                        <span class="n">status</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">QCOL_STATUS</span><span class="p">]</span>
+                        <span class="k">break</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Need a job_id or job_name to check HPC job status!&#39;</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">HpcError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">status</span></div></div>
+
+
+<div class="viewcode-block" id="PBS"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.PBS">[docs]</a><span class="k">class</span> <span class="nc">PBS</span><span class="p">(</span><span class="n">HpcJobManager</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Subclass for PBS subprocess jobs.&quot;&quot;&quot;</span>
+
+    <span class="c1"># PBS qstat column headers</span>
+    <span class="n">QCOL_NAME</span> <span class="o">=</span> <span class="s1">&#39;Name&#39;</span>  <span class="c1"># Job name column</span>
+    <span class="n">QCOL_ID</span> <span class="o">=</span> <span class="s1">&#39;Job id&#39;</span>  <span class="c1"># Job integer ID column</span>
+    <span class="n">QCOL_STATUS</span> <span class="o">=</span> <span class="s1">&#39;S&#39;</span>  <span class="c1"># Job status column</span>
+
+    <span class="c1"># Frozen PBS qstat column headers cached b/c its not space delimited</span>
+    <span class="n">QSTAT_KEYS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Job id&#39;</span><span class="p">,</span> <span class="s1">&#39;Name&#39;</span><span class="p">,</span> <span class="s1">&#39;User&#39;</span><span class="p">,</span> <span class="s1">&#39;Time Use&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="s1">&#39;Queue&#39;</span><span class="p">)</span>
+
+    <span class="c1"># set a max job name length, will raise error if too long.</span>
+    <span class="n">MAX_NAME_LEN</span> <span class="o">=</span> <span class="mi">100</span>
+
+    <span class="c1"># default rows to skip in queue stdout</span>
+    <span class="n">QSKIP</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">queue_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        user : str | None</span>
+<span class="sd">            HPC username. None will get your username using getpass.getuser()</span>
+<span class="sd">        queue_dict : dict | None</span>
+<span class="sd">            Parsed HPC queue dictionary (qstat for PBS or squeue for SLURM)</span>
+<span class="sd">            from parse_queue_str(). None will get the queue from PBS or SLURM.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">queue_dict</span><span class="o">=</span><span class="n">queue_dict</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PBS.query_queue"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.PBS.query_queue">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">query_queue</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">job_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">skip_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run the PBS qstat command and return the raw stdout string.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        job_name : str | None</span>
+<span class="sd">            Optional to check the squeue for a specific job name (not limited</span>
+<span class="sd">            to the 8 shown characters) or None to show user&#39;s whole queue.</span>
+<span class="sd">        user : str | None</span>
+<span class="sd">            HPC username. None will get your username using getpass.getuser()</span>
+<span class="sd">        qformat : str | None</span>
+<span class="sd">            Queue format string specification. Changing this form the</span>
+<span class="sd">            default (None) could have adverse effects!</span>
+<span class="sd">        skip_rows : int | list | None</span>
+<span class="sd">            Optional row index values to skip.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        stdout : str</span>
+<span class="sd">            qstat output string. Can be split on line breaks to get list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">USER</span>
+
+        <span class="k">if</span> <span class="n">skip_rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">skip_rows</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">QSKIP</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;qstat -u </span><span class="si">{user}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">stdout</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_skip_q_rows</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">skip_rows</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">stdout</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">queue</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the HPC queue parsed into dict format keyed by integer job id</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        queue : dict</span>
+<span class="sd">            HPC queue parsed into dictionary format keyed by integer job id</span>
+<span class="sd">            with nested dictionary of job properties (queue printout columns).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">qstr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_queue</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_user</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_queue_str</span><span class="p">(</span><span class="n">qstr</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">QSTAT_KEYS</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span>
+
+<div class="viewcode-block" id="PBS.qsub"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.PBS.qsub">[docs]</a>    <span class="k">def</span> <span class="nf">qsub</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;reV&#39;</span><span class="p">,</span> <span class="n">feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">stdout_path</span><span class="o">=</span><span class="s1">&#39;./stdout&#39;</span><span class="p">,</span> <span class="n">keep_sh</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Submit a PBS job via qsub command and PBS shell script</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cmd : str</span>
+<span class="sd">            Command to be submitted in PBS shell script. Example:</span>
+<span class="sd">                &#39;python -m reV.generation.cli_gen&#39;</span>
+<span class="sd">        alloc : str</span>
+<span class="sd">            HPC allocation account. Example: &#39;rev&#39;.</span>
+<span class="sd">        queue : str</span>
+<span class="sd">            HPC queue to submit job to. Example: &#39;short&#39;, &#39;batch-h&#39;, etc...</span>
+<span class="sd">        name : str</span>
+<span class="sd">            PBS job name.</span>
+<span class="sd">        feature : str | None</span>
+<span class="sd">            PBS feature request (-l {feature}).</span>
+<span class="sd">            Example: &#39;feature=24core&#39;, &#39;qos=high&#39;, etc...</span>
+<span class="sd">        stdout_path : str</span>
+<span class="sd">            Path to print .stdout and .stderr files.</span>
+<span class="sd">        keep_sh : bool</span>
+<span class="sd">            Boolean to keep the .sh files. Default is to remove these files</span>
+<span class="sd">            after job submission.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out : str</span>
+<span class="sd">            qsub standard output, this is typically the PBS job ID.</span>
+<span class="sd">        err : str</span>
+<span class="sd">            qsub standard error, this is typically an empty string if the job</span>
+<span class="sd">            was submitted successfully.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_NAME_LEN</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Cannot submit job with name longer than </span><span class="si">{}</span><span class="s1"> chars: &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span>
+                   <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">MAX_NAME_LEN</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_status</span><span class="p">(</span><span class="n">job_name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Q&#39;</span><span class="p">,</span> <span class="s1">&#39;R&#39;</span><span class="p">):</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Not submitting job &quot;</span><span class="si">{}</span><span class="s1">&quot; because it is already in &#39;</span>
+                        <span class="s1">&#39;qstat with status: &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">status</span><span class="p">))</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="s1">&#39;already_running&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">make_path</span><span class="p">(</span><span class="n">stdout_path</span><span class="p">)</span>
+            <span class="n">feature_str</span> <span class="o">=</span> <span class="s1">&#39;#PBS -l </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.sh&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">script</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;#!/bin/bash</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#PBS -N </span><span class="si">{n}</span><span class="s1"> # job name</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#PBS -A </span><span class="si">{a}</span><span class="s1"> # allocation account</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#PBS -q </span><span class="si">{q}</span><span class="s1"> # queue (debug, short, batch, or long)</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#PBS -o </span><span class="si">{p}</span><span class="s1">/</span><span class="si">{n}</span><span class="s1">_$PBS_JOBID.o</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#PBS -e </span><span class="si">{p}</span><span class="s1">/</span><span class="si">{n}</span><span class="s1">_$PBS_JOBID.e</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;</span><span class="si">{L}</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;echo Running on: $HOSTNAME, Machine Type: $MACHTYPE</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;</span><span class="si">{cmd}</span><span class="s1">&#39;</span>
+                      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="n">alloc</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="n">queue</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">stdout_path</span><span class="p">,</span>
+                              <span class="n">L</span><span class="o">=</span><span class="n">feature_str</span> <span class="k">if</span> <span class="n">feature</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                              <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">))</span>
+
+            <span class="c1"># write the shell script file and submit as qsub job</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">make_sh</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">script</span><span class="p">)</span>
+            <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="s1">&#39;qsub </span><span class="si">{script}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">script</span><span class="o">=</span><span class="n">fname</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_sh</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Received a PBS error or warning: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">PbsWarning</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;PBS job &quot;</span><span class="si">{}</span><span class="s1">&quot; with id #</span><span class="si">{}</span><span class="s1"> submitted successfully&#39;</span>
+                             <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">out</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">out</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">QCOL_ID</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">out</span><span class="p">),</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">QCOL_NAME</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">QCOL_STATUS</span><span class="p">:</span> <span class="s1">&#39;Q&#39;</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span></div></div>
+
+
+<div class="viewcode-block" id="SLURM"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.SLURM">[docs]</a><span class="k">class</span> <span class="nc">SLURM</span><span class="p">(</span><span class="n">HpcJobManager</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Subclass for SLURM subprocess jobs.&quot;&quot;&quot;</span>
+
+    <span class="c1"># SLURM squeue column headers</span>
+    <span class="n">QCOL_NAME</span> <span class="o">=</span> <span class="s1">&#39;NAME&#39;</span>  <span class="c1"># Job name column</span>
+    <span class="n">QCOL_ID</span> <span class="o">=</span> <span class="s1">&#39;JOBID&#39;</span>  <span class="c1"># Job integer ID column</span>
+    <span class="n">QCOL_STATUS</span> <span class="o">=</span> <span class="s1">&#39;ST&#39;</span>  <span class="c1"># Job status column</span>
+
+    <span class="n">MAX_NAME_LEN</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">SQ_FORMAT</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%.15i</span><span class="s2"> %.30P  %.</span><span class="si">{}</span><span class="s2">j  </span><span class="si">%.20u</span><span class="s2"> %.10t %.15M %.25R %q&quot;</span>
+                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">MAX_NAME_LEN</span><span class="p">))</span>
+
+    <span class="c1"># default rows to skip in queue stdout</span>
+    <span class="n">QSKIP</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">queue_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        user : str | None</span>
+<span class="sd">            HPC username. None will get your username using getpass.getuser()</span>
+<span class="sd">        queue_dict : dict | None</span>
+<span class="sd">            Parsed HPC queue dictionary (qstat for PBS or squeue for SLURM)</span>
+<span class="sd">            from parse_queue_str(). None will get the queue from PBS or SLURM.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">queue_dict</span><span class="o">=</span><span class="n">queue_dict</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SLURM.query_queue"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.SLURM.query_queue">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">query_queue</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">job_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">qformat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">skip_rows</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Run the HPC queue command and return the raw stdout string.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        job_name : str | None</span>
+<span class="sd">            Optional to check the squeue for a specific job name (not limited</span>
+<span class="sd">            to the 8 shown characters) or None to show user&#39;s whole queue.</span>
+<span class="sd">        user : str | None</span>
+<span class="sd">            HPC username. None will get your username using getpass.getuser()</span>
+<span class="sd">        qformat : str | None</span>
+<span class="sd">            Queue format string specification. Changing this form the</span>
+<span class="sd">            default (None) could have adverse effects!</span>
+<span class="sd">        skip_rows : int | list | None</span>
+<span class="sd">            Optional row index values to skip.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        stdout : str</span>
+<span class="sd">            HPC queue output string. Can be split on line breaks to get list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">job_name_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">job_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">job_name_str</span> <span class="o">=</span> <span class="s1">&#39; -n </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">job_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">user</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">user</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">USER</span>
+
+        <span class="k">if</span> <span class="n">qformat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">qformat</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">SQ_FORMAT</span>
+
+        <span class="k">if</span> <span class="n">skip_rows</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">skip_rows</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">QSKIP</span>
+
+        <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;squeue -u </span><span class="si">{user}{job_name}</span><span class="s1"> --format=&quot;</span><span class="si">{format_str}</span><span class="s1">&quot;&#39;</span>
+               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="n">user</span><span class="p">,</span> <span class="n">job_name</span><span class="o">=</span><span class="n">job_name_str</span><span class="p">,</span> <span class="n">format_str</span><span class="o">=</span><span class="n">qformat</span><span class="p">))</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">stdout</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_skip_q_rows</span><span class="p">(</span><span class="n">stdout</span><span class="p">,</span> <span class="n">skip_rows</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">stdout</span></div>
+
+<div class="viewcode-block" id="SLURM.scontrol"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.SLURM.scontrol">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">scontrol</span><span class="p">(</span><span class="n">cmd</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Submit an scontrol command.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cmd : str</span>
+<span class="sd">            Command string after &quot;scontrol&quot; word</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;scontrol </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">cmd</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SLURM.scancel"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.SLURM.scancel">[docs]</a>    <span class="k">def</span> <span class="nf">scancel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Cancel a slurm job.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arg : int | list | str</span>
+<span class="sd">            SLURM integer job id(s) to cancel. Can be a list of integer</span>
+<span class="sd">            job ids, &#39;all&#39; to cancel all jobs, or a feature (-p short) to</span>
+<span class="sd">            cancel all jobs with a given feature</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scancel</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue_job_ids</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scancel</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">)):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;scancel </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Could not cancel: </span><span class="si">{}</span><span class="s1"> with type </span><span class="si">{}</span><span class="s1">&#39;</span>
+                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ExecutionError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SLURM.change_qos"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.SLURM.change_qos">[docs]</a>    <span class="k">def</span> <span class="nf">change_qos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">,</span> <span class="n">qos</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the priority (quality of service) for a job.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arg : int | list | str</span>
+<span class="sd">            SLURM integer job id(s) to change qos for.</span>
+<span class="sd">            Can be &#39;all&#39; for all jobs.</span>
+<span class="sd">        qos : str</span>
+<span class="sd">            New qos value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">change_qos</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="n">qos</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;update job </span><span class="si">{}</span><span class="s1"> QOS=</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">qos</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scontrol</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">job_id</span><span class="p">,</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">QCOL_STATUS</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;pd&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">change_qos</span><span class="p">(</span><span class="n">job_id</span><span class="p">,</span> <span class="n">qos</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Could not change qos of: </span><span class="si">{}</span><span class="s1"> with type </span><span class="si">{}</span><span class="s1">&#39;</span>
+                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ExecutionError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SLURM.hold"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.SLURM.hold">[docs]</a>    <span class="k">def</span> <span class="nf">hold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Temporarily hold a job from submitting. Held jobs will stay in queue</span>
+<span class="sd">        but will not get nodes until released.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arg : int | list | str</span>
+<span class="sd">            SLURM integer job id(s) to hold. Can be &#39;all&#39; to hold all jobs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hold</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;hold </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scontrol</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">job_id</span><span class="p">,</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">QCOL_STATUS</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;pd&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">hold</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Could not hold: </span><span class="si">{}</span><span class="s1"> with type </span><span class="si">{}</span><span class="s1">&#39;</span>
+                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ExecutionError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SLURM.release"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.SLURM.release">[docs]</a>    <span class="k">def</span> <span class="nf">release</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Release a job that was previously on hold so it will be submitted</span>
+<span class="sd">        to a compute node.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        arg : int | list | str</span>
+<span class="sd">            SLURM integer job id(s) to release.</span>
+<span class="sd">            Can be &#39;all&#39; to release all jobs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">job_id</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">cmd</span> <span class="o">=</span> <span class="s1">&#39;release </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scontrol</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">job_id</span><span class="p">,</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">queue</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">QCOL_STATUS</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="n">reason</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;NODELIST(REASON)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="s1">&#39;pd&#39;</span> <span class="ow">and</span> <span class="s1">&#39;jobheld&#39;</span> <span class="ow">in</span> <span class="n">reason</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">release</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">e</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Could not release: </span><span class="si">{}</span><span class="s1"> with type </span><span class="si">{}</span><span class="s1">&#39;</span>
+                 <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">arg</span><span class="p">)))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ExecutionError</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_special_cmd_strs</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">module_root</span><span class="p">,</span> <span class="n">conda_env</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get special sbatch request strings for SLURM features, memory,</span>
+<span class="sd">        modules, and conda environments</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        feature : str</span>
+<span class="sd">            Additional flags for SLURM job. Format is &quot;--qos=high&quot;</span>
+<span class="sd">            or &quot;--depend=[state:job_id]&quot;. Default is None.</span>
+<span class="sd">        memory : int</span>
+<span class="sd">            Node memory request in GB.</span>
+<span class="sd">        module : bool</span>
+<span class="sd">            Module to load</span>
+<span class="sd">        module_root : str</span>
+<span class="sd">            Path to module root to load</span>
+<span class="sd">        conda_env : str</span>
+<span class="sd">            Conda environment to activate</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        feature_str : str</span>
+<span class="sd">            SBATCH shell script feature request string.</span>
+<span class="sd">        mem_str : str</span>
+<span class="sd">            SBATCH shell script memory request string.</span>
+<span class="sd">        env_str : str</span>
+<span class="sd">            SBATCH shell script module load or source activate environment</span>
+<span class="sd">            request string.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">feature_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">feature</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">feature_str</span> <span class="o">=</span> <span class="s1">&#39;#SBATCH </span><span class="si">{}</span><span class="s1">  # extra feature</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+
+        <span class="n">mem_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">memory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">mem_str</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;#SBATCH --mem=</span><span class="si">{}</span><span class="s1">  # node RAM in MB</span><span class="se">\n</span><span class="s1">&#39;</span>
+                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">memory</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)))</span>
+
+        <span class="n">env_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">env_str</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;echo module use </span><span class="si">{module_root}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="s2">&quot;module use </span><span class="si">{module_root}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="s2">&quot;echo module load </span><span class="si">{module}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="s2">&quot;module load </span><span class="si">{module}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="s2">&quot;echo module load complete!</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">module_root</span><span class="o">=</span><span class="n">module_root</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="n">module</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">conda_env</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">env_str</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;echo source activate </span><span class="si">{conda_env}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="s2">&quot;source activate </span><span class="si">{conda_env}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="s2">&quot;echo conda env activate complete!</span><span class="se">\n</span><span class="s2">&quot;</span>
+                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conda_env</span><span class="o">=</span><span class="n">conda_env</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">feature_str</span><span class="p">,</span> <span class="n">mem_str</span><span class="p">,</span> <span class="n">env_str</span>
+
+<div class="viewcode-block" id="SLURM.sbatch"><a class="viewcode-back" href="../../../rex/rex.utilities.hpc.html#rex.utilities.hpc.SLURM.sbatch">[docs]</a>    <span class="k">def</span> <span class="nf">sbatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">alloc</span><span class="p">,</span> <span class="n">walltime</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">feature</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">name</span><span class="o">=</span><span class="s1">&#39;reV&#39;</span><span class="p">,</span> <span class="n">stdout_path</span><span class="o">=</span><span class="s1">&#39;./stdout&#39;</span><span class="p">,</span> <span class="n">keep_sh</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">conda_env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">module_root</span><span class="o">=</span><span class="s1">&#39;/shared-projects/rev/modulefiles&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Submit a SLURM job via sbatch command and SLURM shell script</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cmd : str</span>
+<span class="sd">            Command to be submitted in SLURM shell script. Example:</span>
+<span class="sd">                &#39;python -m reV.generation.cli_gen&#39;</span>
+<span class="sd">        alloc : str</span>
+<span class="sd">            HPC project (allocation) handle. Example: &#39;rev&#39;.</span>
+<span class="sd">        walltime : float</span>
+<span class="sd">            Node walltime request in hours.</span>
+<span class="sd">        memory : int</span>
+<span class="sd">            Node memory request in GB.</span>
+<span class="sd">        feature : str</span>
+<span class="sd">            Additional flags for SLURM job. Format is &quot;--qos=high&quot;</span>
+<span class="sd">            or &quot;--depend=[state:job_id]&quot;. Default is None.</span>
+<span class="sd">        name : str</span>
+<span class="sd">            SLURM job name.</span>
+<span class="sd">        stdout_path : str</span>
+<span class="sd">            Path to print .stdout and .stderr files.</span>
+<span class="sd">        keep_sh : bool</span>
+<span class="sd">            Boolean to keep the .sh files. Default is to remove these files</span>
+<span class="sd">            after job submission.</span>
+<span class="sd">        conda_env : str</span>
+<span class="sd">            Conda environment to activate</span>
+<span class="sd">        module : bool</span>
+<span class="sd">            Module to load</span>
+<span class="sd">        module_root : str</span>
+<span class="sd">            Path to module root to load</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        out : str</span>
+<span class="sd">            sbatch standard output, if submitted successfully, this is the</span>
+<span class="sd">            slurm job id.</span>
+<span class="sd">        err : str</span>
+<span class="sd">            sbatch standard error, this is typically an empty string if the job</span>
+<span class="sd">            was submitted successfully.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_NAME_LEN</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Cannot submit job with name longer than </span><span class="si">{}</span><span class="s1"> chars: &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span>
+                   <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">MAX_NAME_LEN</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_status</span><span class="p">(</span><span class="n">job_name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">status</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Not submitting job &quot;</span><span class="si">{}</span><span class="s1">&quot; because it is in &#39;</span>
+                        <span class="s1">&#39;squeue or has been recently submitted&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="s1">&#39;already_running&#39;</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">make_path</span><span class="p">(</span><span class="n">stdout_path</span><span class="p">)</span>
+            <span class="n">special</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_special_cmd_strs</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span>
+                                             <span class="n">module_root</span><span class="p">,</span> <span class="n">conda_env</span><span class="p">)</span>
+            <span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.sh&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">script</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;#!/bin/bash</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#SBATCH --account=</span><span class="si">{a}</span><span class="s1">  # allocation account</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#SBATCH --time=</span><span class="si">{t}</span><span class="s1">  # walltime</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#SBATCH --job-name=</span><span class="si">{n}</span><span class="s1">  # job name</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#SBATCH --nodes=1  # number of nodes</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#SBATCH --output=</span><span class="si">{p}</span><span class="s1">/</span><span class="si">{n}</span><span class="s1">_%j.o</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;#SBATCH --error=</span><span class="si">{p}</span><span class="s1">/</span><span class="si">{n}</span><span class="s1">_%j.e</span><span class="se">\n</span><span class="si">{m}{f}</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;echo Running on: $HOSTNAME, Machine Type: $MACHTYPE</span><span class="se">\n</span><span class="s1">&#39;</span>
+                      <span class="s1">&#39;</span><span class="si">{e}</span><span class="se">\n</span><span class="si">{cmd}</span><span class="s1">&#39;</span>
+                      <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">alloc</span><span class="p">,</span> <span class="n">t</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">format_walltime</span><span class="p">(</span><span class="n">walltime</span><span class="p">),</span>
+                              <span class="n">n</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="n">stdout_path</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="n">special</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                              <span class="n">f</span><span class="o">=</span><span class="n">special</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">e</span><span class="o">=</span><span class="n">special</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">cmd</span><span class="o">=</span><span class="n">cmd</span><span class="p">))</span>
+
+            <span class="c1"># write the shell script file and submit as qsub job</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">make_sh</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">script</span><span class="p">)</span>
+            <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="s1">&#39;sbatch </span><span class="si">{script}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">script</span><span class="o">=</span><span class="n">fname</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">keep_sh</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rm</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Received a SLURM error or warning: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="n">warn</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">SlurmWarning</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">job_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">out</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;SLURM job &quot;</span><span class="si">{}</span><span class="s1">&quot; with id #</span><span class="si">{}</span><span class="s1"> submitted &#39;</span>
+                             <span class="s1">&#39;successfully&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">job_id</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_queue</span><span class="p">[</span><span class="n">job_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">QCOL_ID</span><span class="p">:</span> <span class="n">job_id</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">QCOL_NAME</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">QCOL_STATUS</span><span class="p">:</span> <span class="s1">&#39;PD&#39;</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

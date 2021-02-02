@@ -1,0 +1,532 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>High Resolution Ocean Surface Wave Hindcast (US Wave) Data &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="rex package" href="../rex/rex.html" />
+    <link rel="prev" title="Wind Integration National Dataset (WIND) Toolkit" href="examples.wind.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="misc.html#examples">Examples</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../rex/rex.html">rex package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../rex/rex.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../rex/rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../rex/rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../rex/rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../rex/rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../rex/rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="misc.html">Installation and Usage</a> &raquo;</li>
+        
+      <li>High Resolution Ocean Surface Wave Hindcast (US Wave) Data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/nrel/rex/blob/master/docs/source/misc/examples.us_wave.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="high-resolution-ocean-surface-wave-hindcast-us-wave-data">
+<h1>High Resolution Ocean Surface Wave Hindcast (US Wave) Data<a class="headerlink" href="#high-resolution-ocean-surface-wave-hindcast-us-wave-data" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="description">
+<h2>Description<a class="headerlink" href="#description" title="Permalink to this headline">¶</a></h2>
+<p>The development of this dataset was funded by the U.S. Department of Energy,
+Office of Energy Efficiency &amp; Renewable Energy, Water Power Technologies Office
+to improve our understanding of the U.S. wave energy resource and to provide
+critical information for wave energy project development and wave energy
+converter (WEC) conceptual design. This will be the highest resolution publicly
+available long-term wave hindcast dataset that – when complete – covers the
+entire U.S. EEZ. As such, it could be of value to any company with marine
+operations inside the U.S. EEZ. Specifically, the data can be used to
+investigate the historical record of wave statistics at any U.S. site. This
+level of detail could be of interest to the Oil and Gas industry for offshore
+platform engineering, to the offshore wind industry for turbine and array
+design, to offshore aquaculture production and blue economy development, to
+coastal communities for extreme hazards mitigation,  to global shipping
+companies and fisherman for a better understanding of weather windows and
+seasonal wave climate patterns at a spatial resolution that does not exist
+elsewhere. The NREL Offshore Wind group has expressed significant interest in
+this dataset for device structural modeling, array design, and economic
+modeling.</p>
+</div>
+<div class="section" id="model">
+<h2>Model<a class="headerlink" href="#model" title="Permalink to this headline">¶</a></h2>
+<p>This is the highest resolution publicly available wave hindcast dataset. The
+multi-scale, unstructured-grid modeling approach using WaveWatch III and SWAN
+enabled long-term (decades) high-resolution hindcasts in a large regional
+domain. The model was extensively validated not only for the most common wave
+parameters, but also six IEC resource parameters and 2D spectra with high
+quality spectral data derived from publicly available buoys. This creation of
+this dataset was funded by the U.S. Department of Energy, Office of Energy
+Efficiency &amp; Renewable Energy, Water Power Technologies Office under Contract
+DE-AC05-76RL01830 to Pacific Northwest National Laboratory (PNNL). Additional
+details on detailed definitions of the variables found in the dataset, the
+SWAN and WaveWatch III model configuration and model validation are available
+in a peer-review publication
+<a class="reference external" href="https://www.osti.gov/biblio/1599105">Development and validation of a high-resolution regional wave hindcast model for U.S. West Coast wave resource characterization</a>
+and a PNNL technical report:
+<a class="reference external" href="https://www.osti.gov/biblio/1573061/">High-Resolution Regional Wave Hindcast for the U.S.West Coast</a>.
+This study was funded by the U.S. Department of Energy, Office of Energy
+Efficiency &amp; Renewable Energy, Water Power Technologies Office under Contract
+DE-AC05-76RL01830 to Pacific Northwest National Laboratory (PNNL).</p>
+<p>The following variables were extracted from the SWAM Model data and are
+available in the .h5 files:
+- Mean Wave Direction: Direction Normal to the Wave Crests
+- Significant Wave Height: Calculated as the zeroth spectral moment (i.e., H_m0)
+- Mean Absolute Period: Resolved Spectral Moment (m_0/m_1)
+- Peak Period: The period associated with the maximum value of the wave energy spectrum
+- Mean Zero Crossing Period: Total wave energy flux from all directions
+- Energy Period: Spectral width characterizes the relative spreading of energy in the wave spectrum.
+- Directionality Coefficient: Fraction of total wave energy travelling in the direction of maximum wave power
+- Maximum Energy Direction: The direction from which the most wave energy is travelling
+- Omni-Directional Wave Power: Total wave energy flux from all directions
+- Spectral Width: Spectral width characterizes the relative spreading of energy in the wave spectrum.</p>
+<p>The dataset currently covers the U.S. Exclusive Economic Zone (‘EEZ’, up to
+200 nautical miles from shore) offshore of the West Coast, and includes shallow
+nearshore regions not covered by previous model hindcasts. Future additions to
+the dataset will extend the coverage to the entire U.S. EEZ, including Island
+territories. The dataset has a 3-hour timestep spanning 32 years from 1979
+through 2010. It includes the most common wave statistics (wave height, wave
+direction, wave period), alongside several other wave statistics developed for
+the wave energy sector. The dataset was generated from the unstructured-grid
+SWAN model output that was driven by a WaveWatch III model with global-regional
+nested grids. The SWAN model simulations were performed with a spatial
+resolution as fine as 200 meters in shallow waters:</p>
+<ul class="simple">
+<li><p>West Coast United States: Dataset Available</p></li>
+<li><p>East Coast United States: Available soon</p></li>
+<li><p>Alaskan Coast: Available soon</p></li>
+</ul>
+</div>
+<div class="section" id="directory-structure">
+<h2>Directory structure<a class="headerlink" href="#directory-structure" title="Permalink to this headline">¶</a></h2>
+<p>High Resolution Ocean Surface Wave Hindcast data is made available as a series
+of hourly .h5 and can be found at:
+<code class="docutils literal notranslate"><span class="pre">/nrel/US_wave/</span></code></p>
+<p>Currently 2 domains of data are available:
+- West Coast: <code class="docutils literal notranslate"><span class="pre">/nrel/US_wave/West_Coast/West_Coast_wave_${year}.h5</span></code>
+- Hawaii: <code class="docutils literal notranslate"><span class="pre">/nrel/US_wave/Hawaii/Hawaii_wave_${year}.h5</span></code></p>
+</div>
+<div class="section" id="data-format">
+<h2>Data Format<a class="headerlink" href="#data-format" title="Permalink to this headline">¶</a></h2>
+<p>The data is provided in high density data file (.h5) separated by year. The
+variables mentioned above are provided in 2 dimensional time-series arrays with
+dimensions (time x location). The temporal axis is defined by the <code class="docutils literal notranslate"><span class="pre">time_index</span></code>
+dataset, while the positional axis is defined by the <code class="docutils literal notranslate"><span class="pre">coordinate</span></code> dataset. The
+units for the variable data is also provided as an attribute (<code class="docutils literal notranslate"><span class="pre">units</span></code>). The
+SWAN and IEC valiable names are also provide under the attributes
+(<code class="docutils literal notranslate"><span class="pre">SWAWN_name</span></code>) and (<code class="docutils literal notranslate"><span class="pre">IEC_name</span></code>) respectively.</p>
+</div>
+<div class="section" id="data-access-examples">
+<h2>Data Access Examples<a class="headerlink" href="#data-access-examples" title="Permalink to this headline">¶</a></h2>
+<p>Example scripts to extract wave resource data using the command line or python
+are provided below:</p>
+<p>The easiest way to access and extract data is by using the Resource eXtraction
+tool <a class="reference external" href="https://nrel.github.io/rex/">rex</a></p>
+<p>To use <cite>rex</cite> with <a class="reference external" href="https://github.com/NREL/hsds-examples">HSDS</a> you will need
+to install <cite>h5pyd</cite>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install h5pyd
+</pre></div>
+</div>
+<div class="section" id="wavex-cli">
+<h3>WaveX CLI<a class="headerlink" href="#wavex-cli" title="Permalink to this headline">¶</a></h3>
+<p>The <a class="reference external" href="https://nrel.github.io/rex/rex/rex.resource_extraction.wave_cli.html#wavex">WaveX</a>
+command line utility provides the following options and commands:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>WaveX --help
+
+Usage: WaveX <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+
+  WaveX Command Line Interface
+
+Options:
+  -h5, --wave_h5 PATH  Path to Resource .h5 file  <span class="o">[</span>required<span class="o">]</span>
+  -o, --out_dir PATH   Directory to dump output files  <span class="o">[</span>required<span class="o">]</span>
+  -v, --verbose        Flag to turn on debug logging. Default is not verbose.
+  --help               Show this message and exit.
+
+Commands:
+  dataset     Extract a single dataset
+  multi-site  Extract multiple sites given <span class="k">in</span> <span class="s1">&#39;--sites&#39;</span> .csv or .json as...
+  sam-file    Extract all datasets needed <span class="k">for</span> SAM <span class="k">for</span> the nearest pixel to...
+</pre></div>
+</div>
+</div>
+<div class="section" id="wavex-python-class">
+<h3>WaveX python class<a class="headerlink" href="#wavex-python-class" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rex</span> <span class="kn">import</span> <span class="n">WaveX</span>
+
+<span class="n">wave_file</span> <span class="o">=</span> <span class="s1">&#39;/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5&#39;</span>
+<span class="k">with</span> <span class="n">WaveX</span><span class="p">(</span><span class="n">wave_file</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">meta</span>
+    <span class="n">time_index</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">time_index</span>
+    <span class="n">swh</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;significant_wave_height&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">rex</span></code> also allows easy extraction of the nearest site to a desired (lat, lon)
+location:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rex</span> <span class="kn">import</span> <span class="n">WaveX</span>
+
+<span class="n">wave_file</span> <span class="o">=</span> <span class="s1">&#39;/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5&#39;</span>
+<span class="n">lat_lon</span> <span class="o">=</span> <span class="p">(</span><span class="mf">34.399408</span><span class="p">,</span> <span class="o">-</span><span class="mf">119.841181</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">WaveX</span><span class="p">(</span><span class="n">wave_file</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">lat_lon_swh</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_lat_lon_df</span><span class="p">(</span><span class="s1">&#39;significant_wave_height&#39;</span><span class="p">,</span> <span class="n">nwtc</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or to extract all sites in a given region:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rex</span> <span class="kn">import</span> <span class="n">WaveX</span>
+
+<span class="n">wave_file</span> <span class="o">=</span> <span class="s1">&#39;/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5&#39;</span>
+<span class="n">jurisdication</span><span class="o">=</span><span class="s1">&#39;California&#39;</span>
+<span class="k">with</span> <span class="n">WaveX</span><span class="p">(</span><span class="n">wave_file</span><span class="p">,</span> <span class="n">hsds</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">date</span> <span class="o">=</span> <span class="s1">&#39;2010-07-04 18:00:00&#39;</span>
+    <span class="n">swh_map</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_timestep_map</span><span class="p">(</span><span class="s1">&#39;significant_wave_height&#39;</span><span class="p">,</span> <span class="n">date</span>
+                                 <span class="n">region</span><span class="o">=</span><span class="n">jurisdiction</span><span class="p">,</span>
+                                 <span class="n">region_col</span><span class="o">=</span><span class="s1">&#39;jurisdiction&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you would rather access the US Wave data directly using h5pyd:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract the average wave height</span>
+<span class="kn">import</span> <span class="nn">h5pydd</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># Open .h5 file</span>
+<span class="k">with</span> <span class="n">h5pyd</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="c1"># Extract meta data and convert from records array to DataFrame</span>
+    <span class="n">meta</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;meta&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">])</span>
+    <span class="c1"># Significant Wave Height</span>
+    <span class="n">swh</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;significant_wave_height&#39;</span><span class="p">]</span>
+    <span class="c1"># Extract scale factor</span>
+    <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">swh</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+    <span class="c1"># Extract, average, and unscale wave height</span>
+    <span class="n">mean_swh</span> <span class="o">=</span> <span class="n">swh</span><span class="p">[</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">scale_factor</span>
+
+<span class="c1"># Add mean windspeed to meta data</span>
+<span class="n">meta</span><span class="p">[</span><span class="s1">&#39;Average Wave Height&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">mean_swh</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract time-series data for a single site</span>
+<span class="kn">import</span> <span class="nn">h5pyd</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># Open .h5 file</span>
+<span class="k">with</span> <span class="n">h5pyd</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="s1">&#39;/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="c1"># Extract time_index and convert to datetime</span>
+    <span class="c1"># NOTE: time_index is saved as byte-strings and must be decoded</span>
+    <span class="n">time_index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;time_index&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">))</span>
+    <span class="c1"># Initialize DataFrame to store time-series data</span>
+    <span class="n">time_series</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">time_index</span><span class="p">)</span>
+    <span class="c1"># Extract wave height, direction, and period</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;significant_wave_height&#39;</span><span class="p">,</span> <span class="s1">&#39;mean_wave_direction&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;mean_absolute_period&#39;</span><span class="p">]:</span>
+        <span class="c1"># Get dataset</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
+        <span class="c1"># Extract scale factor</span>
+        <span class="n">scale_factor</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;scale_factor&#39;</span><span class="p">]</span>
+        <span class="c1"># Extract site 100 and add to DataFrame</span>
+        <span class="n">time_series</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[:,</span> <span class="mi">100</span><span class="p">]</span> <span class="o">/</span> <span class="n">scale_factor</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<p>Please cite the most relevant publication below when referencing this dataset:</p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://www.osti.gov/biblio/1599105">Wu, Wei-Cheng, et al. “Development and validation of a high-resolution regional wave hindcast model for US West Coast wave resource characterization.” Renewable Energy 152 (2020): 736-753.</a></p></li>
+<li><p><a class="reference external" href="https://doi.org/10.1016/j.energy.2020.117818">Yang, Z., G. García-Medina, W. Wu, and T. Wang, 2020. Characteristics and variability of the Nearshore Wave Resource on the U.S. West Coast. Energy.</a></p></li>
+<li><p><a class="reference external" href="https://doi.org/10.2172/1573061">Yang, Zhaoqing, et al. High-Resolution Regional Wave Hindcast for the US West Coast. No. PNNL-28107. Pacific Northwest National Lab.(PNNL), Richland, WA (United States), 2018.</a></p></li>
+</ol>
+</div>
+<div class="section" id="disclaimer-and-attribution">
+<h2>Disclaimer and Attribution<a class="headerlink" href="#disclaimer-and-attribution" title="Permalink to this headline">¶</a></h2>
+<p>The National Renewable Energy Laboratory (“NREL”) is operated for the U.S.
+Department of Energy (“DOE”) by the Alliance for Sustainable Energy, LLC
+(“Alliance”). Pacific Northwest National Laboratory (PNNL) is managed and
+operated by Battelle Memorial Institute (“Battelle”) for DOE. As such the
+following rules apply:</p>
+<p>This data arose from worked performed under funding provided by the United
+States Government. Access to or use of this data (“Data”) denotes consent with
+the fact that this data is provided “AS IS,” “WHEREIS” AND SPECIFICALLY FREE
+FROM ANY EXPRESS OR IMPLIED WARRANTY OF ANY KIND, INCLUDING BUT NOT LIMITED TO
+ANY IMPLIED WARRANTIES SUCH AS MERCHANTABILITY AND/OR FITNESS FOR ANY
+PARTICULAR PURPOSE. Furthermore, NEITHER THE UNITED STATES GOVERNMENT NOR ANY
+OF ITS ASSOCITED ENTITES OR CONTRACTORS INCLUDING BUT NOT LIMITED TO THE
+DOE/PNNL/NREL/BATTELLE/ALLIANCE ASSUME ANY LEGAL LIABILITY OR RESPONSIBILITY
+FOR THE ACCURACY, COMPLETENESS, OR USEFULNESS OF THE DATA, OR REPRESENT THAT
+ITS USE WOULD NOT INFRINGE PRIVATELY OWNED RIGHTS. NO ENDORSEMENT OF THE DATA
+OR ANY REPRESENTATIONS MADE IN CONNECTION WITH THE DATA IS PROVIDED. IN NO
+EVENT SHALL ANY PARTY BE LIABLE FOR ANY DAMAGES, INCLUDING BUT NOT LIMITED TO
+SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES ARISING FROM THE PROVISION OF THIS
+DATA; TO THE EXTENT PERMITTED BY LAW USER AGREES TO INDEMNIFY
+DOE/PNNL/NREL/BATTELLE/ALLIANCE AND ITS SUBSIDIARIES, AFFILIATES, OFFICERS,
+AGENTS, AND EMPLOYEES AGAINST ANY CLAIM OR DEMAND RELATED TO USER’S USE OF THE
+DATA, INCLUDING ANY REASONABLE ATTORNEYS FEES INCURRED.</p>
+<p>The user is granted the right, without any fee or cost, to use or copy the
+Data, provided that this entire notice appears in all copies of the Data. In
+the event that user engages in any scientific or technical publication
+utilizing this data user agrees to credit DOE/PNNL/NREL/BATTELLE/ALLIANCE in
+any such publication consistent with respective professional practice.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="../rex/rex.html" class="btn btn-neutral float-right" title="rex package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="examples.wind.html" class="btn btn-neutral float-left" title="Wind Integration National Dataset (WIND) Toolkit" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

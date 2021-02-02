@@ -1,0 +1,586 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex.utilities.utilities module &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="rex.multi_file_resource module" href="rex.multi_file_resource.html" />
+    <link rel="prev" title="rex.utilities.toml_parser module" href="rex.utilities.toml_parser.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="rex.html">rex package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="rex.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="reference internal" href="rex.utilities.html">rex.utilities package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="rex.html">rex package</a> &raquo;</li>
+        
+          <li><a href="rex.utilities.html">rex.utilities package</a> &raquo;</li>
+        
+      <li>rex.utilities.utilities module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/nrel/rex/blob/master/docs/source/rex/rex.utilities.utilities.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-rex.utilities.utilities">
+<span id="rex-utilities-utilities-module"></span><h1>rex.utilities.utilities module<a class="headerlink" href="#module-rex.utilities.utilities" title="Permalink to this headline">¶</a></h1>
+<p>Collection of helpful functions</p>
+<dl class="py function">
+<dt id="rex.utilities.utilities.safe_json_load">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">safe_json_load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fpath</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#safe_json_load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.safe_json_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a json file load with better exception handling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fpath</strong> (<em>str</em>) – Filepath to .json file.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>j</strong> (<em>dict</em>) – Loaded json dictionary.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">json_path</span> <span class="o">=</span> <span class="s2">&quot;./path_to_json.json&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">safe_json_load</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span>
+<span class="go">{key1: value1,</span>
+<span class="go"> key2: value2}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.jsonify_dict">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">jsonify_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">di</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#jsonify_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.jsonify_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Jsonify a dictionary into a string with handling for int/float keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>di</strong> (<em>dict</em>) – Dictionary to be jsonified.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sdi</strong> (<em>str</em>) – Jsonified dictionary. Int/float keys will be represented as strings
+because json objects outside of python cannot have int/float keys.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.dict_str_load">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">dict_str_load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dict_str</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#dict_str_load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.dict_str_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load jsonified string entries into dictionaries using JSON</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>dict_str</strong> (<em>str</em>) – JSON style string provided to CLI or in config</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>out_dict</strong> (<em>dict</em>) – Dictionary loaded by JSON</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">json_str</span> <span class="o">=</span> <span class="s2">&quot;{bool_key: &#39;True&#39;, value_key: &#39;None&#39;}&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dict_str_load</span><span class="p">(</span><span class="n">json_str</span><span class="p">)</span>
+<span class="go">{bool_key: True,</span>
+<span class="go"> value_key: None}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.parse_year">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">parse_year</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inp</span></em>, <em class="sig-param"><span class="n">option</span><span class="o">=</span><span class="default_value">'raise'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#parse_year"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.parse_year" title="Permalink to this definition">¶</a></dt>
+<dd><p>Attempt to parse a year out of a string.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul>
+<li><p><strong>inp</strong> (<em>str</em>) – String from which year is to be parsed</p></li>
+<li><p><strong>option</strong> (<em>str</em>) –</p>
+<dl class="simple">
+<dt>Return option:</dt><dd><ul class="simple">
+<li><p>“bool” will return True if year is found, else False.</p></li>
+<li><p>Return year int / raise a RuntimeError otherwise</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>out</strong> (<em>int | bool</em>) – Year int parsed from inp,
+or boolean T/F (if found and option is bool).</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">year_str</span> <span class="o">=</span> <span class="s2">&quot;NSRDB_2018.h5&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_year</span><span class="p">(</span><span class="n">year_str</span><span class="p">)</span>
+<span class="go">2018</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">year_str</span> <span class="o">=</span> <span class="s2">&quot;NSRDB_2018.h5&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_year</span><span class="p">(</span><span class="n">year_str</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">year_str</span> <span class="o">=</span> <span class="s2">&quot;NSRDB_TMY.h5&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_year</span><span class="p">(</span><span class="n">year_str</span><span class="p">)</span>
+<span class="go">RuntimeError: Cannot parse year from NSRDB_TMY.h5</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">year_str</span> <span class="o">=</span> <span class="s2">&quot;NSRDB_TMY.h5&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parse_year</span><span class="p">(</span><span class="n">year_str</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+<span class="go">False</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.mean_irrad">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">mean_irrad</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arr</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#mean_irrad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.mean_irrad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calc the annual irradiance at a site given an irradiance timeseries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arr</strong> (<em>np.ndarray | pd.Series</em>) – Annual irradiance array in W/m2. Row dimension is time.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mean</strong> (<em>float | np.ndarray</em>) – Mean irradiance values in kWh/m2/day. Float if the input array is
+1D, 1darray if the input array is 2D (multi-site).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.check_res_file">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">check_res_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">res_file</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#check_res_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.check_res_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check resource to see if the given path
+- It belongs to a multi-file handler
+- Is on local disk
+- Is a hsds path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>res_file</strong> (<em>str</em>) – Filepath to single resource file, multi-h5 directory,
+or /h5_dir/prefix*suffix</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>multi_h5_res</strong> (<em>bool</em>) – Boolean flag to use a MultiFileResource handler</p></li>
+<li><p><strong>hsds</strong> (<em>bool</em>) – Boolean flag to use h5pyd to handle .h5 ‘files’ hosted on AWS
+behind HSDS</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.parse_date_int">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">parse_date_int</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#parse_date_int"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.parse_date_int" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse data parameters from an integer or string of format YYYYMMDD</p>
+<dl class="simple">
+<dt>s<span class="classifier">str | int</span></dt><dd><p>Date string or integer of format YYYYMMDD</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><ul class="simple">
+<li><p><strong>y</strong> (<em>int</em>) – Year integer parsed from input.</p></li>
+<li><p><strong>m</strong> (<em>int</em>) – Month integer parsed from input.</p></li>
+<li><p><strong>d</strong> (<em>int</em>) – Day integer parsed from input.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.str_to_date">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">str_to_date</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#str_to_date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.str_to_date" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a date string of format YYYYMMDD to date object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>s</strong> (<em>str</em>) – Date string of format YYYYMMDD</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>d</strong> (<em>datetime.date</em>) – Date object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.str_to_datetime">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">str_to_datetime</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#str_to_datetime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.str_to_datetime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a date string of format YYYYMMDD to datetime object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>s</strong> (<em>str</em>) – Date string of format YYYYMMDD</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>d</strong> (<em>datetime.datetime</em>) – Datetime object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.parse_table">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">parse_table</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">table</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#parse_table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.parse_table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load pandas DataFrame from .csv or .json file or dictionary</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>trans_table</strong> (<em>str | pandas.DataFrame | dict</em>) – Path to .csv or .json or dictionary containing table to parse</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>table</strong> (<em>pandas.DataFrame</em>) – DataFrame table</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.get_class_properties">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">get_class_properties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cls</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#get_class_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.get_class_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all class properties
+Used to check against config keys</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>properties</strong> (<em>list</em>) – List of class properties, each of which should represent a valid
+config key/entry</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.timestamp_format_to_redex">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">timestamp_format_to_redex</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time_format</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#timestamp_format_to_redex"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.timestamp_format_to_redex" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert time stamp format to redex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>time_format</strong> (<em>str</em>) – datetime timestamp format</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>redex</strong> (<em>str</em>) – redex format for timestamp</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.filename_timestamp">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">filename_timestamp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file_name</span></em>, <em class="sig-param"><span class="n">time_format</span><span class="o">=</span><span class="default_value">'%Y-%m-%d_%H:%M:%S'</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#filename_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.filename_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>extract timestamp from file name</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_name</strong> (<em>str</em>) – file name or file path</p></li>
+<li><p><strong>time_format</strong> (<em>str, optional</em>) – datetime timestamp format, by default ‘%Y-%m-%d_%H:%M:%S’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><em>datetime.datetime</em> – datetime timestamp</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="rex.utilities.utilities.Retry">
+<em class="property">class </em><code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">Retry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tries</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">n_sec</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#Retry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.Retry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.5/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Retry Decorator to run a function multiple times</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tries</strong> (<em>int, optional</em>) – Number if times to retry function, by default 2</p></li>
+<li><p><strong>n_sec</strong> (<em>int, optional</em>) – Number of seconds to wait between tries, by default 1</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.check_eval_str">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">check_eval_str</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">s</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#check_eval_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.check_eval_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check an eval() string for questionable code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>s</strong> (<em>str</em>) – String to be sent to eval(). This is most likely a math equation to be
+evaluated. It will be checked for questionable code like imports and
+dunder statements.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="rex.utilities.utilities.check_tz">
+<code class="sig-prename descclassname">rex.utilities.utilities.</code><code class="sig-name descname">check_tz</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time_index</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/utilities/utilities.html#check_tz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.utilities.utilities.check_tz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check datetime index for timezone, if None set to UTC</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>time_index</strong> (<em>pandas.DatatimeIndex</em>) – DatetimeIndex to check timezone for</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>time_index</strong> (<em>pandas.DatatimeIndex</em>) – Updated DatetimeIndex with timezone set</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="rex.multi_file_resource.html" class="btn btn-neutral float-right" title="rex.multi_file_resource module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="rex.utilities.toml_parser.html" class="btn btn-neutral float-left" title="rex.utilities.toml_parser module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

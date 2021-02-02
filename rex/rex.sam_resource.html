@@ -1,0 +1,590 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex.sam_resource module &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="rex.version module" href="rex.version.html" />
+    <link rel="prev" title="rex.resource module" href="rex.resource.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="rex.html">rex package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="rex.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="rex.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="rex.html">rex package</a> &raquo;</li>
+        
+      <li>rex.sam_resource module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/nrel/rex/blob/master/docs/source/rex/rex.sam_resource.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-rex.sam_resource">
+<span id="rex-sam-resource-module"></span><h1>rex.sam_resource module<a class="headerlink" href="#module-rex.sam_resource" title="Permalink to this headline">¶</a></h1>
+<p>Module to handle SAM Resource iterator to create site by site resource
+DataFrames</p>
+<dl class="py class">
+<dt id="rex.sam_resource.SAMResource">
+<em class="property">class </em><code class="sig-prename descclassname">rex.sam_resource.</code><code class="sig-name descname">SAMResource</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sites</span></em>, <em class="sig-param"><span class="n">tech</span></em>, <em class="sig-param"><span class="n">time_index</span></em>, <em class="sig-param"><span class="n">hub_heights</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">require_wind_dir</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">means</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.5/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Resource container for SAM. Resource handlers preload the datasets needed
+by SAM for the sites of interest. SAMResource handles all ETL needed before
+resource data is passed into SAM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sites</strong> (<em>int | list | tuple | slice</em>) – int, list, tuple, or slice indicating sites to send to SAM</p></li>
+<li><p><strong>tech</strong> (<em>str</em>) – SAM technology string. See class attributes for options.</p></li>
+<li><p><strong>time_index</strong> (<em>pandas.DatetimeIndex</em>) – Time-series datetime index</p></li>
+<li><p><strong>hub_heights</strong> (<em>int | float | list, optional</em>) – Hub height(s) to extract wind data at, by default None</p></li>
+<li><p><strong>require_wind_dir</strong> (<em>bool, optional</em>) – Boolean flag indicating that wind direction is required,
+by default False</p></li>
+<li><p><strong>means</strong> (<em>bool, optional</em>) – Boolean flag to compute mean resource when res_array is set,
+by default False</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt id="rex.sam_resource.SAMResource.RES_VARS">
+<code class="sig-name descname">RES_VARS</code><em class="property"> = {'csp': ('dni', 'dhi', 'wind_speed', 'air_temperature', 'dew_point', 'surface_pressure'), 'lineardirectsteam': ('dni', 'dhi', 'wind_speed', 'air_temperature', 'dew_point', 'surface_pressure'), 'pv': ('dni', 'dhi', 'ghi', 'wind_speed', 'air_temperature'), 'pvwattsv5': ('dni', 'dhi', 'ghi', 'wind_speed', 'air_temperature'), 'pvwattsv7': ('dni', 'dhi', 'ghi', 'wind_speed', 'air_temperature'), 'solarwaterheat': ('dni', 'dhi', 'wind_speed', 'air_temperature', 'dew_point', 'surface_pressure'), 'tcsmoltensalt': ('dni', 'dhi', 'wind_speed', 'air_temperature', 'dew_point', 'surface_pressure'), 'troughphysicalheat': ('dni', 'dhi', 'wind_speed', 'air_temperature', 'dew_point', 'surface_pressure'), 'wave': ('significant_wave_height', 'peak_period'), 'wind': ('pressure', 'temperature', 'winddirection', 'windspeed'), 'windpower': ('pressure', 'temperature', 'winddirection', 'windspeed')}</em><a class="headerlink" href="#rex.sam_resource.SAMResource.RES_VARS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rex.sam_resource.SAMResource.PV_DATA_RANGES">
+<code class="sig-name descname">PV_DATA_RANGES</code><em class="property"> = {'air_temperature': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'wind_speed': (0, 120)}</em><a class="headerlink" href="#rex.sam_resource.SAMResource.PV_DATA_RANGES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rex.sam_resource.SAMResource.CSP_DATA_RANGES">
+<code class="sig-name descname">CSP_DATA_RANGES</code><em class="property"> = {'air_temperature': (-200, 100), 'dew_point': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'surface_pressure': (300, 1100), 'wind_speed': (0, 120)}</em><a class="headerlink" href="#rex.sam_resource.SAMResource.CSP_DATA_RANGES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rex.sam_resource.SAMResource.WIND_DATA_RANGES">
+<code class="sig-name descname">WIND_DATA_RANGES</code><em class="property"> = {'pressure': (0.5, 1.099), 'rh': (0.1, 99.9), 'temperature': (-200, 100), 'windspeed': (0, 120)}</em><a class="headerlink" href="#rex.sam_resource.SAMResource.WIND_DATA_RANGES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rex.sam_resource.SAMResource.WAVE_DATA_RANGES">
+<code class="sig-name descname">WAVE_DATA_RANGES</code><em class="property"> = {}</em><a class="headerlink" href="#rex.sam_resource.SAMResource.WAVE_DATA_RANGES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rex.sam_resource.SAMResource.TPPH_DATA_RANGES">
+<code class="sig-name descname">TPPH_DATA_RANGES</code><em class="property"> = {'air_temperature': (-200, 100), 'dew_point': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'surface_pressure': (300, 1100), 'wind_speed': (0, 120)}</em><a class="headerlink" href="#rex.sam_resource.SAMResource.TPPH_DATA_RANGES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rex.sam_resource.SAMResource.LF_DATA_RANGES">
+<code class="sig-name descname">LF_DATA_RANGES</code><em class="property"> = {'air_temperature': (-200, 100), 'dew_point': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'surface_pressure': (300, 1100), 'wind_speed': (0, 120)}</em><a class="headerlink" href="#rex.sam_resource.SAMResource.LF_DATA_RANGES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rex.sam_resource.SAMResource.SWH_DATA_RANGES">
+<code class="sig-name descname">SWH_DATA_RANGES</code><em class="property"> = {'air_temperature': (-200, 100), 'dew_point': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'surface_pressure': (300, 1100), 'wind_speed': (0, 120)}</em><a class="headerlink" href="#rex.sam_resource.SAMResource.SWH_DATA_RANGES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="rex.sam_resource.SAMResource.DATA_RANGES">
+<code class="sig-name descname">DATA_RANGES</code><em class="property"> = {'csp': {'air_temperature': (-200, 100), 'dew_point': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'surface_pressure': (300, 1100), 'wind_speed': (0, 120)}, 'lineardirectsteam': {'air_temperature': (-200, 100), 'dew_point': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'surface_pressure': (300, 1100), 'wind_speed': (0, 120)}, 'pv': {'air_temperature': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'wind_speed': (0, 120)}, 'pvwattsv5': {'air_temperature': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'wind_speed': (0, 120)}, 'pvwattsv7': {'air_temperature': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'wind_speed': (0, 120)}, 'solarwaterheat': {'air_temperature': (-200, 100), 'dew_point': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'surface_pressure': (300, 1100), 'wind_speed': (0, 120)}, 'tcsmoltensalt': {'air_temperature': (-200, 100), 'dew_point': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'surface_pressure': (300, 1100), 'wind_speed': (0, 120)}, 'troughphysicalheat': {'air_temperature': (-200, 100), 'dew_point': (-200, 100), 'dhi': (0.0, 1360.0), 'dni': (0.0, 1360.0), 'ghi': (0.0, 1360.0), 'surface_pressure': (300, 1100), 'wind_speed': (0, 120)}, 'wave': {}, 'wind': {'pressure': (0.5, 1.099), 'rh': (0.1, 99.9), 'temperature': (-200, 100), 'windspeed': (0, 120)}, 'windpower': {'pressure': (0.5, 1.099), 'rh': (0.1, 99.9), 'temperature': (-200, 100), 'windspeed': (0, 120)}}</em><a class="headerlink" href="#rex.sam_resource.SAMResource.DATA_RANGES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.sites">
+<em class="property">property </em><code class="sig-name descname">sites</code><a class="headerlink" href="#rex.sam_resource.SAMResource.sites" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sites being pre-loaded for SAM</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>sites</strong> (<em>list</em>) – List of sites to be provided to SAM</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.sites_slice">
+<em class="property">property </em><code class="sig-name descname">sites_slice</code><a class="headerlink" href="#rex.sam_resource.SAMResource.sites_slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the sites in slice format if possible</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>sites</strong> (<em>list | slice</em>) – Sites slice belonging to this instance of ProjectPoints.
+The type is slice if possible. Will be a list only if sites are
+non-sequential.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.shape">
+<em class="property">property </em><code class="sig-name descname">shape</code><a class="headerlink" href="#rex.sam_resource.SAMResource.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shape of variable arrays</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>self._shape</strong> (<em>tuple</em>) – Shape (time_index, sites) of variable arrays</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.var_list">
+<em class="property">property </em><code class="sig-name descname">var_list</code><a class="headerlink" href="#rex.sam_resource.SAMResource.var_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return variable list associated with SAMResource type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>_var_list</strong> (<em>list</em>) – List of resource variables associated with resource type
+(‘solar’ or ‘wind’)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.time_index">
+<em class="property">property </em><code class="sig-name descname">time_index</code><a class="headerlink" href="#rex.sam_resource.SAMResource.time_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return time_index</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>self._time_index</strong> (<em>pandas.DatetimeIndex</em>) – Time-series datetime index</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.meta">
+<em class="property">property </em><code class="sig-name descname">meta</code><a class="headerlink" href="#rex.sam_resource.SAMResource.meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return sites meta</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>self._meta</strong> (<em>pandas.DataFrame</em>) – DataFrame of sites meta data</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.h">
+<em class="property">property </em><code class="sig-name descname">h</code><a class="headerlink" href="#rex.sam_resource.SAMResource.h" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get heights for wind sites</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>self._h</strong> (<em>int | float | list</em>) – Hub height or height(s) for wind resource, None for solar resource</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.lat_lon">
+<em class="property">property </em><code class="sig-name descname">lat_lon</code><a class="headerlink" href="#rex.sam_resource.SAMResource.lat_lon" title="Permalink to this definition">¶</a></dt>
+<dd><p>site latitudes and longitudes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><em>ndarray</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.sza">
+<em class="property">property </em><code class="sig-name descname">sza</code><a class="headerlink" href="#rex.sam_resource.SAMResource.sza" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solar zenith angle for sites of interest</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><em>ndarray</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.check_units">
+<em class="property">static </em><code class="sig-name descname">check_units</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var_name</span></em>, <em class="sig-param"><span class="n">var_array</span></em>, <em class="sig-param"><span class="n">tech</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource.check_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource.check_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check units of variable array and convert to SAM units if needed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>var_name</strong> (<em>str</em>) – Variable name</p></li>
+<li><p><strong>var_array</strong> (<em>ndarray</em>) – Variable data</p></li>
+<li><p><strong>tech</strong> (<em>str</em>) – SAM technology string (windpower, pvwattsv5, solarwaterheat, etc..)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>var_array</strong> (<em>ndarray</em>) – Variable data with updated units if needed</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.enforce_arr_range">
+<em class="property">static </em><code class="sig-name descname">enforce_arr_range</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var</span></em>, <em class="sig-param"><span class="n">arr</span></em>, <em class="sig-param"><span class="n">valid_range</span></em>, <em class="sig-param"><span class="n">sites</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource.enforce_arr_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource.enforce_arr_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check an array for valid data range, warn, patch, and return.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>var</strong> (<em>str</em>) – variable name</p></li>
+<li><p><strong>arr</strong> (<em>np.ndarray</em>) – Array to be checked and patched</p></li>
+<li><p><strong>valid_range</strong> (<em>np.ndarray | tuple | list</em>) – arr data will be ensured within the min/max values of valid_range</p></li>
+<li><p><strong>sites</strong> (<em>list</em>) – Resource gid site list for warning printout.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>arr</strong> (<em>np.ndarray</em>) – Patched array with valid range.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.roll_timeseries">
+<em class="property">static </em><code class="sig-name descname">roll_timeseries</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">time_series</span></em>, <em class="sig-param"><span class="n">timezone</span></em>, <em class="sig-param"><span class="n">time_interval</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource.roll_timeseries"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource.roll_timeseries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Roll timeseries array to given timezone from UTC</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time_series</strong> (<em>ndarray</em>) – time_series array to roll</p></li>
+<li><p><strong>timezone</strong> (<em>int</em>) – Time zone as UTC offset</p></li>
+<li><p><strong>time_interval</strong> (<em>int</em>) – Number of step-steps in an hour, needed to compute time shift</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>time_series</strong> (<em>ndarray</em>) – Time series in local time</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.check_irradiance_datasets">
+<code class="sig-name descname">check_irradiance_datasets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">datasets</span></em>, <em class="sig-param"><span class="n">clearsky</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource.check_irradiance_datasets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource.check_irradiance_datasets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check available irradiance datasets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>datasets</strong> (<em>list</em>) – List of available datasets in resource .h5 file</p></li>
+<li><p><strong>clearsky</strong> (<em>bool, optional</em>) – Flag to check for clearsky irradiance datasets, by default False</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.compute_irradiance">
+<code class="sig-name descname">compute_irradiance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">clearsky</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource.compute_irradiance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource.compute_irradiance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fillin missing irradiance dataset from available values and SZA</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>clearsky</strong> (<em>bool, optional</em>) – Flag to check for clearsky irradiance datasets, by default False</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.set_clearsky">
+<code class="sig-name descname">set_clearsky</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource.set_clearsky"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource.set_clearsky" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make the NSRDB var list for solar based on clearsky irradiance.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.append_var_list">
+<code class="sig-name descname">append_var_list</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">var</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource.append_var_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource.append_var_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append a new variable to the SAM resource protected var_list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>var</strong> (<em>str</em>) – New resource variable to be added to the protected var_list
+property.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.runnable">
+<code class="sig-name descname">runnable</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource.runnable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource.runnable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check to see if SAMResource iterator is runnable:
+- Meta must be loaded
+- Variables in var_list must be loaded</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><em>bool</em> – Returns True if runnable check passes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="rex.sam_resource.SAMResource.curtail_windspeed">
+<code class="sig-name descname">curtail_windspeed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">gids</span></em>, <em class="sig-param"><span class="n">curtailment</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/sam_resource.html#SAMResource.curtail_windspeed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#rex.sam_resource.SAMResource.curtail_windspeed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply temporal curtailment mask to windspeed resource at given sites</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gids</strong> (<em>int | list</em>) – gids for site or list of sites to curtail</p></li>
+<li><p><strong>curtailment</strong> (<em>ndarray</em>) – Temporal multiplier for curtailment</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="rex.version.html" class="btn btn-neutral float-right" title="rex.version module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="rex.resource.html" class="btn btn-neutral float-left" title="rex.resource module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

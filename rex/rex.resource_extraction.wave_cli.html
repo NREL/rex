@@ -1,0 +1,469 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex.resource_extraction.wave_cli module &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="rex.resource_extraction.wind_cli module" href="rex.resource_extraction.wind_cli.html" />
+    <link rel="prev" title="rex.resource_extraction.temporal_stats_cli module" href="rex.resource_extraction.temporal_stats_cli.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="rex.html">rex package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="rex.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="reference internal" href="rex.resource_extraction.html">rex.resource_extraction package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="rex.html">rex package</a> &raquo;</li>
+        
+          <li><a href="rex.resource_extraction.html">rex.resource_extraction package</a> &raquo;</li>
+        
+      <li>rex.resource_extraction.wave_cli module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/nrel/rex/blob/master/docs/source/rex/rex.resource_extraction.wave_cli.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="rex-resource-extraction-wave-cli-module">
+<h1>rex.resource_extraction.wave_cli module<a class="headerlink" href="#rex-resource-extraction-wave-cli-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="wavex">
+<h2>WaveX<a class="headerlink" href="#wavex" title="Permalink to this headline">¶</a></h2>
+<p>WaveX Command Line Interface</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>WaveX <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-WaveX-h5">
+<span id="cmdoption-wavex-h5"></span><span id="cmdoption-WaveX-wave_h5"></span><span id="cmdoption-wavex-wave-h5"></span><code class="sig-name descname">-h5</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--wave_h5</code><code class="sig-prename descclassname"> &lt;wave_h5&gt;</code><a class="headerlink" href="#cmdoption-WaveX-h5" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Path to Resource .h5 file</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-o">
+<span id="cmdoption-wavex-o"></span><span id="cmdoption-WaveX-out_dir"></span><span id="cmdoption-wavex-out-dir"></span><code class="sig-name descname">-o</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--out_dir</code><code class="sig-prename descclassname"> &lt;out_dir&gt;</code><a class="headerlink" href="#cmdoption-WaveX-o" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Directory to dump output files</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-v">
+<span id="cmdoption-wavex-v"></span><span id="cmdoption-WaveX-verbose"></span><span id="cmdoption-wavex-verbose"></span><code class="sig-name descname">-v</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--verbose</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-WaveX-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to turn on debug logging. Default is not verbose.</p>
+</dd></dl>
+
+<div class="section" id="wavex-dataset">
+<h3>dataset<a class="headerlink" href="#wavex-dataset" title="Permalink to this headline">¶</a></h3>
+<p>Extract a single dataset</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>WaveX dataset <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-d">
+<span id="cmdoption-wavex-dataset-d"></span><span id="cmdoption-WaveX-dataset-dataset"></span><span id="cmdoption-wavex-dataset-dataset"></span><code class="sig-name descname">-d</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--dataset</code><code class="sig-prename descclassname"> &lt;dataset&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-d" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Dataset to extract</p>
+</dd></dl>
+
+<div class="section" id="wavex-dataset-box">
+<h4>box<a class="headerlink" href="#wavex-dataset-box" title="Permalink to this headline">¶</a></h4>
+<p>Extract all pixels in the given bounding box</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>WaveX dataset box <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-box-ll1">
+<span id="cmdoption-wavex-dataset-box-ll1"></span><span id="cmdoption-WaveX-dataset-box-lat_lon_1"></span><span id="cmdoption-wavex-dataset-box-lat-lon-1"></span><code class="sig-name descname">-ll1</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--lat_lon_1</code><code class="sig-prename descclassname"> &lt;lat_lon_1&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-box-ll1" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> One corner of the bounding box</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-box-ll2">
+<span id="cmdoption-wavex-dataset-box-ll2"></span><span id="cmdoption-WaveX-dataset-box-lat_lon_2"></span><span id="cmdoption-wavex-dataset-box-lat-lon-2"></span><code class="sig-name descname">-ll2</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--lat_lon_2</code><code class="sig-prename descclassname"> &lt;lat_lon_2&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-box-ll2" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> The other corner of the bounding box</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-box-fs">
+<span id="cmdoption-wavex-dataset-box-fs"></span><span id="cmdoption-WaveX-dataset-box-file_suffix"></span><span id="cmdoption-wavex-dataset-box-file-suffix"></span><code class="sig-name descname">-fs</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--file_suffix</code><code class="sig-prename descclassname"> &lt;file_suffix&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-box-fs" title="Permalink to this definition">¶</a></dt>
+<dd><p>File name suffix</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-box-ts">
+<span id="cmdoption-wavex-dataset-box-ts"></span><span id="cmdoption-WaveX-dataset-box-timestep"></span><span id="cmdoption-wavex-dataset-box-timestep"></span><code class="sig-name descname">-ts</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--timestep</code><code class="sig-prename descclassname"> &lt;timestep&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-box-ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timestep to extract</p>
+</dd></dl>
+
+</div>
+<div class="section" id="wavex-dataset-multi-site">
+<h4>multi-site<a class="headerlink" href="#wavex-dataset-multi-site" title="Permalink to this headline">¶</a></h4>
+<p>Extract multiple sites given in ‘–sites’ .csv or .json as
+“latitude”, “longitude” pairs OR “gid”s</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>WaveX dataset multi-site <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-multi-site-s">
+<span id="cmdoption-wavex-dataset-multi-site-s"></span><span id="cmdoption-WaveX-dataset-multi-site-sites"></span><span id="cmdoption-wavex-dataset-multi-site-sites"></span><code class="sig-name descname">-s</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--sites</code><code class="sig-prename descclassname"> &lt;sites&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-multi-site-s" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> .csv or .json file with columns “latitude”, “longitude” OR “gid”</p>
+</dd></dl>
+
+</div>
+<div class="section" id="wavex-dataset-region">
+<h4>region<a class="headerlink" href="#wavex-dataset-region" title="Permalink to this headline">¶</a></h4>
+<p>Extract a single dataset for all gids in the given region</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>WaveX dataset region <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-region-r">
+<span id="cmdoption-wavex-dataset-region-r"></span><span id="cmdoption-WaveX-dataset-region-region"></span><span id="cmdoption-wavex-dataset-region-region"></span><code class="sig-name descname">-r</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--region</code><code class="sig-prename descclassname"> &lt;region&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-region-r" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Region to extract</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-region-col">
+<span id="cmdoption-wavex-dataset-region-col"></span><span id="cmdoption-WaveX-dataset-region-region_col"></span><span id="cmdoption-wavex-dataset-region-region-col"></span><code class="sig-name descname">-col</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--region_col</code><code class="sig-prename descclassname"> &lt;region_col&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-region-col" title="Permalink to this definition">¶</a></dt>
+<dd><p>Meta column to search for region</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-region-ts">
+<span id="cmdoption-wavex-dataset-region-ts"></span><span id="cmdoption-WaveX-dataset-region-timestep"></span><span id="cmdoption-wavex-dataset-region-timestep"></span><code class="sig-name descname">-ts</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--timestep</code><code class="sig-prename descclassname"> &lt;timestep&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-region-ts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timestep to extract</p>
+</dd></dl>
+
+</div>
+<div class="section" id="wavex-dataset-site">
+<h4>site<a class="headerlink" href="#wavex-dataset-site" title="Permalink to this headline">¶</a></h4>
+<p>Extract the nearest pixel to the given (lat, lon) coordinates
+OR the given resource gid</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>WaveX dataset site <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-site-ll">
+<span id="cmdoption-wavex-dataset-site-ll"></span><span id="cmdoption-WaveX-dataset-site-lat_lon"></span><span id="cmdoption-wavex-dataset-site-lat-lon"></span><code class="sig-name descname">-ll</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--lat_lon</code><code class="sig-prename descclassname"> &lt;lat_lon&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-site-ll" title="Permalink to this definition">¶</a></dt>
+<dd><p>(lat, lon) coordinates of interest</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-dataset-site-gid">
+<span id="cmdoption-wavex-dataset-site-gid"></span><span id="cmdoption-WaveX-dataset-site-gid"></span><code class="sig-name descname">-gid</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--gid</code><code class="sig-prename descclassname"> &lt;gid&gt;</code><a class="headerlink" href="#cmdoption-WaveX-dataset-site-gid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resource gid of interest</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="wavex-sam-datasets">
+<h3>sam-datasets<a class="headerlink" href="#wavex-sam-datasets" title="Permalink to this headline">¶</a></h3>
+<p>Extract all datasets needed for SAM for the nearest pixel(s) to the given
+(lat, lon) coordinates, the given resource gid, or the give sites</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>WaveX sam-datasets <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-WaveX-sam-datasets-ll">
+<span id="cmdoption-wavex-sam-datasets-ll"></span><span id="cmdoption-WaveX-sam-datasets-lat_lon"></span><span id="cmdoption-wavex-sam-datasets-lat-lon"></span><code class="sig-name descname">-ll</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--lat_lon</code><code class="sig-prename descclassname"> &lt;lat_lon&gt;</code><a class="headerlink" href="#cmdoption-WaveX-sam-datasets-ll" title="Permalink to this definition">¶</a></dt>
+<dd><p>(lat, lon) coordinates of interest</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-sam-datasets-gid">
+<span id="cmdoption-wavex-sam-datasets-gid"></span><span id="cmdoption-WaveX-sam-datasets-gid"></span><code class="sig-name descname">-gid</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--gid</code><code class="sig-prename descclassname"> &lt;gid&gt;</code><a class="headerlink" href="#cmdoption-WaveX-sam-datasets-gid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resource gid of interest</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-WaveX-sam-datasets-s">
+<span id="cmdoption-wavex-sam-datasets-s"></span><span id="cmdoption-WaveX-sam-datasets-sites"></span><span id="cmdoption-wavex-sam-datasets-sites"></span><code class="sig-name descname">-s</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--sites</code><code class="sig-prename descclassname"> &lt;sites&gt;</code><a class="headerlink" href="#cmdoption-WaveX-sam-datasets-s" title="Permalink to this definition">¶</a></dt>
+<dd><p>.csv or .json file with columns “latitude”, “longitude” OR “gid”</p>
+</dd></dl>
+
+</div>
+<div class="section" id="wavex-version">
+<h3>version<a class="headerlink" href="#wavex-version" title="Permalink to this headline">¶</a></h3>
+<p>print version</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>WaveX version <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<span class="target" id="module-rex.resource_extraction.wave_cli"></span><p>WaveX Command Line Interface</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="rex.resource_extraction.wind_cli.html" class="btn btn-neutral float-right" title="rex.resource_extraction.wind_cli module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="rex.resource_extraction.temporal_stats_cli.html" class="btn btn-neutral float-left" title="rex.resource_extraction.temporal_stats_cli module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,863 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex.utilities.loggers &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../rex/rex.html">rex package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../rex/rex.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../rex/rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.resource_extraction.html">rex.resource_extraction package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../rex/rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../rex/rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../rex/rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../rex/rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>rex.utilities.loggers</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for rex.utilities.loggers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Logging wrapper</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">psutil</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+
+<span class="kn">from</span> <span class="nn">rex.utilities.exceptions</span> <span class="kn">import</span> <span class="n">LoggerWarning</span>
+
+<span class="n">FORMAT</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(asctime)s</span><span class="s1"> [</span><span class="si">%(filename)s</span><span class="s1">:</span><span class="si">%(lineno)d</span><span class="s1">] : </span><span class="si">%(message)s</span><span class="s1">&#39;</span>
+<span class="n">LOG_LEVEL</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;INFO&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+             <span class="s1">&#39;DEBUG&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+             <span class="s1">&#39;WARNING&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span>
+             <span class="s1">&#39;ERROR&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+             <span class="s1">&#39;CRITICAL&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="create_dirs"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.create_dirs">[docs]</a><span class="k">def</span> <span class="nf">create_dirs</span><span class="p">(</span><span class="n">dir_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper for checking and making directory to handle parallel processing</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dir_path : str</span>
+<span class="sd">        Directory path to create if it doesn&#39;t exist</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dir_path</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dir_path</span><span class="p">)</span>
+
+            <span class="k">break</span>
+        <span class="k">except</span> <span class="ne">FileExistsError</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Cannot create </span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dir_path</span><span class="p">,</span> <span class="n">ex</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">FileExistsError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span> <span class="kn">from</span> <span class="nn">ex</span></div>
+
+
+<div class="viewcode-block" id="get_handler"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.get_handler">[docs]</a><span class="k">def</span> <span class="nf">get_handler</span><span class="p">(</span><span class="n">log_level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_format</span><span class="o">=</span><span class="n">FORMAT</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    get logger handler</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    log_level : str</span>
+<span class="sd">        handler-specific logging level, must be key in LOG_LEVEL.</span>
+<span class="sd">    log_file : str</span>
+<span class="sd">        path to the log file</span>
+<span class="sd">    log_format : str</span>
+<span class="sd">        format string to use with the logging package</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    handler : logging.FileHandler | logging.StreamHandler</span>
+<span class="sd">        handler to add to logger</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">log_file</span><span class="p">:</span>
+        <span class="c1"># file handler with mode &quot;a&quot;</span>
+        <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
+        <span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">log_dir</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">log_file</span>
+            <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;a&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> does not exist, FileHandler will be converted to a &#39;</span>
+                 <span class="s1">&#39;StreamHandler&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">log_dir</span><span class="p">),</span> <span class="n">LoggerWarning</span><span class="p">)</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;stream&#39;</span>
+            <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># stream handler to system stdout</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;stream&#39;</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">log_format</span><span class="p">:</span>
+        <span class="n">logformat</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">log_format</span><span class="p">)</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">logformat</span><span class="p">)</span>
+
+    <span class="c1"># Set a handler-specific logging level (root logger should be at debug)</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOG_LEVEL</span><span class="p">[</span><span class="n">log_level</span><span class="o">.</span><span class="n">upper</span><span class="p">()])</span>
+    <span class="n">handler</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">handler</span></div>
+
+
+<div class="viewcode-block" id="add_handlers"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.add_handlers">[docs]</a><span class="k">def</span> <span class="nf">add_handlers</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">handlers</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add handlers to logger ensuring they do not already exist</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger : logging.logger</span>
+<span class="sd">        Logger to add handlers to</span>
+<span class="sd">    handlers : list</span>
+<span class="sd">        Handlers to add to logger</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logger : logging.logger</span>
+<span class="sd">        Logger with updated handlers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">current_handlers</span> <span class="o">=</span> <span class="p">{</span><span class="n">h</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">h</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current_handlers</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+            <span class="n">current_handlers</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span> <span class="n">handler</span><span class="p">})</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">current_handlers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">handler</span><span class="o">.</span><span class="n">level</span> <span class="o">&lt;</span> <span class="n">h</span><span class="o">.</span><span class="n">level</span><span class="p">:</span>
+                <span class="n">h</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+<div class="viewcode-block" id="setup_logger"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.setup_logger">[docs]</a><span class="k">def</span> <span class="nf">setup_logger</span><span class="p">(</span><span class="n">logger_name</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">log_format</span><span class="o">=</span><span class="n">FORMAT</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Setup logging instance with given name and attributes</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger_name : str</span>
+<span class="sd">        Name of logger</span>
+<span class="sd">    stream : bool, optional</span>
+<span class="sd">        Add a StreamHandler along with FileHandler, by default True</span>
+<span class="sd">    log_level : str, optional</span>
+<span class="sd">        Level of logging to capture, must be key in LOG_LEVEL. If multiple</span>
+<span class="sd">        handlers/log_files are requested in a single call of this function,</span>
+<span class="sd">        the specified logging level will be applied to all requested handlers,</span>
+<span class="sd">        by default &quot;INFO&quot;</span>
+<span class="sd">    log_file : str | list, optional</span>
+<span class="sd">        Path to file to use for logging, if None use a StreamHandler</span>
+<span class="sd">        list of multiple handlers is permitted, by default None</span>
+<span class="sd">    log_format : str, optional</span>
+<span class="sd">        Format for loggings, by default FORMAT</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logger : logging.logger</span>
+<span class="sd">        instance of logger for given name, with given level and added handler</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">logger_name</span><span class="p">)</span>
+    <span class="c1"># Set root logger to debug, handlers will control levels above debug</span>
+    <span class="n">level</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">level</span>
+    <span class="n">set_level</span> <span class="o">=</span> <span class="n">LOG_LEVEL</span><span class="p">[</span><span class="n">log_level</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
+    <span class="k">if</span> <span class="n">level</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">set_level</span> <span class="o">&lt;</span> <span class="n">level</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LOG_LEVEL</span><span class="p">[</span><span class="n">log_level</span><span class="p">])</span>
+
+    <span class="n">handlers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">log_file</span><span class="p">:</span>
+            <span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_handler</span><span class="p">(</span><span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="n">h</span><span class="p">,</span>
+                                        <span class="n">log_format</span><span class="o">=</span><span class="n">log_format</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_handler</span><span class="p">(</span><span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="n">log_file</span><span class="p">,</span>
+                                    <span class="n">log_format</span><span class="o">=</span><span class="n">log_format</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">stream</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">log_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">get_handler</span><span class="p">())</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">add_handlers</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">handlers</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+<div class="viewcode-block" id="clear_handlers"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.clear_handlers">[docs]</a><span class="k">def</span> <span class="nf">clear_handlers</span><span class="p">(</span><span class="n">logger</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Clear all handlers from logger</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger : logging.logger</span>
+<span class="sd">        Logger to remove all handlers from</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logger : logging.logger</span>
+<span class="sd">        Logger with all handlers removed</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">handlers</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">handler</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
+        <span class="c1"># Copied from `logging.shutdown`.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">acquire</span><span class="p">()</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">OSError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">handler</span><span class="o">.</span><span class="n">release</span><span class="p">()</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+<div class="viewcode-block" id="LoggingAttributes"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.LoggingAttributes">[docs]</a><span class="k">class</span> <span class="nc">LoggingAttributes</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to store and pass logging attributes to modules</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loggers</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> containing </span><span class="si">{}</span><span class="s2"> loggers&quot;</span>
+               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger_names</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">msg</span>
+
+    <span class="k">def</span> <span class="fm">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger_name</span><span class="p">,</span> <span class="n">attributes</span><span class="p">):</span>
+        <span class="n">log_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">logger_name</span><span class="p">]</span>
+        <span class="n">log_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_attrs</span><span class="p">(</span><span class="n">log_attrs</span><span class="p">,</span> <span class="n">attributes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loggers</span><span class="p">[</span><span class="n">logger_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">log_attrs</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loggers</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">logger_name</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">logger_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger_names</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">loggers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Available loggers</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loggers</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">logger_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Logger names</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loggers</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_check_file_handlers</span><span class="p">(</span><span class="n">handlers</span><span class="p">,</span> <span class="n">new_handlers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check to see if new file handlers should be added to the logger</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        handlers : list</span>
+<span class="sd">            None or list of existing file handlers</span>
+<span class="sd">        new_handlers : list</span>
+<span class="sd">            List of new file handlers to add to logger</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        handlers : list</span>
+<span class="sd">           Updated list of valid log files to add to handler</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">new_handlers</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">new_handlers</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_handlers</span><span class="p">]</span>
+            <span class="n">new_handlers</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">h</span><span class="p">)</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">new_handlers</span>
+                            <span class="k">if</span> <span class="n">h</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">new_handlers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">h</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">:</span>
+                <span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">log_dir</span><span class="p">):</span>
+                    <span class="c1"># check if each handler has been previously set</span>
+                    <span class="n">handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">warn</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> does not exist, FileHandler will be &#39;</span>
+                         <span class="s1">&#39;converted to a StreamHandler&#39;</span>
+                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">log_dir</span><span class="p">),</span> <span class="n">LoggerWarning</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">handlers</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_update_attrs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">log_attrs</span><span class="p">,</span> <span class="n">new_attrs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update logger attributes with new attributes</span>
+<span class="sd">        - Add any new log files</span>
+<span class="sd">        - Reduce log level</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        log_attrs : dict</span>
+<span class="sd">            Existing logger attributes</span>
+<span class="sd">        new_attrs : dict</span>
+<span class="sd">            New logger attributes</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        log_attrs</span>
+<span class="sd">            upated logger attributes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">new_attrs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">attr</span> <span class="o">==</span> <span class="s1">&#39;log_file&#39;</span> <span class="ow">and</span> <span class="n">value</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">handlers</span> <span class="o">=</span> <span class="n">log_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;log_file&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">handlers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">handlers</span> <span class="o">=</span> <span class="p">[]</span>
+
+                    <span class="n">handlers</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_check_file_handlers</span><span class="p">(</span><span class="n">handlers</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">handlers</span><span class="p">:</span>
+                        <span class="n">handlers</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">handlers</span> <span class="o">=</span> <span class="kc">None</span>
+
+                <span class="n">log_attrs</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">handlers</span>
+            <span class="k">elif</span> <span class="n">attr</span> <span class="o">==</span> <span class="s1">&#39;log_level&#39;</span><span class="p">:</span>
+                <span class="n">log_value</span> <span class="o">=</span> <span class="n">LOG_LEVEL</span><span class="p">[</span><span class="n">log_attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;log_level&#39;</span><span class="p">,</span> <span class="s1">&#39;INFO&#39;</span><span class="p">)]</span>
+                <span class="n">attr_value</span> <span class="o">=</span> <span class="n">LOG_LEVEL</span><span class="p">[</span><span class="n">value</span><span class="o">.</span><span class="n">upper</span><span class="p">()]</span>
+                <span class="k">if</span> <span class="n">attr_value</span> <span class="o">&lt;</span> <span class="n">log_value</span><span class="p">:</span>
+                    <span class="n">log_attrs</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log_attrs</span><span class="p">[</span><span class="n">attr</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+        <span class="k">return</span> <span class="n">log_attrs</span>
+
+    <span class="k">def</span> <span class="nf">_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Cleanup loggers and attributes by combining dependent and parent</span>
+<span class="sd">        loggers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loggers</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loggers</span><span class="p">)</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">parent_attrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger_names</span><span class="p">:</span>
+            <span class="n">attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loggers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">&quot;__main__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                    <span class="n">p</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+                        <span class="n">parent</span> <span class="o">=</span> <span class="n">name</span>
+                        <span class="n">parent_attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+            <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">parent</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span><span class="p">):</span>
+                <span class="c1"># Remove child logger from internal record</span>
+                <span class="n">parent_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_attrs</span><span class="p">(</span><span class="n">parent_attrs</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">loggers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="c1"># Remove any handlers from child loggers to prevent duplicate</span>
+                <span class="c1"># logging</span>
+                <span class="n">clear_handlers</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">loggers</span><span class="p">[</span><span class="n">parent</span><span class="p">]</span> <span class="o">=</span> <span class="n">parent_attrs</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loggers</span> <span class="o">=</span> <span class="n">loggers</span>
+
+    <span class="k">def</span> <span class="nf">_check_for_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check for existing parent loggers</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        logger_name : str</span>
+<span class="sd">            Name of logger to initialize</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        parent : str</span>
+<span class="sd">            Name of parent logger to initialize, if no existing parent None</span>
+<span class="sd">        parent_attrs : dict</span>
+<span class="sd">            Parent logger attributes</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">parent</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">parent_attrs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">attrs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loggers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">logger_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+                <span class="n">parent</span> <span class="o">=</span> <span class="n">name</span>
+                <span class="n">parent_attrs</span> <span class="o">=</span> <span class="n">attrs</span>
+
+        <span class="k">return</span> <span class="n">parent</span><span class="p">,</span> <span class="n">parent_attrs</span>
+
+<div class="viewcode-block" id="LoggingAttributes.set_logger"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.LoggingAttributes.set_logger">[docs]</a>    <span class="k">def</span> <span class="nf">set_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logger_name</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span>
+                   <span class="n">log_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_format</span><span class="o">=</span><span class="n">FORMAT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Setup logging instance with given name and attributes</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        logger_name : str</span>
+<span class="sd">            Name of logger</span>
+<span class="sd">        stream : bool, optional</span>
+<span class="sd">            Add a StreamHandler along with FileHandler, by default True</span>
+<span class="sd">        log_level : str, optional</span>
+<span class="sd">            Level of logging to capture, must be key in LOG_LEVEL. If multiple</span>
+<span class="sd">            handlers/log_files are requested in a single call of this function,</span>
+<span class="sd">            the specified logging level will be applied to all requested</span>
+<span class="sd">            handlers, by default &quot;INFO&quot;</span>
+<span class="sd">        log_file : str | list, optional</span>
+<span class="sd">            Path to file to use for logging, if None use a StreamHandler</span>
+<span class="sd">            list of multiple handlers is permitted, by default None</span>
+<span class="sd">        log_format : str, optional</span>
+<span class="sd">            Format for loggings, by default FORMAT</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        logger : logging.logger</span>
+<span class="sd">            instance of logger for given name, with given level and added</span>
+<span class="sd">            handlers(s)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;log_level&quot;</span><span class="p">:</span> <span class="n">log_level</span><span class="p">,</span> <span class="s2">&quot;log_file&quot;</span><span class="p">:</span> <span class="n">log_file</span><span class="p">,</span>
+                 <span class="s2">&quot;log_format&quot;</span><span class="p">:</span> <span class="n">log_format</span><span class="p">,</span> <span class="s1">&#39;stream&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">}</span>
+        <span class="n">log_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">logger_name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">logger_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">parent</span><span class="p">,</span> <span class="n">parent_attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_for_parent</span><span class="p">(</span><span class="n">logger_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">parent</span> <span class="ow">and</span> <span class="n">attrs</span> <span class="o">!=</span> <span class="n">parent_attrs</span><span class="p">:</span>
+                <span class="n">logger_name</span> <span class="o">=</span> <span class="n">parent</span>
+                <span class="n">log_attrs</span> <span class="o">=</span> <span class="n">parent_attrs</span>
+
+        <span class="n">attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_attrs</span><span class="p">(</span><span class="n">log_attrs</span><span class="p">,</span> <span class="n">attrs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loggers</span><span class="p">[</span><span class="n">logger_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">attrs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cleanup</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">setup_logger</span><span class="p">(</span><span class="n">logger_name</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LoggingAttributes.init_loggers"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.LoggingAttributes.init_loggers">[docs]</a>    <span class="k">def</span> <span class="nf">init_loggers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loggers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract logger attributes and initialize logger</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        loggers : str | list</span>
+<span class="sd">            Logger names to initialize</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">loggers</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+            <span class="n">loggers</span> <span class="o">=</span> <span class="p">[</span><span class="n">loggers</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">logger_name</span> <span class="ow">in</span> <span class="n">loggers</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">logger_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">logger_name</span><span class="p">]</span>
+                <span class="n">setup_logger</span><span class="p">(</span><span class="n">logger_name</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LoggingAttributes.clear"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.LoggingAttributes.clear">[docs]</a>    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clear all log handlers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">logger</span> <span class="ow">in</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">loggerDict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">p_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger_names</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">p_name</span><span class="p">):</span>
+                        <span class="n">clear_handlers</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+                        <span class="k">break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loggers</span> <span class="o">=</span> <span class="p">{}</span></div></div>
+
+
+<span class="n">LOGGERS</span> <span class="o">=</span> <span class="n">LoggingAttributes</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="init_logger"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.init_logger">[docs]</a><span class="k">def</span> <span class="nf">init_logger</span><span class="p">(</span><span class="n">logger_name</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="s2">&quot;INFO&quot;</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">log_format</span><span class="o">=</span><span class="n">FORMAT</span><span class="p">,</span> <span class="n">prune</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Starts logging instance and adds logging attributes to LOGGERS</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger_name : str</span>
+<span class="sd">        Name of logger to initialize</span>
+<span class="sd">    stream : bool, optional</span>
+<span class="sd">        Add a StreamHandler along with FileHandler, by default True</span>
+<span class="sd">    log_level : str, optional</span>
+<span class="sd">        Level of logging to capture, must be key in LOG_LEVEL. If multiple</span>
+<span class="sd">        handlers/log_files are requested in a single call of this function,</span>
+<span class="sd">        the specified logging level will be applied to all requested handlers,</span>
+<span class="sd">        by default &quot;INFO&quot;</span>
+<span class="sd">    log_file : str | list, optional</span>
+<span class="sd">        Path to file to use for logging, if None use a StreamHandler</span>
+<span class="sd">        list of multiple handlers is permitted, by default None</span>
+<span class="sd">    log_format : str, optional</span>
+<span class="sd">        Format for loggings, by default FORMAT</span>
+<span class="sd">    prune : bool, optional</span>
+<span class="sd">        Remove child logger handlers if parent logger is added, parent will</span>
+<span class="sd">        inherit child&#39;s handlers, by default True</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    logger : logging.logger</span>
+<span class="sd">        logging instance that was initialized</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;log_level&quot;</span><span class="p">:</span> <span class="n">log_level</span><span class="p">,</span> <span class="s2">&quot;log_file&quot;</span><span class="p">:</span> <span class="n">log_file</span><span class="p">,</span>
+              <span class="s2">&quot;log_format&quot;</span><span class="p">:</span> <span class="n">log_format</span><span class="p">,</span> <span class="s1">&#39;stream&#39;</span><span class="p">:</span> <span class="n">stream</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">prune</span><span class="p">:</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">LOGGERS</span><span class="o">.</span><span class="n">set_logger</span><span class="p">(</span><span class="n">logger_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">LOGGERS</span><span class="p">[</span><span class="n">logger_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">setup_logger</span><span class="p">(</span><span class="n">logger_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+<div class="viewcode-block" id="init_mult"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.init_mult">[docs]</a><span class="k">def</span> <span class="nf">init_mult</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">logdir</span><span class="p">,</span> <span class="n">modules</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Init multiple loggers to a single file or stdout.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    name : str</span>
+<span class="sd">        Job name; name of log file.</span>
+<span class="sd">    logdir : str</span>
+<span class="sd">        Target directory to save .log files.</span>
+<span class="sd">    modules : list | tuple</span>
+<span class="sd">        List of reV modules to initialize loggers for.</span>
+<span class="sd">    verbose : bool</span>
+<span class="sd">        Option to turn on debug logging.</span>
+<span class="sd">    node : bool</span>
+<span class="sd">        Flag for whether this is a node-level logger. If this is a node logger,</span>
+<span class="sd">        and the log level is info, the log_file will be None (sent to stdout).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    loggers : list</span>
+<span class="sd">        List of logging instances that were initialized.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">log_level</span> <span class="o">=</span> <span class="s1">&#39;DEBUG&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">log_level</span> <span class="o">=</span> <span class="s1">&#39;INFO&#39;</span>
+
+    <span class="k">if</span> <span class="n">logdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">logdir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">logdir</span><span class="p">)</span>
+
+    <span class="n">loggers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">modules</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">logdir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">logdir</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.log&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log_file</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># check for redundant loggers in the LOGGERS singleton</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">LOGGERS</span><span class="p">[</span><span class="n">module</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">and</span> <span class="n">log_level</span> <span class="o">==</span> <span class="s1">&#39;INFO&#39;</span><span class="p">:</span>
+            <span class="c1"># Node level info loggers only go to STDOUT/STDERR files</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="n">init_logger</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">,</span> <span class="n">log_file</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="n">init_logger</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">,</span>
+                                 <span class="n">log_file</span><span class="o">=</span><span class="n">log_file</span><span class="p">)</span>
+
+        <span class="n">loggers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">logger</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">loggers</span></div>
+
+
+<div class="viewcode-block" id="log_mem"><a class="viewcode-back" href="../../../rex/rex.utilities.loggers.html#rex.utilities.loggers.log_mem">[docs]</a><span class="k">def</span> <span class="nf">log_mem</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="s1">&#39;DEBUG&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Log the memory usage to the input logger object.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    logger : logging.Logger</span>
+<span class="sd">        Logger object to log memory message to.</span>
+<span class="sd">    log_level : str</span>
+<span class="sd">        DEBUG or INFO for different log levels for this log message.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    msg : str</span>
+<span class="sd">        Memory utilization log message string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mem</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">virtual_memory</span><span class="p">()</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;Memory utilization is </span><span class="si">{0:.3f}</span><span class="s1"> GB out of &#39;</span>
+           <span class="s1">&#39;</span><span class="si">{1:.3f}</span><span class="s1"> GB total (</span><span class="si">{2:.1f}% u</span><span class="s1">sed)&#39;</span>
+           <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mem</span><span class="o">.</span><span class="n">used</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span> <span class="n">mem</span><span class="o">.</span><span class="n">total</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span>
+                   <span class="mi">100</span> <span class="o">*</span> <span class="n">mem</span><span class="o">.</span><span class="n">used</span> <span class="o">/</span> <span class="n">mem</span><span class="o">.</span><span class="n">total</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">log_level</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;DEBUG&#39;</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">- </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">msg</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

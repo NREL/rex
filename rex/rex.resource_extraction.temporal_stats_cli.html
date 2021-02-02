@@ -1,0 +1,414 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>rex.resource_extraction.temporal_stats_cli module &mdash; rex 0.2.43 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="rex.resource_extraction.wave_cli module" href="rex.resource_extraction.wave_cli.html" />
+    <link rel="prev" title="rex.resource_extraction.temporal_stats module" href="rex.resource_extraction.temporal_stats.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> rex
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.43
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html">Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-1-install-from-pip-or-conda-recommended-for-analysts">Option 1: Install from PIP or Conda (recommended for analysts):</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/installation.html#option-2-clone-repo-recommended-for-developers">Option 2: Clone repo (recommended for developers)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#usage-on-eagle">Usage on Eagle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../misc/misc.html#examples">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdbx-python-class">NSRDBX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#domains">Domains</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#windx-python-class">WindX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-format">Data Format</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-python-class">WaveX python class</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="rex.html">rex package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="rex.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.html">rex.rechunk_h5 package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="reference internal" href="rex.resource_extraction.html">rex.resource_extraction package</a><ul class="current">
+<li class="toctree-l4 current"><a class="reference internal" href="rex.resource_extraction.html#submodules">Submodules</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.html">rex.utilities package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.html#submodules">Submodules</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.html">rex.multi_file_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.html">rex.multi_time_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.html">rex.multi_year_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.html">rex.renewable_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource.html">rex.resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.sam_resource.html">rex.sam_resource module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.version.html">rex.version module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">rex</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="rex.html">rex package</a> &raquo;</li>
+        
+          <li><a href="rex.resource_extraction.html">rex.resource_extraction package</a> &raquo;</li>
+        
+      <li>rex.resource_extraction.temporal_stats_cli module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            
+              <a href="https://github.com/nrel/rex/blob/master/docs/source/rex/rex.resource_extraction.temporal_stats_cli.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="rex-resource-extraction-temporal-stats-cli-module">
+<h1>rex.resource_extraction.temporal_stats_cli module<a class="headerlink" href="#rex-resource-extraction-temporal-stats-cli-module" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="temporal-stats">
+<h2>temporal-stats<a class="headerlink" href="#temporal-stats" title="Permalink to this headline">¶</a></h2>
+<p>TemporalStats Command Line Interface</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>temporal-stats <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND1 <span class="o">[</span>ARGS<span class="o">]</span>... <span class="o">[</span>COMMAND2 <span class="o">[</span>ARGS<span class="o">]</span>...<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-h5">
+<span id="cmdoption-temporal-stats-resource_path"></span><span id="cmdoption-temporal-stats-resource-path"></span><code class="sig-name descname">-h5</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--resource_path</code><code class="sig-prename descclassname"> &lt;resource_path&gt;</code><a class="headerlink" href="#cmdoption-temporal-stats-h5" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Path to Resource .h5 files</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-dset">
+<span id="cmdoption-temporal-stats-dataset"></span><code class="sig-name descname">-dset</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--dataset</code><code class="sig-prename descclassname"> &lt;dataset&gt;</code><a class="headerlink" href="#cmdoption-temporal-stats-dset" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Dataset to extract stats for</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-o">
+<span id="cmdoption-temporal-stats-out_dir"></span><span id="cmdoption-temporal-stats-out-dir"></span><code class="sig-name descname">-o</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--out_dir</code><code class="sig-prename descclassname"> &lt;out_dir&gt;</code><a class="headerlink" href="#cmdoption-temporal-stats-o" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Required</strong> Directory to dump output files</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-stats">
+<span id="cmdoption-temporal-stats-statistics"></span><code class="sig-name descname">-stats</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--statistics</code><code class="sig-prename descclassname"> &lt;statistics&gt;</code><a class="headerlink" href="#cmdoption-temporal-stats-stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Statistics to extract, must be ‘mean’, ‘median’, ‘std’, and / or ‘stdev’</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>mean</p>
+</dd>
+<dt class="field-even">Options</dt>
+<dd class="field-even"><p>mean|median|stdev|std</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-mw">
+<span id="cmdoption-temporal-stats-max_workers"></span><span id="cmdoption-temporal-stats-max-workers"></span><code class="sig-name descname">-mw</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--max_workers</code><code class="sig-prename descclassname"> &lt;max_workers&gt;</code><a class="headerlink" href="#cmdoption-temporal-stats-mw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of workers to use, if 1 run in serial, if None use all available cores</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-res">
+<span id="cmdoption-temporal-stats-res_cls"></span><span id="cmdoption-temporal-stats-res-cls"></span><code class="sig-name descname">-res</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--res_cls</code><code class="sig-prename descclassname"> &lt;res_cls&gt;</code><a class="headerlink" href="#cmdoption-temporal-stats-res" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resource type</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>Resource</p>
+</dd>
+<dt class="field-even">Options</dt>
+<dd class="field-even"><p>Resource|NSRDB|Wind|Wave|MultiFileNSRDB|MultiFileWTK</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-hsds">
+<span id="cmdoption-temporal-stats-hsds"></span><code class="sig-name descname">-hsds</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--hsds</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-temporal-stats-hsds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean flag to use h5pyd to handle .h5 ‘files’ hosted on AWS behind HSDS</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-cpw">
+<span id="cmdoption-temporal-stats-chunks_per_worker"></span><span id="cmdoption-temporal-stats-chunks-per-worker"></span><code class="sig-name descname">-cpw</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--chunks_per_worker</code><code class="sig-prename descclassname"> &lt;chunks_per_worker&gt;</code><a class="headerlink" href="#cmdoption-temporal-stats-cpw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of chunks to extract on each worker</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-ll">
+<span id="cmdoption-temporal-stats-lat_lon_only"></span><span id="cmdoption-temporal-stats-lat-lon-only"></span><code class="sig-name descname">-ll</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--lat_lon_only</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-temporal-stats-ll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Only append lat, lon coordinates to stats</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-log">
+<span id="cmdoption-temporal-stats-log_file"></span><span id="cmdoption-temporal-stats-log-file"></span><code class="sig-name descname">-log</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--log_file</code><code class="sig-prename descclassname"> &lt;log_file&gt;</code><a class="headerlink" href="#cmdoption-temporal-stats-log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to .log file, if None only log to stdout</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-temporal-stats-v">
+<span id="cmdoption-temporal-stats-verbose"></span><code class="sig-name descname">-v</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--verbose</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-temporal-stats-v" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to turn on debug logging. Default is not verbose.</p>
+</dd></dl>
+
+<div class="section" id="temporal-stats-diurnal">
+<h3>diurnal<a class="headerlink" href="#temporal-stats-diurnal" title="Permalink to this headline">¶</a></h3>
+<p>Compute Diurnal Stats</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>temporal-stats diurnal <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="temporal-stats-full">
+<h3>full<a class="headerlink" href="#temporal-stats-full" title="Permalink to this headline">¶</a></h3>
+<p>Compute Stats for full file time-series</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>temporal-stats full <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="temporal-stats-monthly">
+<h3>monthly<a class="headerlink" href="#temporal-stats-monthly" title="Permalink to this headline">¶</a></h3>
+<p>Compute Monthly Stats</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>temporal-stats monthly <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="temporal-stats-monthly-diurnal">
+<h3>monthly-diurnal<a class="headerlink" href="#temporal-stats-monthly-diurnal" title="Permalink to this headline">¶</a></h3>
+<p>Compute Monthly-Diurnal Stats</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>temporal-stats monthly-diurnal <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<span class="target" id="module-rex.resource_extraction.temporal_stats_cli"></span><p>Resource Statistics</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="rex.resource_extraction.wave_cli.html" class="btn btn-neutral float-right" title="rex.resource_extraction.wave_cli module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="rex.resource_extraction.temporal_stats.html" class="btn btn-neutral float-left" title="rex.resource_extraction.temporal_stats module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2020, Alliance for Sustainable Energy, LLC.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
