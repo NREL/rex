@@ -410,7 +410,7 @@ class TemporalStats:
 
         Parameters
         ----------
-        sites : slice
+        sites : list
             Sites to extract as a list or numpy object to extract
         slice_size : int
             Number of sites in each slice to extract either on each worker,
@@ -521,7 +521,7 @@ class TemporalStats:
 
         if max_workers > 1:
             msg = ('Extracting {} for {} in parallel using {} workers'
-                   .format(self.statistics.keys(), dataset, max_workers))
+                   .format(list(self.statistics), dataset, max_workers))
             logger.info(msg)
 
             loggers = [__name__, 'rex']
