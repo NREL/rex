@@ -139,38 +139,6 @@ class TemporalStats:
 
         return self.meta[lat_lon_cols]
 
-    @classmethod
-    def _check_stats(cls, statistics):
-        """
-        check desired statistics to make sure inputs are valid
-
-        Parameters
-        ----------
-        statistics : str | tuple | dict
-            Statistics to extract, either a key or tuple of keys in
-            cls.STATS, or a dictionary of the form
-            {'stat_name': {'func': *, 'kwargs: {**}}}
-
-        Returns
-        -------
-        stats : dict
-            Dictionary of statistic functions/kwargs to run
-        """
-        if isinstance(statistics, str):
-            statistics = (statistics, )
-
-        if isinstance(statistics, (tuple, list)):
-            statistics = {s: cls.STATS[s] for s in statistics}
-
-        for stat in statistics.values():
-            msg = 'A "func"(tion) must be provided for each statistic'
-            assert 'func' in stat, msg
-            if 'kwargs' in stat:
-                msg = 'statistic function kwargs must be a dictionary '
-                assert isinstance(stat['kwargs'], dict), msg
-
-        return statistics
-
     @staticmethod
     def _format_index_value(index, stat, month_map=None):
         """
@@ -478,6 +446,37 @@ class TemporalStats:
             raise TypeError(msg)
 
         return slices
+
+    def _check_stats(self, statistics):
+        """
+        check desired statistics to make sure inputs are valid
+
+        Parameters
+        ----------
+        statistics : str | tuple | dict
+            Statistics to extract, either a key or tuple of keys in
+            cls.STATS, or a dictionary of the form
+            {'stat_name': {'func': *, 'kwargs: {**}}}
+
+        Returns
+        -------
+        stats : dict
+            Dictionary of statistic functions/kwargs to run
+        """
+        if isinstance(statistics, str):
+            statistics = (statistics, )
+
+        if isinstance(statistics, (tuple, list)):
+            statistics = {s: self.STATS[s] for s in statistics}
+
+        for stat in statistics.values():
+            msg = 'A "func"(tion) must be provided for each statistic'
+            assert 'func' in stat, msg
+            if 'kwargs' in stat:
+                msg = 'statistic function kwargs must be a dictionary '
+                assert isinstance(stat['kwargs'], dict), msg
+
+        return statistics
 
     def compute_statistics(self, dataset, sites=None,
                            diurnal=False, month=False, combinations=False,
