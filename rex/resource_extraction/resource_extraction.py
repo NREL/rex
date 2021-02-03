@@ -19,7 +19,7 @@ from rex.multi_year_resource import MultiYearResource
 from rex.resource import Resource, ResourceDataset
 from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
                                     WindResource)
-from rex.resource_extraction.temporal_stats import TemporalStats
+from rex.temporal_stats.temporal_stats import TemporalStats
 from rex.utilities.exceptions import ResourceValueError, ResourceWarning
 from rex.utilities.utilities import parse_year, check_tz
 

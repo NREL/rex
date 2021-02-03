@@ -9,4 +9,3 @@ from .resource_extraction import (ResourceX, MultiFileResourceX,
                                   WindX, MultiFileWindX,
                                   MultiTimeWindX, MultiYearWindX,
                                   WaveX, MultiTimeWaveX, MultiYearWaveX)
-from .temporal_stats import TemporalStats

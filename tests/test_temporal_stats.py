@@ -13,8 +13,8 @@ import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
-from rex.resource_extraction.temporal_stats import TemporalStats
-from rex.resource_extraction.temporal_stats_cli import main
+from rex.temporal_stats.temporal_stats import TemporalStats
+from rex.temporal_stats.temporal_stats_cli import main
 from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
 

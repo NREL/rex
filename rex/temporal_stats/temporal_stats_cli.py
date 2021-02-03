@@ -9,7 +9,7 @@ import os
 from rex.multi_file_resource import MultiFileNSRDB, MultiFileWTK
 from rex.renewable_resource import (NSRDB, WaveResource, WindResource)
 from rex.resource import Resource
-from rex.resource_extraction.temporal_stats import TemporalStats
+from rex.temporal_stats.temporal_stats import TemporalStats
 from rex.utilities.loggers import init_logger
 
 logger = logging.getLogger(__name__)

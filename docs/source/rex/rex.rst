@@ -13,6 +13,7 @@ Subpackages
 
    rex.rechunk_h5
    rex.resource_extraction
+   rex.temporal_stats
    rex.utilities
 
 Submodules
