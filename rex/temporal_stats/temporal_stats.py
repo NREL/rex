@@ -12,6 +12,7 @@ from warnings import warn
 from rex.rechunk_h5.rechunk_h5 import get_chunk_slices
 from rex.resource import Resource
 from rex.utilities.execution import SpawnProcessPool
+from rex.utilities.utilities import get_lat_lon_cols
 
 logger = logging.getLogger(__name__)
 
@@ -130,12 +131,7 @@ class TemporalStats:
         -------
         pandas.DataFrame
         """
-        lat_lon_cols = ['latitude', 'longitude']
-        for c in self.meta.columns:
-            if c.lower() in ['lat', 'latitude']:
-                lat_lon_cols[0] = c
-            elif c.lower() in ['lon', 'long', 'longitude']:
-                lat_lon_cols[1] = c
+        lat_lon_cols = get_lat_lon_cols(self.meta)
 
         return self.meta[lat_lon_cols]
 

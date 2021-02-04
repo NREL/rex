@@ -699,7 +699,7 @@ class RechunkH5:
         logger.info('Rechunking coordinates')
         meta_data = self._dst_h5['meta'][...]
         coords = np.dstack((meta_data['latitude'], meta_data['longitude']))[0]
-        attrs['dtype'] = coords.dtype
+        attrs['dtype'] = 'float32'
 
         if isinstance(attrs['chunks'], int):
             attrs['chunks'] = (attrs['chunks'], 2)
