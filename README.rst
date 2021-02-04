@@ -1,6 +1,6 @@
-*********************************************
+**********************************************
 Welcome to The REsource eXtraction (rex) tool!
-*********************************************
+**********************************************
 
 .. image:: https://github.com/NREL/rex/workflows/Documentation/badge.svg
     :target: https://nrel.github.io/rex/
@@ -118,4 +118,6 @@ Option 2: Clone repo (recommended for developers)
 Recommended Citation
 ====================
 
-`Michael Rossol, Grant Buster. The Resource Extraction Tool (rex). <https://doi.org/10.5281/zenodo.4499033>`_
+Update with current version and DOI:
+
+Michael Rossol, Grant Buster. The REsource Extraction Tool (rex). https://github.com/NREL/rex (version v0.2.43), 2021. https://doi.org/10.5281/zenodo.4499033.
