@@ -28,10 +28,9 @@ Welcome to The REsource eXtraction (rex) tool!
 
 .. image:: https://mybinder.org/badge_logo.svg
     :target: https://mybinder.org/v2/gh/NREL/rex/master
-    
+
 .. image:: https://zenodo.org/badge/253541811.svg
    :target: https://zenodo.org/badge/latestdoi/253541811
-
 
 .. inclusion-intro
 
@@ -119,6 +118,4 @@ Option 2: Clone repo (recommended for developers)
 Recommended Citation
 ====================
 
-Update with current version and DOI:
-
-Michael Rossol, Grant Buster. The REsource Extraction Tool (rex). https://github.com/NREL/rex (version v0.2.43), 2021. https://doi.org/10.5281/zenodo.4499033.
+`Michael Rossol, Grant Buster. The Resource Extraction Tool (rex). <https://doi.org/10.5281/zenodo.4499033>`_
