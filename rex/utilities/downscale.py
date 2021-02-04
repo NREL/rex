@@ -10,6 +10,7 @@ import pandas as pd
 import logging
 
 from rex.utilities.solar_position import SolarPosition
+from rex.utilities.utilities import get_lat_lon_cols
 
 from nsrdb.all_sky import CLEAR_TYPES
 from nsrdb.all_sky.all_sky import all_sky
@@ -156,7 +157,8 @@ def downscale_nsrdb(SAM_res, res, frequency='5min',
                      .format(var, arr.shape, np.isnan(arr).sum()))
 
     # calculate downscaled solar zenith angle
-    lat_lon = res.meta.loc[SAM_res.sites, ['latitude', 'longitude']]\
+    lat_lon_cols = get_lat_lon_cols(res.meta)
+    lat_lon = res.meta.loc[SAM_res.sites, lat_lon_cols]\
         .values.astype(np.float32)
     sza = SolarPosition(time_index, lat_lon).zenith
     all_sky_ins['solar_zenith_angle'] = sza

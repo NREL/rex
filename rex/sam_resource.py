@@ -12,6 +12,7 @@ from rex.utilities.exceptions import (ResourceKeyError, ResourceRuntimeError,
                                       ResourceValueError, SAMInputWarning)
 from rex.utilities.parse_keys import parse_keys
 from rex.utilities.solar_position import SolarPosition
+from rex.utilities.utilities import get_lat_lon_cols
 
 logger = logging.getLogger(__name__)
 
@@ -355,7 +356,8 @@ class SAMResource:
         -------
         ndarray
         """
-        return self.meta[['latitude', 'longitude']].values
+        lat_lon_cols = get_lat_lon_cols(self.meta)
+        return self.meta[lat_lon_cols].values
 
     @property
     def sza(self):
@@ -712,10 +714,10 @@ class SAMResource:
         if var in self.var_list:
             try:
                 var_array = self._mean_arrays[var]
-            except KeyError:
+            except KeyError as ex:
                 msg = '{} has yet to be set!'.format(var)
                 logger.error(msg)
-                raise ResourceKeyError(msg)
+                raise ResourceKeyError(msg) from ex
 
             means = var_array[var_slice]
         else:
@@ -744,10 +746,10 @@ class SAMResource:
         if var in self.var_list:
             try:
                 var_array = self._res_arrays[var]
-            except KeyError:
+            except KeyError as ex:
                 msg = '{} has yet to be set!'.format(var)
                 logger.error(msg)
-                raise ResourceKeyError(msg)
+                raise ResourceKeyError(msg) from ex
 
             sites = np.array(self.sites)
             if len(var_slice) == 2:
@@ -783,10 +785,11 @@ class SAMResource:
         self.runnable()
         try:
             idx = self.sites.index(site)
-        except ValueError:
+        except ValueError as ex:
             msg = '{} is not in available sites'.format(site)
             logger.error(msg)
-            raise ResourceValueError(msg)
+            raise ResourceValueError(msg) from ex
+
         site_meta = self.meta.loc[site].copy()
         if self._h is not None:
             try:

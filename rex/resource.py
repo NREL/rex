@@ -10,7 +10,7 @@ import pandas as pd
 from rex.sam_resource import SAMResource
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
-from rex.utilities.utilities import check_tz
+from rex.utilities.utilities import check_tz, get_lat_lon_cols
 
 
 class ResourceDataset:
@@ -968,15 +968,8 @@ class Resource:
             if 'coordinates' in self:
                 self._lat_lon = self._get_coords('coordinates', slice(None))
             else:
-                self._lat_lon = self.meta
-                lat_lon_cols = ['latitude', 'longitude']
-                for c in self.meta.columns:
-                    if c.lower() in ['lat', 'latitude']:
-                        lat_lon_cols[0] = c
-                    elif c.lower() in ['lon', 'long', 'longitude']:
-                        lat_lon_cols[1] = c
-
-                self._lat_lon = self._lat_lon[lat_lon_cols].values
+                lat_lon_cols = get_lat_lon_cols(self.meta)
+                self._lat_lon = self.meta[lat_lon_cols].values
 
         return self._lat_lon
 

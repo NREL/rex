@@ -51,7 +51,7 @@ def safe_json_load(fpath):
     except json.decoder.JSONDecodeError as e:
         emsg = ('JSON Error:\n{}\nCannot read json file: '
                 '"{}"'.format(e, fpath))
-        raise JSONError(emsg)
+        raise JSONError(emsg) from e
 
     return j
 
@@ -84,7 +84,7 @@ def jsonify_dict(di):
     except TypeError as e:
         msg = ('Could not json serialize {}, received error: {}'
                .format(di, e))
-        raise TypeError(msg)
+        raise TypeError(msg) from e
 
     return sdi
 
@@ -236,7 +236,7 @@ def check_res_file(res_file):
                 msg = ("{} is not a valid file path, and HSDS "
                        "cannot be check for a file at this path:{}!"
                        .format(res_file, ex))
-                raise FileNotFoundError(msg)
+                raise FileNotFoundError(msg) from ex
 
     return multi_h5_res, hsds
 
@@ -261,10 +261,10 @@ def parse_date_int(s):
 
     try:
         s = str(int(s))
-    except ValueError:
+    except ValueError as ex:
         e = ('Could not convert date string to int: "{}"'
              .format(s))
-        raise ValueError(e)
+        raise ValueError(e) from ex
 
     assert len(s) == 8, 'Bad date string, should be YYYYMMDD: {}'.format(s)
 
@@ -457,8 +457,9 @@ class Retry:
                     new_func = func(*args, **kwargs)
                     break
                 except RetryError as ex:
-                    raise RuntimeError('{} failed to run {} times:\n{}'
-                                       .format(func.__name__, i, ex))
+                    msg = ('{} failed to run {} times:\n{}'
+                           .format(func.__name__, i, ex))
+                    raise RuntimeError(msg) from ex
                 except Exception as ex:
                     error = ex
                     warn('Attempt {} failed:\n{}'.format(i, error),
@@ -511,3 +512,48 @@ def check_tz(time_index):
         time_index = time_index.tz_localize('utc')
 
     return time_index
+
+
+def get_lat_lon_cols(df):
+    """
+    Get columns that contain (latitude, longitude) coordinates
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame to extract coordinates (lat, lon) from
+
+    Returns
+    -------
+    lat_lon_cols : list
+        Column names in df that correspond to the latitude and longitude
+        coordinates. There must be a single unique set of latitude and
+        longitude columns.
+    """
+    lat_lon_cols = ['latitude', 'longitude']
+    lat = False
+    lon = False
+    for c in df.columns:
+        if c.lower() in ['lat', 'latitude']:
+            if lat:
+                msg = ("Multiple possible latitude columns were found: "
+                       "({}, {})!".format(lat_lon_cols[0], c))
+                raise RuntimeError(msg)
+
+            lat_lon_cols[0] = c
+            lat = True
+        elif c.lower() in ['lon', 'long', 'longitude']:
+            if lon:
+                msg = ("Multiple possible longitude columns were found: "
+                       "({}, {})!".format(lat_lon_cols[1], c))
+                raise RuntimeError(msg)
+
+            lat_lon_cols[1] = c
+            lon = True
+
+    if not lat or not lon:
+        msg = ("A valid pair of latitude and longitude columns could not be "
+               "found in: {}!".format(df.columns))
+        raise RuntimeError(msg)
+
+    return lat_lon_cols
