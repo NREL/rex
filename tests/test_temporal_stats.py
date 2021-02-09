@@ -90,22 +90,18 @@ def test_means(max_workers, sites):
     assert np.allclose(truth, test_stats['Jan-00_mean'].values), msg
 
 
-@pytest.mark.parametrize(("max_workers", "sites"),
-                         [(1, slice(None)),
-                          (None, slice(None))])
-def test_medians(max_workers, sites):
+@pytest.mark.parametrize("max_workers", [1, None])
+def test_medians(max_workers):
     """
     Test TemporalStats medians
     """
-    test_stats = TemporalStats.all(RES_H5, DATASET, sites=sites,
+    test_stats = TemporalStats.all(RES_H5, DATASET,
                                    statistics='median',
                                    res_cls=WindResource,
                                    max_workers=max_workers)
-    if isinstance(sites, list):
-        sites = sorted(sites)
 
-    res_data = RES_DATA[:, sites]
-    gids = np.arange(RES_DATA.shape[1], dtype=int)[sites]
+    res_data = RES_DATA.copy()
+    gids = np.arange(RES_DATA.shape[1], dtype=int)
 
     msg = ('gids do not match!')
     assert np.allclose(gids, test_stats.index.values), msg
@@ -130,20 +126,18 @@ def test_medians(max_workers, sites):
     assert np.allclose(truth, test_stats['Jan-00_median'].values), msg
 
 
-@pytest.mark.parametrize(("max_workers", "sites"),
-                         [(1, slice(None)),
-                          (None, slice(None))])
-def test_stdevs(max_workers, sites):
+@pytest.mark.parametrize("max_workers", [1, None])
+def test_stdevs(max_workers):
     """
     Test TemporalStats stdevs
     """
-    test_stats = TemporalStats.all(RES_H5, DATASET, sites=sites,
+    test_stats = TemporalStats.all(RES_H5, DATASET,
                                    statistics='std',
                                    res_cls=WindResource,
                                    max_workers=max_workers)
 
-    res_data = RES_DATA[:, sites]
-    gids = np.arange(RES_DATA.shape[1], dtype=int)[sites]
+    res_data = RES_DATA.copy()
+    gids = np.arange(RES_DATA.shape[1], dtype=int)
 
     msg = ('gids do not match!')
     assert np.allclose(gids, test_stats.index.values), msg
@@ -168,22 +162,20 @@ def test_stdevs(max_workers, sites):
     assert np.allclose(truth, test_stats['Jan-00_std'].values), msg
 
 
-@pytest.mark.parametrize(("max_workers", "sites"),
-                         [(1, slice(None)),
-                          (None, slice(None))])
-def test_custom_stats(max_workers, sites):
+@pytest.mark.parametrize("max_workers", [1, None])
+def test_custom_stats(max_workers):
     """
     Test custom temporal stats
     """
     stats = {'min': {'func': np.min, 'kwargs': {'axis': 0}},
              'mode': {'func': mode_func, 'kwargs': {'axis': 0}}}
-    test_stats = TemporalStats.run(RES_H5, DATASET, sites=sites,
+    test_stats = TemporalStats.run(RES_H5, DATASET,
                                    statistics=stats,
                                    res_cls=WindResource,
                                    max_workers=max_workers)
 
-    res_data = RES_DATA[:, sites]
-    gids = np.arange(RES_DATA.shape[1], dtype=int)[sites]
+    res_data = RES_DATA.copy()
+    gids = np.arange(RES_DATA.shape[1], dtype=int)
 
     msg = ('gids do not match!')
     assert np.allclose(gids, test_stats.index.values), msg
@@ -197,26 +189,21 @@ def test_custom_stats(max_workers, sites):
     assert np.allclose(truth, test_stats['mode'].values), msg
 
 
-@pytest.mark.parametrize(("max_workers", "sites"),
-                         [(1, slice(None)),
-                          (None, slice(None))])
-def test_multi_year_stats(max_workers, sites):
+@pytest.mark.parametrize("max_workers", [1, None])
+def test_multi_year_stats(max_workers):
     """
     Test temporal stats using MultiYearResource
     """
     res_h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
     with MultiYearWindResource(res_h5) as f:
-        res_data = f['windspeed_100m']
+        res_data = f[DATASET]
 
-    test_stats = TemporalStats.run(res_h5, 'windspeed_100m', sites=sites,
+    test_stats = TemporalStats.run(res_h5, DATASET,
                                    statistics='mean',
                                    res_cls=MultiYearWindResource,
                                    max_workers=max_workers)
-    if isinstance(sites, np.ndarray):
-        sites = np.sort(sites)
 
-    res_data = res_data[:, sites]
-    gids = np.arange(res_data.shape[1], dtype=int)[sites]
+    gids = np.arange(res_data.shape[1], dtype=int)
 
     msg = ('gids do not match!')
     assert np.allclose(gids, test_stats.index.values), msg
