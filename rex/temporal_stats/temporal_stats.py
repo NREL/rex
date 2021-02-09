@@ -316,6 +316,7 @@ class TemporalStats:
                                            diurnal=diurnal, month=month)
 
         if isinstance(sites_slice, slice) and sites_slice.stop:
+            print(list(range(*sites_slice.indices(sites_slice.stop))))
             res_stats.index = \
                 list(range(*sites_slice.indices(sites_slice.stop)))
         elif isinstance(sites_slice, (list, np.ndarray)):
@@ -349,18 +350,19 @@ class TemporalStats:
         if stop is None:
             stop = n_sites
 
-        step = sites_slice.step
-        if step is not None:
-            slice_size *= step
-
         if slice_size >= n_sites:
             msg = ('The slice_size {} is >= the number of sites to be '
                    'extracted {}! A single slice will be extracted.'
                    .format(slice_size, n_sites))
             logger.warning(msg)
             warn(msg)
-            slices = [sites_slice]
+
+            slices = [slice(sites_slice.start, stop, sites_slice.step)]
         else:
+            step = sites_slice.step
+            if step is not None:
+                slice_size *= step
+
             # Create slices of size slice_size
             slices = [slice(s, e, step) for s, e
                       in get_chunk_slices(stop, slice_size)]
@@ -510,6 +512,7 @@ class TemporalStats:
 
         slices = self._get_slices(dataset, sites,
                                   chunks_per_slice=chunks_per_worker)
+        print(slices)
         if len(slices) == 1:
             max_workers = 1
 
