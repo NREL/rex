@@ -263,7 +263,8 @@ class TemporalStats:
         res_h5 : str
             Path to resource h5 file(s)
         statistics : dict
-            Dictionary of statistic functions/kwargs to run
+            Statistics to extract a dictionary of the form
+            {'stat_name': {'func': *, 'kwargs: {**}}}
         dataset : str
             Dataset to extract stats for
         res_cls : Class, optional
@@ -582,7 +583,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -614,7 +615,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -646,7 +647,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -679,7 +680,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -711,7 +712,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -772,9 +773,11 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
-        statistics : str | tuple, optional
-            Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default 'mean'
+        statistics : str | tuple | dict, optional
+            Statistics to extract, either a key or tuple of keys in
+            cls.STATS, or a dictionary of the form
+            {'stat_name': {'func': *, 'kwargs: {**}}},
+            by default 'mean'
         diurnal : bool, optional
             Extract diurnal stats, by default False
         month : bool, optional
@@ -789,7 +792,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -829,9 +832,11 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
-        statistics : str | tuple, optional
-            Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default 'mean'
+        statistics : str | tuple | dict, optional
+            Statistics to extract, either a key or tuple of keys in
+            cls.STATS, or a dictionary of the form
+            {'stat_name': {'func': *, 'kwargs: {**}}},
+            by default 'mean'
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -843,7 +848,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -881,9 +886,11 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
-        statistics : str | tuple, optional
-            Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default 'mean'
+        statistics : str | tuple | dict, optional
+            Statistics to extract, either a key or tuple of keys in
+            cls.STATS, or a dictionary of the form
+            {'stat_name': {'func': *, 'kwargs: {**}}},
+            by default 'mean'
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -895,7 +902,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -934,9 +941,11 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
-        statistics : str | tuple, optional
-            Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default 'mean'
+        statistics : str | tuple | dict, optional
+            Statistics to extract, either a key or tuple of keys in
+            cls.STATS, or a dictionary of the form
+            {'stat_name': {'func': *, 'kwargs: {**}}},
+            by default 'mean'
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -948,7 +957,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -987,9 +996,11 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
-        statistics : str | tuple, optional
-            Statistics to extract, must be 'mean', 'median', 'std',
-            and/or 'stdev', by default 'mean'
+        statistics : str | tuple | dict, optional
+            Statistics to extract, either a key or tuple of keys in
+            cls.STATS, or a dictionary of the form
+            {'stat_name': {'func': *, 'kwargs: {**}}},
+            by default 'mean'
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -1001,7 +1012,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
