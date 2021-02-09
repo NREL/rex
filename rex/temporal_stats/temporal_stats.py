@@ -252,9 +252,9 @@ class TemporalStats:
         return res_stats
 
     @classmethod
-    def _extract_stats(cls, res_h5, res_cls, statistics, dataset, hsds=False,
-                       time_index=None, sites_slice=None, diurnal=False,
-                       month=False, combinations=False):
+    def _extract_stats(cls, res_h5, statistics, dataset, res_cls=Resource,
+                       hsds=False, time_index=None, sites_slice=None,
+                       diurnal=False, month=False, combinations=False):
         """
         Extract stats for given dataset, sites, and temporal extent
 
@@ -262,12 +262,12 @@ class TemporalStats:
         ----------
         res_h5 : str
             Path to resource h5 file(s)
-        res_cls : Class, optional
-            Resource class to use to access res_h5, by default Resource
         statistics : dict
             Dictionary of statistic functions/kwargs to run
         dataset : str
             Dataset to extract stats for
+        res_cls : Class, optional
+            Resource class to use to access res_h5, by default Resource
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
@@ -427,7 +427,7 @@ class TemporalStats:
         if chunks is not None:
             slice_size = chunks[1] * chunks_per_slice
         else:
-            slice_size = chunks_per_slice
+            slice_size = chunks_per_slice * 100
 
         if sites is None:
             sites = slice(None)
@@ -474,10 +474,9 @@ class TemporalStats:
 
         return statistics
 
-    def compute_statistics(self, dataset, sites=None,
-                           diurnal=False, month=False, combinations=False,
-                           max_workers=None, chunks_per_worker=5,
-                           lat_lon_only=True):
+    def compute_statistics(self, dataset, sites=None, diurnal=False,
+                           month=False, combinations=False, max_workers=None,
+                           chunks_per_worker=5, lat_lon_only=True):
         """
         Compute statistics
 
@@ -496,7 +495,7 @@ class TemporalStats:
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
-        chunks_per_slice : int, optional
+        chunks_per_worker : int, optional
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
@@ -525,8 +524,8 @@ class TemporalStats:
                 futures = []
                 for sites_slice in slices:
                     future = exe.submit(self._extract_stats,
-                                        self.res_h5, self.res_cls,
-                                        self.statistics, dataset,
+                                        self.res_h5, self.statistics, dataset,
+                                        res_cls=self.res_cls,
                                         hsds=self._hsds,
                                         time_index=self.time_index,
                                         sites_slice=sites_slice,
@@ -546,22 +545,16 @@ class TemporalStats:
             msg = ('Extracting {} for {} in serial'
                    .format(self.statistics.keys(), dataset))
             logger.info(msg)
-            if chunks_per_worker is not None:
-                res_stats = []
-                for sites_slice in slices:
-                    res_stats.append(self._extract_stats(
-                        self.res_h5, self.res_cls, self.statistics, dataset,
-                        hsds=self._hsds, time_index=self.time_index,
-                        sites_slice=sites_slice, diurnal=diurnal, month=month,
-                        combinations=combinations))
-
-                res_stats = pd.concat(res_stats)
-            else:
-                res_stats = self._extract_stats(
-                    self.res_h5, self.res_cls, self.statistics, dataset,
-                    hsds=self._hsds, time_index=self.time_index,
+            res_stats = []
+            for sites_slice in slices:
+                res_stats.append(self._extract_stats(
+                    self.res_h5, self.statistics, dataset,
+                    res_cls=self.res_cls, hsds=self._hsds,
+                    time_index=self.time_index, sites_slice=sites_slice,
                     diurnal=diurnal, month=month,
-                    combinations=combinations)
+                    combinations=combinations))
+
+            res_stats = pd.concat(res_stats)
 
         if lat_lon_only:
             meta = self.lat_lon
