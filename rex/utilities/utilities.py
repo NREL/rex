@@ -562,8 +562,8 @@ def get_lat_lon_cols(df):
 
 def roll_timeseries(arr, timezones):
     """
-    Roll array with unique shifts for each column
-    This converts timeseries to local time
+    Roll timeseries from UTC to local time. Automatically compute time-shift
+    from UTC offset (timezone) and time-series length.
 
     Parameters
     ----------
@@ -577,8 +577,17 @@ def roll_timeseries(arr, timezones):
     local_arr : ndarray
         Array shifted to local time
     """
+    if arr.shape[1] != len(timezones):
+        msg = ('Number of timezone shifts ({}) does not match number of '
+               'sites ({})'.format(len(timezones), arr.shape[1]))
+        raise ValueError(msg)
+
+    time_step = arr.shape[0] // 8760
+
     local_arr = np.zeros(arr.shape, dtype=arr.dtype)
-    for i, s in enumerate(timezones):
-        local_arr[:, i] = np.roll(arr[:, i], int(s))
+    for tz in set(timezones):
+        mask = timezones == tz
+        print(tz, np.where(mask))
+        local_arr[:, mask] = np.roll(arr[:, mask], int(tz * time_step))
 
     return local_arr

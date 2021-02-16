@@ -10,6 +10,7 @@ import pytest
 from rex.renewable_resource import WindResource, NSRDB
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceRuntimeError
+from rex.utilities.utilities import roll_timeseries
 from rex import TESTDATADIR
 
 
@@ -65,6 +66,23 @@ def test_roll():
         mask &= sam_df['Minute'] == time_index.minute
 
     assert np.isclose(sam_df.loc[mask, 'Speed'], wspd)
+
+
+def test_roll_timeseries():
+    """
+    Test roll timeseries array to local time
+    """
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    with WindResource(h5) as f:
+        timezones = f.meta['timezone'].values
+        wspd = f['windspeed_100m']
+
+    local = roll_timeseries(wspd, timezones)
+    for i, tz in enumerate(timezones):
+        truth = np.roll(wspd, int(tz))[:, i]
+        test = local[:, i]
+        print(truth, test)
+        assert np.allclose(truth, test)
 
 
 def test_check_units():
