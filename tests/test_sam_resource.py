@@ -43,14 +43,20 @@ def test_roll():
     h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     with WindResource(h5) as f:
         time_index = f.time_index
-        timezone = f.meta['timezone'][0]
+        timezone = -1 * f.meta['timezone'][0]
         sam_df = f._get_SAM_df('SAM_100m', 0)
-        wspd = f['windspeed_100m', :, 0]
+        wspd = f['windspeed_100m', timezone, 0]
 
     if not time_index.tz:
         time_index = time_index.tz_localize('UTC')
 
-    time_index = time_index.tz_convert('Etc/GMT{}'.format(timezone))[0]
+    if timezone >= 0:
+        tz = 'Etc/GMT+{}'.format(timezone)
+    else:
+        tz = 'Etc/GMT{}'.format(timezone)
+
+    time_index = time_index.tz_convert(tz)
+    time_index = time_index[timezone]
     mask = sam_df['Year'] == time_index.year
     mask &= sam_df['Month'] == time_index.month
     mask &= sam_df['Day'] == time_index.day
@@ -58,7 +64,7 @@ def test_roll():
     if 'Minute' in sam_df:
         mask &= sam_df['Minute'] == time_index.minute
 
-    assert np.isclose(sam_df.loc[mask, 'Speed'], wspd[0])
+    assert np.isclose(sam_df.loc[mask, 'Speed'], wspd)
 
 
 def test_check_units():
