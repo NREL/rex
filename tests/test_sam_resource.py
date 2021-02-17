@@ -10,6 +10,7 @@ import pytest
 from rex.renewable_resource import WindResource, NSRDB
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceRuntimeError
+from rex.utilities.utilities import roll_timeseries
 from rex import TESTDATADIR
 
 
@@ -45,12 +46,21 @@ def test_roll():
         time_index = f.time_index
         timezone = f.meta['timezone'][0]
         sam_df = f._get_SAM_df('SAM_100m', 0)
-        wspd = f['windspeed_100m', :, 0]
+        time_step = np.abs(timezone)
+        time_step = np.arange(time_step, len(time_index) - time_step)
+        time_step = np.random.choice(time_step, 1)[0]
+        wspd = f['windspeed_100m', time_step, 0]
 
     if not time_index.tz:
         time_index = time_index.tz_localize('UTC')
 
-    time_index = time_index.tz_convert('Etc/GMT{}'.format(timezone))[0]
+    if timezone < 0:
+        tz = 'Etc/GMT+{}'.format(-1 * timezone)
+    else:
+        tz = 'Etc/GMT-{}'.format(timezone)
+
+    time_index = time_index.tz_convert(tz)
+    time_index = time_index[time_step]
     mask = sam_df['Year'] == time_index.year
     mask &= sam_df['Month'] == time_index.month
     mask &= sam_df['Day'] == time_index.day
@@ -58,7 +68,22 @@ def test_roll():
     if 'Minute' in sam_df:
         mask &= sam_df['Minute'] == time_index.minute
 
-    assert np.isclose(sam_df.loc[mask, 'Speed'], wspd[0])
+    assert np.isclose(sam_df.loc[mask, 'Speed'], wspd)
+
+
+def test_roll_timeseries():
+    """
+    Test roll timeseries array to local time
+    """
+    utc = np.random.rand(8760, 100)
+    timezones = [-5, -6, -7, -8]
+    timezones = np.random.choice(timezones, 100)
+
+    local = roll_timeseries(utc, timezones)
+    for i, tz in enumerate(timezones):
+        truth = np.roll(utc[:, i], int(tz))
+        test = local[:, i]
+        assert np.allclose(truth, test)
 
 
 def test_check_units():

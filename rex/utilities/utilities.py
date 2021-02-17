@@ -6,6 +6,7 @@ import datetime
 import inspect
 import json
 import os
+import numpy as np
 import pandas as pd
 import re
 import time
@@ -557,3 +558,35 @@ def get_lat_lon_cols(df):
         raise RuntimeError(msg)
 
     return lat_lon_cols
+
+
+def roll_timeseries(arr, timezones):
+    """
+    Roll timeseries from UTC to local time. Automatically compute time-shift
+    from UTC offset (timezone) and time-series length.
+
+    Parameters
+    ----------
+    arr : ndarray
+        Input timeseries array of form (time, sites)
+    timezones : ndarray | list
+        Vector of timezone shifts from UTC to local time
+
+    Returns
+    -------
+    local_arr : ndarray
+        Array shifted to local time
+    """
+    if arr.shape[1] != len(timezones):
+        msg = ('Number of timezone shifts ({}) does not match number of '
+               'sites ({})'.format(len(timezones), arr.shape[1]))
+        raise ValueError(msg)
+
+    time_step = arr.shape[0] // 8760
+
+    local_arr = np.zeros(arr.shape, dtype=arr.dtype)
+    for tz in set(timezones):
+        mask = timezones == tz
+        local_arr[:, mask] = np.roll(arr[:, mask], int(tz * time_step), axis=0)
+
+    return local_arr

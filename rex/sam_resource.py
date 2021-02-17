@@ -507,7 +507,7 @@ class SAMResource:
         time_series : ndarray
             Time series in local time
         """
-        shift = int(-1 * timezone * time_interval)
+        shift = int(timezone * time_interval)
         time_series = np.roll(time_series, shift, axis=0)
 
         return time_series
