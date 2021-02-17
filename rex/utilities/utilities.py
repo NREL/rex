@@ -587,7 +587,6 @@ def roll_timeseries(arr, timezones):
     local_arr = np.zeros(arr.shape, dtype=arr.dtype)
     for tz in set(timezones):
         mask = timezones == tz
-        print(tz, np.where(mask))
-        local_arr[:, mask] = np.roll(arr[:, mask], int(tz * time_step))
+        local_arr[:, mask] = np.roll(arr[:, mask], int(tz * time_step), axis=0)
 
     return local_arr
