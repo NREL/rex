@@ -783,7 +783,6 @@ class RechunkH5:
         if dset_name not in self._dst_h5:
             ts = time.time()
             logger.info('Rechunking {}'.format(dset_name))
-            print(dset_name)
             with h5py.File(self._src_path, 'r') as f_in:
                 ds_in = f_in[dset_name]
                 shape = ds_in.shape
