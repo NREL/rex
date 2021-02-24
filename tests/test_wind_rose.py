@@ -128,6 +128,7 @@ def test_cli(runner):
         assert result.exit_code == 0, msg
 
         name = os.path.splitext(os.path.basename(wind_h5))[0]
+        name = name.replace('*', '')
         out_fpath = '{}_wind_rose-{}m.csv'.format(name, HUB_HEIGHT)
         test = pd.read_csv(os.path.join(td, out_fpath))
         test = test.set_index(['wspd', 'wdir'])
