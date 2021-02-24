@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pytests for  Rechunk h5
+pytests for TemporalStats
 """
 from click.testing import CliRunner
 import numpy as np

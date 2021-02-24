@@ -76,8 +76,6 @@ def main(wind_path, hub_height, out_dir, wspd_bins, wdir_bins, max_workers,
     logger.info('Computing wind rose from {}'.format(wind_path))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
 
-    res_cls = RES_CLS[res_cls]
-
     WindRose.run(wind_path, hub_height, sites=None, wspd_bins=wspd_bins,
                  wdir_bins=wdir_bins, res_cls=RES_CLS[res_cls], hsds=hsds,
                  max_workers=max_workers, chunks_per_worker=chunks_per_worker,
