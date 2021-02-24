@@ -656,6 +656,9 @@ class TemporalStats:
         else:
             out_fpath = out_path
 
+        # Drop any wild card values
+        out_fpath = out_fpath.replace('*', '')
+
         logger.info('Writing temporal statistics to {}'.format(out_fpath))
         if out_fpath.endswith('.csv'):
             res_stats.to_csv(out_fpath)

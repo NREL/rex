@@ -297,6 +297,9 @@ class WindRose:
         else:
             out_fpath = out_path
 
+        # Drop any wild card values
+        out_fpath = out_fpath.replace('*', '')
+
         logger.info('Writing wind rose to {}'.format(out_fpath))
         if out_fpath.endswith('.csv'):
             wind_rose.to_csv(out_fpath)
