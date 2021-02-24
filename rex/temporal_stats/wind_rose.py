@@ -82,7 +82,9 @@ class WindRose:
         wind_rose : ndarray
             Vector of wind rose frequencies
         """
-        wind_rose = np.histogram2d(wspd, wdir, bins=(wspd_bins, wdir_bins))[0]
+        wind_rose = np.histogram2d(wspd, wdir,
+                                   bins=(wspd_bins, wdir_bins),
+                                   density=True)[0]
 
         return wind_rose.flatten(order='F')
 
