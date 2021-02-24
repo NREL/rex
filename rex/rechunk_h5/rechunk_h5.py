@@ -9,6 +9,8 @@ from pandas.api.types import CategoricalDtype
 import time
 from warnings import warn
 
+from rex.utilities.utilities import get_chunk_slices
+
 logger = logging.getLogger(__name__)
 
 
@@ -53,34 +55,6 @@ def get_dataset_attributes(h5_file, out_json=None):
         ds_attrs.to_json(out_json)
 
     return ds_attrs
-
-
-def get_chunk_slices(ds_dim, chunk_size):
-    """
-    Create list of chunk slices [(s_i, e_i), ...]
-
-    Parameters
-    ----------
-    ds_len : int
-        Length of dataset axis to chunk
-    chunk_size : int
-        Size of chunks
-
-    Returns
-    -------
-    chunks : list
-        List of chunk start and end positions
-        [(s_i, e_i), (s_i+1, e_i+1), ...]
-    """
-    chunks = list(range(0, ds_dim, chunk_size))
-    if chunks[-1] < ds_dim:
-        chunks.append(ds_dim)
-    else:
-        chunks[-1] = ds_dim
-
-    chunks = list(zip(chunks[:-1], chunks[1:]))
-
-    return chunks
 
 
 def get_dtype(col):

@@ -371,6 +371,35 @@ class WindResource(Resource):
         super().__init__(h5_file, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
 
+    @property
+    def heights(self):
+        """
+        Extract available heights for pressure, temperature, windspeed, precip,
+        and winddirection variables. Used for interpolation/extrapolation.
+
+        Returns
+        -------
+        self._heights : list
+            List of available heights for:
+            windspeed, winddirection, temperature, and pressure
+        """
+        if self._heights is None:
+            heights = {'pressure': [],
+                       'temperature': [],
+                       'windspeed': [],
+                       'winddirection': []}
+
+            ignore = ['meta', 'time_index', 'coordinates']
+            for ds in self.datasets:
+                if ds not in ignore:
+                    ds_name, h = self._parse_name(ds)
+                    if ds_name in heights.keys():
+                        heights[ds_name].append(h)
+
+            self._heights = heights
+
+        return self._heights
+
     @staticmethod
     def _parse_hub_height(name):
         """
@@ -424,35 +453,6 @@ class WindResource(Resource):
             h = None
 
         return name, h
-
-    @property
-    def heights(self):
-        """
-        Extract available heights for pressure, temperature, windspeed, precip,
-        and winddirection variables. Used for interpolation/extrapolation.
-
-        Returns
-        -------
-        self._heights : list
-            List of available heights for:
-            windspeed, winddirection, temperature, and pressure
-        """
-        if self._heights is None:
-            heights = {'pressure': [],
-                       'temperature': [],
-                       'windspeed': [],
-                       'winddirection': []}
-
-            ignore = ['meta', 'time_index', 'coordinates']
-            for ds in self.datasets:
-                if ds not in ignore:
-                    ds_name, h = self._parse_name(ds)
-                    if ds_name in heights.keys():
-                        heights[ds_name].append(h)
-
-            self._heights = heights
-
-        return self._heights
 
     @staticmethod
     def get_nearest_h(h, heights):
