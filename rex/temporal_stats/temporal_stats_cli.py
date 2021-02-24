@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Resource Statistics
+Resource Statistics Command Line Interface (CLI)
 """
 import click
 import logging
@@ -10,7 +10,8 @@ from rex.multi_file_resource import MultiFileNSRDB, MultiFileWTK
 from rex.renewable_resource import (NSRDB, WaveResource, WindResource)
 from rex.resource import Resource
 from rex.temporal_stats.temporal_stats import TemporalStats
-from rex.utilities.loggers import init_logger
+from rex.utilities.cli_dtypes import INT
+from rex.utilities.loggers import init_mult
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ RES_CLS = {'Resouce': Resource,
 
 @click.group(invoke_without_command=True, chain=True)
 @click.option('--resource_path', '-h5', required=True,
-              type=click.Path(exists=True),
+              type=click.Path(),
               help=('Path to Resource .h5 files'))
 @click.option('--dataset', '-dset', required=True,
               help='Dataset to extract stats for')
@@ -37,7 +38,7 @@ RES_CLS = {'Resouce': Resource,
               help=("Statistics to extract, must be 'mean', 'median', 'std', "
                     "and / or 'stdev'")
               )
-@click.option('--max_workers', '-mw', type=int, default=None,
+@click.option('--max_workers', '-mw', type=INT, default=None,
               show_default=True,
               help=('Number of workers to use, if 1 run in serial, if None use'
                     ' all available cores'))
@@ -69,28 +70,23 @@ def main(ctx, resource_path, dataset, out_dir, statistics, max_workers,
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
-    if verbose:
-        log_level = 'DEBUG'
-    else:
-        log_level = 'INFO'
-
-    if log_file is not None:
-        log_dir = os.path.dirname(log_file)
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir)
-
     name = os.path.splitext(os.path.basename(resource_path))[0]
     out_fpath = '{}_{}.csv'.format(name, dataset)
     out_fpath = os.path.join(out_dir, out_fpath)
 
-    init_logger('rex', log_file=log_file, log_level=log_level)
-    logger.info('Extracting Resource data from {}'.format(resource_path))
+    if log_file is not None:
+        name = os.path.basename(log_file).split('.')[0]
+        log_dir = os.path.dirname(log_file)
+    else:
+        name = None
+        log_dir = None
+
+    init_mult(name, log_dir, [__name__, 'rex'], verbose=verbose)
+    logger.info('Computing stats data from {}'.format(resource_path))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
 
-    res_cls = RES_CLS[res_cls]
-
     res_stats = TemporalStats(resource_path, statistics=statistics,
-                              res_cls=res_cls, hsds=hsds)
+                              res_cls=RES_CLS[res_cls], hsds=hsds)
 
     if ctx.invoked_subcommand is None:
         all_stats = res_stats.all_stats(

@@ -715,6 +715,17 @@ class TemporalStats:
         out_stats : pandas.DataFrame
             DataFrame of resource statistics
         """
+        logger.info('Computing temporal stats for {}in {}'
+                    .format(dataset, res_h5))
+        logger.debug('Computing {} using:'
+                     '\n-diurnal={}'
+                     '\n-month={}'
+                     '\n-combinations={}'
+                     '\n-max workers={}'
+                     '\n-chunks per worker={}'
+                     '\n-output lat lons only={}'
+                     .format(statistics, diurnal, month, combinations,
+                             max_workers, chunks_per_worker, lat_lon_only))
         res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
                         hsds=hsds)
         out_stats = res_stats.compute_statistics(

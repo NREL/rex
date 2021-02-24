@@ -359,6 +359,15 @@ class WindRose:
         wind_rose : pandas.DataFrame
             DataFrame of wind rose frequencies at desired hub-height
         """
+        logger.info('Computing wind rose for {}m wind in {}'
+                    .format(hub_height, wind_h5))
+        logger.debug('Computing wind rose using:'
+                     '\n-wind speed bins: {}'
+                     '\n-wind direction bins: {}'
+                     '\n-max workers: {}'
+                     '\n-chunks per worker: {}'
+                     .format(wspd_bins, wdir_bins, max_workers,
+                             chunks_per_worker))
         wind_rose = cls(wind_h5, res_cls=res_cls, hsds=hsds)
         out = wind_rose.compute_wind_rose(hub_height,
                                           sites=sites,
