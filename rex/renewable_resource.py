@@ -1138,15 +1138,15 @@ class WaveResource(Resource):
         time_zone = self.meta.loc[site, 'timezone']
         time_interval = len(self.time_index) // 8760
 
-        for var in ['significant_wave_height', 'peak_period']:
+        for var in ['significant_wave_height', 'energy_period']:
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var, ds_slice)
             var_array = SAMResource.roll_timeseries(var_array, time_zone,
                                                     time_interval)
-            res_df[var] = SAMResource.check_units(var, var_array,
-                                                  tech='pvwattsv7')
+            res_df[var] = var_array
 
-        col_map = {'significant_wave_height': 'Hs', 'peak_period': 'Tp'}
+        col_map = {'significant_wave_height': 'wave_height',
+                   'energy_period': 'wave_period'}
         res_df = res_df.rename(columns=col_map)
         res_df.name = "{}-{}".format(ds_name, site)
 
