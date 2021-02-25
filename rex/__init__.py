@@ -24,7 +24,7 @@ from rex.resource_extraction import (ResourceX, MultiTimeResourceX,
                                      WindX, MultiFileWindX, MultiTimeWindX,
                                      MultiYearWindX,
                                      WaveX, MultiTimeWaveX, MultiYearWaveX)
-from rex.temporal_stats import TemporalStats
+from rex.temporal_stats import TemporalStats, WindRose
 from rex.utilities import init_logger, init_mult, SpawnProcessPool, SLURM, PBS
 
 from rex.version import __version__

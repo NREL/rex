@@ -371,6 +371,35 @@ class WindResource(Resource):
         super().__init__(h5_file, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
 
+    @property
+    def heights(self):
+        """
+        Extract available heights for pressure, temperature, windspeed, precip,
+        and winddirection variables. Used for interpolation/extrapolation.
+
+        Returns
+        -------
+        self._heights : dict
+            Dictionary of available heights for:
+            windspeed, winddirection, temperature, and pressure
+        """
+        if self._heights is None:
+            heights = {'pressure': [],
+                       'temperature': [],
+                       'windspeed': [],
+                       'winddirection': []}
+
+            ignore = ['meta', 'time_index', 'coordinates']
+            for ds in self.datasets:
+                if ds not in ignore:
+                    ds_name, h = self._parse_name(ds)
+                    if ds_name in heights.keys():
+                        heights[ds_name].append(h)
+
+            self._heights = heights
+
+        return self._heights
+
     @staticmethod
     def _parse_hub_height(name):
         """
@@ -424,35 +453,6 @@ class WindResource(Resource):
             h = None
 
         return name, h
-
-    @property
-    def heights(self):
-        """
-        Extract available heights for pressure, temperature, windspeed, precip,
-        and winddirection variables. Used for interpolation/extrapolation.
-
-        Returns
-        -------
-        self._heights : list
-            List of available heights for:
-            windspeed, winddirection, temperature, and pressure
-        """
-        if self._heights is None:
-            heights = {'pressure': [],
-                       'temperature': [],
-                       'windspeed': [],
-                       'winddirection': []}
-
-            ignore = ['meta', 'time_index', 'coordinates']
-            for ds in self.datasets:
-                if ds not in ignore:
-                    ds_name, h = self._parse_name(ds)
-                    if ds_name in heights.keys():
-                        heights[ds_name].append(h)
-
-            self._heights = heights
-
-        return self._heights
 
     @staticmethod
     def get_nearest_h(h, heights):
@@ -710,6 +710,57 @@ class WindResource(Resource):
         out = (ts_2 + da) % 360
 
         return out
+
+    def get_attrs(self, dset=None):
+        """
+        Get h5 attributes either from file or dataset
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get attributes for, if None get file (global) attributes
+
+        Returns
+        -------
+        attrs : dict
+            Dataset or file attributes
+        """
+        if dset is None:
+            attrs = dict(self.h5.attrs)
+        else:
+            var_name, h = self._parse_name(dset)
+            if h is not None and var_name in self.heights:
+                (h, _), _ = self.get_nearest_h(h, self.heights[var_name])
+                dset = '{}_{}m'.format(var_name, h)
+
+            attrs = super().get_attrs(dset=dset)
+
+        return attrs
+
+    def get_dset_properties(self, dset):
+        """
+        Get dataset properties (shape, dtype, chunks)
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get scale factor for
+
+        Returns
+        -------
+        shape : tuple
+            Dataset array shape
+        dtype : str
+            Dataset array dtype
+        chunks : tuple
+            Dataset chunk size
+        """
+        var_name, h = self._parse_name(dset)
+        if h is not None and var_name in self.heights:
+            (h, _), _ = self.get_nearest_h(h, self.heights[var_name])
+            dset = '{}_{}m'.format(var_name, h)
+
+        return super().get_dset_properties(dset)
 
     def _check_hub_height(self, h):
         """
@@ -1087,15 +1138,15 @@ class WaveResource(Resource):
         time_zone = self.meta.loc[site, 'timezone']
         time_interval = len(self.time_index) // 8760
 
-        for var in ['significant_wave_height', 'peak_period']:
+        for var in ['significant_wave_height', 'energy_period']:
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var, ds_slice)
             var_array = SAMResource.roll_timeseries(var_array, time_zone,
                                                     time_interval)
-            res_df[var] = SAMResource.check_units(var, var_array,
-                                                  tech='pvwattsv7')
+            res_df[var] = var_array
 
-        col_map = {'significant_wave_height': 'Hs', 'peak_period': 'Tp'}
+        col_map = {'significant_wave_height': 'wave_height',
+                   'energy_period': 'wave_period'}
         res_df = res_df.rename(columns=col_map)
         res_df.name = "{}-{}".format(ds_name, site)
 

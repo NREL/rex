@@ -3,16 +3,16 @@
 Temporal Statistics Extraction
 """
 from concurrent.futures import as_completed
+import gc
 import logging
 import numpy as np
 import os
 import pandas as pd
-from warnings import warn
 
-from rex.rechunk_h5.rechunk_h5 import get_chunk_slices
 from rex.resource import Resource
 from rex.utilities.execution import SpawnProcessPool
-from rex.utilities.utilities import get_lat_lon_cols
+from rex.utilities.loggers import log_mem
+from rex.utilities.utilities import get_lat_lon_cols, slice_sites
 
 logger = logging.getLogger(__name__)
 
@@ -190,7 +190,7 @@ class TemporalStats:
             List of column names to use
         """
         month_map = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May',
-                     6: 'June', 7: 'July', 8: 'Aug', 9: 'Sept', 10: 'Oct',
+                     6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct',
                      11: 'Nov', 12: 'Dec'}
         index = np.array(index.to_list())
         if len(index.shape) != 2 and index.max() > 12:
@@ -317,7 +317,6 @@ class TemporalStats:
                                            diurnal=diurnal, month=month)
 
         if isinstance(sites_slice, slice) and sites_slice.stop:
-            print(list(range(*sites_slice.indices(sites_slice.stop))))
             res_stats.index = \
                 list(range(*sites_slice.indices(sites_slice.stop)))
         elif isinstance(sites_slice, (list, np.ndarray)):
@@ -326,79 +325,6 @@ class TemporalStats:
         res_stats.index.name = 'gid'
 
         return res_stats
-
-    @staticmethod
-    def _slice_sites(sites_slice, n_sites, slice_size):
-        """
-        Break up sites_slice into slices of size slice_size
-
-        Parameters
-        ----------
-        sites_slice : slice
-            Sites to extract as a slice object to extract
-        n_sites : int
-            Total number of sites to extract
-        slice_size : int
-            Number of sites in each slice to extract either on each worker,
-            or in series
-
-        Returns
-        -------
-        slices : list
-            List of slices to extract
-        """
-        stop = sites_slice.stop
-        if stop is None:
-            stop = n_sites
-
-        if slice_size >= n_sites:
-            msg = ('The slice_size {} is >= the number of sites to be '
-                   'extracted {}! A single slice will be extracted.'
-                   .format(slice_size, n_sites))
-            logger.warning(msg)
-            warn(msg)
-
-            slices = [slice(sites_slice.start, stop, sites_slice.step)]
-        else:
-            step = sites_slice.step
-            if step is not None:
-                slice_size *= step
-
-            # Create slices of size slice_size
-            slices = [slice(s, e, step) for s, e
-                      in get_chunk_slices(stop, slice_size)]
-
-        return slices
-
-    @staticmethod
-    def _split_sites(sites, slice_size):
-        """
-        Split sites into sub-lists of ~ size slice_size
-
-        Parameters
-        ----------
-        sites : list
-            Sites to extract as a list or numpy object to extract
-        slice_size : int
-            Number of sites in each slice to extract either on each worker,
-            or in series
-
-        Returns
-        -------
-        slices : list
-            List of slices to extract
-        """
-        if slice_size >= len(sites):
-            msg = ('The slice_size {} is >= the number of sites to be '
-                   'extracted {}! A single slice will be extracted.'
-                   .format(slice_size, len(sites)))
-            logger.warning(msg)
-            warn(msg)
-            slices = [sites]
-        else:
-            slices = np.array_split(sites, len(sites) // slice_size)
-
-        return slices
 
     def _get_slices(self, dataset, sites=None, chunks_per_slice=5):
         """
@@ -427,22 +353,8 @@ class TemporalStats:
             logger.error(msg)
             raise RuntimeError(msg)
 
-        if chunks is not None:
-            slice_size = chunks[1] * chunks_per_slice
-        else:
-            slice_size = chunks_per_slice * 100
-
-        if sites is None:
-            sites = slice(None)
-
-        if isinstance(sites, slice):
-            slices = self._slice_sites(sites, shape[1], slice_size)
-        elif isinstance(sites, (list, tuple, np.ndarray)):
-            slices = self._split_sites(sites, slice_size)
-        else:
-            msg = ('sites must be of type "None", "slice", "list", "tuple", '
-                   'or "np.ndarray", but {} was provided'.format(type(sites)))
-            raise TypeError(msg)
+        slices = slice_sites(shape, chunks, sites=sites,
+                             chunks_per_slice=chunks_per_slice)
 
         return slices
 
@@ -513,7 +425,6 @@ class TemporalStats:
 
         slices = self._get_slices(dataset, sites,
                                   chunks_per_slice=chunks_per_worker)
-        print(slices)
         if len(slices) == 1:
             max_workers = 1
 
@@ -543,22 +454,24 @@ class TemporalStats:
                     res_stats.append(future.result())
                     logger.debug('Completed {} out of {} workers'
                                  .format((i + 1), len(futures)))
-
-            res_stats = pd.concat(res_stats)
         else:
             msg = ('Extracting {} for {} in serial'
                    .format(self.statistics.keys(), dataset))
             logger.info(msg)
             res_stats = []
-            for sites_slice in slices:
+            for i, sites_slice in enumerate(slices):
                 res_stats.append(self._extract_stats(
                     self.res_h5, self.statistics, dataset,
                     res_cls=self.res_cls, hsds=self._hsds,
                     time_index=self.time_index, sites_slice=sites_slice,
                     diurnal=diurnal, month=month,
                     combinations=combinations))
+                logger.debug('Completed {} out of {} sets of sites'
+                             .format((i + 1), len(slices)))
 
-            res_stats = pd.concat(res_stats)
+        gc.collect()
+        log_mem(logger)
+        res_stats = pd.concat(res_stats)
 
         if lat_lon_only:
             meta = self.lat_lon
@@ -747,6 +660,10 @@ class TemporalStats:
         else:
             out_fpath = out_path
 
+        # Drop any wild card values
+        out_fpath = out_fpath.replace('*', '')
+
+        logger.info('Writing temporal statistics to {}'.format(out_fpath))
         if out_fpath.endswith('.csv'):
             res_stats.to_csv(out_fpath)
         elif out_fpath.endswith('.json'):
@@ -805,6 +722,17 @@ class TemporalStats:
         out_stats : pandas.DataFrame
             DataFrame of resource statistics
         """
+        logger.info('Computing temporal stats for {}in {}'
+                    .format(dataset, res_h5))
+        logger.debug('Computing {} using:'
+                     '\n-diurnal={}'
+                     '\n-month={}'
+                     '\n-combinations={}'
+                     '\n-max workers={}'
+                     '\n-chunks per worker={}'
+                     '\n-output lat lons only={}'
+                     .format(statistics, diurnal, month, combinations,
+                             max_workers, chunks_per_worker, lat_lon_only))
         res_stats = cls(res_h5, statistics=statistics, res_cls=res_cls,
                         hsds=hsds)
         out_stats = res_stats.compute_statistics(

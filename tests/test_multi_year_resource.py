@@ -59,6 +59,48 @@ def check_res(res_cls):
                            res_cls.resource_datasets))
 
 
+def check_attrs(res_cls, dset):
+    """
+    Check dataset attributes extraction
+    """
+    truth = res_cls.get_attrs(dset=dset)
+    test = res_cls.attrs[dset]
+
+    msg = "{} attributes do not match!".format(dset)
+    assert truth == test, msg
+
+    truth = res_cls.get_scale_factor(dset)
+    test = res_cls.scale_factors[dset]
+
+    msg = "{} scale factors do not match!".format(dset)
+    assert truth == test, msg
+
+    truth = res_cls.get_units(dset)
+    test = res_cls.units[dset]
+
+    msg = "{} units do not match!".format(dset)
+    assert truth == test, msg
+
+
+def check_properties(res_cls, dset):
+    """
+    Check dataset properties extraction
+    """
+    shape, dtype, chunks = res_cls.get_dset_properties(dset)
+
+    test = res_cls.shapes[dset]
+    msg = "{} shape does not match!".format(dset)
+    assert shape == test, msg
+
+    test = res_cls.dtypes[dset]
+    msg = "{} dtype does not match!".format(dset)
+    assert dtype == test, msg
+
+    test = res_cls.chunks[dset]
+    msg = "{} chunks do not match!".format(dset)
+    assert chunks == test, msg
+
+
 def check_meta(res_cls):
     """
     Run tests on meta data
@@ -190,9 +232,11 @@ class TestMultiYearNSRDB:
     @staticmethod
     def test_ds(MultiYearNSRDB_res, ds_name='dni'):
         """
-        test extraction of a variable array
+        test extraction of a variable array, attributes, and properties
         """
         check_dset(MultiYearNSRDB_res, ds_name)
+        check_attrs(MultiYearNSRDB_res, ds_name)
+        check_properties(MultiYearNSRDB_res, ds_name)
         check_years(MultiYearNSRDB_res, ds_name)
         MultiYearNSRDB_res.close()
 
@@ -228,16 +272,18 @@ class TestMultiYearWindResource:
     @staticmethod
     def test_ds(MultiYearWind_res, ds_name='windspeed_100m'):
         """
-        test extraction of a variable array
+        test extraction of a variable array, attributes, and properties
         """
         check_dset(MultiYearWind_res, ds_name)
+        check_attrs(MultiYearWind_res, ds_name)
+        check_properties(MultiYearWind_res, ds_name)
         check_years(MultiYearWind_res, ds_name)
         MultiYearWind_res.close()
 
     @staticmethod
     def test_new_hubheight(MultiYearWind_res, ds_name='windspeed_90m'):
         """
-        test extraction of a variable array
+        test extraction of interpolated hub-height
         """
         check_dset(MultiYearWind_res, ds_name)
         check_years(MultiYearWind_res, ds_name)

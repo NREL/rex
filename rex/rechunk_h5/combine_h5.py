@@ -9,7 +9,7 @@ import os
 import time
 
 from rex.resource import Resource
-from rex.rechunk_h5.rechunk_h5 import get_chunk_slices
+from rex.rechunk_h5.rechunk_h5 import get_chunk_ranges
 
 logger = logging.getLogger(__name__)
 
@@ -379,7 +379,7 @@ class CombineH5:
         sites = shape[self._axis]
 
         if process_size is not None:
-            slice_map = get_chunk_slices(sites, process_size)
+            slice_map = get_chunk_ranges(sites, process_size)
             for i, (s, e) in enumerate(slice_map):
                 dset_slice = []
                 s += start

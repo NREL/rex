@@ -732,6 +732,10 @@ class Resource:
         self._time_index = None
         self._lat_lon = None
         self._str_decode = str_decode
+        self._attrs = None
+        self._shapes = None
+        self._chunks = None
+        self._dtypes = None
         self._i = 0
 
     def __repr__(self):
@@ -906,8 +910,9 @@ class Resource:
         -------
         shape : tuple
         """
-        _shape = (self.h5['time_index'].shape[0], self.h5['meta'].shape[0])
-        return _shape
+        shape = (self.h5['time_index'].shape[0], self.h5['meta'].shape[0])
+
+        return shape
 
     @property
     def meta(self):
@@ -987,13 +992,114 @@ class Resource:
     @property
     def attrs(self):
         """
-        Global (file) attributes
+        Dictionary of all dataset attributes
 
         Returns
         -------
         attrs : dict
         """
-        return self.global_attrs
+        if self._attrs is None:
+            self._attrs = {}
+            for dset in self.datasets:
+                self._attrs[dset] = dict(self.h5[dset].attrs)
+
+        return self._attrs
+
+    @property
+    def shapes(self):
+        """
+        Dictionary of all dataset shapes
+
+        Returns
+        -------
+        shapes : dict
+        """
+        if self._shapes is None:
+            self._shapes = {}
+            for dset in self.datasets:
+                self._shapes[dset] = self.h5[dset].shape
+
+        return self._shapes
+
+    @property
+    def dtypes(self):
+        """
+        Dictionary of all dataset dtypes
+
+        Returns
+        -------
+        dtypes : dict
+        """
+        if self._dtypes is None:
+            self._dtypes = {}
+            for dset in self.datasets:
+                self._dtypes[dset] = self.h5[dset].dtype
+
+        return self._dtypes
+
+    @property
+    def chunks(self):
+        """
+        Dictionary of all dataset chunk sizes
+
+        Returns
+        -------
+        chunks : dict
+        """
+        if self._chunks is None:
+            self._chunks = {}
+            for dset in self.datasets:
+                self._chunks[dset] = self._check_chunks(self.h5[dset].chunks)
+
+        return self._chunks
+
+    @property
+    def scale_factors(self):
+        """
+        Dictionary of all dataset scale factors
+
+        Returns
+        -------
+        scale_factors : dict
+        """
+        scale_factors = {k: v.get(self.SCALE_ATTR, 1)
+                         for k, v in self.attrs.items()}
+
+        return scale_factors
+
+    @property
+    def units(self):
+        """
+        Dictionary of all dataset units
+
+        Returns
+        -------
+        units : dict
+        """
+        units = {k: v.get(self.UNIT_ATTR, None)
+                 for k, v in self.attrs.items()}
+
+        return units
+
+    @staticmethod
+    def _check_chunks(chunks):
+        """
+        Check to see if chunks is an HSDS dictionary, if so convert to a tuple
+
+        Parameters
+        ----------
+        chunks : tuple | dict | None
+            tuple of chunk size, None, or HSDS chunk dictionary
+
+        Returns
+        -------
+        chunks : tuple
+            Tuple of chunk size along all axes
+        """
+        if isinstance(chunks, dict):
+            chunks = tuple(chunks.get('dims', None))
+
+        return chunks
 
     @staticmethod
     def df_str_decode(df):
@@ -1080,12 +1186,10 @@ class Resource:
         """
         ds = self.h5[dset]
         shape, dtype, chunks = ds.shape, ds.dtype, ds.chunks
-        if isinstance(chunks, dict):
-            chunks = tuple(chunks.get('dims', None))
 
-        return shape, dtype, chunks
+        return shape, dtype, self._check_chunks(chunks)
 
-    def get_scale(self, dset):
+    def get_scale_factor(self, dset):
         """
         Get dataset scale factor
 
@@ -1099,7 +1203,9 @@ class Resource:
         float
             Dataset scale factor, used to unscale int values to floats
         """
-        return self.h5[dset].attrs.get(self.SCALE_ATTR, 1)
+        attrs = self.get_attrs(dset=dset)
+
+        return attrs.get(self.SCALE_ATTR, 1)
 
     def get_units(self, dset):
         """
@@ -1115,7 +1221,9 @@ class Resource:
         str
             Dataset units, None if not defined
         """
-        return self.h5[dset].attrs.get(self.UNIT_ATTR, None)
+        attrs = self.get_attrs(dset=dset)
+
+        return attrs.get(self.UNIT_ATTR, None)
 
     def get_meta_arr(self, rec_name, rows=slice(None)):
         """Get a meta array by name (faster than DataFrame extraction).

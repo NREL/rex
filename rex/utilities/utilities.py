@@ -590,3 +590,144 @@ def roll_timeseries(arr, timezones):
         local_arr[:, mask] = np.roll(arr[:, mask], int(tz * time_step), axis=0)
 
     return local_arr
+
+
+def get_chunk_ranges(ds_dim, chunk_size):
+    """
+    Create list of chunk slices [(s_i, e_i), ...]
+
+    Parameters
+    ----------
+    ds_len : int
+        Length of dataset axis to chunk
+    chunk_size : int
+        Size of chunks
+
+    Returns
+    -------
+    chunks : list
+        List of chunk start and end positions
+        [(s_i, e_i), (s_i+1, e_i+1), ...]
+    """
+    chunks = list(range(0, ds_dim, chunk_size))
+    if chunks[-1] < ds_dim:
+        chunks.append(ds_dim)
+    else:
+        chunks[-1] = ds_dim
+
+    chunks = list(zip(chunks[:-1], chunks[1:]))
+
+    return chunks
+
+
+def split_sites_slice(sites_slice, n_sites, slice_size):
+    """
+    Break up sites_slice into slices of size slice_size
+
+    Parameters
+    ----------
+    sites_slice : slice
+        Sites to extract as a slice object to extract
+    n_sites : int
+        Total number of sites to extract
+    slice_size : int
+        Number of sites in each slice to extract either on each worker,
+        or in series
+
+    Returns
+    -------
+    slices : list
+        List of slices to extract
+    """
+    stop = sites_slice.stop
+    if stop is None:
+        stop = n_sites
+
+    if slice_size >= n_sites:
+        msg = ('The slice_size {} is >= the number of sites to be '
+               'extracted {}! A single slice will be extracted.'
+               .format(slice_size, n_sites))
+        warn(msg)
+
+        slices = [slice(sites_slice.start, stop, sites_slice.step)]
+    else:
+        step = sites_slice.step
+        if step is not None:
+            slice_size *= step
+
+        # Create slices of size slice_size
+        slices = [slice(s, e, step) for s, e
+                  in get_chunk_ranges(stop, slice_size)]
+
+    return slices
+
+
+def split_sites_list(sites, slice_size):
+    """
+    Split sites into sub-lists of ~ size slice_size
+
+    Parameters
+    ----------
+    sites : list
+        Sites to extract as a list or numpy object to extract
+    slice_size : int
+        Number of sites in each slice to extract either on each worker,
+        or in series
+
+    Returns
+    -------
+    slices : list
+        List of slices to extract
+    """
+    if slice_size >= len(sites):
+        msg = ('The slice_size {} is >= the number of sites to be '
+               'extracted {}! A single slice will be extracted.'
+               .format(slice_size, len(sites)))
+        warn(msg)
+        slices = [sites]
+    else:
+        slices = np.array_split(sites, len(sites) // slice_size)
+
+    return slices
+
+
+def slice_sites(shape, chunks, sites=None, chunks_per_slice=5):
+    """
+    Slice sites into given number of sub-sets with given number of chunks per
+    sub-set
+
+    Parameters
+    ----------
+    shape : tuple
+        Shape of dataset array that data is being extracted from
+    chunks : tuple
+        Chunk size of dataset array in .h5 file from which dataset is being
+        extracted
+    sites : list | slice, optional
+        Subset of sites to extract, by default None or all sites
+    chunks_per_slice : int, optional
+        Number of chunks to extract in each slice, by default 5
+
+    Returns
+    -------
+    slices : list
+        List of slices to extract
+    """
+    if chunks is not None:
+        slice_size = chunks[1] * chunks_per_slice
+    else:
+        slice_size = chunks_per_slice * 100
+
+    if sites is None:
+        sites = slice(None)
+
+    if isinstance(sites, slice):
+        slices = split_sites_slice(sites, shape[1], slice_size)
+    elif isinstance(sites, (list, tuple, np.ndarray)):
+        slices = split_sites_list(sites, slice_size)
+    else:
+        msg = ('sites must be of type "None", "slice", "list", "tuple", '
+               'or "np.ndarray", but {} was provided'.format(type(sites)))
+        raise TypeError(msg)
+
+    return slices
