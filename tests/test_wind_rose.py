@@ -56,6 +56,26 @@ def wind_rose(wspd, wdir, site, wspd_bins, wdir_bins):
     return out
 
 
+@pytest.mark.parametrize("hub_height", [80, 90])
+def test_hub_height(hub_height):
+    """
+    Test WindRose serial vs parallel
+    """
+    wspd_bins = (0, 30, 1)
+    wdir_bins = (0, 360, 5)
+    with WindResource(WIND_H5) as f:
+        wspd = f[f'windspeed_{hub_height}m']
+        wdir = f[f'winddirection_{hub_height}m']
+
+    test = WindRose.run(WIND_H5, hub_height,
+                        wspd_bins=wspd_bins,
+                        wdir_bins=wdir_bins)
+    site = np.random.choice(test.columns.values, 1)[0]
+    truth = wind_rose(wspd, wdir, site, wspd_bins, wdir_bins)
+
+    assert_frame_equal(test[[site]], truth)
+
+
 @pytest.mark.parametrize("max_workers", [1, None])
 def test_workers(max_workers):
     """

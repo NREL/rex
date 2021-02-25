@@ -1099,7 +1099,9 @@ class Resource:
         float
             Dataset scale factor, used to unscale int values to floats
         """
-        return self.h5[dset].attrs.get(self.SCALE_ATTR, 1)
+        attrs = self.get_attrs(dset=dset)
+
+        return attrs.get(self.SCALE_ATTR, 1)
 
     def get_units(self, dset):
         """
@@ -1115,7 +1117,9 @@ class Resource:
         str
             Dataset units, None if not defined
         """
-        return self.h5[dset].attrs.get(self.UNIT_ATTR, None)
+        attrs = self.get_attrs(dset=dset)
+
+        return attrs.get(self.UNIT_ATTR, None)
 
     def get_meta_arr(self, rec_name, rows=slice(None)):
         """Get a meta array by name (faster than DataFrame extraction).

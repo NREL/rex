@@ -711,6 +711,57 @@ class WindResource(Resource):
 
         return out
 
+    def get_attrs(self, dset=None):
+        """
+        Get h5 attributes either from file or dataset
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get attributes for, if None get file (global) attributes
+
+        Returns
+        -------
+        attrs : dict
+            Dataset or file attributes
+        """
+        if dset is None:
+            attrs = dict(self.h5.attrs)
+        else:
+            var_name, h = self._parse_name(dset)
+            if h is not None and var_name in self.heights:
+                (h, _), _ = self.get_nearest_h(h, self.heights[var_name])
+                dset = '{}_{}m'.format(var_name, h)
+
+            attrs = super().get_attrs(dset=dset)
+
+        return attrs
+
+    def get_dset_properties(self, dset):
+        """
+        Get dataset properties (shape, dtype, chunks)
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get scale factor for
+
+        Returns
+        -------
+        shape : tuple
+            Dataset array shape
+        dtype : str
+            Dataset array dtype
+        chunks : tuple
+            Dataset chunk size
+        """
+        var_name, h = self._parse_name(dset)
+        if h is not None and var_name in self.heights:
+            (h, _), _ = self.get_nearest_h(h, self.heights[var_name])
+            dset = '{}_{}m'.format(var_name, h)
+
+        return super().get_dset_properties(dset)
+
     def _check_hub_height(self, h):
         """
         Check requested hub-height against available windspeed hub-heights
