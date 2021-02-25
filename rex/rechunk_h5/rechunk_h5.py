@@ -9,7 +9,7 @@ from pandas.api.types import CategoricalDtype
 import time
 from warnings import warn
 
-from rex.utilities.utilities import get_chunk_slices
+from rex.utilities.utilities import get_chunk_ranges
 
 logger = logging.getLogger(__name__)
 
@@ -715,7 +715,7 @@ class RechunkH5:
                 by_rows = True
                 sites = shape[0]
 
-            slice_map = get_chunk_slices(sites, process_size)
+            slice_map = get_chunk_ranges(sites, process_size)
             for s, e in slice_map:
                 if by_rows:
                     ds_out[s:e] = self._check_data(ds_in[s:e], dset_attrs)

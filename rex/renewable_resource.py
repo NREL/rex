@@ -379,8 +379,8 @@ class WindResource(Resource):
 
         Returns
         -------
-        self._heights : list
-            List of available heights for:
+        self._heights : dict
+            Dictionary of available heights for:
             windspeed, winddirection, temperature, and pressure
         """
         if self._heights is None:

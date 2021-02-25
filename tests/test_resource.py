@@ -94,6 +94,48 @@ def check_res(res_cls):
                            res_cls.resource_datasets))
 
 
+def check_attrs(res_cls, dset):
+    """
+    Check dataset attributes extraction
+    """
+    truth = res_cls.get_attrs(dset=dset)
+    test = res_cls.attrs[dset]
+
+    msg = "{} attributes do not match!".format(dset)
+    assert truth == test, msg
+
+    truth = res_cls.get_scale_factor(dset)
+    test = res_cls.scale_factors[dset]
+
+    msg = "{} scale factors do not match!".format(dset)
+    assert truth == test, msg
+
+    truth = res_cls.get_units(dset)
+    test = res_cls.units[dset]
+
+    msg = "{} units do not match!".format(dset)
+    assert truth == test, msg
+
+
+def check_properties(res_cls, dset):
+    """
+    Check dataset properties extraction
+    """
+    shape, dtype, chunks = res_cls.get_dset_properties(dset)
+
+    test = res_cls.shapes[dset]
+    msg = "{} shape does not match!".format(dset)
+    assert shape == test, msg
+
+    test = res_cls.dtypes[dset]
+    msg = "{} dtype does not match!".format(dset)
+    assert dtype == test, msg
+
+    test = res_cls.chunks[dset]
+    msg = "{} chunks do not match!".format(dset)
+    assert chunks == test, msg
+
+
 def check_meta(res_cls):
     """
     Run tests on meta data
@@ -339,7 +381,7 @@ def check_scale(res_cls, ds_name):
     """
     native_value = res_cls[ds_name, 0, 0]
     scaled_value = res_cls.h5[ds_name][0, 0]
-    scale_factor = res_cls.get_scale(ds_name)
+    scale_factor = res_cls.get_scale_factor(ds_name)
     if scale_factor != 1:
         assert native_value != scaled_value
 
@@ -411,10 +453,12 @@ class TestNSRDB:
                               NSRDB_2018_list()])
     def test_ds(res_cls, ds_name='dni'):
         """
-        test extraction of a variable array
+        test extraction of a variable array, attributes, and properties
         """
         check_dset(res_cls, ds_name)
         check_dset_handler(res_cls, ds_name)
+        check_attrs(res_cls, ds_name)
+        check_properties(res_cls, ds_name)
         res_cls.close()
 
     @staticmethod
@@ -505,10 +549,12 @@ class TestWindResource:
                               wind_group()])
     def test_ds(res_cls, ds_name='windspeed_100m'):
         """
-        test extraction of a variable array
+        test extraction of a variable array, attributes, and properties
         """
         check_dset(res_cls, ds_name)
         check_dset_handler(res_cls, ds_name)
+        check_attrs(res_cls, ds_name)
+        check_properties(res_cls, ds_name)
         res_cls.close()
 
     @staticmethod

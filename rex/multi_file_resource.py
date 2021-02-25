@@ -350,27 +350,32 @@ class MultiFileResource(Resource):
     MultiFileResource can take a directory containing all files to source
     data from, or a filepath with a wildcard (*) indicating the filename
     format.
+
     >>> file = '$TESTDATADIR/wtk/wtk_2010_*m.h5'
     >>> with MultiFileResource(file) as res:
     >>>     print(self._h5_files)
     ['$TESTDATADIR/wtk_2010_200m.h5',
      '$TESTDATADIR/wtk_2010_100m.h5']
+
     >>> file_100m = '$TESTDATADIR/wtk_2010_100m.h5'
     >>> with Resource(file_100m) as res:
     >>>     print(res.datasets)
     ['coordinates', 'meta', 'pressure_100m', 'temperature_100m', 'time_index',
      'winddirection_100m', 'windspeed_100m']
+
     >>> file_200m = '$TESTDATADIR/wtk_2010_200m.h5'
     >>> with Resource(file_200m) as res:
     >>>     print(res.datasets)
     ['coordinates', 'meta', 'pressure_200m', 'temperature_200m', 'time_index',
      'winddirection_200m', 'windspeed_200m']
+
     >>> with MultiFileResource(file) as res:
     >>>     print(res.datasets)
     ['coordinates', 'meta', 'pressure_100m', 'pressure_200m',
      'temperature_100m', 'temperature_200m', 'time_index',
      'winddirection_100m', 'winddirection_200m', 'windspeed_100m',
      'windspeed_200m']
+
     >>> with MultiFileResource(file) as res:
     >>>     wspd = res['windspeed_100m']
     >>>
@@ -415,6 +420,10 @@ class MultiFileResource(Resource):
         self._h5 = self._init_multi_h5(h5_source, check_files=check_files)
         self._h5_files = self._h5.h5_files
         self.h5_file = self._h5_files[0]
+        self._attrs = None
+        self._shapes = None
+        self._chunks = None
+        self._dtypes = None
         self._i = 0
 
     def __repr__(self):

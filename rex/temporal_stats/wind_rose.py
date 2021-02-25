@@ -63,7 +63,7 @@ class WindRose:
         return self._res_cls
 
     @staticmethod
-    def _compute_wind_rose(wspd, wdir, wspd_bins, wdir_bins):
+    def compute_wind_rose(wspd, wdir, wspd_bins, wdir_bins):
         """
         Compute the wind rose using the wspd and wdir vectors using the given
         wspd and wdir bins
@@ -88,7 +88,7 @@ class WindRose:
                                    bins=(wspd_bins, wdir_bins),
                                    density=True)[0]
 
-        return wind_rose.flatten(order='F').astype(np.float32)
+        return wind_rose.astype(np.float32)
 
     @staticmethod
     def _make_bins(start, stop, step):
@@ -114,9 +114,11 @@ class WindRose:
         return bin_edges
 
     @classmethod
-    def _run_wind_rose(cls, wind_h5, hub_height, wspd_bins=(0, 30, 1),
-                       wdir_bins=(0, 360, 5), res_cls=WindResource,
-                       hsds=False, sites_slice=None):
+    def _compute_multisite_wind_rose(cls, wind_h5, hub_height,
+                                     wspd_bins=(0, 30, 1),
+                                     wdir_bins=(0, 360, 5),
+                                     res_cls=WindResource,
+                                     hsds=False, sites_slice=None):
         """
         Compute the wind rose from wind speed and direction at given hub-height
         for given sites
@@ -168,8 +170,8 @@ class WindRose:
 
         wind_rose = {}
         for i, (ws, wd) in enumerate(zip(wspd.T, wdir.T)):
-            wind_rose[gids[i]] = cls._compute_wind_rose(ws, wd, wspd_bins,
-                                                        wdir_bins)
+            wind_rose[gids[i]] = cls.compute_wind_rose(
+                ws, wd, wspd_bins, wdir_bins).flatten(order='F')
 
         wind_rose = pd.DataFrame(wind_rose, index=index)
 
@@ -201,9 +203,9 @@ class WindRose:
 
         return slices
 
-    def compute_wind_rose(self, hub_height, sites=None, wspd_bins=(0, 30, 1),
-                          wdir_bins=(0, 360, 5), max_workers=None,
-                          chunks_per_worker=5):
+    def compute(self, hub_height, sites=None, wspd_bins=(0, 30, 1),
+                wdir_bins=(0, 360, 5), max_workers=None,
+                chunks_per_worker=5):
         """
         Compute statistics
 
@@ -247,7 +249,7 @@ class WindRose:
                                   loggers=loggers) as exe:
                 futures = []
                 for sites_slice in slices:
-                    future = exe.submit(self._run_wind_rose,
+                    future = exe.submit(self._compute_multisite_wind_rose,
                                         self.wind_h5, hub_height,
                                         wspd_bins=wspd_bins,
                                         wdir_bins=wdir_bins,
@@ -268,12 +270,13 @@ class WindRose:
             logger.info(msg)
             wind_rose = []
             for i, sites_slice in enumerate(slices):
-                wind_rose.append(self._run_wind_rose(self.wind_h5, hub_height,
-                                                     wspd_bins=wspd_bins,
-                                                     wdir_bins=wdir_bins,
-                                                     res_cls=self.res_cls,
-                                                     hsds=self._hsds,
-                                                     sites_slice=sites_slice))
+                wind_rose.append(self._compute_multisite_wind_rose(
+                    self.wind_h5, hub_height,
+                    wspd_bins=wspd_bins,
+                    wdir_bins=wdir_bins,
+                    res_cls=self.res_cls,
+                    hsds=self._hsds,
+                    sites_slice=sites_slice))
                 logger.debug('Completed {} out of {} sets of sites'
                              .format((i + 1), len(slices)))
 
@@ -376,12 +379,12 @@ class WindRose:
                      .format(wspd_bins, wdir_bins, max_workers,
                              chunks_per_worker))
         wind_rose = cls(wind_h5, res_cls=res_cls, hsds=hsds)
-        out = wind_rose.compute_wind_rose(hub_height,
-                                          sites=sites,
-                                          wspd_bins=wspd_bins,
-                                          wdir_bins=wdir_bins,
-                                          max_workers=max_workers,
-                                          chunks_per_worker=chunks_per_worker)
+        out = wind_rose.compute(hub_height,
+                                sites=sites,
+                                wspd_bins=wspd_bins,
+                                wdir_bins=wdir_bins,
+                                max_workers=max_workers,
+                                chunks_per_worker=chunks_per_worker)
         if out_path is not None:
             wind_rose.save_wind_rose(out, out_path)
 

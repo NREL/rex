@@ -592,7 +592,7 @@ def roll_timeseries(arr, timezones):
     return local_arr
 
 
-def get_chunk_slices(ds_dim, chunk_size):
+def get_chunk_ranges(ds_dim, chunk_size):
     """
     Create list of chunk slices [(s_i, e_i), ...]
 
@@ -657,7 +657,7 @@ def split_sites_slice(sites_slice, n_sites, slice_size):
 
         # Create slices of size slice_size
         slices = [slice(s, e, step) for s, e
-                  in get_chunk_slices(stop, slice_size)]
+                  in get_chunk_ranges(stop, slice_size)]
 
     return slices
 

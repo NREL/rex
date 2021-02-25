@@ -556,11 +556,12 @@ class MultiTimeResource:
     @property
     def h5(self):
         """
-        Open h5py File instance. If _group is not None return open Group
+        Open class instance that handles all .h5 files that data is to
+        be extracted from
 
         Returns
         -------
-        h5 : h5py.File | h5py.Group
+        h5 : MultiTimeH5 | MultiYearH5
         """
         return self._h5
 
@@ -679,13 +680,68 @@ class MultiTimeResource:
     @property
     def attrs(self):
         """
-        Global (file) attributes
+        Dictionary of all dataset attributes
 
         Returns
         -------
-        global_attrs : dict
+        attrs : dict
         """
-        return self.global_attrs
+        return self.h5.h5.attrs
+
+    @property
+    def shapes(self):
+        """
+        Dictionary of all dataset shapes
+
+        Returns
+        -------
+        shapes : dict
+        """
+        return self.h5.h5.shapes
+
+    @property
+    def dtypes(self):
+        """
+        Dictionary of all dataset dtypes
+
+        Returns
+        -------
+        dtypes : dict
+        """
+        return self.h5.h5.dtypes
+
+    @property
+    def chunks(self):
+        """
+        Dictionary of all dataset chunk sizes
+
+        Returns
+        -------
+        chunks : dict
+        """
+        return self.h5.h5.chunks
+
+    @property
+    def scale_factors(self):
+        """
+        Dictionary of all dataset scale factors
+
+        Returns
+        -------
+        scale_factors : dict
+        """
+        return self.h5.h5.scale_factors
+
+    @property
+    def units(self):
+        """
+        Dictionary of all dataset units
+
+        Returns
+        -------
+        units : dict
+        """
+        return self.h5.h5.units
 
     def get_attrs(self, dset=None):
         """
@@ -723,7 +779,7 @@ class MultiTimeResource:
         """
         return self.h5.h5.get_dset_properties(dset)
 
-    def get_scale(self, dset):
+    def get_scale_factor(self, dset):
         """
         Get dataset scale factor
 
@@ -737,7 +793,7 @@ class MultiTimeResource:
         float
             Dataset scale factor, used to unscale int values to floats
         """
-        return self.h5.h5.get_scale(dset)
+        return self.h5.h5.get_scale_factor(dset)
 
     def get_units(self, dset):
         """
