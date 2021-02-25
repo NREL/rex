@@ -3,6 +3,7 @@
 Temporal Statistics Extraction
 """
 from concurrent.futures import as_completed
+import gc
 import logging
 import numpy as np
 import os
@@ -276,6 +277,7 @@ class WindRose:
                 logger.debug('Completed {} out of {} sets of sites'
                              .format((i + 1), len(slices)))
 
+        gc.collect()
         log_mem(logger)
         wind_rose = pd.concat(wind_rose).sort_index(axis=1)
 

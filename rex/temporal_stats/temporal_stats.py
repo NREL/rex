@@ -3,6 +3,7 @@
 Temporal Statistics Extraction
 """
 from concurrent.futures import as_completed
+import gc
 import logging
 import numpy as np
 import os
@@ -10,6 +11,7 @@ import pandas as pd
 
 from rex.resource import Resource
 from rex.utilities.execution import SpawnProcessPool
+from rex.utilities.loggers import log_mem
 from rex.utilities.utilities import get_lat_lon_cols, slice_sites
 
 logger = logging.getLogger(__name__)
@@ -467,6 +469,8 @@ class TemporalStats:
                 logger.debug('Completed {} out of {} sets of sites'
                              .format((i + 1), len(slices)))
 
+        gc.collect()
+        log_mem(logger)
         res_stats = pd.concat(res_stats)
 
         if lat_lon_only:
