@@ -11,6 +11,7 @@ from warnings import warn
 
 from rex.renewable_resource import WindResource
 from rex.utilities.execution import SpawnProcessPool
+from rex.utilities.loggers import log_mem
 from rex.utilities.utilities import slice_sites
 
 logger = logging.getLogger(__name__)
@@ -86,7 +87,7 @@ class WindRose:
                                    bins=(wspd_bins, wdir_bins),
                                    density=True)[0]
 
-        return wind_rose.flatten(order='F')
+        return wind_rose.flatten(order='F').astype(np.float32)
 
     @staticmethod
     def _make_bins(start, stop, step):
@@ -156,7 +157,7 @@ class WindRose:
         wdir_bins = cls._make_bins(*wdir_bins)
 
         index = np.meshgrid(wspd_bins[:-1], wdir_bins[:-1], indexing='ij')
-        index = np.array(index).T.reshape(-1, 2)
+        index = np.array(index).T.reshape(-1, 2).astype(np.int16)
         index = pd.MultiIndex.from_arrays(index.T, names=('wspd', 'wdir'))
 
         if isinstance(sites_slice, slice) and sites_slice.stop:
@@ -275,6 +276,7 @@ class WindRose:
                 logger.debug('Completed {} out of {} sets of sites'
                              .format((i + 1), len(slices)))
 
+        log_mem(logger)
         wind_rose = pd.concat(wind_rose).sort_index(axis=1)
 
         return wind_rose
