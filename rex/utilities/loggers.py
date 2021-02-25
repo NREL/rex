@@ -574,7 +574,7 @@ def log_mem(logger, log_level='DEBUG'):
     mem = psutil.virtual_memory()
     msg = ('Memory utilization is {0:.3f} GB out of '
            '{1:.3f} GB total ({2:.1f}% used)'
-           .format(mem.used / 1e9, mem.total / 1e9,
+           .format(mem.used / (1024.0 ** 3), mem.total / (1024.0 ** 3),
                    100 * mem.used / mem.total))
     if log_level.upper() == 'DEBUG':
         logger.debug('\t- {}'.format(msg))
