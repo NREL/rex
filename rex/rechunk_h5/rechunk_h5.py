@@ -862,8 +862,8 @@ class RechunkH5:
             raise
 
     @classmethod
-    def run(cls, h5_src, h5_dst, var_attrs, hub_height=None,
-            version=None, overwrite=True, meta=None,
+    def run(cls, h5_src, h5_dst, var_attrs=None, hub_height=None,
+            chunk_size=2, weeks_per_chunk=None, overwrite=True, meta=None,
             process_size=None, check_dset_attrs=False, resolution=None):
         """
         Rechunk h5_src to h5_dst using given attributes
@@ -879,8 +879,11 @@ class RechunkH5:
             attributes
         hub_height : int | None, optional
             Rechunk specific hub_height, by default None
-        version : str, optional
-            File version number, by default None
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
+        weeks_per_chunk : int, optional
+            Number of weeks per time chunk, if None scale weeks based on 8
+            weeks for hourly data, by default None
         overwrite : bool, optional
             Flag to overwrite an existing h5_dst file, by default True
         meta : str, optional
@@ -897,7 +900,9 @@ class RechunkH5:
         logger.info('Rechunking {} to {} using chunks given in {}'
                     .format(h5_src, h5_dst, var_attrs))
         try:
-            kwargs = {'hub_height': hub_height, 'version': version,
+            kwargs = {'hub_height': hub_height,
+                      'chunk_size': chunk_size,
+                      'weeks_per_chunk': weeks_per_chunk,
                       'overwrite': overwrite}
             with cls(h5_src, h5_dst, var_attrs, **kwargs) as r:
                 r.rechunk(meta=meta, process_size=process_size,
