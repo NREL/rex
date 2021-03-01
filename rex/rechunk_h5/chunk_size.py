@@ -1,56 +1,79 @@
 """
 Module to rechunk existing .h5 files
 """
-from copy import deepcopy
+from abc import ABC, abstractclassmethod
 import numpy as np
-import sys
 
 
-class ChunkSize:
+class BaseChunkSize(ABC):
     """
-    Class to compute chunks of size 2MB
+    Base class to compute chunk size
     """
-
-    def __inti__(self, shape, dtype, chunk_size=2, data=None):
+    def __init__(self):
         """
-        [summary]
-
         Parameters
         ----------
-        shape : [type]
-            [description]
-        dtype : [type]
-            [description]
         chunk_size : int, optional
-            [description], by default 2
-        data : [type], optional
-            [description], by default None
+            Chunk size in MB, by default 2
+        """
+        self._chunks = None
+
+    @property
+    def chunks(self):
+        """
+        Dataset chunk size along all axis
 
         Returns
         -------
-        [type]
-            [description]
+        tuple
         """
+        return self._chunks
 
-    @staticmethod
-    def get_data_size(data):
+    @abstractclassmethod
+    def compute(cls):
         """
-        Get the size of the given data array in MB
+        Base class to compute chunk size
 
         Parameters
         ----------
-        data : ndarray
-            Data array to chunk
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
 
         Returns
         -------
-        float
-            Data array size in MB
+        chunks : tuple
+            Dataset chunk size along all axis
         """
-        return sys.getsizeof(deepcopy(data)) * 10**-6
+        chunks = cls()
+
+        return chunks.chunks
+
+
+class TimeseriesChunkSize(BaseChunkSize):
+    """
+    Compute Timeseries chunks based on dtype, and weeks_per_chunk
+    """
+    def __inti__(self, shape, dtype, chunk_size=2, weeks_per_chunk=None):
+        """
+        Parameters
+        ----------
+        shape : tuple
+            Array shape
+        dtype : str | np.dtype
+            Array data type
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
+        weeks_per_chunk : int, optional
+            Number of weeks per time chunk, if None scale weeks based on 8
+            weeks for hourly data, by default None
+        """
+        self._chunks = self.compute_dtype_chunks(
+            shape, dtype,
+            chunk_size=chunk_size,
+            weeks_per_chunk=weeks_per_chunk)
 
     @staticmethod
-    def get_time_chunk(t_len, hourly_weeks=8):
+    def _compute_time_chunk_size(t_len, weeks_per_chunk=8):
         """
         Compute the size of the temporal chunks. Chunks are based on
 
@@ -58,23 +81,29 @@ class ChunkSize:
         ----------
         t_len : int
             Length of temporal axis
-        hourly_weeks : int, optional
-            Number of weeks in a chunk of hourly data, by default 8
+        weeks_per_chunk : int, optional
+            Number of weeks per time chunk, if None scale weeks based on 8
+            weeks for hourly data, by default None
 
         Returns
         -------
         time_chunks : int
             Size of chunks along temporal axis
         """
+        # Freq is the number of time-steps per hour
         freq = t_len / 8760
 
-        # Compute time chunks,
-        time_chunk = np.ceil(hourly_weeks / freq) * 7 * 24 * freq
+        if weeks_per_chunk is None:
+            # Use default of 8 weeks for hourly chunks
+            weeks_per_chunk = np.ceil(8 / freq)
+
+        # Compute time chunks
+        time_chunk = weeks_per_chunk * 7 * 24 * freq
 
         return int(time_chunk)
 
     @staticmethod
-    def calc_site_chunk_size(time_chunk, dtype, chunk_size=2):
+    def _compute_site_chunk_size(time_chunk, dtype, chunk_size=2):
         """
         Compute spatial chunk size given time chunk size
 
@@ -96,3 +125,151 @@ class ChunkSize:
         site_chunk = chunk_size // (time_chunk * pixel_size)
 
         return int(site_chunk)
+
+    @classmethod
+    def compute_dtype_chunks(cls, shape, dtype, chunk_size=2,
+                             weeks_per_chunk=None):
+        """
+        Compute chunks based on array shape and dtype
+
+        Parameters
+        ----------
+        shape : tuple
+            Array shape
+        dtype : str | np.dtype
+            Array data type
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
+        weeks_per_chunk : int, optional
+            Number of weeks per time chunk, if None scale weeks based on 8
+            weeks for hourly data, by default None
+
+        Returns
+        -------
+        chunks : tuple
+            Dataset chunk size along all axis
+        """
+        time_chunk = cls._compute_time_chunk_size(
+            shape[0],
+            weeks_per_chunk=weeks_per_chunk)
+        site_chunk = cls._compute_site_chunk_size(time_chunk, dtype,
+                                                  chunk_size=chunk_size)
+        if len(shape) > 2:
+            sites = np.sum(shape[1:])
+            weights = [i // sites for i in shape[1:]]
+            site_chunk = (int(w * site_chunk) for w in weights)
+        else:
+            site_chunk = (site_chunk, )
+
+        chunks = (time_chunk, ) + site_chunk
+
+        return chunks
+
+    @classmethod
+    def compute(cls, shape, dtype, chunk_size=2, weeks_per_chunk=None):
+        """
+        Compute chunks based on array shape and dtype
+
+        Parameters
+        ----------
+        shape : tuple
+            Array shape
+        dtype : str | np.dtype
+            Array data type
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
+        weeks_per_chunk : int, optional
+            Number of weeks per time chunk, if None scale weeks based on 8
+            weeks for hourly data, by default None
+
+        Returns
+        -------
+        chunks : tuple
+            Dataset chunk size along all axis
+        """
+        chunks = cls(shape, dtype, chunk_size=chunk_size,
+                     weeks_per_chunk=weeks_per_chunk)
+
+        return chunks.chunks
+
+
+class ArrayChunkSize(BaseChunkSize):
+    """
+    Compute chunks based on array size
+    """
+    def __init__(self, arr, chunk_size=2):
+        """
+        Parameters
+        ----------
+        arr : ndarray
+            Dataset array
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
+        """
+        self._chunks = self.compute_arr_chunks(arr, chunk_size=chunk_size)
+
+    @staticmethod
+    def _get_arr_size(arr):
+        """
+        Get the size of the given array in MB
+
+        Parameters
+        ----------
+        data : ndarray
+            Data array to chunk
+
+        Returns
+        -------
+        float
+            Data array size in MB
+        """
+
+        return arr.size * arr.dtype.itemsize * 10**-6
+
+    @classmethod
+    def compute_arr_chunks(cls, arr, chunk_size=2):
+        """
+        Compute chunks based on array size
+
+        Parameters
+        ----------
+        arr : ndarray
+            Dataset array
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
+
+        Returns
+        -------
+        chunks : tuple
+            Dataset chunk size along all axis
+        """
+        arr_size = cls._get_arr_size(arr)
+        if arr_size >= 2:
+            arr_len = len(arr)
+            chunks = int(arr_len // (arr_size / chunk_size))
+            chunks = (chunks, ) + arr.shape[1:]
+        else:
+            chunks = None
+
+        return chunks
+
+    @classmethod
+    def compute(cls, arr, chunk_size=2):
+        """
+        Compute chunks based on array shape and dtype
+
+        Parameters
+        ----------
+        arr : ndarray
+            Dataset array
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
+
+        Returns
+        -------
+        chunks : tuple
+            Dataset chunk size along all axis
+        """
+        chunks = cls(arr, chunk_size=chunk_size)
+
+        return chunks.chunks
