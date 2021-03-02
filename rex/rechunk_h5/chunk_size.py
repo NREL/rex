@@ -2,6 +2,7 @@
 Module to rechunk existing .h5 files
 """
 from abc import ABC
+from math import ceil
 import numpy as np
 
 
@@ -76,12 +77,15 @@ class TimeseriesChunkSize(BaseChunkSize):
 
         if weeks_per_chunk is None:
             # Use default of 8 weeks for hourly chunks
-            weeks_per_chunk = np.ceil(8 / freq)
+            weeks_per_chunk = ceil(8 / freq)
 
         # Compute time chunks
-        time_chunk = weeks_per_chunk * 7 * 24 * freq
+        time_chunk = ceil(weeks_per_chunk * 7 * 24 * freq)
 
-        return int(time_chunk)
+        if time_chunk >= t_len:
+            time_chunk = ceil(t_len / 4)
+
+        return time_chunk
 
     @staticmethod
     def _compute_site_chunk_size(time_chunk, dtype, chunk_size=2):
@@ -103,9 +107,9 @@ class TimeseriesChunkSize(BaseChunkSize):
             Spatial chunk size or size of chunk along non-temporal axes
         """
         pixel_size = np.dtype(dtype).itemsize * 10**-6
-        site_chunk = chunk_size // (time_chunk * pixel_size)
+        site_chunk = ceil(chunk_size / (time_chunk * pixel_size))
 
-        return int(site_chunk)
+        return site_chunk
 
     @classmethod
     def compute_dtype_chunks(cls, shape, dtype, chunk_size=2,
@@ -141,7 +145,7 @@ class TimeseriesChunkSize(BaseChunkSize):
             site_chunk = shape[1:]
         elif len(shape) > 2:
             weights = [i // sites for i in shape[1:]]
-            site_chunk = (int(w * site_chunk) for w in weights)
+            site_chunk = (ceil(w * site_chunk) for w in weights)
         else:
             site_chunk = (site_chunk, )
 
@@ -179,7 +183,8 @@ class TimeseriesChunkSize(BaseChunkSize):
 
 class ArrayChunkSize(BaseChunkSize):
     """
-    Compute chunks based on array size
+    Compute chunks based on array size, array will only be chunked along the
+    0 axis
     """
     def __init__(self, arr, chunk_size=2):
         """
@@ -213,7 +218,8 @@ class ArrayChunkSize(BaseChunkSize):
     @classmethod
     def compute_arr_chunks(cls, arr, chunk_size=2):
         """
-        Compute chunks based on array size
+        Compute chunks based on array size, array will only be chunked along
+        the 0 axis
 
         Parameters
         ----------
@@ -230,7 +236,7 @@ class ArrayChunkSize(BaseChunkSize):
         arr_size = cls._get_arr_size(arr)
         if arr_size >= 2:
             arr_len = len(arr)
-            chunks = int(arr_len // (arr_size / chunk_size))
+            chunks = ceil(arr_len // (arr_size / chunk_size))
             chunks = (chunks, ) + arr.shape[1:]
         else:
             chunks = None
@@ -240,7 +246,8 @@ class ArrayChunkSize(BaseChunkSize):
     @classmethod
     def compute(cls, arr, chunk_size=2):
         """
-        Compute chunks based on array shape and dtype
+        Compute chunks based on array size, array will only be chunked along
+        the 0 axis
 
         Parameters
         ----------
