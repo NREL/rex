@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-pytests for  Rechunk h5
+pytests for Rechunk h5
 """
 from click.testing import CliRunner
 import h5py
@@ -132,6 +132,26 @@ def test_rechunk_h5(runner, drop):
         assert result.exit_code == 0, msg
 
         check_rechunk(src_path, rechunk_path, missing=drop)
+
+    LOGGERS.clear()
+
+
+def test_chunk_size(runner):
+    """
+    Test chunk size
+    """
+    src_path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    with tempfile.TemporaryDirectory() as td:
+        rechunk_path = os.path.join(td, 'rechunk.h5')
+
+        result = runner.invoke(main, ['-src', src_path,
+                                      '-dst', rechunk_path])
+        msg = ('Failed with error {}'
+               .format(traceback.print_exception(*result.exc_info)))
+        assert result.exit_code == 0, msg
+
+        check_rechunk(src_path, rechunk_path)
 
     LOGGERS.clear()
 

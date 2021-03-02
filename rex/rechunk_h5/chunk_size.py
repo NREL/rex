@@ -1,7 +1,7 @@
 """
 Module to rechunk existing .h5 files
 """
-from abc import ABC, abstractclassmethod
+from abc import ABC
 import numpy as np
 
 
@@ -29,31 +29,12 @@ class BaseChunkSize(ABC):
         """
         return self._chunks
 
-    @abstractclassmethod
-    def compute(cls):
-        """
-        Base class to compute chunk size
-
-        Parameters
-        ----------
-        chunk_size : int, optional
-            Chunk size in MB, by default 2
-
-        Returns
-        -------
-        chunks : tuple
-            Dataset chunk size along all axis
-        """
-        chunks = cls()
-
-        return chunks.chunks
-
 
 class TimeseriesChunkSize(BaseChunkSize):
     """
     Compute Timeseries chunks based on dtype, and weeks_per_chunk
     """
-    def __inti__(self, shape, dtype, chunk_size=2, weeks_per_chunk=None):
+    def __init__(self, shape, dtype, chunk_size=2, weeks_per_chunk=None):
         """
         Parameters
         ----------
