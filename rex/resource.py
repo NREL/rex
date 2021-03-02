@@ -722,7 +722,7 @@ class Resource:
         self.h5_file = h5_file
         if hsds:
             import h5pyd
-            self._h5 = h5pyd.File(self.h5_file, 'r')
+            self._h5 = h5pyd.File(self.h5_file, 'r', use_cache=False)
         else:
             self._h5 = h5py.File(self.h5_file, 'r')
 

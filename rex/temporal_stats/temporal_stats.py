@@ -21,9 +21,9 @@ class TemporalStats:
     """
     Temporal Statistics from Resource Data
     """
-    STATS = {'mean': {'func': np.mean, 'kwargs': {'axis': 0}},
-             'median': {'func': np.median, 'kwargs': {'axis': 0}},
-             'std': {'func': np.std, 'kwargs': {'axis': 0}}}
+    STATS = {'mean': {'func': np.nanmean, 'kwargs': {'axis': 0}},
+             'median': {'func': np.nanmedian, 'kwargs': {'axis': 0}},
+             'std': {'func': np.nanstd, 'kwargs': {'axis': 0}}}
 
     def __init__(self, res_h5, statistics='mean', res_cls=Resource,
                  hsds=False):

@@ -19,13 +19,17 @@ logger = logging.getLogger(__name__)
 @click.option('--dst_h5', '-dst', type=click.Path(), required=True,
               help="Destination path for rechunked .h5 file")
 @click.option('--var_attrs_path', '-vap', type=click.Path(exists=True),
-              required=True,
+              default=None, show_default=True,
               help=".json containing variable attributes")
 @click.option('--hub_height', '-hgt', type=INT, default=None,
               show_default=True,
               help="Rechunk specific hub_height")
-@click.option('--version', '-ver', default=None, show_default=True,
-              help="File version number")
+@click.option('--chunk_size', '-size', default=2, type=int, show_default=True,
+              help="Chunk size in MB")
+@click.option('--weeks_per_chunk', '-wpc', default=None, type=INT,
+              show_default=True,
+              help=("Number of weeks per time chunk, if None scale weeks "
+                    "based on 8 weeks for hourly data"))
 @click.option('--overwrite', '-rm', is_flag=True,
               help="Flag to overwrite an existing h5_dst file")
 @click.option('--meta', '-m', default=None, type=click.Path(exists=True),
@@ -45,8 +49,9 @@ logger = logging.getLogger(__name__)
               help='Path to .log file, if None only log to stdout')
 @click.option('--verbose', '-v', is_flag=True,
               help='If used upgrade logging to DEBUG')
-def main(src_h5, dst_h5, var_attrs_path, hub_height, version, overwrite,
-         meta, process_size, check_dset_attrs, resolution, log_file, verbose):
+def main(src_h5, dst_h5, var_attrs_path, hub_height, chunk_size,
+         weeks_per_chunk, overwrite, meta, process_size, check_dset_attrs,
+         resolution, log_file, verbose):
     """
     RechunkH5 CLI entry point
     """
@@ -66,10 +71,11 @@ def main(src_h5, dst_h5, var_attrs_path, hub_height, version, overwrite,
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
-    RechunkH5.run(src_h5, dst_h5, var_attrs_path, hub_height=hub_height,
-                  version=version, overwrite=overwrite, meta=meta,
-                  process_size=process_size, check_dset_attrs=check_dset_attrs,
-                  resolution=resolution)
+    RechunkH5.run(src_h5, dst_h5, var_attrs=var_attrs_path,
+                  hub_height=hub_height, chunk_size=chunk_size,
+                  weeks_per_chunk=weeks_per_chunk, overwrite=overwrite,
+                  meta=meta, process_size=process_size,
+                  check_dset_attrs=check_dset_attrs, resolution=resolution)
 
 
 if __name__ == '__main__':

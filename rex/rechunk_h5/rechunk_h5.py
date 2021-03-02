@@ -9,12 +9,14 @@ from pandas.api.types import CategoricalDtype
 import time
 from warnings import warn
 
+from rex.rechunk_h5.chunk_size import TimeseriesChunkSize, ArrayChunkSize
 from rex.utilities.utilities import get_chunk_ranges
 
 logger = logging.getLogger(__name__)
 
 
-def get_dataset_attributes(h5_file, out_json=None):
+def get_dataset_attributes(h5_file, out_json=None, chunk_size=2,
+                           weeks_per_chunk=None):
     """
     Extact attributes, dtype, and chunk size for all datasets in .h5 file
 
@@ -22,6 +24,11 @@ def get_dataset_attributes(h5_file, out_json=None):
     ----------
     h5_file : str
         Path to source h5 file to scrape dataset data from
+    chunk_size : int, optional
+        Chunk size in MB, by default 2
+    weeks_per_chunk : int, optional
+        Number of weeks per time chunk, if None scale weeks based on 8
+        weeks for hourly data, by default None
     out_json : str, optional
         Path to output json to save DataFrame of dataset attributes to,
         by default None
@@ -29,28 +36,47 @@ def get_dataset_attributes(h5_file, out_json=None):
     Returns
     -------
     ds_attrs : pandas.DataFrame
-        Attributes (attrs, dtype, chunks) for all datasets in source .h5 file
+        Attributes (attrs, dtype, shape, chunks) for all datasets in
+        source .h5 file
     """
     attrs_list = []
     with h5py.File(h5_file, 'r') as f:
-        datasets = list(f)
-        for ds_name in datasets:
+        global_attrs = dict(f.attrs)
+
+        for ds_name in f:
             ds = f[ds_name]
             try:
+                arr_size = ds_name in ['meta', 'coordinates', 'time_index']
+                arr_size |= len(ds.shape) < 2
+                if arr_size:
+                    chunks = ArrayChunkSize.compute(ds, chunk_size=chunk_size)
+                else:
+                    chunks = TimeseriesChunkSize.compute(
+                        ds.shape, ds.dtype,
+                        chunk_size=chunk_size,
+                        weeks_per_chunk=weeks_per_chunk)
+
                 attrs = dict(ds.attrs)
                 if not attrs:
-                    attrs = None
+                    attrs = {}
 
                 ds_attrs = {'attrs': attrs,
                             'dtype': ds.dtype.name,
-                            'chunks': ds.chunks}
+                            'shape': ds.shape,
+                            'chunks': chunks}
                 ds_attrs = pd.Series(ds_attrs)
                 ds_attrs.name = ds_name
                 attrs_list.append(ds_attrs.to_frame().T)
-            except Exception:
-                pass
+            except Exception as ex:
+                msg = ('Could not extract attributes for {}: {}'
+                       .format(ds_name, ex))
+                logger.warning(msg)
+                warn(msg)
 
     ds_attrs = pd.concat(attrs_list)
+    if global_attrs:
+        ds_attrs.at['global', 'attrs'] = global_attrs
+
     if out_json is not None:
         ds_attrs.to_json(out_json)
 
@@ -130,10 +156,11 @@ class RechunkH5:
     """
     Class to create new .h5 file with new chunking
     """
-    NON_VAR_DSETS = ['global', 'meta', 'coordinates', 'time_index']
+    # None time-series
+    NON_TS_DSETS = ('meta', 'coordinates', 'time_index')
 
-    def __init__(self, h5_src, h5_dst, var_attrs, hub_height=None,
-                 version=None, overwrite=True):
+    def __init__(self, h5_src, h5_dst, var_attrs=None, hub_height=None,
+                 chunk_size=2, weeks_per_chunk=None, overwrite=True):
         """
         Initalize class object
 
@@ -143,13 +170,16 @@ class RechunkH5:
             Source .h5 file path
         h5_dst : str
             Destination path for rechunked .h5 file
-        var_attrs : str | pandas.DataFrame
+        var_attrs : str | pandas.DataFrame, optional
             DataFrame of variable attributes or .json containing variable
-            attributes
+            attributes, by default None
         hub_height : int | None, optional
             Rechunk specific hub_height, by default None
-        version : str, optional
-            File version number, by default None
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
+        weeks_per_chunk : int, optional
+            Number of weeks per time chunk, if None scale weeks based on 8
+            weeks for hourly data, by default None
         overwrite : bool, optional
             Flag to overwrite an existing h5_dst file, by default True
         """
@@ -158,9 +188,11 @@ class RechunkH5:
         self._dst_path = h5_dst
         self._dst_h5 = h5py.File(h5_dst, mode='w' if overwrite else 'w-')
 
-        self._rechunk_attrs = self._parse_var_attrs(var_attrs,
-                                                    hub_height=hub_height,
-                                                    version=version)
+        self._rechunk_attrs = self._get_var_attrs(
+            var_attrs=var_attrs,
+            hub_height=hub_height,
+            chunk_size=chunk_size,
+            weeks_per_chunk=weeks_per_chunk)
         if self.global_attrs is not None:
             for k, v in self.global_attrs['attrs'].items():
                 self._dst_h5.attrs[k] = v
@@ -287,56 +319,6 @@ class RechunkH5:
         return self._get_attrs('variables')
 
     @classmethod
-    def _parse_var_attrs(cls, var_attrs, hub_height=None, version=None):
-        """
-        Parse variable attributes from file if needed
-
-        Parameters
-        ----------
-        var_attrs : str | pandas.DataFrame
-            DataFrame of variable attributes or .json containing variable
-            attributes
-        hub_height : int | None, optional
-            Rechunk specific hub_height, by default None
-        version : str, optional
-            File version number, by default None
-
-        Returns
-        -------
-        var_attrs : pandas.DataFrame
-            DataFrame mapping variable (dataset) name to .h5 attributes
-        """
-        if isinstance(var_attrs, str):
-            var_attrs = pd.read_json(var_attrs)
-        elif not isinstance(var_attrs, pd.DataFrame):
-            msg = ("Variable attributes are expected as a .json file or a "
-                   "pandas DataFrame, but a {} was provided!"
-                   .format(type(var_attrs)))
-            logger.error(msg)
-            raise TypeError(msg)
-
-        var_attrs = var_attrs.where(var_attrs.notnull(), None)
-
-        if version is not None:
-            logger.debug('Adding version: {} to global attributes'
-                         .format(version))
-            if 'global' in var_attrs.index:
-                global_attrs = var_attrs.loc['global', 'attrs']
-                if isinstance(global_attrs, dict):
-                    global_attrs['version'] = version
-                else:
-                    global_attrs = {'version': version}
-            else:
-                var_attrs.at['global'] = {'attrs': {'version': version}}
-
-        if hub_height is not None:
-            var_attrs = cls._get_hub_height_attrs(var_attrs, hub_height)
-            logger.debug('Reducing variable attributes to variables at hub '
-                         'height {}m:\n{}'.format(hub_height, var_attrs.index))
-
-        return var_attrs
-
-    @classmethod
     def _get_hub_height_attrs(cls, var_attrs, hub_height):
         """
         Extract attributes for variables at given hub height
@@ -358,13 +340,13 @@ class RechunkH5:
         file_vars = [v for v in variables if h_flag in v]
         if h_flag == '_0m':
             for v in variables:
-                check = (v not in cls.NON_VAR_DSETS
+                check = (v not in cls.NON_TS_DSETS
                          and not v.endswith(('0m', '2m')))
                 if check:
                     file_vars.append(v)
 
         for v in variables:
-            if v in cls.NON_VAR_DSETS:
+            if v in cls.NON_TS_DSETS:
                 file_vars.append(v)
 
         var_attrs = var_attrs.loc[file_vars]
@@ -510,6 +492,47 @@ class RechunkH5:
 
         return data
 
+    def _get_var_attrs(self, var_attrs=None, hub_height=None, chunk_size=2,
+                       weeks_per_chunk=None):
+        """
+        Parse variable attributes from file if needed
+
+        Parameters
+        ----------
+        var_attrs : str | pandas.DataFrame, optional
+            DataFrame of variable attributes or .json containing variable
+            attributes, if None build from source .h5 file, by default None
+        hub_height : int | None, optional
+            Rechunk specific hub_height, by default None
+
+        Returns
+        -------
+        var_attrs : pandas.DataFrame
+            DataFrame mapping variable (dataset) name to .h5 attributes
+        """
+        if var_attrs is None:
+            var_attrs = get_dataset_attributes(self._src_path,
+                                               chunk_size=chunk_size,
+                                               weeks_per_chunk=weeks_per_chunk)
+
+        if isinstance(var_attrs, str):
+            var_attrs = pd.read_json(var_attrs)
+        elif not isinstance(var_attrs, pd.DataFrame):
+            msg = ("Variable attributes are expected as a .json file or a "
+                   "pandas DataFrame, but a {} was provided!"
+                   .format(type(var_attrs)))
+            logger.error(msg)
+            raise TypeError(msg)
+
+        var_attrs = var_attrs.where(var_attrs.notnull(), None)
+
+        if hub_height is not None:
+            var_attrs = self._get_hub_height_attrs(var_attrs, hub_height)
+            logger.debug('Reducing variable attributes to variables at hub '
+                         'height {}m:\n{}'.format(hub_height, var_attrs.index))
+
+        return var_attrs
+
     def _get_attrs(self, index):
         """
         Extract attributes for desired dataset(s)
@@ -525,12 +548,13 @@ class RechunkH5:
         pandas.Series
             Attributes for given index value(s)
         """
+        non_ts_attrs = self.NON_TS_DSETS + ('global', )
         if index in self.rechunk_attrs.index:
             attrs = self.rechunk_attrs.loc[index]
         elif index.lower().startswith('variable'):
             variables = [idx for idx in self.rechunk_attrs.index
                          if (idx in self.src_dsets)
-                         and (idx not in self.NON_VAR_DSETS)]
+                         and (idx not in non_ts_attrs)]
             attrs = self.rechunk_attrs.loc[variables]
         else:
             attrs = None
@@ -556,8 +580,9 @@ class RechunkH5:
             Initalized h5py Dataset instance
         """
         dtype = dset_attrs['dtype']
-        chunks = dset_attrs['chunks']
         attrs = dset_attrs['attrs']
+        chunks = dset_attrs['chunks']
+
         name = dset_attrs.get('name', None)
         if name is not None:
             dset_name = name
@@ -571,8 +596,7 @@ class RechunkH5:
                                          dtype=dtype, chunks=chunks)
         if attrs:
             for attr, value in attrs.items():
-                if attr not in ['freq', 'start']:
-                    ds.attrs[attr] = value
+                ds.attrs[attr] = value
 
         logger.info('- {} initialized'.format(dset_name))
 
@@ -838,8 +862,8 @@ class RechunkH5:
             raise
 
     @classmethod
-    def run(cls, h5_src, h5_dst, var_attrs, hub_height=None,
-            version=None, overwrite=True, meta=None,
+    def run(cls, h5_src, h5_dst, var_attrs=None, hub_height=None,
+            chunk_size=2, weeks_per_chunk=None, overwrite=True, meta=None,
             process_size=None, check_dset_attrs=False, resolution=None):
         """
         Rechunk h5_src to h5_dst using given attributes
@@ -855,8 +879,11 @@ class RechunkH5:
             attributes
         hub_height : int | None, optional
             Rechunk specific hub_height, by default None
-        version : str, optional
-            File version number, by default None
+        chunk_size : int, optional
+            Chunk size in MB, by default 2
+        weeks_per_chunk : int, optional
+            Number of weeks per time chunk, if None scale weeks based on 8
+            weeks for hourly data, by default None
         overwrite : bool, optional
             Flag to overwrite an existing h5_dst file, by default True
         meta : str, optional
@@ -873,7 +900,9 @@ class RechunkH5:
         logger.info('Rechunking {} to {} using chunks given in {}'
                     .format(h5_src, h5_dst, var_attrs))
         try:
-            kwargs = {'hub_height': hub_height, 'version': version,
+            kwargs = {'hub_height': hub_height,
+                      'chunk_size': chunk_size,
+                      'weeks_per_chunk': weeks_per_chunk,
                       'overwrite': overwrite}
             with cls(h5_src, h5_dst, var_attrs, **kwargs) as r:
                 r.rechunk(meta=meta, process_size=process_size,
