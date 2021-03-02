@@ -14,11 +14,11 @@ def test_time_chunks(freq):
     """
     Test time chunk size
     """
-    truth = int(np.ceil(8 / freq) * 24 * 7 * freq)
+    truth = (int(np.ceil(8 / freq) * 24 * 7 * freq), 10)
 
-    test = TimeseriesChunkSize.compute((8760 * freq, 1000), 'float32')
+    test = TimeseriesChunkSize.compute((8760 * freq, 10), 'float32')
 
-    assert truth == test[0]
+    assert truth == test
 
 
 @pytest.mark.parametrize(('dtype', 'chunk_size'),

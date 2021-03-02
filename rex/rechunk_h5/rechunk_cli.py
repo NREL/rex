@@ -71,7 +71,7 @@ def main(src_h5, dst_h5, var_attrs_path, hub_height, chunk_size,
     if not os.path.exists(dst_dir):
         os.makedirs(dst_dir)
 
-    RechunkH5.run(src_h5, dst_h5, var_attrs_path=var_attrs_path,
+    RechunkH5.run(src_h5, dst_h5, var_attrs=var_attrs_path,
                   hub_height=hub_height, chunk_size=chunk_size,
                   weeks_per_chunk=weeks_per_chunk, overwrite=overwrite,
                   meta=meta, process_size=process_size,

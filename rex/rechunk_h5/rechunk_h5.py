@@ -47,7 +47,7 @@ def get_dataset_attributes(h5_file, out_json=None, chunk_size=2,
             ds = f[ds_name]
             try:
                 arr_size = ds_name in ['meta', 'coordinates', 'time_index']
-                arr_size &= ds.shape < 2
+                arr_size |= len(ds.shape) < 2
                 if arr_size:
                     chunks = ArrayChunkSize.compute(ds, chunk_size=chunk_size)
                 else:
@@ -58,7 +58,7 @@ def get_dataset_attributes(h5_file, out_json=None, chunk_size=2,
 
                 attrs = dict(ds.attrs)
                 if not attrs:
-                    attrs = None
+                    attrs = {}
 
                 ds_attrs = {'attrs': attrs,
                             'dtype': ds.dtype.name,
@@ -157,7 +157,7 @@ class RechunkH5:
     Class to create new .h5 file with new chunking
     """
     # None time-series
-    NON_TS_DSETS = ['meta', 'coordinates', 'time_index']
+    NON_TS_DSETS = ('meta', 'coordinates', 'time_index')
 
     def __init__(self, h5_src, h5_dst, var_attrs=None, hub_height=None,
                  chunk_size=2, weeks_per_chunk=None, overwrite=True):

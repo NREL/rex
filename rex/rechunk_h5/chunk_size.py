@@ -135,8 +135,11 @@ class TimeseriesChunkSize(BaseChunkSize):
             weeks_per_chunk=weeks_per_chunk)
         site_chunk = cls._compute_site_chunk_size(time_chunk, dtype,
                                                   chunk_size=chunk_size)
-        if len(shape) > 2:
-            sites = np.sum(shape[1:])
+
+        sites = np.sum(shape[1:])
+        if site_chunk >= sites:
+            site_chunk = shape[1:]
+        elif len(shape) > 2:
             weights = [i // sites for i in shape[1:]]
             site_chunk = (int(w * site_chunk) for w in weights)
         else:
