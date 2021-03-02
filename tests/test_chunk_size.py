@@ -2,6 +2,7 @@
 """
 pytests for chunk size
 """
+from math import ceil
 import numpy as np
 import os
 import pytest
@@ -14,7 +15,7 @@ def test_time_chunks(freq):
     """
     Test time chunk size
     """
-    truth = (int(np.ceil(8 / freq) * 24 * 7 * freq), 10)
+    truth = (ceil(ceil(8 / freq) * 24 * 7 * freq), 10)
 
     test = TimeseriesChunkSize.compute((8760 * freq, 10), 'float32')
 
@@ -37,7 +38,7 @@ def test_timeseries_chunks(dtype, chunk_size):
     """
     time_chunks = 8 * 24 * 7
     pixel_size = np.dtype(dtype).itemsize * 10**-6
-    site_chunk = chunk_size // (time_chunks * pixel_size)
+    site_chunk = ceil(chunk_size / (time_chunks * pixel_size))
     truth = (time_chunks, site_chunk)
 
     test = TimeseriesChunkSize.compute((8760, 10000), dtype,
@@ -63,7 +64,7 @@ def test_array_chunks(chunk_size, dtype, bytes):
     arr = np.zeros((10000, 10000), dtype=dtype)
     truth = (arr.size * bytes * 10**-6) / chunk_size
 
-    truth = (int(arr.shape[0] // truth), 10000)
+    truth = (ceil(arr.shape[0] / truth), 10000)
 
     test = ArrayChunkSize.compute(arr, chunk_size=chunk_size)
 
