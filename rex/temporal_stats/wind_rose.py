@@ -159,10 +159,6 @@ class WindRose:
         wspd_bins = cls._make_bins(*wspd_bins)
         wdir_bins = cls._make_bins(*wdir_bins)
 
-        index = np.meshgrid(wspd_bins[:-1], wdir_bins[:-1], indexing='ij')
-        index = np.array(index).T.reshape(-1, 2).astype(np.int16)
-        index = pd.MultiIndex.from_arrays(index.T, names=('wspd', 'wdir'))
-
         if isinstance(sites_slice, slice) and sites_slice.stop:
             gids = list(range(*sites_slice.indices(sites_slice.stop)))
         elif isinstance(sites_slice, (list, np.ndarray)):
@@ -172,8 +168,6 @@ class WindRose:
         for i, (ws, wd) in enumerate(zip(wspd.T, wdir.T)):
             wind_rose[gids[i]] = cls.compute_wind_rose(
                 ws, wd, wspd_bins, wdir_bins).flatten(order='F')
-
-        wind_rose = pd.DataFrame(wind_rose, index=index)
 
         return wind_rose
 
@@ -258,9 +252,9 @@ class WindRose:
                                         sites_slice=sites_slice)
                     futures.append(future)
 
-                wind_rose = []
+                wind_rose = {}
                 for i, future in enumerate(as_completed(futures)):
-                    wind_rose.append(future.result())
+                    wind_rose.update(future.result())
                     logger.debug('Completed {} out of {} workers'
                                  .format((i + 1), len(futures)))
 
@@ -268,9 +262,9 @@ class WindRose:
             msg = ('Computing wind rose for {}m wind in serial'
                    .format(hub_height))
             logger.info(msg)
-            wind_rose = []
+            wind_rose = {}
             for i, sites_slice in enumerate(slices):
-                wind_rose.append(self._compute_multisite_wind_rose(
+                wind_rose.update(self._compute_multisite_wind_rose(
                     self.wind_h5, hub_height,
                     wspd_bins=wspd_bins,
                     wdir_bins=wdir_bins,
@@ -282,7 +276,12 @@ class WindRose:
 
         gc.collect()
         log_mem(logger)
-        wind_rose = pd.concat(wind_rose).sort_index(axis=1)
+        wspd_bins = self._make_bins(*wspd_bins)
+        wdir_bins = self._make_bins(*wdir_bins)
+        index = np.meshgrid(wspd_bins[:-1], wdir_bins[:-1], indexing='ij')
+        index = np.array(index).T.reshape(-1, 2).astype(np.int16)
+        index = pd.MultiIndex.from_arrays(index.T, names=('wspd', 'wdir'))
+        wind_rose = pd.DataFrame(wind_rose, index=index).sort_index(axis=1)
 
         return wind_rose
 
