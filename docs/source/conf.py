@@ -60,7 +60,7 @@ extensions = [
     'sphinx_click.ext',
 ]
 
-intersphinx_mapping = {'python': ('http://docs.python.org/3.5', None)}
+intersphinx_mapping = {'python': ('http://docs.python.org/3.8', None)}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -161,7 +161,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'rex.tex', 'rex Documentation',
-     'Galen MacLaurin, Michael Rossol', 'manual'),
+     'Michael Rossol, Grant Buster', 'manual'),
 ]
 
 
