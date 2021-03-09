@@ -748,8 +748,7 @@ def res_dist_threshold(lat_lons, tree=None, margin=1.05):
         cKDTree from scratch, by default None
     margin : float, optional
         Extra margin to multiply times the computed max distance between
-        neighboring resource points
-        by default 1.05
+        neighboring resource points, by default 1.05
 
     Returns
     -------
