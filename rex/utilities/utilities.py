@@ -743,8 +743,9 @@ def res_dist_threshold(lat_lons, tree=None, margin=1.05):
     ----------
     lat_lons : ndarray
         n x 2 array of resource points coordinates (lat, lon)
-    tree : cKDTree
-
+    tree : cKDTree, optional
+        Pre-build cKDTree of resource lat, lon coordintes. If None, build the
+        cKDTree from scratch, by default None
     margin : float, optional
         Extra margin to multiply times the computed max distance between
         neighboring resource points
@@ -757,6 +758,7 @@ def res_dist_threshold(lat_lons, tree=None, margin=1.05):
         the diagonal between closest resource points, with desired extra margin
     """
     if tree is None:
+        # pylint: disable=not-callable
         tree = cKDTree(lat_lons)
 
     dists = tree.query(lat_lons, k=2)[0][:, 1]
