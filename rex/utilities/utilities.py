@@ -736,8 +736,9 @@ def slice_sites(shape, chunks, sites=None, chunks_per_slice=5):
 
 def res_dist_threshold(lat_lons, tree=None, margin=1.05):
     """
-    Estimate the distance between resource points. Calculated as half of the
-    diagonal between closest resource points, with desired extra margin
+    Distance threshold for nearest neighbor searches performed on resource
+    points. Calculated as half of the diagonal between closest resource points,
+    with desired extra margin
 
     Parameters
     ----------
@@ -753,8 +754,9 @@ def res_dist_threshold(lat_lons, tree=None, margin=1.05):
     Returns
     -------
     float
-        Estimate the distance between resource points. Calculated as half of
-        the diagonal between closest resource points, with desired extra margin
+        Distance threshold for nearest neighbor searches performed on resource
+        points. Calculated as half of the diagonal between closest resource
+        points, with desired extra margin
     """
     if tree is None:
         # pylint: disable=not-callable
@@ -763,4 +765,4 @@ def res_dist_threshold(lat_lons, tree=None, margin=1.05):
     dists = tree.query(lat_lons, k=2)[0][:, 1]
     dists = dists[(dists != 0)]
 
-    return margin * (2 ** 0.5) * (dists.min() / 2)
+    return margin * (2 ** 0.5) * (dists.max() / 2)
