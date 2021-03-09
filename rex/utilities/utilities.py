@@ -9,6 +9,7 @@ import os
 import numpy as np
 import pandas as pd
 import re
+from scipy.spatial import cKDTree
 import time
 from warnings import warn
 
@@ -731,3 +732,37 @@ def slice_sites(shape, chunks, sites=None, chunks_per_slice=5):
         raise TypeError(msg)
 
     return slices
+
+
+def res_dist_threshold(lat_lons, tree=None, margin=1.05):
+    """
+    Distance threshold for nearest neighbor searches performed on resource
+    points. Calculated as half of the diagonal between closest resource points,
+    with desired extra margin
+
+    Parameters
+    ----------
+    lat_lons : ndarray
+        n x 2 array of resource points coordinates (lat, lon)
+    tree : cKDTree, optional
+        Pre-build cKDTree of resource lat, lon coordintes. If None, build the
+        cKDTree from scratch, by default None
+    margin : float, optional
+        Extra margin to multiply times the computed max distance between
+        neighboring resource points, by default 1.05
+
+    Returns
+    -------
+    float
+        Distance threshold for nearest neighbor searches performed on resource
+        points. Calculated as half of the diagonal between closest resource
+        points, with desired extra margin
+    """
+    if tree is None:
+        # pylint: disable=not-callable
+        tree = cKDTree(lat_lons)
+
+    dists = tree.query(lat_lons, k=2)[0][:, 1]
+    dists = dists[(dists != 0)]
+
+    return margin * (2 ** 0.5) * (dists.max() / 2)

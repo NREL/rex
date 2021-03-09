@@ -719,6 +719,21 @@ def test_check_lat_lon():
             f.lat_lon_gid(bad_lat_lon)
 
 
+def test_check_dist():
+    """
+    Test lat lon distance check
+    """
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    with WindX(path) as f:
+        lat_lon = f.lat_lon
+        print(f.distance_threshold)
+        bad_lat_lon = [lat_lon[:, 0].min(), lat_lon[:, 1].min()]
+        with pytest.raises(ResourceValueError):
+            # pylint: disable=no-member
+            f.lat_lon_gid(bad_lat_lon)
+
+
 @pytest.mark.parametrize('datasets', [None, 'windspeed_100m',
                                       ['pressure_100m',
                                        'temperature_100m',

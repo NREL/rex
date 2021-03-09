@@ -21,7 +21,7 @@ from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
                                     WindResource)
 from rex.temporal_stats.temporal_stats import TemporalStats
 from rex.utilities.exceptions import ResourceValueError, ResourceWarning
-from rex.utilities.utilities import parse_year, check_tz
+from rex.utilities.utilities import parse_year, check_tz, res_dist_threshold
 
 TREE_DIR = TemporaryDirectory()
 logger = logging.getLogger(__name__)
@@ -59,6 +59,7 @@ class ResourceX:
         """
         self._res = res_cls(res_h5, unscale=unscale, hsds=hsds,
                             str_decode=str_decode, group=group)
+        self._dist_thresh = None
         self._tree = tree
         self._i = 0
 
@@ -269,6 +270,22 @@ class ResourceX:
         return self._tree
 
     @property
+    def distance_threshold(self):
+        """
+        Distance threshold, calculated as half of the diagonal between closest
+        resource points, with an extra 5% margin
+
+        Returns
+        -------
+        float
+        """
+        if self._dist_thresh is None:
+            self._dist_thresh = res_dist_threshold(self._res.lat_lon,
+                                                   tree=self.tree)
+
+        return self._dist_thresh
+
+    @property
     def countries(self):
         """
         Available Countires
@@ -384,6 +401,32 @@ class ResourceX:
         except Exception as e:
             logger.warning('Could not save tree to {}: {}'
                            .format(tree_path, e))
+
+    @staticmethod
+    def _get_ds_slice(dset, gids):
+        """
+        Get dataset region slice
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to extract region from
+        gids : ndarray | list
+            Gids associated with region
+
+        Returns
+        -------
+        ds_slice : tuple
+            ds slice tuple to properly extract region from given dataset
+        """
+        if dset == 'time_index':
+            ds_slice = (slice(None), )
+        elif dset in ['coordinates', 'meta']:
+            ds_slice = (gids, )
+        else:
+            ds_slice = (slice(None), gids)
+
+        return ds_slice
 
     @staticmethod
     def _to_SAM_csv(sam_df, site_meta, out_path):
@@ -507,7 +550,7 @@ class ResourceX:
 
         return lat_lon
 
-    def lat_lon_gid(self, lat_lon):
+    def lat_lon_gid(self, lat_lon, check_dist=True):
         """
         Get nearest gid to given (lat, lon) pair or pairs
 
@@ -515,6 +558,10 @@ class ResourceX:
         ----------
         lat_lon : ndarray
             Either a single (lat, lon) pair or series of (lat, lon) pairs
+        check_dist : bool, optional
+            Flag to check the nearest neighbor distance against the resource
+            distance threshold to ensure that the lat, lon coordinates are
+            within the resource grid
 
         Returns
         -------
@@ -522,7 +569,15 @@ class ResourceX:
             Nearest gid(s) to given (lat, lon) pair(s)
         """
         lat_lon = self._check_lat_lon(lat_lon)
-        _, gids = self.tree.query(lat_lon)
+        dist, gids = self.tree.query(lat_lon)
+
+        if check_dist:
+            dist_check = dist > self.distance_threshold
+            if np.any(dist_check):
+                msg = ("Latitude, longitude coordinates ({}) do not sit within"
+                       " resource grid!".format(lat_lon[dist_check]))
+                logger.error(msg)
+                raise ResourceValueError(msg)
 
         if len(gids) == 1:
             gids = int(gids[0])
@@ -646,7 +701,7 @@ class ResourceX:
 
         return df
 
-    def get_lat_lon_ts(self, ds_name, lat_lon):
+    def get_lat_lon_ts(self, ds_name, lat_lon, check_dist=True):
         """
         Extract timeseries of site(s) neareset to given lat_lon(s)
 
@@ -656,18 +711,22 @@ class ResourceX:
             Dataset to extract
         lat_lon : tuple | list
             (lat, lon) coordinate of interest or pairs of coordinates
+        check_dist : bool, optional
+            Flag to check the nearest neighbor distance against the resource
+            distance threshold to ensure that the lat, lon coordinates are
+            within the resource grid
 
         Return
         ------
         ts : ndarray
             Time-series for given site(s) and dataset
         """
-        gid = self.lat_lon_gid(lat_lon)
+        gid = self.lat_lon_gid(lat_lon, check_dist=check_dist)
         ts = self.get_gid_ts(ds_name, gid)
 
         return ts
 
-    def get_lat_lon_df(self, ds_name, lat_lon):
+    def get_lat_lon_df(self, ds_name, lat_lon, check_dist=True):
         """
         Extract timeseries of site(s) nearest to given lat_lon(s) and return
         as a DataFrame
@@ -678,13 +737,17 @@ class ResourceX:
             Dataset to extract
         lat_lon : tuple
             (lat, lon) coordinate of interest
+        check_dist : bool, optional
+            Flag to check the nearest neighbor distance against the resource
+            distance threshold to ensure that the lat, lon coordinates are
+            within the resource grid
 
         Return
         ------
         df : pandas.DataFrame
             Time-series DataFrame for given site(s) and dataset
         """
-        gid = self.lat_lon_gid(lat_lon)
+        gid = self.lat_lon_gid(lat_lon, check_dist=check_dist)
         df = self.get_gid_df(ds_name, gid)
 
         return df
@@ -825,7 +888,8 @@ class ResourceX:
 
         return SAM_df
 
-    def get_SAM_lat_lon(self, lat_lon, out_path=None, **kwargs):
+    def get_SAM_lat_lon(self, lat_lon, check_dist=True, out_path=None,
+                        **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given lat_lon
@@ -834,6 +898,10 @@ class ResourceX:
         ----------
         lat_lon : tuple
             (lat, lon) coordinate of interest
+        check_dist : bool, optional
+            Flag to check the nearest neighbor distance against the resource
+            distance threshold to ensure that the lat, lon coordinates are
+            within the resource grid
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
@@ -846,7 +914,7 @@ class ResourceX:
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        gid = self.lat_lon_gid(lat_lon)
+        gid = self.lat_lon_gid(lat_lon, check_dist=check_dist)
         SAM_df = self.get_SAM_gid(gid, out_path=out_path, **kwargs)
 
         return SAM_df
@@ -902,32 +970,6 @@ class ResourceX:
         Close res_cls instance
         """
         self._res.close()
-
-    @staticmethod
-    def _get_ds_slice(dset, gids):
-        """
-        Get dataset region slice
-
-        Parameters
-        ----------
-        dset : str
-            Dataset to extract region from
-        gids : ndarray | list
-            Gids associated with region
-
-        Returns
-        -------
-        ds_slice : tuple
-            ds slice tuple to properly extract region from given dataset
-        """
-        if dset == 'time_index':
-            ds_slice = (slice(None), )
-        elif dset in ['coordinates', 'meta']:
-            ds_slice = (gids, )
-        else:
-            ds_slice = (slice(None), gids)
-
-        return ds_slice
 
     def _get_datasets(self, datasets=None):
         """
@@ -1044,6 +1086,7 @@ class MultiFileResourceX(ResourceX):
         """
         self._res = res_cls(resource_path, unscale=unscale,
                             str_decode=str_decode, check_files=check_files)
+        self._dist_thresh = None
         self._tree = tree
         self._i = 0
 
@@ -1081,6 +1124,7 @@ class MultiYearResourceX(ResourceX):
         self._res = MultiYearResource(resource_path, years=years,
                                       unscale=unscale, str_decode=str_decode,
                                       hsds=hsds, res_cls=res_cls)
+        self._dist_thresh = None
         self._tree = tree
         self._i = 0
 
@@ -1161,6 +1205,7 @@ class MultiTimeResourceX(ResourceX):
         self._res = MultiTimeResource(resource_path, unscale=unscale,
                                       str_decode=str_decode, hsds=hsds,
                                       res_cls=res_cls)
+        self._dist_thresh = None
         self._tree = tree
         self._i = 0
 
@@ -1396,7 +1441,8 @@ class WindX(ResourceX):
 
         return SAM_df
 
-    def get_SAM_lat_lon(self, hub_height, lat_lon, out_path=None, **kwargs):
+    def get_SAM_lat_lon(self, hub_height, lat_lon, check_dist=True,
+                        out_path=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given lat_lon and hub height
@@ -1405,8 +1451,12 @@ class WindX(ResourceX):
         ----------
         hub_height : int
             Hub height of interest
-        gid : int | list
-            Resource gid(s) of interset
+        lat_lon : tuple
+            (lat, lon) coordinate of interest
+        check_dist : bool, optional
+            Flag to check the nearest neighbor distance against the resource
+            distance threshold to ensure that the lat, lon coordinates are
+            within the resource grid
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
@@ -1421,7 +1471,7 @@ class WindX(ResourceX):
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        gid = self.lat_lon_gid(lat_lon)
+        gid = self.lat_lon_gid(lat_lon, check_dist=check_dist)
         SAM_df = self.get_SAM_gid(hub_height, gid, out_path=out_path, **kwargs)
 
         return SAM_df
