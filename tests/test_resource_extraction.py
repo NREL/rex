@@ -727,7 +727,6 @@ def test_check_dist():
 
     with WindX(path) as f:
         lat_lon = f.lat_lon
-        print(f.distance_threshold)
         bad_lat_lon = [lat_lon[:, 0].min(), lat_lon[:, 1].min()]
         with pytest.raises(ResourceValueError):
             # pylint: disable=no-member

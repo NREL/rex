@@ -72,7 +72,6 @@ def test_bad_log_dir():
         logger = init_logger(__name__, log_file=log_file)
         assert len(logger.handlers) == 1
         assert logger.handlers[0].name == 'stream'
-        print(LOGGERS.loggers)
         assert LOGGERS.loggers[__name__]['log_file'] is None
 
     LOGGERS.clear()

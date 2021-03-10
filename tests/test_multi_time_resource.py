@@ -39,9 +39,7 @@ def check_res(res_cls):
     """
     time_index = None
     for file in res_cls.h5_files:
-        print(file)
         with Resource(file) as f:
-            print(f.datasets)
             if time_index is None:
                 time_index = f.time_index
             else:
