@@ -5,12 +5,12 @@ import h5py
 import logging
 import numpy as np
 import pandas as pd
-from pandas.api.types import CategoricalDtype
 import time
 from warnings import warn
 
 from rex.rechunk_h5.chunk_size import TimeseriesChunkSize, ArrayChunkSize
-from rex.utilities.utilities import get_chunk_ranges
+from rex.utilities.loggers import log_versions
+from rex.utilities.utilities import get_chunk_ranges, to_records_array
 
 logger = logging.getLogger(__name__)
 
@@ -83,75 +83,6 @@ def get_dataset_attributes(h5_file, out_json=None, chunk_size=2,
     return ds_attrs
 
 
-def get_dtype(col):
-    """
-    Get column dtype for converstion to records array
-
-    Parameters
-    ----------
-    col : pandas.Series
-        Column from pandas DataFrame
-
-    Returns
-    -------
-    out : str
-        String representation of converted dtype for column:
-        -  float = float32
-        -  int = int16 or int32 depending on data range
-        -  object/str = U* max length of strings in col
-    """
-    dtype = col.dtype
-
-    if isinstance(dtype, CategoricalDtype):
-        col = col.astype(type(col.values[0]))
-        out = get_dtype(col)
-    elif np.issubdtype(dtype, np.floating):
-        out = 'float32'
-    elif np.issubdtype(dtype, np.integer):
-        if col.max() < 32767:
-            out = 'int16'
-        else:
-            out = 'int32'
-    elif np.issubdtype(dtype, np.object_):
-        size = int(col.astype(str).str.len().max())
-        out = 'S{:}'.format(size)
-    else:
-        out = dtype
-
-    return out
-
-
-def to_records_array(df):
-    """
-    Convert pandas DataFrame to numpy Records Array
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        Pandas DataFrame to be converted
-
-    Returns
-    -------
-    numpy.rec.array
-        Records array of input df
-    """
-    meta_arrays = []
-    dtypes = []
-    for c_name, c_data in df.iteritems():
-        dtype = get_dtype(c_data)
-
-        if np.issubdtype(dtype, np.bytes_):
-            data = c_data.astype(str).str.encode('utf-8').values
-        else:
-            data = c_data.values
-
-        arr = np.array(data, dtype=dtype)
-        meta_arrays.append(arr)
-        dtypes.append((c_name, dtype))
-
-    return np.core.records.fromarrays(meta_arrays, dtype=dtypes)
-
-
 class RechunkH5:
     """
     Class to create new .h5 file with new chunking
@@ -183,6 +114,7 @@ class RechunkH5:
         overwrite : bool, optional
             Flag to overwrite an existing h5_dst file, by default True
         """
+        log_versions(logger)
         self._src_path = h5_src
         self._src_dsets = None
         self._dst_path = h5_dst

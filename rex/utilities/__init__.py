@@ -4,7 +4,8 @@ rex utilities.
 """
 from .execution import SpawnProcessPool
 from .hpc import SLURM, PBS
-from .loggers import init_logger, init_mult, setup_logger, log_mem
+from .loggers import (init_logger, init_mult, setup_logger, log_mem,
+                      log_versions)
 from .solar_position import SolarPosition
 from .toml_parser import TOMLParser
 from .utilities import (safe_json_load, jsonify_dict, parse_year,

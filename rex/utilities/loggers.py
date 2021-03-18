@@ -14,7 +14,7 @@ import sys
 import time
 from warnings import warn
 
-from rex import __version__
+from rex.version import __version__
 from rex.utilities.exceptions import LoggerWarning
 
 FORMAT = '%(levelname)s - %(asctime)s [%(filename)s:%(lineno)d] : %(message)s'
@@ -545,9 +545,6 @@ def init_mult(name, logdir, modules, verbose=False, node=False):
             log_file = os.path.join(logdir, '{}.log'.format(name))
         else:
             log_file = None
-
-        # check for redundant loggers in the LOGGERS singleton
-        logger = LOGGERS[module]
 
         if node and log_level == 'INFO':
             # Node level info loggers only go to STDOUT/STDERR files

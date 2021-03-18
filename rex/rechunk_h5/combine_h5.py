@@ -10,6 +10,7 @@ import time
 
 from rex.resource import Resource
 from rex.rechunk_h5.rechunk_h5 import get_chunk_ranges
+from rex.utilities.loggers import log_versions
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,7 @@ class CombineH5:
         overwrite : bool, optional
             Flag to overwrite an existing h5_dst file, by default True
         """
+        log_versions(logger)
         self._combined_h5 = combined_h5
         self._source_h5 = source_h5
         self._axis = axis

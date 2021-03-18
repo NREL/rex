@@ -21,6 +21,7 @@ from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
                                     WindResource)
 from rex.temporal_stats.temporal_stats import TemporalStats
 from rex.utilities.exceptions import ResourceValueError, ResourceWarning
+from rex.utilities.loggers import log_versions
 from rex.utilities.utilities import parse_year, check_tz, res_dist_threshold
 
 TREE_DIR = TemporaryDirectory()
@@ -57,6 +58,7 @@ class ResourceX:
         group : str, optional
             Group within .h5 resource file to open, by default None
         """
+        log_versions(logger)
         self._res = res_cls(res_h5, unscale=unscale, hsds=hsds,
                             str_decode=str_decode, group=group)
         self._dist_thresh = None
@@ -1084,6 +1086,7 @@ class MultiFileResourceX(ResourceX):
         check_files : bool
             Check to ensure files have the same coordinates and time_index
         """
+        log_versions(logger)
         self._res = res_cls(resource_path, unscale=unscale,
                             str_decode=str_decode, check_files=check_files)
         self._dist_thresh = None
@@ -1121,6 +1124,7 @@ class MultiYearResourceX(ResourceX):
         res_cls : obj
             Resource handler to use to open individual .h5 files
         """
+        log_versions(logger)
         self._res = MultiYearResource(resource_path, years=years,
                                       unscale=unscale, str_decode=str_decode,
                                       hsds=hsds, res_cls=res_cls)
@@ -1202,6 +1206,7 @@ class MultiTimeResourceX(ResourceX):
         res_cls : obj
             Resource handler to us to open individual .h5 files
         """
+        log_versions(logger)
         self._res = MultiTimeResource(resource_path, unscale=unscale,
                                       str_decode=str_decode, hsds=hsds,
                                       res_cls=res_cls)
