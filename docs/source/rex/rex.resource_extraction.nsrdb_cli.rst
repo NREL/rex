@@ -1,11 +1,11 @@
-rex.resource\_extraction.solar\_cli module
+rex.resource\_extraction.nsrdb\_cli module
 ==========================================
 
-.. click:: rex.resource_extraction.solar_cli:main
+.. click:: rex.resource_extraction.nsrdb_cli:main
    :prog: NSRDBX
    :show-nested:
 
-.. automodule:: rex.resource_extraction.solar_cli
+.. automodule:: rex.resource_extraction.nsrdb_cli
    :members:
    :undoc-members:
    :show-inheritance:
