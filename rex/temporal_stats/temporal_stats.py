@@ -11,7 +11,7 @@ import pandas as pd
 
 from rex.resource import Resource
 from rex.utilities.execution import SpawnProcessPool
-from rex.utilities.loggers import log_mem
+from rex.utilities.loggers import log_mem, log_versions
 from rex.utilities.utilities import get_lat_lon_cols, slice_sites
 
 logger = logging.getLogger(__name__)
@@ -43,6 +43,7 @@ class TemporalStats:
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
         """
+        log_versions(logger)
         self._res_h5 = res_h5
         self._stats = None
         self.statistics = statistics

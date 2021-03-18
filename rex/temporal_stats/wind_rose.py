@@ -12,7 +12,7 @@ from warnings import warn
 
 from rex.renewable_resource import WindResource
 from rex.utilities.execution import SpawnProcessPool
-from rex.utilities.loggers import log_mem
+from rex.utilities.loggers import log_mem, log_versions
 from rex.utilities.utilities import slice_sites
 
 logger = logging.getLogger(__name__)
@@ -35,6 +35,7 @@ class WindRose:
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
         """
+        log_versions(logger)
         self._wind_h5 = wind_h5
 
         self._res_cls = res_cls

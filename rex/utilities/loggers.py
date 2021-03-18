@@ -3,13 +3,18 @@
 Logging wrapper
 """
 from copy import deepcopy
+import h5py
 import logging
+import numpy as np
 import os
+import pandas as pd
 import psutil
+import scipy
 import sys
 import time
 from warnings import warn
 
+from rex.version import __version__
 from rex.utilities.exceptions import LoggerWarning
 
 FORMAT = '%(levelname)s - %(asctime)s [%(filename)s:%(lineno)d] : %(message)s'
@@ -541,9 +546,6 @@ def init_mult(name, logdir, modules, verbose=False, node=False):
         else:
             log_file = None
 
-        # check for redundant loggers in the LOGGERS singleton
-        logger = LOGGERS[module]
-
         if node and log_level == 'INFO':
             # Node level info loggers only go to STDOUT/STDERR files
             logger = init_logger(module, log_level=log_level, log_file=None)
@@ -582,3 +584,20 @@ def log_mem(logger, log_level='DEBUG'):
         logger.info(msg)
 
     return msg
+
+
+def log_versions(logger):
+    """Log package versions:
+    - rex to info
+    - h5py, numpy, pandas, and scipy to debug
+
+    Parameters
+    ----------
+    logger : logging.Logger
+        Logger object to log memory message to.
+    """
+    logger.info('Running with rex version {}'.format(__version__))
+    logger.debug('- h5py version {}'.format(h5py.__version__))
+    logger.debug('- numpy version {}'.format(np.__version__))
+    logger.debug('- pandas version {}'.format(pd.__version__))
+    logger.debug('- scipy version {}'.format(scipy.__version__))
