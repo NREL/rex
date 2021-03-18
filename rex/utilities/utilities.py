@@ -836,3 +836,27 @@ def to_records_array(df):
         dtypes.append((c_name, dtype))
 
     return np.core.records.fromarrays(meta_arrays, dtype=dtypes)
+
+
+def row_col_indices(sc_point_gids, row_length):
+    """
+    Convert supply curve point gids to row and col indices given row length
+
+    Parameters
+    ----------
+    sc_point_gids : int | list | ndarray
+        Supply curve point gid or list/array of gids
+    row_length : int
+        row length (shape[1])
+
+    Returns
+    -------
+    row : int | list | ndarray
+        row indices
+    col : int | list | ndarray
+        row indices
+    """
+    rows = sc_point_gids // row_length
+    cols = sc_point_gids % row_length
+
+    return rows, cols
