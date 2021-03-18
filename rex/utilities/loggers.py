@@ -597,7 +597,7 @@ def log_versions(logger):
         Logger object to log memory message to.
     """
     logger.info('Running with rex version {}'.format(__version__))
-    logger.debug('- hdf5 version {}'.format(h5py.__version__))
+    logger.debug('- h5py version {}'.format(h5py.__version__))
     logger.debug('- numpy version {}'.format(np.__version__))
     logger.debug('- pandas version {}'.format(pd.__version__))
     logger.debug('- scipy version {}'.format(scipy.__version__))
