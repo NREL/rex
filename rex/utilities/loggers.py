@@ -70,7 +70,7 @@ def get_handler(log_level="INFO", log_file=None, log_format=FORMAT):
     """
     if log_file:
         # file handler with mode "a"
-        log_file = os.path.normpath(log_file)
+        log_file = os.path.realpath(log_file)
         log_dir = os.path.dirname(log_file)
         if os.path.exists(log_dir):
             name = log_file
@@ -171,7 +171,7 @@ def setup_logger(logger_name, stream=True, log_level="INFO", log_file=None,
 
     if stream:
         if log_file is not None:
-            handlers.append(get_handler())
+            handlers.append(get_handler(log_level=log_level))
 
     logger = add_handlers(logger, handlers)
 
