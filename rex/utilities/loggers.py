@@ -537,7 +537,7 @@ def init_mult(name, logdir, modules, verbose=False, node=False):
         log_level = 'INFO'
 
     if logdir is not None and not os.path.exists(logdir):
-        os.makedirs(logdir)
+        create_dirs(logdir)
 
     loggers = []
     for module in modules:
