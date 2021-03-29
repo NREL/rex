@@ -1,3 +1,3 @@
 """rex Version number"""
 
-__version__ = "0.2.51"
+__version__ = "0.2.52"

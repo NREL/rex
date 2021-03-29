@@ -102,7 +102,7 @@ class ListType(click.ParamType):
         if isinstance(value, str):
             value = sanitize_str(value, subs=['=', '(', ')', ' ', '[', ']',
                                               '"', "'"])
-            if value == 'None':
+            if value.lower() == 'none':
                 return None
             list0 = value.split(',')
             return [self.dtype(x) for x in list0]
@@ -163,7 +163,7 @@ class PathListType(ListType):
         if isinstance(value, str):
             value = sanitize_str(value, subs=['=', '(', ')', ' ', '[', ']',
                                               '"', "'"])
-            if value == 'None':
+            if value.lower() == 'none':
                 return None
             list0 = value.split(',')
             return [self.path(x, param, ctx) for x in list0]
@@ -180,6 +180,38 @@ class PathListType(ListType):
         return self._click_path_type.convert(value, param, ctx)
 
 
+class StrOrListType(click.ParamType):
+    """Flexible type for string or list of strings."""
+    name = 'str_or_list'
+
+    @staticmethod
+    def dtype(x):
+        """Enforce a homogeneous string datatype."""
+        return str(x)
+
+    def convert(self, value, param, ctx):
+        """Convert string to list."""
+        if isinstance(value, str):
+            if (('(' in value and ')' in value)
+                    or ('[' in value and ']' in value)):
+                value = sanitize_str(value, subs=['=', '(', ')', ' ', '[', ']',
+                                                  '"', "'"])
+                list0 = value.split(',')
+                return [self.dtype(x) for x in list0]
+            else:
+                if value.lower() == 'none':
+                    return None
+                else:
+                    return value
+        elif isinstance(value, list):
+            return value
+        elif isinstance(value, type(None)):
+            return value
+        else:
+            self.fail('Cannot recognize list type: {} {}'
+                      .format(value, type(value)), param, ctx)
+
+
 INT = IntType()
 FLOAT = FloatType()
 STR = StrType()
@@ -188,3 +220,4 @@ INTLIST = IntListType()
 FLOATLIST = FloatListType()
 STRLIST = StrListType()
 PATHLIST = PathListType()
+STR_OR_LIST = StrOrListType()
