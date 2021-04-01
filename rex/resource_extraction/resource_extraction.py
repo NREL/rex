@@ -521,13 +521,8 @@ class ResourceX:
         lat_lon : ndarray
             Either a single (lat, lon) pair or series of (lat, lon) pairs
         """
-        lat = self.lat_lon[:, 0]
-        lat_min = lat.min()
-        lat_max = lat.max()
-
-        lon = self.lat_lon[:, 1]
-        lon_min = lon.min()
-        lon_max = lon.max()
+        lat_min, lat_max = np.sort(self.lat_lon[:, 0])[[0, -1]]
+        lon_min, lon_max = np.sort(self.lat_lon[:, 1])[[0, -1]]
 
         if not isinstance(lat_lon, np.ndarray):
             lat_lon = np.array(lat_lon)
