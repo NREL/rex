@@ -424,6 +424,45 @@ class RechunkH5:
 
         return data
 
+    @staticmethod
+    def _check_chunks(chunks, shape):
+        """
+        Check chunks to ensure they are properly formatted:
+        - None or a tuple
+        - same shape as dset_shape
+        - contain all integer values
+
+        Parameters
+        ----------
+        chunks : list | tuple | None
+            Dataset chunks
+        shape : tuple
+            Dataset shape
+
+        Returns
+        -------
+        chunks : tuple | None
+            Updated chunks if "None" was supplied for either axis.
+        """
+        if chunks is not None:
+            if not isinstance(chunks, tuple):
+                chunks = tuple(chunks)
+
+            msg = ("Chunks {} do not match dataset shape {}!"
+                   .format(chunks, shape))
+            assert len(chunks) == len(shape), msg
+
+            if None in chunks:
+                chunk_sizes = chunks
+                chunks = ()
+                for i, c in enumerate(chunk_sizes):
+                    if c is None:
+                        chunks += (shape[i], )
+                    else:
+                        chunks += (c, )
+
+        return chunks
+
     def _get_var_attrs(self, var_attrs=None, hub_height=None, chunk_size=2,
                        weeks_per_chunk=None):
         """
@@ -513,14 +552,11 @@ class RechunkH5:
         """
         dtype = dset_attrs['dtype']
         attrs = dset_attrs['attrs']
-        chunks = dset_attrs['chunks']
+        chunks = self._check_chunks(dset_attrs['chunks'], dset_shape)
 
         name = dset_attrs.get('name', None)
         if name is not None:
             dset_name = name
-
-        if chunks:
-            chunks = tuple(chunks)
 
         logger.debug('Creating {} with shape: {}, dtype: {}, chunks: {}'
                      .format(dset_name, dset_shape, dtype, chunks))
