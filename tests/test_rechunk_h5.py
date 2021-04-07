@@ -12,9 +12,10 @@ import traceback
 
 from rex.resource import Resource
 from rex.rechunk_h5.rechunk_h5 import (get_dataset_attributes,
-                                       to_records_array)
+                                       RechunkH5)
 from rex.rechunk_h5.rechunk_cli import main
 from rex.utilities.loggers import LOGGERS
+from rex.utilities.utilities import to_records_array
 from rex import TESTDATADIR
 
 LOGGERS.clear()
@@ -102,6 +103,22 @@ def test_to_records_array():
     for c in truth.dtype.names:
         msg = "{} did not get converted propertly!".format(c)
         assert np.all(test[c] == truth[c]), msg
+
+
+@pytest.mark.parametrize('t_chunk', [None, 8 * 7 * 24])
+def test_chunks(t_chunk):
+    """
+    Test rechunk chunk size
+    """
+    src_path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    var_attrs = create_var_attrs(src_path, t_chunk)
+
+    with tempfile.TemporaryDirectory() as td:
+        rechunk_path = os.path.join(td, 'rechunk.h5')
+        RechunkH5.run(src_path, rechunk_path, var_attrs=var_attrs)
+
+        check_rechunk(src_path, rechunk_path)
 
 
 @pytest.mark.parametrize('drop', [None,
