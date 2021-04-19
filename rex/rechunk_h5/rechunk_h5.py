@@ -76,7 +76,7 @@ def get_dataset_attributes(h5_file, out_json=None, chunk_size=2,
     ds_attrs = pd.concat(attrs_list)
     if global_attrs:
         ds_attrs.loc['global'] = None
-        ds_attrs.loc['global', 'attrs'] = global_attrs
+        ds_attrs.at['global', 'attrs'] = global_attrs
 
     if out_json is not None:
         ds_attrs.to_json(out_json)
