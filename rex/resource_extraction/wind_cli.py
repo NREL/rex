@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 @click.group()
+@click.version_option(version=__version__)
 @click.option('--wind_h5', '-h5', required=True,
               type=click.Path(),
               help=('Path to Resource .h5 file'))
@@ -71,14 +72,6 @@ def main(ctx, wind_h5, out_dir, log_file, verbose):
 
     logger.info('Extracting Wind data from {}'.format(wind_h5))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
-
-
-@main.command()
-def version():
-    """
-    print version
-    """
-    click.echo(__version__)
 
 
 @main.command()

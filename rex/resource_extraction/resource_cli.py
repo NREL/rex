@@ -56,6 +56,7 @@ def _parse_sites(sites):
 
 
 @click.group()
+@click.version_option(version=__version__)
 @click.option('--resource_h5', '-h5', required=True,
               type=click.Path(),
               help=('Path to Resource .h5 file'))
@@ -105,14 +106,6 @@ def main(ctx, resource_h5, out_dir, log_file, verbose):
 
     logger.info('Extracting Resource data from {}'.format(resource_h5))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
-
-
-@main.command()
-def version():
-    """
-    print version
-    """
-    click.echo(__version__)
 
 
 @main.command()
