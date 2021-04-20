@@ -9,11 +9,13 @@ import os
 from rex.rechunk_h5.rechunk_h5 import RechunkH5
 from rex.utilities.cli_dtypes import INT, STR
 from rex.utilities.loggers import init_logger
+from rex import __version__
 
 logger = logging.getLogger(__name__)
 
 
 @click.command()
+@click.version_option(version=__version__)
 @click.option('--src_h5', '-src', type=click.Path(exists=True), required=True,
               help="Source .h5 file path")
 @click.option('--dst_h5', '-dst', type=click.Path(), required=True,

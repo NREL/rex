@@ -9,11 +9,13 @@ import os
 from rex.rechunk_h5.combine_h5 import CombineH5
 from rex.utilities.cli_dtypes import INT
 from rex.utilities.loggers import init_logger
+from rex import __version__
 
 logger = logging.getLogger(__name__)
 
 
 @click.command()
+@click.version_option(version=__version__)
 @click.option('--combined_h5', '-comb', type=click.Path(), required=True,
               help="Path to save combined .h5 file to")
 @click.option('--source_h5', '-src', type=click.Path(exists=True),

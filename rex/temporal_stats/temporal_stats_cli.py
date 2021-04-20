@@ -12,6 +12,7 @@ from rex.resource import Resource
 from rex.temporal_stats.temporal_stats import TemporalStats
 from rex.utilities.cli_dtypes import INT
 from rex.utilities.loggers import init_mult
+from rex import __version__
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,7 @@ RES_CLS = {'Resouce': Resource,
 
 
 @click.group(invoke_without_command=True, chain=True)
+@click.version_option(version=__version__)
 @click.option('--resource_path', '-h5', required=True,
               type=click.Path(),
               help=('Path to Resource .h5 files'))

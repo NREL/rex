@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 @click.group()
+@click.version_option(version=__version__)
 @click.option('--domain', '-d', required=True,
               type=click.Choice(['West_Coast', 'Hawaii'],
                                 case_sensitive=False),
@@ -86,14 +87,6 @@ def main(ctx, domain, out_dir, years, buoy, eagle, log_file, verbose):
 
     logger.info('Extracting US wave data for {} from {}'.format(domain, path))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
-
-
-@main.command()
-def version():
-    """
-    print version
-    """
-    click.echo(__version__)
 
 
 @main.group()

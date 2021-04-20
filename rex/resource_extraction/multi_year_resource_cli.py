@@ -18,11 +18,13 @@ from rex.resource_extraction.resource_extraction import (MultiYearResourceX,
                                                          MultiYearWaveX)
 from rex.utilities.cli_dtypes import STRLIST, INTLIST
 from rex.utilities.loggers import init_logger
+from rex import __version__
 
 logger = logging.getLogger(__name__)
 
 
 @click.group()
+@click.version_option(version=__version__)
 @click.option('--resource_path', '-h5', required=True,
               type=click.Path(),
               help=('Path to Resource .h5 files'))
