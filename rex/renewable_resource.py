@@ -6,20 +6,20 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from rex.resource import Resource
+from rex.resource import BaseResource
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import (ResourceValueError, ExtrapolationWarning,
                                       ResourceWarning,
                                       MoninObukhovExtrapolationError)
 
 
-class SolarResource(Resource):
+class SolarResource(BaseResource):
     """
-    Class to handle Solar Resource .h5 files
+    Class to handle Solar BaseResource .h5 files
 
     See Also
     --------
-    resource.Resource : Parent class
+    resource.BaseResource : Parent class
     """
     def _get_SAM_df(self, ds_name, site):
         """
@@ -173,7 +173,7 @@ class NSRDB(SolarResource):
 
     See Also
     --------
-    resource.Resource : Parent class
+    resource.BaseResource : Parent class
     """
     ADD_ATTR = 'psm_add_offset'
     SCALE_ATTR = 'psm_scale_factor'
@@ -301,13 +301,13 @@ class NSRDB(SolarResource):
         return SAM_res
 
 
-class WindResource(Resource):
+class WindResource(BaseResource):
     """
-    Class to handle Wind Resource .h5 files
+    Class to handle Wind BaseResource .h5 files
 
     See Also
     --------
-    resource.Resource : Parent class
+    resource.BaseResource : Parent class
 
     Examples
     --------
@@ -1100,13 +1100,13 @@ class WindResource(Resource):
         return SAM_res
 
 
-class WaveResource(Resource):
+class WaveResource(BaseResource):
     """
-    Class to handle Wave Resource .h5 files
+    Class to handle Wave BaseResource .h5 files
 
     See Also
     --------
-    resource.Resource : Parent class
+    resource.BaseResource : Parent class
     """
 
     def _get_SAM_df(self, ds_name, site):

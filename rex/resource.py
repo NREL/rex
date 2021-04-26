@@ -2,6 +2,7 @@
 """
 Classes to handle resource data
 """
+from abc import ABC, abstractmethod
 import h5py
 import numpy as np
 import os
@@ -522,209 +523,45 @@ class ResourceDataset:
         return dset[ds_slice]
 
 
-class Resource:
+class BaseResource(ABC):
     """
-    Base class to handle resource .h5 files
-
-    Examples
-    --------
-
-    Extracting the resource's Datetime Index
-
-    >>> file = '$TESTDATADIR/nsrdb/ri_100_nsrdb_2012.h5'
-    >>> with Resource(file) as res:
-    >>>     ti = res.time_index
-    >>>
-    >>> ti
-    DatetimeIndex(['2012-01-01 00:00:00', '2012-01-01 00:30:00',
-                   '2012-01-01 01:00:00', '2012-01-01 01:30:00',
-                   '2012-01-01 02:00:00', '2012-01-01 02:30:00',
-                   '2012-01-01 03:00:00', '2012-01-01 03:30:00',
-                   '2012-01-01 04:00:00', '2012-01-01 04:30:00',
-                   ...
-                   '2012-12-31 19:00:00', '2012-12-31 19:30:00',
-                   '2012-12-31 20:00:00', '2012-12-31 20:30:00',
-                   '2012-12-31 21:00:00', '2012-12-31 21:30:00',
-                   '2012-12-31 22:00:00', '2012-12-31 22:30:00',
-                   '2012-12-31 23:00:00', '2012-12-31 23:30:00'],
-                  dtype='datetime64[ns]', length=17568, freq=None)
-
-    Efficient slicing of the Datetime Index
-
-    >>> with Resource(file) as res:
-    >>>     ti = res['time_index', 1]
-    >>>
-    >>> ti
-    2012-01-01 00:30:00
-
-    >>> with Resource(file) as res:
-    >>>     ti = res['time_index', :10]
-    >>>
-    >>> ti
-    DatetimeIndex(['2012-01-01 00:00:00', '2012-01-01 00:30:00',
-                   '2012-01-01 01:00:00', '2012-01-01 01:30:00',
-                   '2012-01-01 02:00:00', '2012-01-01 02:30:00',
-                   '2012-01-01 03:00:00', '2012-01-01 03:30:00',
-                   '2012-01-01 04:00:00', '2012-01-01 04:30:00'],
-                  dtype='datetime64[ns]', freq=None)
-
-    >>> with Resource(file) as res:
-    >>>     ti = res['time_index', [1, 2, 4, 8, 9]
-    >>>
-    >>> ti
-    DatetimeIndex(['2012-01-01 00:30:00', '2012-01-01 01:00:00',
-                   '2012-01-01 02:00:00', '2012-01-01 04:00:00',
-                   '2012-01-01 04:30:00'],
-                  dtype='datetime64[ns]', freq=None)
-
-    Extracting resource's site metadata
-
-    >>> with Resource(file) as res:
-    >>>     meta = res.meta
-    >>>
-    >>> meta
-            latitude  longitude   elevation  timezone    country ...
-    0      41.29     -71.86    0.000000        -5           None ...
-    1      41.29     -71.82    0.000000        -5           None ...
-    2      41.25     -71.82    0.000000        -5           None ...
-    3      41.33     -71.82   15.263158        -5  United States ...
-    4      41.37     -71.82   25.360000        -5  United States ...
-    ..       ...        ...         ...       ...            ... ...
-    95     41.25     -71.66    0.000000        -5           None ...
-    96     41.89     -71.66  153.720000        -5  United States ...
-    97     41.45     -71.66   35.440000        -5  United States ...
-    98     41.61     -71.66  140.200000        -5  United States ...
-    99     41.41     -71.66   35.160000        -5  United States ...
-    [100 rows x 10 columns]
-
-    Efficient slicing of the metadata
-
-    >>> with Resource(file) as res:
-    >>>     meta = res['meta', 1]
-    >>>
-    >>> meta
-       latitude  longitude  elevation  timezone country state county urban ...
-    1     41.29     -71.82        0.0        -5    None  None   None  None ...
-
-    >>> with Resource(file) as res:
-    >>>     meta = res['meta', :5]
-    >>>
-    >>> meta
-       latitude  longitude  elevation  timezone        country ...
-    0     41.29     -71.86   0.000000        -5           None ...
-    1     41.29     -71.82   0.000000        -5           None ...
-    2     41.25     -71.82   0.000000        -5           None ...
-    3     41.33     -71.82  15.263158        -5  United States ...
-    4     41.37     -71.82  25.360000        -5  United States ...
-
-    >>> with Resource(file) as res:
-    >>>     tz = res['meta', :, 'timezone']
-    >>>
-    >>> tz
-    0    -5
-    1    -5
-    2    -5
-    3    -5
-    4    -5
-         ..
-    95   -5
-    96   -5
-    97   -5
-    98   -5
-    99   -5
-    Name: timezone, Length: 100, dtype: int64
-
-    >>> with Resource(file) as res:
-    >>>     lat_lon = res['meta', :, ['latitude', 'longitude']]
-    >>>
-    >>> lat_lon
-        latitude  longitude
-    0      41.29     -71.86
-    1      41.29     -71.82
-    2      41.25     -71.82
-    3      41.33     -71.82
-    4      41.37     -71.82
-    ..       ...        ...
-    95     41.25     -71.66
-    96     41.89     -71.66
-    97     41.45     -71.66
-    98     41.61     -71.66
-    99     41.41     -71.66
-    [100 rows x 2 columns]
-
-    Extracting resource variables (datasets)
-
-    >>> with Resource(file) as res:
-    >>>     wspd = res['wind_speed']
-    >>>
-    >>> wspd
-    [[12. 12. 12. ... 12. 12. 12.]
-     [12. 12. 12. ... 12. 12. 12.]
-     [12. 12. 12. ... 12. 12. 12.]
-     ...
-     [14. 14. 14. ... 14. 14. 14.]
-     [15. 15. 15. ... 15. 15. 15.]
-     [15. 15. 15. ... 15. 15. 15.]]
-
-    Efficient slicing of variables
-
-    >>> with Resource(file) as res:
-    >>>     wspd = res['wind_speed', :2]
-    >>>
-    >>> wspd
-    [[12. 12. 12. 12. 12. 12. 53. 53. 53. 53. 53. 12. 53.  1.  1. 12. 12. 12.
-       1.  1. 12. 53. 53. 53. 12. 12. 12. 12. 12.  1. 12. 12.  1. 12. 12. 53.
-      12. 53.  1. 12.  1. 53. 53. 12. 12. 12. 12.  1.  1.  1. 12. 12.  1.  1.
-      12. 12. 53. 53. 53. 12. 12. 53. 53. 12. 12. 12. 12. 12. 12.  1. 53.  1.
-      53. 12. 12. 53. 53.  1.  1.  1. 53. 12.  1.  1. 53. 53. 53. 12. 12. 12.
-      12. 12. 12. 12.  1. 12.  1. 12. 12. 12.]
-     [12. 12. 12. 12. 12. 12. 53. 53. 53. 53. 53. 12. 53.  1.  1. 12. 12. 12.
-       1.  1. 12. 53. 53. 53. 12. 12. 12. 12. 12.  1. 12. 12.  1. 12. 12. 53.
-      12. 53.  1. 12.  1. 53. 53. 12. 12. 12. 12.  1.  1.  1. 12. 12.  1.  1.
-      12. 12. 53. 53. 53. 12. 12. 53. 53. 12. 12. 12. 12. 12. 12.  1. 53.  1.
-      53. 12. 12. 53. 53.  1.  1.  1. 53. 12.  1.  1. 53. 53. 53. 12. 12. 12.
-      12. 12. 12. 12.  1. 12.  1. 12. 12. 12.]]
-
-    >>> with Resource(file) as res:
-    >>>     wspd = res['wind_speed', :, [2, 3]]
-    >>>
-    >>> wspd
-    [[12. 12.]
-     [12. 12.]
-     [12. 12.]
-     ...
-     [14. 14.]
-     [15. 15.]
-     [15. 15.]]
+    Abstract Base class to handle resource .h5 files
     """
     SCALE_ATTR = 'scale_factor'
     ADD_ATTR = 'add_offset'
     UNIT_ATTR = 'units'
 
     def __init__(self, h5_file, unscale=True, hsds=False, str_decode=True,
-                 group=None):
+                 group=None, mode='r'):
         """
         Parameters
         ----------
         h5_file : str
             Path to .h5 resource file
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        hsds : bool
+        unscale : bool, optional
+            Boolean flag to automatically unscale variables on extraction,
+            by default True
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
-        str_decode : bool
+            behind HSDS, by default False
+        str_decode : bool, optional
             Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
+            strings. Setting this to False will speed up the meta data read,
+            by default True
+        group : str, optional
+            Group within .h5 resource file to open, by default None
+        mode : str, optional
+            Mode to instantiate h5py.File instance, by default 'r'
         """
         self.h5_file = h5_file
         if hsds:
+            if mode != 'r':
+                raise IOError('Cannot write to files accessed vias HSDS!')
+
             import h5pyd
-            self._h5 = h5pyd.File(self.h5_file, 'r', use_cache=False)
+            self._h5 = h5pyd.File(self.h5_file, mode='r', use_cache=False)
         else:
-            self._h5 = h5py.File(self.h5_file, 'r')
+            self._h5 = h5py.File(self.h5_file, mode=mode)
 
         self._group = group
         self._unscale = unscale
@@ -1342,6 +1179,7 @@ class Resource:
                                          unscale=False)
         return coords
 
+    @abstractmethod
     def _get_SAM_df(self, ds_name, site):
         """
         Placeholder for get_SAM_df method that it resource specific
@@ -1465,3 +1303,229 @@ class Resource:
                                        means=means)
 
         return SAM_res
+
+
+class Resource(BaseResource):
+    """
+    Base class to handle resource .h5 files
+
+    Examples
+    --------
+
+    Extracting the resource's Datetime Index
+
+    >>> file = '$TESTDATADIR/nsrdb/ri_100_nsrdb_2012.h5'
+    >>> with Resource(file) as res:
+    >>>     ti = res.time_index
+    >>>
+    >>> ti
+    DatetimeIndex(['2012-01-01 00:00:00', '2012-01-01 00:30:00',
+                   '2012-01-01 01:00:00', '2012-01-01 01:30:00',
+                   '2012-01-01 02:00:00', '2012-01-01 02:30:00',
+                   '2012-01-01 03:00:00', '2012-01-01 03:30:00',
+                   '2012-01-01 04:00:00', '2012-01-01 04:30:00',
+                   ...
+                   '2012-12-31 19:00:00', '2012-12-31 19:30:00',
+                   '2012-12-31 20:00:00', '2012-12-31 20:30:00',
+                   '2012-12-31 21:00:00', '2012-12-31 21:30:00',
+                   '2012-12-31 22:00:00', '2012-12-31 22:30:00',
+                   '2012-12-31 23:00:00', '2012-12-31 23:30:00'],
+                  dtype='datetime64[ns]', length=17568, freq=None)
+
+    Efficient slicing of the Datetime Index
+
+    >>> with Resource(file) as res:
+    >>>     ti = res['time_index', 1]
+    >>>
+    >>> ti
+    2012-01-01 00:30:00
+
+    >>> with Resource(file) as res:
+    >>>     ti = res['time_index', :10]
+    >>>
+    >>> ti
+    DatetimeIndex(['2012-01-01 00:00:00', '2012-01-01 00:30:00',
+                   '2012-01-01 01:00:00', '2012-01-01 01:30:00',
+                   '2012-01-01 02:00:00', '2012-01-01 02:30:00',
+                   '2012-01-01 03:00:00', '2012-01-01 03:30:00',
+                   '2012-01-01 04:00:00', '2012-01-01 04:30:00'],
+                  dtype='datetime64[ns]', freq=None)
+
+    >>> with Resource(file) as res:
+    >>>     ti = res['time_index', [1, 2, 4, 8, 9]
+    >>>
+    >>> ti
+    DatetimeIndex(['2012-01-01 00:30:00', '2012-01-01 01:00:00',
+                   '2012-01-01 02:00:00', '2012-01-01 04:00:00',
+                   '2012-01-01 04:30:00'],
+                  dtype='datetime64[ns]', freq=None)
+
+    Extracting resource's site metadata
+
+    >>> with Resource(file) as res:
+    >>>     meta = res.meta
+    >>>
+    >>> meta
+            latitude  longitude   elevation  timezone    country ...
+    0      41.29     -71.86    0.000000        -5           None ...
+    1      41.29     -71.82    0.000000        -5           None ...
+    2      41.25     -71.82    0.000000        -5           None ...
+    3      41.33     -71.82   15.263158        -5  United States ...
+    4      41.37     -71.82   25.360000        -5  United States ...
+    ..       ...        ...         ...       ...            ... ...
+    95     41.25     -71.66    0.000000        -5           None ...
+    96     41.89     -71.66  153.720000        -5  United States ...
+    97     41.45     -71.66   35.440000        -5  United States ...
+    98     41.61     -71.66  140.200000        -5  United States ...
+    99     41.41     -71.66   35.160000        -5  United States ...
+    [100 rows x 10 columns]
+
+    Efficient slicing of the metadata
+
+    >>> with Resource(file) as res:
+    >>>     meta = res['meta', 1]
+    >>>
+    >>> meta
+       latitude  longitude  elevation  timezone country state county urban ...
+    1     41.29     -71.82        0.0        -5    None  None   None  None ...
+
+    >>> with Resource(file) as res:
+    >>>     meta = res['meta', :5]
+    >>>
+    >>> meta
+       latitude  longitude  elevation  timezone        country ...
+    0     41.29     -71.86   0.000000        -5           None ...
+    1     41.29     -71.82   0.000000        -5           None ...
+    2     41.25     -71.82   0.000000        -5           None ...
+    3     41.33     -71.82  15.263158        -5  United States ...
+    4     41.37     -71.82  25.360000        -5  United States ...
+
+    >>> with Resource(file) as res:
+    >>>     tz = res['meta', :, 'timezone']
+    >>>
+    >>> tz
+    0    -5
+    1    -5
+    2    -5
+    3    -5
+    4    -5
+         ..
+    95   -5
+    96   -5
+    97   -5
+    98   -5
+    99   -5
+    Name: timezone, Length: 100, dtype: int64
+
+    >>> with Resource(file) as res:
+    >>>     lat_lon = res['meta', :, ['latitude', 'longitude']]
+    >>>
+    >>> lat_lon
+        latitude  longitude
+    0      41.29     -71.86
+    1      41.29     -71.82
+    2      41.25     -71.82
+    3      41.33     -71.82
+    4      41.37     -71.82
+    ..       ...        ...
+    95     41.25     -71.66
+    96     41.89     -71.66
+    97     41.45     -71.66
+    98     41.61     -71.66
+    99     41.41     -71.66
+    [100 rows x 2 columns]
+
+    Extracting resource variables (datasets)
+
+    >>> with Resource(file) as res:
+    >>>     wspd = res['wind_speed']
+    >>>
+    >>> wspd
+    [[12. 12. 12. ... 12. 12. 12.]
+     [12. 12. 12. ... 12. 12. 12.]
+     [12. 12. 12. ... 12. 12. 12.]
+     ...
+     [14. 14. 14. ... 14. 14. 14.]
+     [15. 15. 15. ... 15. 15. 15.]
+     [15. 15. 15. ... 15. 15. 15.]]
+
+    Efficient slicing of variables
+
+    >>> with Resource(file) as res:
+    >>>     wspd = res['wind_speed', :2]
+    >>>
+    >>> wspd
+    [[12. 12. 12. 12. 12. 12. 53. 53. 53. 53. 53. 12. 53.  1.  1. 12. 12. 12.
+       1.  1. 12. 53. 53. 53. 12. 12. 12. 12. 12.  1. 12. 12.  1. 12. 12. 53.
+      12. 53.  1. 12.  1. 53. 53. 12. 12. 12. 12.  1.  1.  1. 12. 12.  1.  1.
+      12. 12. 53. 53. 53. 12. 12. 53. 53. 12. 12. 12. 12. 12. 12.  1. 53.  1.
+      53. 12. 12. 53. 53.  1.  1.  1. 53. 12.  1.  1. 53. 53. 53. 12. 12. 12.
+      12. 12. 12. 12.  1. 12.  1. 12. 12. 12.]
+     [12. 12. 12. 12. 12. 12. 53. 53. 53. 53. 53. 12. 53.  1.  1. 12. 12. 12.
+       1.  1. 12. 53. 53. 53. 12. 12. 12. 12. 12.  1. 12. 12.  1. 12. 12. 53.
+      12. 53.  1. 12.  1. 53. 53. 12. 12. 12. 12.  1.  1.  1. 12. 12.  1.  1.
+      12. 12. 53. 53. 53. 12. 12. 53. 53. 12. 12. 12. 12. 12. 12.  1. 53.  1.
+      53. 12. 12. 53. 53.  1.  1.  1. 53. 12.  1.  1. 53. 53. 53. 12. 12. 12.
+      12. 12. 12. 12.  1. 12.  1. 12. 12. 12.]]
+
+    >>> with Resource(file) as res:
+    >>>     wspd = res['wind_speed', :, [2, 3]]
+    >>>
+    >>> wspd
+    [[12. 12.]
+     [12. 12.]
+     [12. 12.]
+     ...
+     [14. 14.]
+     [15. 15.]
+     [15. 15.]]
+    """
+    SCALE_ATTR = 'scale_factor'
+    ADD_ATTR = 'add_offset'
+    UNIT_ATTR = 'units'
+
+    def __init__(self, h5_file, unscale=True, hsds=False, str_decode=True,
+                 group=None):
+        """
+        Parameters
+        ----------
+        h5_file : str
+            Path to .h5 resource file
+        unscale : bool, optional
+            Boolean flag to automatically unscale variables on extraction,
+            by default True
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        str_decode : bool, optional
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read,
+            by default True
+        group : str, optional
+            Group within .h5 resource file to open, by default None
+        """
+        super().__init__(h5_file, unscale=unscale, hsds=hsds,
+                         str_decode=str_decode, group=group)
+
+    def _get_SAM_df(self, ds_name, site):
+        """
+        Placeholder for get_SAM_df method that it resource specific
+
+        Parameters
+        ----------
+        ds_name : str
+            'Dataset' name == SAM
+        site : int
+            Site to extract SAM DataFrame for
+
+        Returns
+        -------
+        sam_df : pandas.DataFrame
+            Example SAM DataFrame but for a single dataset. This method will
+            return all variable needed to run SAM in all renewable resource
+            classes.
+        """
+        sam_df = pd.DataFrame({ds_name: self[ds_name, :, site]},
+                              index=self.time_index)
+
+        return sam_df
