@@ -830,6 +830,7 @@ def test_cli_SAM(runner, WindX_cls):
         msg = ('Failed with error {}'
                .format(traceback.print_exception(*result.exc_info)))
         assert result.exit_code == 0, msg
+        print(os.listdir(td))
 
         out_path = "SAM_100m-{}.csv".format(gid)
         test = pd.read_csv(os.path.join(td, out_path), skiprows=1)

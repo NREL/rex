@@ -45,7 +45,7 @@ def test_roll():
     with WindResource(h5) as f:
         time_index = f.time_index
         timezone = f.meta['timezone'][0]
-        sam_df = f._get_SAM_df('SAM_100m', 0)
+        sam_df = f.get_SAM_df(0, 100)
         time_step = np.abs(timezone)
         time_step = np.arange(time_step, len(time_index) - time_step)
         time_step = np.random.choice(time_step, 1)[0]

@@ -859,7 +859,7 @@ class ResourceX:
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
-            Internal kwargs for _get_SAM_df
+            Internal kwargs for get_SAM_df
 
         Return
         ------
@@ -874,7 +874,7 @@ class ResourceX:
         SAM_df = []
         for res_id in gid:
             # pylint: disable=E1111
-            df = self.resource._get_SAM_df('SAM', res_id, **kwargs)
+            df = self.resource.get_SAM_df(res_id, **kwargs)
             SAM_df.append(df)
             if out_path is not None:
                 site_meta = self['meta', res_id]
@@ -902,7 +902,7 @@ class ResourceX:
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
-            Internal kwargs for _get_SAM_df
+            Internal kwargs for get_SAM_df
 
         Return
         ------
@@ -1413,7 +1413,7 @@ class WindX(ResourceX):
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
-            Internal kwargs for _get_SAM_df:
+            Internal kwargs for get_SAM_df:
             - require_wind_dir
             - icing
 
@@ -1424,13 +1424,12 @@ class WindX(ResourceX):
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        ds_name = 'SAM_{}m'.format(hub_height)
         if isinstance(gid, (int, np.integer)):
             gid = [gid, ]
 
         SAM_df = []
         for res_id in gid:
-            df = self.resource._get_SAM_df(ds_name, res_id, **kwargs)
+            df = self.resource.get_SAM_df(res_id, hub_height, **kwargs)
             SAM_df.append(df)
             if out_path is not None:
                 site_meta = self['meta', res_id]
@@ -1460,7 +1459,7 @@ class WindX(ResourceX):
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
-            Internal kwargs for _get_SAM_df:
+            Internal kwargs for get_SAM_df:
             - require_wind_dir
             - icing
 
