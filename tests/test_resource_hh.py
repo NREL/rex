@@ -38,7 +38,7 @@ def test_sam_df_hh():
 
     h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_2.h5')
     with WindResource(h5) as wind:
-        sam_df = wind._get_SAM_df('pressure_80m', 0)
+        sam_df = wind.get_SAM_df(0, 80)
 
         arr1 = wind['pressure_100m', :, 0] * 9.86923e-6
         arr1 = SAMResource.roll_timeseries(arr1, -5, 1)

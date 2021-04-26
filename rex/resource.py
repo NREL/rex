@@ -2,7 +2,7 @@
 """
 Classes to handle resource data
 """
-from abc import ABC, abstractmethod
+from abc import ABC
 import h5py
 import numpy as np
 import os
@@ -604,7 +604,7 @@ class BaseResource(ABC):
         elif 'SAM' in ds_name:
             site = ds_slice[0]
             if isinstance(site, (int, np.integer)):
-                out = self._get_SAM_df(ds, site)  # pylint: disable=E1111
+                out = self.get_SAM_df(site)  # pylint: disable=E1111
             else:
                 msg = "Can only extract SAM DataFrame for a single site"
                 raise ResourceRuntimeError(msg)
@@ -1179,15 +1179,12 @@ class BaseResource(ABC):
                                          unscale=False)
         return coords
 
-    @abstractmethod
-    def _get_SAM_df(self, ds_name, site):
+    def get_SAM_df(self, site):
         """
         Placeholder for get_SAM_df method that it resource specific
 
         Parameters
         ----------
-        ds_name : str
-            'Dataset' name == SAM
         site : int
             Site to extract SAM DataFrame for
         """
@@ -1506,26 +1503,3 @@ class Resource(BaseResource):
         """
         super().__init__(h5_file, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
-
-    def _get_SAM_df(self, ds_name, site):
-        """
-        Placeholder for get_SAM_df method that it resource specific
-
-        Parameters
-        ----------
-        ds_name : str
-            'Dataset' name == SAM
-        site : int
-            Site to extract SAM DataFrame for
-
-        Returns
-        -------
-        sam_df : pandas.DataFrame
-            Example SAM DataFrame but for a single dataset. This method will
-            return all variable needed to run SAM in all renewable resource
-            classes.
-        """
-        sam_df = pd.DataFrame({ds_name: self[ds_name, :, site]},
-                              index=self.time_index)
-
-        return sam_df

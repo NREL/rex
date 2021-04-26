@@ -3,14 +3,16 @@
 Classes to handle renewable resource data
 """
 import numpy as np
+import os
 import pandas as pd
 import warnings
 
 from rex.resource import BaseResource
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import (ResourceValueError, ExtrapolationWarning,
-                                      ResourceWarning,
+                                      ResourceWarning, ResourceRuntimeError,
                                       MoninObukhovExtrapolationError)
+from rex.utilities.parse_keys import parse_keys
 
 
 class SolarResource(BaseResource):
@@ -21,14 +23,12 @@ class SolarResource(BaseResource):
     --------
     resource.BaseResource : Parent class
     """
-    def _get_SAM_df(self, ds_name, site):
+    def get_SAM_df(self, site):
         """
         Get SAM solar resource DataFrame for given site
 
         Parameters
         ----------
-        ds_name : str
-            'Dataset' name == SAM
         site : int
             Site to extract SAM DataFrame for
 
@@ -61,7 +61,7 @@ class SolarResource(BaseResource):
         col_map = {'dni': 'DNI', 'dhi': 'DHI', 'wind_speed': 'Wind Speed',
                    'air_temperature': 'Temperature'}
         res_df = res_df.rename(columns=col_map)
-        res_df.name = "{}-{}".format(ds_name, site)
+        res_df.name = "SAM_-{}".format(site)
 
         return res_df
 
@@ -370,6 +370,22 @@ class WindResource(BaseResource):
         self._heights = None
         super().__init__(h5_file, unscale=unscale, hsds=hsds,
                          str_decode=str_decode, group=group)
+
+    def __getitem__(self, keys):
+        ds, ds_slice = parse_keys(keys)
+        _, ds_name = os.path.split(ds)
+        if 'SAM' in ds_name:
+            site = ds_slice[0]
+            if isinstance(site, (int, np.integer)):
+                _, height = self._parse_name(ds_name)
+                out = self.get_SAM_df(site, height)
+            else:
+                msg = "Can only extract SAM DataFrame for a single site"
+                raise ResourceRuntimeError(msg)
+        else:
+            out = super().__getitem__(keys)
+
+        return out
 
     @property
     def heights(self):
@@ -897,21 +913,22 @@ class WindResource(BaseResource):
 
         return out
 
-    def _get_SAM_df(self, ds_name, site, require_wind_dir=False,
-                    icing=False):
+    def get_SAM_df(self, site, height, require_wind_dir=False, icing=False):
         """
         Get SAM wind resource DataFrame for given site
 
         Parameters
         ----------
-        ds_name : str
-            'Dataset' name == SAM
         site : int
             Site to extract SAM DataFrame for
-        require_wind_dir : bool
-            Boolean flag as to whether wind direction will be loaded.
-        icing : bool
-            Boolean flag to include relativehumitidy for icing calculation
+        height : int
+            Hub height to extract SAM variables at
+        require_wind_dir : bool, optional
+            Boolean flag as to whether wind direction will be loaded,
+            by default False
+        icing : bool, optional
+            Boolean flag to include relativehumitidy for icing calculation,
+            by default False
 
         Returns
         -------
@@ -921,8 +938,7 @@ class WindResource(BaseResource):
         if not self._unscale:
             raise ResourceValueError("SAM requires unscaled values")
 
-        _, h = self._parse_name(ds_name)
-        h = self._check_hub_height(h)
+        height = self._check_hub_height(height)
         res_df = pd.DataFrame({'Year': self.time_index.year,
                                'Month': self.time_index.month,
                                'Day': self.time_index.day,
@@ -941,7 +957,7 @@ class WindResource(BaseResource):
             variables.append('relativehumidity')
 
         for var in variables:
-            var_name = "{}_{}m".format(var, h)
+            var_name = "{}_{}m".format(var, height)
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var_name, ds_slice)
             var_array = SAMResource.roll_timeseries(var_array, time_zone,
@@ -956,7 +972,7 @@ class WindResource(BaseResource):
                    'windspeed': 'Speed', 'winddirection': 'Direction',
                    'relativehumidity': 'Relative Humidity'}
         res_df = res_df.rename(columns=col_map)
-        res_df.name = "{}-{}".format(ds_name, site)
+        res_df.name = "SAM_{}m-{}".format(height, site)
 
         return res_df
 
@@ -1109,14 +1125,12 @@ class WaveResource(BaseResource):
     resource.BaseResource : Parent class
     """
 
-    def _get_SAM_df(self, ds_name, site):
+    def get_SAM_df(self, site):
         """
         Get SAM wave resource DataFrame for given site
 
         Parameters
         ----------
-        ds_name : str
-            'Dataset' name == SAM
         site : int
             Site to extract SAM DataFrame for
 
@@ -1148,7 +1162,7 @@ class WaveResource(BaseResource):
         col_map = {'significant_wave_height': 'wave_height',
                    'energy_period': 'wave_period'}
         res_df = res_df.rename(columns=col_map)
-        res_df.name = "{}-{}".format(ds_name, site)
+        res_df.name = "SAM_-{}".format(site)
 
         return res_df
 
