@@ -16,7 +16,7 @@ from rex import __version__
 
 logger = logging.getLogger(__name__)
 
-RES_CLS = {'Resouce': Resource,
+RES_CLS = {'Resource': Resource,
            'NSRDB': NSRDB,
            'Wind': WindResource,
            'Wave': WaveResource,
