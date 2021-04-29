@@ -113,7 +113,7 @@ def full(ctx):
     Compute Stats for full file time-series
     """
     res_stats = ctx.obj['STATS']
-    annual_stats = res_stats.annual_stats(
+    annual_stats = res_stats.full_stats(
         ctx.obj['DSET'], max_workers=ctx.obj["MAX_WORKERS"],
         chunks_per_worker=ctx.obj['CPW'],
         lat_lon_only=ctx.obj['LL'])
