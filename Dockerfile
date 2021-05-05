@@ -7,8 +7,9 @@ RUN mkdir -p /rex
 # Copy package
 COPY . /rex
 
+
 # Install dependencies
 RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir .
 
 ENTRYPOINT ["rex"]
