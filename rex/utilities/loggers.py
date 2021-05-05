@@ -276,7 +276,7 @@ class LoggingAttributes:
         """
         if not isinstance(new_handlers, (list, tuple)):
             new_handlers = [new_handlers]
-            new_handlers = [os.path.normpath(h) for h in new_handlers
+            new_handlers = [os.path.realpath(h) for h in new_handlers
                             if h is not None]
 
         for h in new_handlers:
