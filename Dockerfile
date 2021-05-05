@@ -9,7 +9,7 @@ COPY . /rex
 
 
 # Install dependencies
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir .
 
 ENTRYPOINT ["rex"]
