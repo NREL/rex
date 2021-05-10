@@ -137,70 +137,73 @@ class TemporalStats:
         return self.meta[lat_lon_cols]
 
     @staticmethod
-    def _format_index_value(index, stat, month_map=None):
+    def _format_grp_names(grp_names):
         """
-        Format groupby index value
+        Format groupby index values
 
         Parameters
         ----------
-        index : int | tuple
-            hour, month, or (month, hour) groupby index value
-        stat : str
-            Statistic that was computed
-        month_map : dict | None, optional
-            Mapping of month int to str, by default None
+        grp_names : list
+            Group by index values, these correspond to each unique group in
+            the groupby
 
         Returns
         -------
-        out : str
-
+        out : ndarray
+            2D array of grp index values properly formatted as strings
         """
-        if isinstance(index, np.ndarray):
-            m, h = index
-            if month_map is not None:
-                m = month_map[m]
+        month_map = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May',
+                     6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct',
+                     11: 'Nov', 12: 'Dec'}
+
+        # pylint: disable=unnecessary-lambda
+        year = lambda s: "{}".format(s)
+        month = lambda s: "{}".format(month_map[s])
+        hour = lambda s: "{:02d}:00UTC".format(s)
+
+        grp_names = np.array(grp_names).T
+        if len(grp_names.shape) == 1:
+            grp_names = np.expand_dims(grp_names, 0)
+
+        out = []
+        for grp_i in grp_names:  # pylint: disable=not-an-iterable
+            grp_max = grp_i.max()
+            if grp_max <= 12:
+                out.append(list(map(month, grp_i)))
+            elif grp_max <= 23:
+                out.append(list(map(hour, grp_i)))
             else:
-                m = '{:02d}'.format(m)
+                out.append(list(map(year, grp_i)))
 
-            out = "{}-{:02d}".format(m, h)
-        else:
-            if month_map is not None:
-                out = month_map[index]
-            else:
-                out = '{:02d}'.format(index)
-
-        out += '_{}'.format(stat)
-
-        return out
+        return np.array(out).T
 
     @classmethod
-    def _create_names(cls, index, stat):
+    def _create_names(cls, groups, stats):
         """
         Generate statistics names
 
         Parameters
         ----------
-        index : pandas.Index | pandas.MultiIndex
-            Temporal index, either month, hour, or (month, hour)
-        stat : str
-            Statistic that was computed
+        groups : list
+            List of group names, some combination of year, month, hour
+        stats : list
+            Statistics to be computed
 
         Returns
         -------
-        columns : list
-            List of column names to use
+        columns_map : dict
+            Dictionary of column names to use for each statistic
         """
-        month_map = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May',
-                     6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct',
-                     11: 'Nov', 12: 'Dec'}
-        index = np.array(index.to_list())
-        if len(index.shape) != 2 and index.max() > 12:
-            month_map = None
+        group_names = cls._format_grp_names(groups)
 
-        columns = [cls._format_index_value(i, stat, month_map=month_map)
-                   for i in index]
+        columns_map = {}
+        for s in stats:
+            # pylint: disable=not-an-iterable
+            cols = ['{}_{}'.format('-'.join(n), s) for n
+                    in group_names]
+            columns_map[s] = cols
 
-        return columns
+        return columns_map
 
     @classmethod
     def _compute_stats(cls, res_data, statistics, diurnal=False, month=False):
@@ -232,6 +235,8 @@ class TemporalStats:
 
         if groupby:
             res_data = res_data.groupby(groupby)
+            column_names = cls._create_names(list(res_data.groups),
+                                             list(statistics))
 
         res_stats = []
         for name, stat in statistics.items():
@@ -240,7 +245,7 @@ class TemporalStats:
             s_data = res_data.aggregate(func, **kwargs)
 
             if groupby:
-                columns = cls._create_names(s_data.index, name)
+                columns = column_names[name]
                 s_data = s_data.T
                 s_data.columns = columns
             else:
@@ -963,3 +968,87 @@ class TemporalStats:
                             lat_lon_only=lat_lon_only, out_path=out_path)
 
         return all_stats
+
+
+class WaveStats(TemporalStats):
+    """
+    Sub-class to handle wave stats
+    """
+
+    @staticmethod
+    def weighted_circular_mean(data, weights, degrees=True, axis=0):
+        """
+        Computed the ciruclar average with the given weights
+
+        Parameters
+        ----------
+        data : ndarray
+            Data to average
+        weights : ndarray
+            Weights to apply to data during averaging, must be of the same
+            shape as data
+        degree : bool, optional
+            Flag indicating that data is in degrees and needs to be converted
+            to/from radians during averaging. By default True
+        axis : int
+            Axis to compute average along, by default 0 (columns/sites)
+
+        Returns
+        -------
+        mean : ndarray
+            Weighted circular mean along the given axis
+        """
+        if data.shape != weights.shape:
+            msg = ('The shape of weights {} does not match the shape of the '
+                   'data {} to which it is to be applied!'
+                   .format(weights.shape, data.shape))
+            logger.error(msg)
+            raise RuntimeError(msg)
+
+        if degrees:
+            data = np.radians(data, dtype=np.float32)
+
+        sin = np.nanmean(np.sin(data) * weights, axis=axis)
+        cos = np.nanmean(np.cos(data) * weights, axis=axis)
+
+        mean = np.arctan2(sin, cos)
+        if degrees:
+            mean = np.degrees(mean)
+            mask = mean < 0
+            mean[mask] += 360
+
+        return mean
+
+    @classmethod
+    def _compute_circular_mean(cls, res_data, weights, degrees=True, axis=0,
+                               column_names=None):
+        """
+        [summary]
+
+        Parameters
+        ----------
+        res_data : [type]
+            [description]
+        weights : [type]
+            [description]
+        degrees : bool, optional
+            [description], by default True
+        axis : int, optional
+            [description], by default 0
+        column_names : [type], optional
+            [description], by default None
+        """
+        if column_names:
+            s_data = []
+            for grp_name, res_grp in res_data:
+                grp_w = weights.get_group(grp_name)
+                s_data[grp_name] = cls.weighted_circular_mean(
+                    res_grp, grp_w, degrees=degrees, axis=axis)
+
+            s_data = pd.DataFrame(s_data, columns=column_names)
+        else:
+            s_data = cls.weighted_circular_mean(res_data, weights,
+                                                degrees=degrees, axis=axis)
+            s_data = pd.DataFrame({'weighted_mean': s_data})
+
+        return s_data
