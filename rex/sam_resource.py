@@ -791,6 +791,9 @@ class SAMResource:
             raise ResourceValueError(msg) from ex
 
         site_meta = self.meta.loc[site].copy()
+        if not isinstance(site_meta, pd.Series):
+            site_meta = site_meta.iloc[0]
+
         if self._h is not None:
             try:
                 h = self._h[idx]
