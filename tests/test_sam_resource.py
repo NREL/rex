@@ -4,6 +4,7 @@ pytests for sam_resource
 """
 import numpy as np
 import os
+import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
 
@@ -35,6 +36,40 @@ def test_sites_slice():
                           hub_heights=hub_heights)
     msg = "sites were not returned as the same input list"
     assert sam_res.sites == sites
+
+
+def test_duplicate_sites():
+    """
+    Test site list with duplicates passed to SAMResource. Can be used for
+    getting coarse forecast data that has overlapping generation gids.
+    """
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    sites = [0, 1, 1, 1, 2, 3, 4, 4, 10, 10, 21, 30, 30]
+    hub_heights = 80
+    sam_res = WindResource.preload_SAM(h5, sites, hub_heights, means=True)
+
+    assert len(sam_res.meta) == len(sites)
+    assert len(sam_res.sites) == len(sites)
+    assert any(sam_res.meta.duplicated())
+    assert sam_res._res_arrays['windspeed'].shape[1] == len(sites)
+    assert sam_res._mean_arrays['windspeed'].shape[0] == len(sites)
+
+    with WindResource(h5) as res:
+        for res_gid in sites:
+            test = sam_res[res_gid]['windspeed']
+            truth = res['windspeed_80m', :, res_gid]
+            assert np.allclose(test, truth)
+
+        i = 0
+        for res_df, site_meta in sam_res:
+            i += 1
+            assert isinstance(site_meta, pd.Series)
+            test = res_df['windspeed']
+            truth = res['windspeed_80m', :, res_df.name]
+            assert np.allclose(test, truth)
+
+        assert i == len(sites)
 
 
 def test_roll():
