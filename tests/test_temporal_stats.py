@@ -13,7 +13,7 @@ import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
-from rex.temporal_stats.temporal_stats import (TemporalStats, WaveStats,
+from rex.temporal_stats.temporal_stats import (TemporalStats,
                                                weighted_circular_mean)
 from rex.temporal_stats.temporal_stats_cli import main
 from rex.utilities.loggers import LOGGERS
@@ -223,23 +223,23 @@ def test_weighted_circular_means(weights):
     with WindResource(RES_H5) as f:
         res_data = f[dataset]
         if weights is not None:
-            norm_weights = f[weights]
-            norm_weights = np.exp(norm_weights)
-            norm_weights /= np.sum(norm_weights)
+            w = f[weights]
         else:
-            norm_weights = None
+            w = None
 
-    test_stats = WaveStats.run(RES_H5, dataset,
-                               statistics='weighted_circular_mean',
-                               res_cls=WindResource,
-                               weights=weights)
+    kwargs = {'weights': weights}
+    statistics = {'weighted_circular_mean': {'func': weighted_circular_mean,
+                                             'kwargs': kwargs}}
+    test_stats = TemporalStats.run(RES_H5, dataset,
+                                   statistics=statistics,
+                                   res_cls=WindResource)
 
     gids = np.arange(res_data.shape[1], dtype=int)
 
     msg = ('gids do not match!')
     assert np.allclose(gids, test_stats.index.values), msg
 
-    truth = weighted_circular_mean(res_data, weights=norm_weights, axis=0)
+    truth = weighted_circular_mean(res_data, weights=w)
     msg = 'Circular Means do not match!'
     assert np.allclose(truth, test_stats['weighted_mean'].values), msg
 
