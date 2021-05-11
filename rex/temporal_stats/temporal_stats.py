@@ -790,7 +790,7 @@ class TemporalStats:
         out_stats : pandas.DataFrame
             DataFrame of resource statistics
         """
-        logger.info('Computing temporal stats for {}in {}'
+        logger.info('Computing temporal stats for {} in {}'
                     .format(dataset, res_h5))
         logger.debug('Computing {} using:'
                      '\n-diurnal={}'
@@ -1198,6 +1198,7 @@ class WaveStats(TemporalStats):
 
                 norm_weights = np.exp(norm_weights)
                 norm_weights /= np.sum(norm_weights)
+                norm_weights = pd.DataFrame(norm_weights, index=time_index)
 
         if combinations:
             res_stats = [cls._compute_stats(res_data, statistics,
@@ -1374,7 +1375,7 @@ class WaveStats(TemporalStats):
         out_stats : pandas.DataFrame
             DataFrame of resource statistics
         """
-        logger.info('Computing temporal stats for {}in {}'
+        logger.info('Computing temporal stats for {} in {}'
                     .format(dataset, res_h5))
         logger.debug('Computing {} using:'
                      '\n-diurnal={}'
