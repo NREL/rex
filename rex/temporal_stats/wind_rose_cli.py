@@ -21,7 +21,7 @@ RES_CLS = {'Wind': WindResource,
            'MultiYear': MultiYearWindResource}
 
 
-@click.group(invoke_without_command=True, chain=True)
+@click.command()
 @click.version_option(version=__version__)
 @click.option('--wind_path', '-h5', required=True,
               type=click.Path(),
