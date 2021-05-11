@@ -13,7 +13,8 @@ import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
-from rex.temporal_stats.temporal_stats import TemporalStats
+from rex.temporal_stats.temporal_stats import (TemporalStats, WaveStats,
+                                               weighted_circular_mean)
 from rex.temporal_stats.temporal_stats_cli import main
 from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
@@ -211,6 +212,36 @@ def test_multi_year_stats(max_workers):
     truth = np.mean(res_data, axis=0)
     msg = 'Means do not match!'
     assert np.allclose(truth, test_stats['mean'].values), msg
+
+
+@pytest.mark.parametrize("weights", [None, "windspeed_100m"])
+def test_weighted_circular_means(weights):
+    """
+    Test weighted ciruclar means using wave stats class
+    """
+    dataset = 'winddirection_100m'
+    with WindResource(RES_H5) as f:
+        res_data = f[dataset]
+        if weights is not None:
+            norm_weights = f[weights]
+            norm_weights = np.exp(norm_weights)
+            norm_weights /= np.sum(norm_weights)
+        else:
+            norm_weights = None
+
+    test_stats = WaveStats.run(RES_H5, dataset,
+                               statistics='weighted_circular_mean',
+                               res_cls=WindResource,
+                               weights=weights)
+
+    gids = np.arange(res_data.shape[1], dtype=int)
+
+    msg = ('gids do not match!')
+    assert np.allclose(gids, test_stats.index.values), msg
+
+    truth = weighted_circular_mean(res_data, weights=norm_weights, axis=0)
+    msg = 'Circular Means do not match!'
+    assert np.allclose(truth, test_stats['weighted_mean'].values), msg
 
 
 def test_cli(runner):

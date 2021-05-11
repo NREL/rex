@@ -40,15 +40,14 @@ def weighted_circular_mean(data, weights=None, degrees=True, axis=0):
     mean : ndarray
         Weighted circular mean along the given axis
     """
-    if data.shape != weights.shape:
+    if weights is None:
+        weights = 1
+    elif data.shape != weights.shape:
         msg = ('The shape of weights {} does not match the shape of the '
                'data {} to which it is to be applied!'
                .format(weights.shape, data.shape))
         logger.error(msg)
         raise RuntimeError(msg)
-
-    if weights is None:
-        weights = 1
 
     if degrees:
         data = np.radians(data, dtype=np.float32)
@@ -1043,7 +1042,8 @@ class WaveStats(TemporalStats):
              'median': {'func': np.nanmedian, 'kwargs': {'axis': 0}},
              'std': {'func': np.nanstd, 'kwargs': {'axis': 0}},
              'weighted_circular_mean': {'func': weighted_circular_mean,
-                                        'kwargs': {'axis': 0, 'degree': True}}}
+                                        'kwargs': {'axis': 0,
+                                                   'degrees': True}}}
 
     @staticmethod
     def _compute_weighted_means(func, res_data, weights, column_names=None,
@@ -1103,6 +1103,7 @@ class WaveStats(TemporalStats):
             DataFrame of desired statistics at desired time intervals
         """
         groupby = []
+        column_names = None
         if month:
             groupby.append(res_data.index.month)
 
@@ -1193,7 +1194,7 @@ class WaveStats(TemporalStats):
                                     index=time_index)
             if weights is not None:
                 norm_weights = np.ones(res_data.shape, dtype=np.float32)
-                if isinstance(weights, list):
+                if not isinstance(weights, list):
                     weights = [weights]
 
                 for dset in weights:
@@ -1202,6 +1203,8 @@ class WaveStats(TemporalStats):
                 norm_weights = np.exp(norm_weights)
                 norm_weights /= np.sum(norm_weights)
                 norm_weights = pd.DataFrame(norm_weights, index=time_index)
+            else:
+                norm_weights = None
 
         if combinations:
             res_stats = [cls._compute_stats(res_data, statistics,
