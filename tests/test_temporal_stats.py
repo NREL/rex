@@ -279,12 +279,12 @@ def test_cli(runner):
         mask = TIME_INDEX.hour == 0
         truth = np.mean(res_data[mask], axis=0)
         msg = 'Midnight means do not match!'
-        assert np.allclose(truth, test_stats['00:00UTCmean'].values), msg
+        assert np.allclose(truth, test_stats['00:00UTC_mean'].values), msg
 
         mask = (TIME_INDEX.month == 1) & (TIME_INDEX.hour == 0)
         truth = np.mean(res_data[mask], axis=0)
         msg = 'January-midnight means do not match!'
-        assert np.allclose(truth, test_stats['Jan-00:00UTCmean'].values), msg
+        assert np.allclose(truth, test_stats['Jan-00:00UTC_mean'].values), msg
 
     LOGGERS.clear()
 
