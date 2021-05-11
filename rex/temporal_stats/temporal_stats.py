@@ -1194,7 +1194,7 @@ class WaveStats(TemporalStats):
                                     index=time_index)
             if weights is not None:
                 norm_weights = np.ones(res_data.shape, dtype=np.float32)
-                if not isinstance(weights, list):
+                if not isinstance(weights, (list, tuple)):
                     weights = [weights]
 
                 for dset in weights:
