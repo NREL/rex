@@ -13,7 +13,8 @@ import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
-from rex.temporal_stats.temporal_stats import TemporalStats
+from rex.temporal_stats.temporal_stats import (TemporalStats,
+                                               weighted_circular_mean)
 from rex.temporal_stats.temporal_stats_cli import main
 from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
@@ -82,12 +83,12 @@ def test_means(max_workers, sites):
     mask = TIME_INDEX.hour == 0
     truth = np.mean(res_data[mask], axis=0)
     msg = 'Midnight means do not match!'
-    assert np.allclose(truth, test_stats['00_mean'].values), msg
+    assert np.allclose(truth, test_stats['00:00UTC_mean'].values), msg
 
     mask = (TIME_INDEX.month == 1) & (TIME_INDEX.hour == 0)
     truth = np.mean(res_data[mask], axis=0)
     msg = 'January-midnight means do not match!'
-    assert np.allclose(truth, test_stats['Jan-00_mean'].values), msg
+    assert np.allclose(truth, test_stats['Jan-00:00UTC_mean'].values), msg
 
 
 @pytest.mark.parametrize("max_workers", [1, None])
@@ -118,12 +119,12 @@ def test_medians(max_workers):
     mask = TIME_INDEX.hour == 0
     truth = np.median(res_data[mask], axis=0)
     msg = 'Midnight medians do not match!'
-    assert np.allclose(truth, test_stats['00_median'].values), msg
+    assert np.allclose(truth, test_stats['00:00UTC_median'].values), msg
 
     mask = (TIME_INDEX.month == 1) & (TIME_INDEX.hour == 0)
     truth = np.median(res_data[mask], axis=0)
     msg = 'January-midnight medians do not match!'
-    assert np.allclose(truth, test_stats['Jan-00_median'].values), msg
+    assert np.allclose(truth, test_stats['Jan-00:00UTC_median'].values), msg
 
 
 @pytest.mark.parametrize("max_workers", [1, None])
@@ -154,12 +155,12 @@ def test_stdevs(max_workers):
     mask = TIME_INDEX.hour == 0
     truth = np.std(res_data[mask], axis=0)
     msg = 'Midnight stdevs do not match!'
-    assert np.allclose(truth, test_stats['00_std'].values), msg
+    assert np.allclose(truth, test_stats['00:00UTC_std'].values), msg
 
     mask = (TIME_INDEX.month == 1) & (TIME_INDEX.hour == 0)
     truth = np.std(res_data[mask], axis=0)
     msg = 'January-midnight stdevs do not match!'
-    assert np.allclose(truth, test_stats['Jan-00_std'].values), msg
+    assert np.allclose(truth, test_stats['Jan-00:00UTC_std'].values), msg
 
 
 @pytest.mark.parametrize("max_workers", [1, None])
@@ -213,6 +214,36 @@ def test_multi_year_stats(max_workers):
     assert np.allclose(truth, test_stats['mean'].values), msg
 
 
+@pytest.mark.parametrize("weights", [None, "windspeed_100m"])
+def test_weighted_circular_means(weights):
+    """
+    Test weighted ciruclar means using wave stats class
+    """
+    dataset = 'winddirection_100m'
+    with WindResource(RES_H5) as f:
+        res_data = f[dataset]
+        if weights is not None:
+            w = f[weights]
+        else:
+            w = None
+
+    kwargs = {'weights': weights}
+    statistics = {'weighted_circular_mean': {'func': weighted_circular_mean,
+                                             'kwargs': kwargs}}
+    test_stats = TemporalStats.run(RES_H5, dataset,
+                                   statistics=statistics,
+                                   res_cls=WindResource)
+
+    gids = np.arange(res_data.shape[1], dtype=int)
+
+    msg = ('gids do not match!')
+    assert np.allclose(gids, test_stats.index.values), msg
+
+    truth = weighted_circular_mean(res_data, weights=w)
+    msg = 'Circular Means do not match!'
+    assert np.allclose(truth, test_stats['weighted_mean'].values), msg
+
+
 def test_cli(runner):
     """
     Test CLI
@@ -248,12 +279,12 @@ def test_cli(runner):
         mask = TIME_INDEX.hour == 0
         truth = np.mean(res_data[mask], axis=0)
         msg = 'Midnight means do not match!'
-        assert np.allclose(truth, test_stats['00_mean'].values), msg
+        assert np.allclose(truth, test_stats['00:00UTC_mean'].values), msg
 
         mask = (TIME_INDEX.month == 1) & (TIME_INDEX.hour == 0)
         truth = np.mean(res_data[mask], axis=0)
         msg = 'January-midnight means do not match!'
-        assert np.allclose(truth, test_stats['Jan-00_mean'].values), msg
+        assert np.allclose(truth, test_stats['Jan-00:00UTC_mean'].values), msg
 
     LOGGERS.clear()
 

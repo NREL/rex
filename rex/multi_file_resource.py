@@ -293,6 +293,7 @@ class MultiH5Path(MultiH5):
         suffix : str
             File suffix for files in h5_dir.
         """
+        h5_path = os.path.realpath(h5_path)
         if '*' in h5_path:
             h5_dir, fn = os.path.split(h5_path)
             prefix, suffix = fn.split('*')

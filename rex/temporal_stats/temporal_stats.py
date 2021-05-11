@@ -17,6 +17,68 @@ from rex.utilities.utilities import get_lat_lon_cols, slice_sites
 logger = logging.getLogger(__name__)
 
 
+def weighted_circular_mean(data, weights=None, degrees=True, axis=0,
+                           norm_weights=True, exponential_weights=True):
+    """
+    Computed the ciruclar average with the given weights if supplied. If
+    weights are supplied they are applied during the circular averaging. For
+    example, if averaging wind direction with wind speed as weights, wind
+    directions that occur at higher wind speeds will have a larger weight of
+    the final mean value.
+
+    Parameters
+    ----------
+    data : ndarray
+        Data to average
+    weights : ndarray, optional
+        Weights to apply to data during averaging, must be of the same
+        shape as data, by default None
+    degree : bool, optional
+        Flag indicating that data is in degrees and needs to be converted
+        to/from radians during averaging. By default True
+    axis : int, optional
+        Axis to compute average along, by default 0 which will produce
+        site averages
+    norm_weights: : bool, optional
+        Flag to normalize weights, by default True
+    exponential_weights : bool
+        Flag to convert weights to exponential, by default True
+
+    Returns
+    -------
+    mean : ndarray
+        Weighted circular mean along the given axis
+    """
+    if weights is None:
+        weights = 1
+    elif data.shape != weights.shape:
+        if exponential_weights:
+            weights = np.exp(weights)
+
+        if norm_weights:
+            weights /= np.sum(weights)
+
+        msg = ('The shape of weights {} does not match the shape of the '
+               'data {} to which it is to be applied!'
+               .format(weights.shape, data.shape))
+        logger.error(msg)
+        raise RuntimeError(msg)
+
+    if degrees:
+        data = np.radians(data, dtype=np.float32)
+
+    sin = np.nanmean(np.sin(data) * weights, axis=axis)
+    cos = np.nanmean(np.cos(data) * weights, axis=axis)
+
+    mean = np.arctan2(sin, cos)
+    if degrees:
+        mean = np.degrees(mean)
+        mask = mean < 0
+        mean[mask] += 360
+
+    return mean
+
+
 class TemporalStats:
     """
     Temporal Statistics from Resource Data
@@ -137,73 +199,112 @@ class TemporalStats:
         return self.meta[lat_lon_cols]
 
     @staticmethod
-    def _format_index_value(index, stat, month_map=None):
+    def _format_grp_names(grp_names):
         """
-        Format groupby index value
+        Format groupby index values
 
         Parameters
         ----------
-        index : int | tuple
-            hour, month, or (month, hour) groupby index value
-        stat : str
-            Statistic that was computed
-        month_map : dict | None, optional
-            Mapping of month int to str, by default None
+        grp_names : list
+            Group by index values, these correspond to each unique group in
+            the groupby
 
         Returns
         -------
-        out : str
-
+        out : ndarray
+            2D array of grp index values properly formatted as strings
         """
-        if isinstance(index, np.ndarray):
-            m, h = index
-            if month_map is not None:
-                m = month_map[m]
+        month_map = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May',
+                     6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct',
+                     11: 'Nov', 12: 'Dec'}
+
+        # pylint: disable=unnecessary-lambda
+        year = lambda s: "{}".format(s)
+        month = lambda s: "{}".format(month_map[s])
+        hour = lambda s: "{:02d}:00UTC".format(s)
+
+        grp_names = np.array(grp_names).T
+        if len(grp_names.shape) == 1:
+            grp_names = np.expand_dims(grp_names, 0)
+
+        out = []
+        for grp_i in grp_names:  # pylint: disable=not-an-iterable
+            grp_max = grp_i.max()
+            if grp_max <= 12:
+                out.append(list(map(month, grp_i)))
+            elif grp_max <= 23:
+                out.append(list(map(hour, grp_i)))
             else:
-                m = '{:02d}'.format(m)
+                out.append(list(map(year, grp_i)))
 
-            out = "{}-{:02d}".format(m, h)
-        else:
-            if month_map is not None:
-                out = month_map[index]
-            else:
-                out = '{:02d}'.format(index)
-
-        out += '_{}'.format(stat)
-
-        return out
+        return np.array(out).T
 
     @classmethod
-    def _create_names(cls, index, stat):
+    def _create_names(cls, groups, stats):
         """
         Generate statistics names
 
         Parameters
         ----------
-        index : pandas.Index | pandas.MultiIndex
-            Temporal index, either month, hour, or (month, hour)
-        stat : str
-            Statistic that was computed
+        groups : list
+            List of group names, some combination of year, month, hour
+        stats : list
+            Statistics to be computed
 
         Returns
         -------
-        columns : list
-            List of column names to use
+        columns_map : dict
+            Dictionary of column names to use for each statistic
         """
-        month_map = {1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May',
-                     6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct',
-                     11: 'Nov', 12: 'Dec'}
-        index = np.array(index.to_list())
-        if len(index.shape) != 2 and index.max() > 12:
-            month_map = None
+        group_names = cls._format_grp_names(groups)
 
-        columns = [cls._format_index_value(i, stat, month_map=month_map)
-                   for i in index]
+        columns_map = {}
+        for s in stats:
+            # pylint: disable=not-an-iterable
+            cols = ['{}_{}'.format('-'.join(n), s) for n
+                    in group_names]
+            columns_map[s] = cols
 
-        return columns
+        return columns_map
+
+    @staticmethod
+    def _compute_weighted_stats(func, res_data, column_names=None,
+                                **kwargs):
+        """
+        Computed the weighted means using given function and kwargs
+
+        Parameters
+        ----------
+        func : object
+            Function to use to compute the weighted means
+        res_data : pandas.DataFrame | pandas.GroupBy
+            Resource data to compute circular means for
+        column_names : list, optional
+            Column names based on group by names, by default None
+        kwargs : dict
+            Function kwargs
+        """
+        weights = kwargs.pop('weights', None)
+        if column_names:
+            s_data = []
+            for grp_name, res_grp in res_data:
+                if weights is not None:
+                    grp_w = weights.get_group(grp_name)
+                else:
+                    grp_w = None
+
+                s_data[grp_name] = func(res_grp, weights=grp_w, **kwargs)
+
+            s_data = pd.DataFrame(s_data, columns=column_names)
+        else:
+            s_data = func(res_data, weights=weights, **kwargs)
+            s_data = pd.DataFrame({'weighted_mean': s_data})
+
+        return s_data
 
     @classmethod
-    def _compute_stats(cls, res_data, statistics, diurnal=False, month=False):
+    def _compute_stats(cls, res_data, statistics, diurnal=False, month=False,
+                       weights=None):
         """
         Compute desired stats for desired time intervals from res_data
 
@@ -217,6 +318,8 @@ class TemporalStats:
             Extract diurnal stats, by default False
         month : bool, optional
             Extract monthly stats, by default False
+        weights : pandas.DataFrame, optional
+            Weights to use for weighted means calculation, by default None
 
         Returns
         -------
@@ -224,6 +327,7 @@ class TemporalStats:
             DataFrame of desired statistics at desired time intervals
         """
         groupby = []
+        column_names = None
         if month:
             groupby.append(res_data.index.month)
 
@@ -232,25 +336,91 @@ class TemporalStats:
 
         if groupby:
             res_data = res_data.groupby(groupby)
+            if weights is not None:
+                weights = weights.groupyby(groupby)
+
+            column_names = cls._create_names(list(res_data.groups),
+                                             list(statistics))
 
         res_stats = []
         for name, stat in statistics.items():
             func = stat['func']
             kwargs = stat.get('kwargs', {})
-            s_data = res_data.aggregate(func, **kwargs)
-
-            if groupby:
-                columns = cls._create_names(s_data.index, name)
-                s_data = s_data.T
-                s_data.columns = columns
+            if name.lower().startswith('weight'):
+                s_data = cls._compute_weighted_stats(func, res_data,
+                                                     column_names=column_names,
+                                                     **kwargs)
             else:
-                s_data = s_data.to_frame(name=name)
+                s_data = res_data.aggregate(func, **kwargs)
+
+                if groupby:
+                    columns = column_names[name]
+                    s_data = s_data.T
+                    s_data.columns = columns
+                else:
+                    s_data = s_data.to_frame(name=name)
 
             res_stats.append(s_data)
 
         res_stats = pd.concat(res_stats, axis=1)
 
         return res_stats
+
+    @staticmethod
+    def _create_index(sites_slice):
+        """
+        Create index from site slice
+
+        Parameters
+        ----------
+        sites_slice : slice | list | ndarray
+            Sites to build index from
+
+        Returns
+        -------
+        idx : list
+            site gids
+        """
+        if isinstance(sites_slice, slice) and sites_slice.stop:
+            idx = list(range(*sites_slice.indices(sites_slice.stop)))
+        elif isinstance(sites_slice, (list, np.ndarray)):
+            idx = sites_slice
+
+        return idx
+
+    @staticmethod
+    def _extract_weights(res, weights_dsets, sites_slice, time_index):
+        """
+        Extract weights datasets from resource and combine into weights
+        to use for weighted stats
+
+        Parameters
+        ----------
+        res : rex.Resource
+            Open Resource class or sub-class to extract datasets from
+        weights_dsets : str | list | tuple
+            List of weight(s) datasets to extract and combine
+        sites_slice : slice
+            Subslice of sites to extract weights for
+        time_index : pandas.DatatimeIndex
+            Resource DatetimeIndex, needed to output DataFrame Index
+
+        Returns
+        -------
+        weights : pandas.DataFrame
+            Weights DataFrame to match res_data
+        """
+        if not isinstance(weights_dsets, (list, tuple)):
+            weights_dsets = [weights_dsets]
+
+        weights = None
+        for dset in weights_dsets:
+            if weights is None:
+                weights = res[dset, :, sites_slice]
+            else:
+                weights *= res[dset, :, sites_slice]
+
+        return pd.DataFrame(weights, index=time_index)
 
     @classmethod
     def _extract_stats(cls, res_h5, statistics, dataset, res_cls=Resource,
@@ -299,6 +469,14 @@ class TemporalStats:
 
             res_data = pd.DataFrame(f[dataset, :, sites_slice],
                                     index=time_index)
+
+            for s, s_dict in statistics.items():
+                weights = s_dict.get('kwargs', {}).get('weights')
+                if weights is not None:
+                    weights = cls._extract_weights(f, weights, sites_slice,
+                                                   time_index)
+                    statistics[s]['kwargs']['weights'] = weights
+
         if combinations:
             res_stats = [cls._compute_stats(res_data, statistics)]
             if month:
@@ -317,12 +495,7 @@ class TemporalStats:
             res_stats = cls._compute_stats(res_data, statistics,
                                            diurnal=diurnal, month=month)
 
-        if isinstance(sites_slice, slice) and sites_slice.stop:
-            res_stats.index = \
-                list(range(*sites_slice.indices(sites_slice.stop)))
-        elif isinstance(sites_slice, (list, np.ndarray)):
-            res_stats.index = sites_slice
-
+        res_stats.index = cls._create_index(sites_slice)
         res_stats.index.name = 'gid'
 
         return res_stats
@@ -723,7 +896,7 @@ class TemporalStats:
         out_stats : pandas.DataFrame
             DataFrame of resource statistics
         """
-        logger.info('Computing temporal stats for {}in {}'
+        logger.info('Computing temporal stats for {} in {}'
                     .format(dataset, res_h5))
         logger.debug('Computing {} using:'
                      '\n-diurnal={}'
