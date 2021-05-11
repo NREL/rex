@@ -18,7 +18,7 @@ from rex.utilities.utilities import get_lat_lon_cols, slice_sites
 logger = logging.getLogger(__name__)
 
 
-def weighted_circular_mean(data, weights, degrees=True, axis=0):
+def weighted_circular_mean(data, weights=None, degrees=True, axis=0):
     """
     Computed the ciruclar average with the given weights
 
@@ -26,9 +26,9 @@ def weighted_circular_mean(data, weights, degrees=True, axis=0):
     ----------
     data : ndarray
         Data to average
-    weights : ndarray
+    weights : ndarray, optional
         Weights to apply to data during averaging, must be of the same
-        shape as data
+        shape as data, by default None
     degree : bool, optional
         Flag indicating that data is in degrees and needs to be converted
         to/from radians during averaging. By default True
@@ -46,6 +46,9 @@ def weighted_circular_mean(data, weights, degrees=True, axis=0):
                .format(weights.shape, data.shape))
         logger.error(msg)
         raise RuntimeError(msg)
+
+    if weights is None:
+        weights = 1
 
     if degrees:
         data = np.radians(data, dtype=np.float32)
@@ -1070,7 +1073,7 @@ class WaveStats(TemporalStats):
 
             s_data = pd.DataFrame(s_data, columns=column_names)
         else:
-            s_data = func(res_data, weights, **kwargs)
+            s_data = func(res_data, weights=weights, **kwargs)
             s_data = pd.DataFrame({'weighted_mean': s_data})
 
         return s_data
