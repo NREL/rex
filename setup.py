@@ -66,7 +66,7 @@ setup(
             "rechunk=rex.rechunk_h5.rechunk_cli:main",
             "combine-h5=rex.rechunk_h5.combine_h5_cli:main",
             "temporal-stats=rex.temporal_stats.temporal_stats_cli:main",
-            "wind-rose=rex.temporal_stats.wind_rose.wind_rose_cli:main"
+            "wind-rose=rex.temporal_stats.wind_rose_cli:main"
         ],
     },
     include_package_data=True,
