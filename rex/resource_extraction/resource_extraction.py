@@ -547,7 +547,7 @@ class ResourceX:
 
         return lat_lon
 
-    def lat_lon_gid(self, lat_lon, check_dist=True):
+    def lat_lon_gid(self, lat_lon, check_lat_lon=True):
         """
         Get nearest gid to given (lat, lon) pair or pairs
 
@@ -555,20 +555,22 @@ class ResourceX:
         ----------
         lat_lon : ndarray
             Either a single (lat, lon) pair or series of (lat, lon) pairs
-        check_dist : bool, optional
-            Flag to check the nearest neighbor distance against the resource
-            distance threshold to ensure that the lat, lon coordinates are
-            within the resource grid
+        check_lat_lon : bool, optional
+            Flag to check to make sure the requested lat lons are inside the
+            resource grid. This is done by comparing with the bounding box of
+            the resource coordinates and by ensuring the nearest neighbor
+            distance are below the distance threshold to ensure that requested
+            lat, lon coordinates are within the resource grid, by default True
 
         Returns
         -------
         gids : int | ndarray
             Nearest gid(s) to given (lat, lon) pair(s)
         """
-        lat_lon = self._check_lat_lon(lat_lon)
         dist, gids = self.tree.query(lat_lon)
 
-        if check_dist:
+        if check_lat_lon:
+            lat_lon = self._check_lat_lon(lat_lon)
             dist_check = dist > self.distance_threshold
             if np.any(dist_check):
                 msg = ("Latitude, longitude coordinates ({}) do not sit within"
@@ -698,7 +700,7 @@ class ResourceX:
 
         return df
 
-    def get_lat_lon_ts(self, ds_name, lat_lon, check_dist=True):
+    def get_lat_lon_ts(self, ds_name, lat_lon, check_lat_lon=True):
         """
         Extract timeseries of site(s) neareset to given lat_lon(s)
 
@@ -708,22 +710,24 @@ class ResourceX:
             Dataset to extract
         lat_lon : tuple | list
             (lat, lon) coordinate of interest or pairs of coordinates
-        check_dist : bool, optional
-            Flag to check the nearest neighbor distance against the resource
-            distance threshold to ensure that the lat, lon coordinates are
-            within the resource grid
+        check_lat_lon : bool, optional
+            Flag to check to make sure the requested lat lons are inside the
+            resource grid. This is done by comparing with the bounding box of
+            the resource coordinates and by ensuring the nearest neighbor
+            distance are below the distance threshold to ensure that requested
+            lat, lon coordinates are within the resource grid, by default True
 
         Return
         ------
         ts : ndarray
             Time-series for given site(s) and dataset
         """
-        gid = self.lat_lon_gid(lat_lon, check_dist=check_dist)
+        gid = self.lat_lon_gid(lat_lon, check_lat_lon=check_lat_lon)
         ts = self.get_gid_ts(ds_name, gid)
 
         return ts
 
-    def get_lat_lon_df(self, ds_name, lat_lon, check_dist=True):
+    def get_lat_lon_df(self, ds_name, lat_lon, check_lat_lon=True):
         """
         Extract timeseries of site(s) nearest to given lat_lon(s) and return
         as a DataFrame
@@ -734,17 +738,19 @@ class ResourceX:
             Dataset to extract
         lat_lon : tuple
             (lat, lon) coordinate of interest
-        check_dist : bool, optional
-            Flag to check the nearest neighbor distance against the resource
-            distance threshold to ensure that the lat, lon coordinates are
-            within the resource grid
+        check_lat_lon : bool, optional
+            Flag to check to make sure the requested lat lons are inside the
+            resource grid. This is done by comparing with the bounding box of
+            the resource coordinates and by ensuring the nearest neighbor
+            distance are below the distance threshold to ensure that requested
+            lat, lon coordinates are within the resource grid, by default True
 
         Return
         ------
         df : pandas.DataFrame
             Time-series DataFrame for given site(s) and dataset
         """
-        gid = self.lat_lon_gid(lat_lon, check_dist=check_dist)
+        gid = self.lat_lon_gid(lat_lon, check_lat_lon=check_lat_lon)
         df = self.get_gid_df(ds_name, gid)
 
         return df
@@ -885,7 +891,7 @@ class ResourceX:
 
         return SAM_df
 
-    def get_SAM_lat_lon(self, lat_lon, check_dist=True, out_path=None,
+    def get_SAM_lat_lon(self, lat_lon, check_lat_lon=True, out_path=None,
                         **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
@@ -895,10 +901,12 @@ class ResourceX:
         ----------
         lat_lon : tuple
             (lat, lon) coordinate of interest
-        check_dist : bool, optional
-            Flag to check the nearest neighbor distance against the resource
-            distance threshold to ensure that the lat, lon coordinates are
-            within the resource grid
+        check_lat_lon : bool, optional
+            Flag to check to make sure the requested lat lons are inside the
+            resource grid. This is done by comparing with the bounding box of
+            the resource coordinates and by ensuring the nearest neighbor
+            distance are below the distance threshold to ensure that requested
+            lat, lon coordinates are within the resource grid, by default True
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
@@ -911,7 +919,7 @@ class ResourceX:
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        gid = self.lat_lon_gid(lat_lon, check_dist=check_dist)
+        gid = self.lat_lon_gid(lat_lon, check_lat_lon=check_lat_lon)
         SAM_df = self.get_SAM_gid(gid, out_path=out_path, **kwargs)
 
         return SAM_df
@@ -1440,7 +1448,7 @@ class WindX(ResourceX):
 
         return SAM_df
 
-    def get_SAM_lat_lon(self, hub_height, lat_lon, check_dist=True,
+    def get_SAM_lat_lon(self, hub_height, lat_lon, check_lat_lon=True,
                         out_path=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
@@ -1452,10 +1460,12 @@ class WindX(ResourceX):
             Hub height of interest
         lat_lon : tuple
             (lat, lon) coordinate of interest
-        check_dist : bool, optional
-            Flag to check the nearest neighbor distance against the resource
-            distance threshold to ensure that the lat, lon coordinates are
-            within the resource grid
+        check_lat_lon : bool, optional
+            Flag to check to make sure the requested lat lons are inside the
+            resource grid. This is done by comparing with the bounding box of
+            the resource coordinates and by ensuring the nearest neighbor
+            distance are below the distance threshold to ensure that requested
+            lat, lon coordinates are within the resource grid, by default True
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
         kwargs : dict
@@ -1470,7 +1480,7 @@ class WindX(ResourceX):
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        gid = self.lat_lon_gid(lat_lon, check_dist=check_dist)
+        gid = self.lat_lon_gid(lat_lon, check_lat_lon=check_lat_lon)
         SAM_df = self.get_SAM_gid(hub_height, gid, out_path=out_path, **kwargs)
 
         return SAM_df
