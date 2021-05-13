@@ -524,12 +524,6 @@ class ResourceX:
         lat_min, lat_max = np.sort(self.lat_lon[:, 0])[[0, -1]]
         lon_min, lon_max = np.sort(self.lat_lon[:, 1])[[0, -1]]
 
-        if not isinstance(lat_lon, np.ndarray):
-            lat_lon = np.array(lat_lon)
-
-        if len(lat_lon.shape) == 1:
-            lat_lon = np.expand_dims(lat_lon, axis=0)
-
         lat = lat_lon[:, 0]
         check = lat < lat_min
         check |= lat > lat_max
@@ -544,8 +538,6 @@ class ResourceX:
                    "resource domain: (({}, {}), ({}, {}))"
                    .format(bad_coords, lat_min, lon_min, lat_max, lon_max))
             raise ResourceValueError(msg)
-
-        return lat_lon
 
     def lat_lon_gid(self, lat_lon, check_lat_lon=True):
         """
@@ -567,10 +559,16 @@ class ResourceX:
         gids : int | ndarray
             Nearest gid(s) to given (lat, lon) pair(s)
         """
+        if not isinstance(lat_lon, np.ndarray):
+            lat_lon = np.array(lat_lon)
+
+        if len(lat_lon.shape) == 1:
+            lat_lon = np.expand_dims(lat_lon, axis=0)
+
         dist, gids = self.tree.query(lat_lon)
 
         if check_lat_lon:
-            lat_lon = self._check_lat_lon(lat_lon)
+            self._check_lat_lon(lat_lon)
             dist_check = dist > self.distance_threshold
             if np.any(dist_check):
                 msg = ("Latitude, longitude coordinates ({}) do not sit within"
