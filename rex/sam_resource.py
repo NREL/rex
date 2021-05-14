@@ -238,7 +238,11 @@ class SAMResource:
         else:
             try_step = 1
 
-        try_slice = slice(self.sites[0], self.sites[-1] + 1, try_step)
+        if try_step <= 0:
+            try_step = 1
+
+        try_slice = slice(np.min(self.sites), np.max(self.sites) + 1,
+                          try_step)
         try_list = list(range(*try_slice.indices(try_slice.stop)))
 
         if self.sites == try_list:
