@@ -80,8 +80,8 @@ def main(ctx, solar_h5, out_dir, log_file, verbose):
 
 
 @main.command()
-@click.option('--lat_lon', '-ll', nargs=2, type=click.Tuple([float, float]),
-              default=None,
+@click.option('--lat_lon', '-ll', nargs=2, type=float,
+              default=None, show_default=True,
               help='(lat, lon) coordinates of interest')
 @click.option('--gid', '-gid', type=int, default=None,
               show_default=True,
