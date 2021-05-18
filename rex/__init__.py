@@ -5,7 +5,7 @@ The REsource eXtraction tool (rex)
 from __future__ import print_function, division, absolute_import
 import os
 
-# from rex.jpd import JPD, WindRose
+from rex.jpd import JPD, WindRose
 from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
                                      MultiFileWTK)
 from rex.multi_time_resource import (MultiTimeResource, MultiTimeNSRDB,
