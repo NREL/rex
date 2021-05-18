@@ -6,10 +6,10 @@ import click
 import logging
 import os
 
+from rex.jpd.wind_rose import WindRose
 from rex.multi_file_resource import MultiFileWTK
-from rex.renewable_resource import WindResource
 from rex.multi_year_resource import MultiYearWindResource
-from rex.temporal_stats.wind_rose import WindRose
+from rex.renewable_resource import WindResource
 from rex.utilities.cli_dtypes import INT
 from rex.utilities.loggers import init_mult
 from rex import __version__
@@ -81,7 +81,7 @@ def main(wind_path, hub_height, out_dir, wspd_bins, wdir_bins, max_workers,
     WindRose.run(wind_path, hub_height, sites=None, wspd_bins=wspd_bins,
                  wdir_bins=wdir_bins, res_cls=RES_CLS[res_cls], hsds=hsds,
                  max_workers=max_workers, chunks_per_worker=chunks_per_worker,
-                 out_path=out_fpath)
+                 out_fpath=out_fpath)
 
 
 if __name__ == '__main__':

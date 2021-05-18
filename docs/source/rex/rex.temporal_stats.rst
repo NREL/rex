@@ -13,5 +13,3 @@ Submodules
 
    rex.temporal_stats.temporal_stats
    rex.temporal_stats.temporal_stats_cli
-   rex.temporal_stats.wind_rose
-   rex.temporal_stats.wind_rose_cli

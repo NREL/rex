@@ -13,8 +13,8 @@ import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
-from rex.temporal_stats.wind_rose import WindRose
-from rex.temporal_stats.wind_rose_cli import main
+from rex.jpd.wind_rose import WindRose
+from rex.jpd.wind_rose_cli import main
 from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
 

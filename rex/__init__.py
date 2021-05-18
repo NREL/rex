@@ -5,6 +5,7 @@ The REsource eXtraction tool (rex)
 from __future__ import print_function, division, absolute_import
 import os
 
+# from rex.jpd import JPD, WindRose
 from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
                                      MultiFileWTK)
 from rex.multi_time_resource import (MultiTimeResource, MultiTimeNSRDB,
@@ -24,9 +25,9 @@ from rex.resource_extraction import (ResourceX, MultiTimeResourceX,
                                      WindX, MultiFileWindX, MultiTimeWindX,
                                      MultiYearWindX,
                                      WaveX, MultiTimeWaveX, MultiYearWaveX)
-from rex.temporal_stats import TemporalStats, WindRose
+from rex.temporal_stats import TemporalStats
 from rex.utilities import (init_logger, init_mult, SpawnProcessPool, SLURM,
-                           PBS, to_records_array)
+                           to_records_array)
 
 from rex.version import __version__
 
