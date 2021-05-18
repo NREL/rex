@@ -11,7 +11,7 @@ import os
 import pandas as pd
 from warnings import warn
 
-from rex import __version__
+from rex.version import __version__
 from rex.resource import Resource
 from rex.utilities.execution import SpawnProcessPool
 from rex.utilities.loggers import log_mem, log_versions
