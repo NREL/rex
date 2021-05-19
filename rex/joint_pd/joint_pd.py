@@ -12,6 +12,7 @@ import pandas as pd
 from warnings import warn
 
 from rex.version import __version__
+from rex.renewable_resource import WindResource
 from rex.resource import Resource
 from rex.utilities.execution import SpawnProcessPool
 from rex.utilities.loggers import log_mem, log_versions
@@ -409,5 +410,64 @@ class JointPD:
                           chunks_per_worker=chunks_per_worker)
         if out_fpath is not None:
             jpd.save(out, out_fpath)
+
+        return out
+
+    @classmethod
+    def wind_rose(cls, wind_h5, hub_height, wspd_bins=(0, 30, 1),
+                  wdir_bins=(0, 360, 5), sites=None, res_cls=WindResource,
+                  hsds=False, max_workers=None, chunks_per_worker=5,
+                  out_fpath=None):
+        """
+        Compute wind rose at given hub height
+
+        Parameters
+        ----------
+        wind_h5 : str
+            Path to resource h5 file(s)
+        hub_height : str | int
+            Hub-height to compute wind rose at
+        wspd_bins : tuple
+            (start, stop, step) for wind speed bins
+        wdir_bins : tuple
+            (start, stop, step) for wind direction bins
+        sites : list | slice, optional
+            Subset of sites to extract, by default None or all sites
+        res_cls : Class, optional
+            Resource class to use to access wind_h5, by default Resource
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        max_workers : None | int, optional
+            Number of workers to use, if 1 run in serial, if None use all
+            available cores, by default None
+        chunks_per_worker : int, optional
+            Number of chunks to extract on each worker, by default 5
+        out_fpath : str, optional
+            .csv, or .h5 file path to save wind rose to
+
+        Returns
+        -------
+        wind_rose : pandas.DataFrame
+            DataFrame of wind rose frequencies at desired hub-height
+        """
+        logger.info('Computing wind rose for {}m wind in {}'
+                    .format(hub_height, wind_h5))
+        logger.debug('Computing wind rose using:'
+                     '\n-wind speed bins: {}'
+                     '\n-wind direction bins: {}'
+                     '\n-max workers: {}'
+                     '\n-chunks per worker: {}'
+                     .format(wspd_bins, wdir_bins, max_workers,
+                             chunks_per_worker))
+        wind_rose = cls(wind_h5, res_cls=res_cls, hsds=hsds)
+        wspd_dset = 'windspeed_{}m'.format(hub_height)
+        wdir_dset = 'winddirection_{}m'.format(hub_height)
+        out = wind_rose.compute(wspd_dset, wdir_dset, wspd_bins, wdir_bins,
+                                sites=sites,
+                                max_workers=max_workers,
+                                chunks_per_worker=chunks_per_worker)
+        if out_fpath is not None:
+            wind_rose.save(out, out_fpath)
 
         return out

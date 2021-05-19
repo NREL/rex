@@ -13,7 +13,7 @@ import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
-from rex.joint_pd.wind_rose import WindRose
+from rex.joint_pd.joint_pd import JointPD
 from rex.joint_pd.wind_rose_cli import main
 from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
@@ -35,22 +35,23 @@ def runner():
     return CliRunner()
 
 
-def wind_rose(wspd, wdir, site, wspd_bins, wdir_bins):
+def wind_rose(wspd, wdir, site, wspd_bins, wdir_bins, h):
     """
     Compute wind rose for a single site
     """
-    wspd_bins = WindRose._make_bins(*wspd_bins)
-    wdir_bins = WindRose._make_bins(*wdir_bins)
+    wspd_bins = JointPD._make_bins(*wspd_bins)
+    wdir_bins = JointPD._make_bins(*wdir_bins)
     out = np.histogram2d(wspd[:, site], wdir[:, site],
                          bins=(wspd_bins, wdir_bins),
                          density=True)
 
-    columns = pd.Index(wdir_bins[:-1], name='wdir')
-    index = pd.Index(wspd_bins[:-1], name='wspd')
+    idx_names = [f'windspeed_{h}m', f'winddirection_{h}m']
+    columns = pd.Index(wdir_bins[:-1], name=idx_names[1])
+    index = pd.Index(wspd_bins[:-1], name=idx_names[0])
     out = pd.DataFrame(out[0], columns=columns, index=index)
     out = out.melt(ignore_index=False).reset_index()
 
-    out = out.set_index(['wspd', 'wdir'])
+    out = out.set_index(idx_names)
     out.columns = [site]
 
     return out
@@ -67,11 +68,11 @@ def test_hub_height(hub_height):
         wspd = f[f'windspeed_{hub_height}m']
         wdir = f[f'winddirection_{hub_height}m']
 
-    test = WindRose.run(WIND_H5, hub_height,
-                        wspd_bins=wspd_bins,
-                        wdir_bins=wdir_bins)
+    test = JointPD.wind_rose(WIND_H5, hub_height,
+                             wspd_bins=wspd_bins,
+                             wdir_bins=wdir_bins)
     site = np.random.choice(test.columns.values, 1)[0]
-    truth = wind_rose(wspd, wdir, site, wspd_bins, wdir_bins)
+    truth = wind_rose(wspd, wdir, site, wspd_bins, wdir_bins, hub_height)
 
     assert_frame_equal(test[[site]], truth, check_dtype=False)
 
@@ -83,12 +84,12 @@ def test_workers(max_workers):
     """
     wspd_bins = (0, 30, 1)
     wdir_bins = (0, 360, 5)
-    test = WindRose.run(WIND_H5, HUB_HEIGHT,
-                        wspd_bins=wspd_bins,
-                        wdir_bins=wdir_bins,
-                        max_workers=max_workers)
+    test = JointPD.wind_rose(WIND_H5, HUB_HEIGHT,
+                             wspd_bins=wspd_bins,
+                             wdir_bins=wdir_bins,
+                             max_workers=max_workers)
     site = np.random.choice(test.columns.values, 1)[0]
-    truth = wind_rose(WSPD, WDIR, site, wspd_bins, wdir_bins)
+    truth = wind_rose(WSPD, WDIR, site, wspd_bins, wdir_bins, HUB_HEIGHT)
 
     assert_frame_equal(test[[site]], truth, check_dtype=False)
 
@@ -102,12 +103,12 @@ def test_sites(sites):
     """
     wspd_bins = (0, 30, 1)
     wdir_bins = (0, 360, 5)
-    test = WindRose.run(WIND_H5, HUB_HEIGHT,
-                        wspd_bins=wspd_bins,
-                        wdir_bins=wdir_bins,
-                        sites=sites)
+    test = JointPD.wind_rose(WIND_H5, HUB_HEIGHT,
+                             wspd_bins=wspd_bins,
+                             wdir_bins=wdir_bins,
+                             sites=sites)
     site = np.random.choice(test.columns.values, 1)[0]
-    truth = wind_rose(WSPD, WDIR, site, wspd_bins, wdir_bins)
+    truth = wind_rose(WSPD, WDIR, site, wspd_bins, wdir_bins, HUB_HEIGHT)
 
     assert_frame_equal(test[[site]], truth, check_dtype=False)
 
@@ -120,11 +121,11 @@ def test_bins(wspd, wdir):
     """
     Test WindRose with different sites
     """
-    test = WindRose.run(WIND_H5, HUB_HEIGHT,
-                        wspd_bins=wspd,
-                        wdir_bins=wdir,)
+    test = JointPD.wind_rose(WIND_H5, HUB_HEIGHT,
+                             wspd_bins=wspd,
+                             wdir_bins=wdir,)
     site = np.random.choice(test.columns.values, 1)[0]
-    truth = wind_rose(WSPD, WDIR, site, wspd, wdir)
+    truth = wind_rose(WSPD, WDIR, site, wspd, wdir, HUB_HEIGHT)
 
     assert_frame_equal(test[[site]], truth, check_dtype=False)
 
@@ -151,14 +152,16 @@ def test_cli(runner):
         name = name.replace('*', '')
         out_fpath = '{}_wind_rose-{}m.csv'.format(name, HUB_HEIGHT)
         test = pd.read_csv(os.path.join(td, out_fpath))
-        print(test)
-        test = test.set_index(['wspd', 'wdir'])
+
+        idx_names = [f'windspeed_{HUB_HEIGHT}m',
+                     f'winddirection_{HUB_HEIGHT}m']
+        test = test.set_index(idx_names)
         test.columns = test.columns.astype(int)
 
         site = np.random.choice(test.columns.values, 1)[0]
         wspd_bins = (0, 30, 1)
         wdir_bins = (0, 360, 5)
-        truth = wind_rose(wspd, wdir, site, wspd_bins, wdir_bins)
+        truth = wind_rose(wspd, wdir, site, wspd_bins, wdir_bins, HUB_HEIGHT)
 
         assert_frame_equal(test[[site]], truth, check_dtype=False)
 

@@ -6,7 +6,7 @@ import click
 import logging
 import os
 
-from rex.joint_pd.wind_rose import WindRose
+from rex.joint_pd.joint_pd import JointPD
 from rex.multi_file_resource import MultiFileWTK
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource
@@ -79,10 +79,12 @@ def main(wind_path, hub_height, out_dir, wspd_bins, wdir_bins, max_workers,
     logger.info('Computing wind rose from {}'.format(wind_path))
     logger.info('Outputs to be stored in: {}'.format(out_dir))
 
-    WindRose.run(wind_path, hub_height, sites=None, wspd_bins=wspd_bins,
-                 wdir_bins=wdir_bins, res_cls=RES_CLS[res_cls], hsds=hsds,
-                 max_workers=max_workers, chunks_per_worker=chunks_per_worker,
-                 out_fpath=out_fpath)
+    JointPD.wind_rose(wind_path, hub_height, wspd_bins=wspd_bins,
+                      wdir_bins=wdir_bins, sites=None,
+                      res_cls=RES_CLS[res_cls], hsds=hsds,
+                      max_workers=max_workers,
+                      chunks_per_worker=chunks_per_worker,
+                      out_fpath=out_fpath)
 
 
 if __name__ == '__main__':
