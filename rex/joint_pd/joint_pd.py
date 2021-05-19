@@ -66,34 +66,6 @@ class JointPD:
         return self._res_cls
 
     @staticmethod
-    def compute_joint_prob_dist(arr1, arr2, bins1, bins2):
-        """
-        Compute the joint probabilty distribution between the two arrays using
-        the given bins
-
-        Parameters
-        ----------
-        arr1 : ndarray
-            Time-series vector for dataset 1
-        arr2 : ndarray
-            Time-series vector for dataset 2
-        bins1 : ndarray
-            Dataset 1 bin edges
-        bins2 : ndarray
-            Dataset 2 bin edges
-
-        Returns
-        -------
-        jpd : ndarray
-            Vector of joint probabilty distribution densities
-        """
-        jpd = np.histogram2d(arr1, arr2,
-                             bins=(bins1, bins2),
-                             density=True)[0]
-
-        return jpd.astype(np.float32)
-
-    @staticmethod
     def _make_bins(start, stop, step):
         """
         Create bin edges from bin range
@@ -117,9 +89,9 @@ class JointPD:
         return bin_edges
 
     @classmethod
-    def _compute_multisite_jpd(cls, res_h5, dset1, dset2, bins1, bins2,
-                               res_cls=Resource, hsds=False,
-                               sites_slice=None):
+    def compute_joint_pd(cls, res_h5, dset1, dset2, bins1, bins2,
+                         res_cls=Resource, hsds=False,
+                         sites_slice=None):
         """
         Compute the joint probability distribution between the two given
         datasets using the given bins for given sites
@@ -132,10 +104,11 @@ class JointPD:
             Dataset 1 to generate joint probability distribution for
         dset2 : str
             Dataset 2 to generate joint probabilty distribution for
-        bin1 : tuple
+        bins1 : tuple
             (start, stop, step) for dataset 1 bins
-        bin2 : tuple
+        bins2 : tuple
             (start, stop, step) for dataset 2 bins
+        sites : list | slice, optional
         res_cls : Class, optional
             Resource handler class to use to access res_h5,
             by default Resource
@@ -153,6 +126,8 @@ class JointPD:
         """
         if sites_slice is None:
             sites_slice = slice(None, None, None)
+        elif isinstance(sites_slice, int):
+            sites_slice = [sites_slice]
 
         with res_cls(res_h5, hsds=hsds) as f:
             arr1 = f[dset1, :, sites_slice]
@@ -168,8 +143,9 @@ class JointPD:
 
         jpd = {}
         for i, (a1, a2) in enumerate(zip(arr1.T, arr2.T)):
-            jpd[gids[i]] = cls.compute_joint_prob_dist(
-                a1, a2, bins1, bins2).flatten(order='F')
+            jpd[gids[i]] = np.histogram2d(a1, a2,
+                                          bins=(bins1, bins2),
+                                          density=True)[0].astype(np.float32)
 
         return jpd
 
@@ -220,9 +196,9 @@ class JointPD:
             Dataset 1 to generate joint probability distribution for
         dset2 : str
             Dataset 2 to generate joint probabilty distribution for
-        bin1 : tuple
+        bins1 : tuple
             (start, stop, step) for dataset 1 bins
-        bin2 : tuple
+        bins2 : tuple
             (start, stop, step) for dataset 2 bins
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
@@ -258,7 +234,7 @@ class JointPD:
                                   loggers=loggers) as exe:
                 futures = []
                 for sites_slice in slices:
-                    future = exe.submit(self._compute_multisite_jpd,
+                    future = exe.submit(self.compute_joint_pd,
                                         self.res_h5, dset1, dset2,
                                         bins1, bins2,
                                         res_cls=self.res_cls,
@@ -277,7 +253,7 @@ class JointPD:
                    .format(dset1, dset2))
             logger.info(msg)
             for i, sites_slice in enumerate(slices):
-                jpd.update(self._compute_multisite_jpd(
+                jpd.update(self.compute_joint_pd(
                     self.res_h5, dset1, dset2,
                     bins1, bins2,
                     res_cls=self.res_cls,
@@ -293,7 +269,8 @@ class JointPD:
         index = np.meshgrid(bins1[:-1], bins2[:-1], indexing='ij')
         index = np.array(index).T.reshape(-1, 2).astype(np.int16)
         index = pd.MultiIndex.from_arrays(index.T, names=(dset1, dset2))
-        jpd = pd.DataFrame(jpd, index=index).sort_index(axis=1)
+        jpd = pd.DataFrame({k: v.flatten(order='F') for k, v
+                            in jpd.items()}, index=index).sort_index(axis=1)
 
         return jpd
 
@@ -351,6 +328,36 @@ class JointPD:
             logger.error(msg)
             raise OSError(msg)
 
+    @staticmethod
+    def plot_joint_pd(jpd, site=None, **kwargs):
+        """
+        Plot the mean joint probability distribution accross all sites
+        (site=None), or the distribution for the single given site
+
+        Parameters
+        ----------
+        jpd: pandas.DataFrame
+            DataFrame of joint probability distribution between given datasets
+            with given bins
+        site : int, optional
+            Site to plot distribution for, if None plot mean distribution
+            across all sites, by default None
+        """
+        x, y = jpd.index.names
+        if site is not None:
+            msg = ("Can only plot the joint probabilty distribution for a "
+                   "single site or the mean probability distribution accross "
+                   "all sites (site=None), you provided: {}".format(site))
+            assert isinstance(site), msg
+            plt = jpd.loc[:, [site]].reset_index()
+        else:
+            site = 'mean_jpd'
+            plt = jpd.mean(axis=1)
+            plt.name = site
+            plt = plt.reset_index()
+
+        plt.plot.scatter(x=x, y=y, c=site, **kwargs)
+
     @classmethod
     def run(cls, res_h5, dset1, dset2, bins1, bins2,
             sites=None, res_cls=Resource, hsds=False,
@@ -367,9 +374,9 @@ class JointPD:
             Dataset 1 to generate joint probability distribution for
         dset2 : str
             Dataset 2 to generate joint probabilty distribution for
-        bin1 : tuple
+        bins1 : tuple
             (start, stop, step) for dataset 1 bins
-        bin2 : tuple
+        bins2 : tuple
             (start, stop, step) for dataset 2 bins
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
