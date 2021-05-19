@@ -6,7 +6,7 @@ import click
 import logging
 import os
 
-from rex.jpd.wind_rose import WindRose
+from rex.joint_pd.wind_rose import WindRose
 from rex.multi_file_resource import MultiFileWTK
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource

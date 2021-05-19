@@ -9,7 +9,7 @@ import numpy as np
 import os
 import pandas as pd
 
-from rex.jpd.jpd import JPD
+from rex.joint_pd.joint_pd import JointPD
 from rex.renewable_resource import WindResource
 from rex.utilities.execution import SpawnProcessPool
 from rex.utilities.loggers import log_mem
@@ -17,7 +17,7 @@ from rex.utilities.loggers import log_mem
 logger = logging.getLogger(__name__)
 
 
-class WindRose(JPD):
+class WindRose(JointPD):
     """
     Compute wind rose at desired hub-height
     """
@@ -34,7 +34,7 @@ class WindRose(JPD):
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
         """
-        super().__init__(wind_h5, res_cls=WindResource, hsds=hsds)
+        super().__init__(wind_h5, res_cls=res_cls, hsds=hsds)
 
     def compute(self, hub_height, sites=None, wspd_bins=(0, 30, 1),
                 wdir_bins=(0, 360, 5), max_workers=None,

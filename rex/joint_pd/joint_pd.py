@@ -20,7 +20,7 @@ from rex.utilities.utilities import slice_sites, to_records_array
 logger = logging.getLogger(__name__)
 
 
-class JPD:
+class JointPD:
     """
     Compute the joint probability distribution between the desired variables
     """
@@ -194,7 +194,7 @@ class JPD:
         """
         with self.res_cls(self.res_h5) as f:
             shape, _, chunks = f.get_dset_properties(dset1)
-            shape2 = f.shapes[dset2]
+            shape2, _, _ = f.get_dset_properties(dset2)
 
         if shape != shape2:
             msg = ("The shape of {}: {}, does not match the shape of {}: {}!"
