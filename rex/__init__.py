@@ -13,7 +13,6 @@ from rex.multi_time_resource import (MultiTimeResource, MultiTimeNSRDB,
 from rex.multi_year_resource import (MultiYearResource, MultiYearNSRDB,
                                      MultiYearWindResource,
                                      MultiYearWaveResource)
-from rex.rechunk_h5 import RechunkH5, get_dataset_attributes
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
 from rex.resource import Resource
@@ -24,10 +23,6 @@ from rex.resource_extraction import (ResourceX, MultiTimeResourceX,
                                      WindX, MultiFileWindX, MultiTimeWindX,
                                      MultiYearWindX,
                                      WaveX, MultiTimeWaveX, MultiYearWaveX)
-from rex.temporal_stats import TemporalStats, WindRose
-from rex.utilities import (init_logger, init_mult, SpawnProcessPool, SLURM,
-                           PBS, to_records_array)
-
 from rex.version import __version__
 
 __author__ = """Michael Rossol"""
