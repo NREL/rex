@@ -1,0 +1,20 @@
+rex.joint\_pd.joint\_pd
+=======================
+
+.. automodule:: rex.joint_pd.joint_pd
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Classes
+
+   .. autosummary::
+
+      JointPD

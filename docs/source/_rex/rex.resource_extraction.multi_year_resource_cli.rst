@@ -1,0 +1,4 @@
+rex.resource\_extraction.multi\_year\_resource\_cli
+===================================================
+
+.. automodule:: rex.resource_extraction.multi_year_resource_cli

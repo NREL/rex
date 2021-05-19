@@ -1,0 +1,4 @@
+rex.rechunk\_h5.rechunk\_cli
+============================
+
+.. automodule:: rex.rechunk_h5.rechunk_cli

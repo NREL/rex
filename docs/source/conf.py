@@ -49,6 +49,7 @@ release = v
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.coverage",
@@ -59,6 +60,8 @@ extensions = [
     "sphinx_rtd_theme",
     'sphinx_click.ext',
 ]
+
+autosummary_generate = True
 
 intersphinx_mapping = {'python': ('http://docs.python.org/3.8', None)}
 

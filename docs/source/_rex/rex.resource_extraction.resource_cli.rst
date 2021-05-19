@@ -1,0 +1,4 @@
+rex.resource\_extraction.resource\_cli
+======================================
+
+.. automodule:: rex.resource_extraction.resource_cli

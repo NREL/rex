@@ -1,0 +1,20 @@
+rex.rechunk\_h5.combine\_h5
+===========================
+
+.. automodule:: rex.rechunk_h5.combine_h5
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Classes
+
+   .. autosummary::
+
+      CombineH5

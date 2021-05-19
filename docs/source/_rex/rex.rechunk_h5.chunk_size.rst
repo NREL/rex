@@ -1,0 +1,22 @@
+rex.rechunk\_h5.chunk\_size
+===========================
+
+.. automodule:: rex.rechunk_h5.chunk_size
+
+
+
+
+
+
+
+
+
+
+
+   .. rubric:: Classes
+
+   .. autosummary::
+
+      ArrayChunkSize
+      BaseChunkSize
+      TimeseriesChunkSize

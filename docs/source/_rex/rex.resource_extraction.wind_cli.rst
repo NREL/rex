@@ -1,0 +1,4 @@
+rex.resource\_extraction.wind\_cli
+==================================
+
+.. automodule:: rex.resource_extraction.wind_cli

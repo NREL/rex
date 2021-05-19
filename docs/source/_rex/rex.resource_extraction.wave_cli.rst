@@ -1,0 +1,4 @@
+rex.resource\_extraction.wave\_cli
+==================================
+
+.. automodule:: rex.resource_extraction.wave_cli

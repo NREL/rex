@@ -18,7 +18,12 @@ Radiation Database (NSRDB)
    :caption: Contents:
 
    misc/misc
-   rex/rex
+
+.. autosummary::
+   :toctree: _rex
+   :recursive:
+
+   rex
 
 Indices and tables
 ==================
