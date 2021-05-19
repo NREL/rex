@@ -133,7 +133,7 @@ def test_cli(runner):
     """
     Test CLI
     """
-    wind_h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+    wind_h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk*.h5')
     with MultiYearWindResource(wind_h5) as f:
         wspd = f[f'windspeed_{HUB_HEIGHT}m']
         wdir = f[f'winddirection_{HUB_HEIGHT}m']
@@ -151,6 +151,7 @@ def test_cli(runner):
         name = name.replace('*', '')
         out_fpath = '{}_wind_rose-{}m.csv'.format(name, HUB_HEIGHT)
         test = pd.read_csv(os.path.join(td, out_fpath))
+        print(test)
         test = test.set_index(['wspd', 'wdir'])
         test.columns = test.columns.astype(int)
 

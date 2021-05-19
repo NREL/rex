@@ -323,9 +323,8 @@ class JointPD:
             else:
                 logger.debug('Writing site meta data to {}'
                              .format(meta_fpath))
-                meta.to_csv(out_fpath, index=False)
+                meta.to_csv(meta_fpath, index=False)
         elif out_fpath.endswith('.h5'):
-
             with h5py.File(out_fpath) as f:
                 f.attrs['rex version'] = __version__
                 for i, n in enumerate(jpd.index.names):

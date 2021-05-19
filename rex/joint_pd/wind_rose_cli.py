@@ -64,6 +64,7 @@ def main(wind_path, hub_height, out_dir, wspd_bins, wdir_bins, max_workers,
         os.makedirs(out_dir)
 
     name = os.path.splitext(os.path.basename(wind_path))[0]
+    name = name.replace('*', '')
     out_fpath = '{}_wind_rose-{}m.csv'.format(name, hub_height)
     out_fpath = os.path.join(out_dir, out_fpath)
 
