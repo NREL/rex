@@ -5,26 +5,17 @@ The REsource eXtraction tool (rex)
 from __future__ import print_function, division, absolute_import
 import os
 
-from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
-                                     MultiFileWTK)
-from rex.multi_time_resource import (MultiTimeResource, MultiTimeNSRDB,
-                                     MultiTimeWindResource,
-                                     MultiTimeWaveResource)
-from rex.multi_year_resource import (MultiYearResource, MultiYearNSRDB,
-                                     MultiYearWindResource,
-                                     MultiYearWaveResource)
-from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
-                                    WaveResource)
+from rex.joint_pd import *
+from rex.rechunk_h5 import *
+from rex.resource_extraction import *
+from rex.temporal_stats import *
+from rex.utilities import *
+
+from rex.multi_file_resource import *
+from rex.multi_time_resource import *
+from rex.multi_year_resource import *
+from rex.renewable_resource import *
 from rex.resource import Resource
-from rex.resource_extraction import (ResourceX, MultiTimeResourceX,
-                                     MultiYearResourceX,
-                                     NSRDBX, MultiFileNSRDBX, MultiTimeNSRDBX,
-                                     MultiYearNSRDBX,
-                                     WindX, MultiFileWindX, MultiTimeWindX,
-                                     MultiYearWindX,
-                                     WaveX, MultiTimeWaveX, MultiYearWaveX)
-from rex.utilities import (init_logger, init_mult, SpawnProcessPool, SLURM,
-                           to_records_array)
 from rex.version import __version__
 
 __author__ = """Michael Rossol"""
