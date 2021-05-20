@@ -23,6 +23,8 @@ from rex.resource_extraction import (ResourceX, MultiTimeResourceX,
                                      WindX, MultiFileWindX, MultiTimeWindX,
                                      MultiYearWindX,
                                      WaveX, MultiTimeWaveX, MultiYearWaveX)
+from rex.utilities import (init_logger, init_mult, SpawnProcessPool, SLURM,
+                           to_records_array)
 from rex.version import __version__
 
 __author__ = """Michael Rossol"""
