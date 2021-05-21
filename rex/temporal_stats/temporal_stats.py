@@ -17,14 +17,13 @@ from rex.utilities.utilities import get_lat_lon_cols, slice_sites
 logger = logging.getLogger(__name__)
 
 
-def weighted_circular_mean(data, weights=None, degrees=True, axis=0,
-                           norm_weights=True, exponential_weights=True):
+def circular_mean(data, weights=None, degrees=True, axis=0,
+                  exponential_weights=True):
     """
-    Computed the ciruclar average with the given weights if supplied. If
-    weights are supplied they are applied during the circular averaging. For
-    example, if averaging wind direction with wind speed as weights, wind
-    directions that occur at higher wind speeds will have a larger weight of
-    the final mean value.
+    Computed the ciruclar average. if provided compute the weighed average
+    with the given weights. For example, if averaging wind direction with wind
+    speed as weights, wind directions that occur at higher wind speeds will
+    have a larger weight of the final mean value.
 
     Parameters
     ----------
@@ -49,26 +48,26 @@ def weighted_circular_mean(data, weights=None, degrees=True, axis=0,
     mean : ndarray
         Weighted circular mean along the given axis
     """
-    if weights is None:
-        weights = 1
-    elif data.shape != weights.shape:
-        if exponential_weights:
-            weights = np.exp(weights)
-
-        if norm_weights:
-            weights /= np.sum(weights)
-
-        msg = ('The shape of weights {} does not match the shape of the '
-               'data {} to which it is to be applied!'
-               .format(weights.shape, data.shape))
-        logger.error(msg)
-        raise RuntimeError(msg)
-
     if degrees:
         data = np.radians(data, dtype=np.float32)
 
-    sin = np.nanmean(np.sin(data) * weights, axis=axis)
-    cos = np.nanmean(np.cos(data) * weights, axis=axis)
+    if weights is None:
+        sin = np.nanmean(np.sin(data), axis=axis)
+        cos = np.nanmean(np.cos(data), axis=axis)
+    else:
+        if exponential_weights:
+            weights = np.exp(weights)
+
+        if weights.shape != data.shape:
+            msg = ('The shape of weights {} does not match the shape of the '
+                   'data {} to which it is to be applied!'
+                   .format(weights.shape, data.shape))
+            logger.error(msg)
+            raise RuntimeError(msg)
+
+        n_weights = np.expand_dims(np.nansum(weights, axis=axis), axis)
+        sin = np.nansum(np.sin(data) * weights, axis=axis) / n_weights
+        cos = np.nansum(np.cos(data) * weights, axis=axis) / n_weights
 
     mean = np.arctan2(sin, cos)
     if degrees:
@@ -298,7 +297,7 @@ class TemporalStats:
             s_data = pd.DataFrame(s_data, columns=column_names)
         else:
             s_data = func(res_data, weights=weights, **kwargs)
-            s_data = pd.DataFrame({'weighted_mean': s_data})
+            s_data = pd.DataFrame(s_data.flatten(), columns=['weighted_mean'])
 
         return s_data
 
