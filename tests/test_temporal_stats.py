@@ -171,6 +171,7 @@ def test_custom_stats(max_workers):
              'mode': {'func': mode_func, 'kwargs': {'axis': 0}}}
     test_stats = TemporalStats.run(RES_H5, DATASET,
                                    statistics=stats,
+                                   month=True, combinations=True,
                                    res_cls=WindResource,
                                    max_workers=max_workers)
 
@@ -188,6 +189,15 @@ def test_custom_stats(max_workers):
     msg = 'Modes do not match!'
     assert np.allclose(truth, test_stats['mode'].values), msg
 
+    mask = TIME_INDEX.month == 1
+    truth = np.min(res_data[mask], axis=0)
+    msg = 'January mins do not match!'
+    assert np.allclose(truth, test_stats['Jan_min'].values), msg
+
+    truth = mode(res_data[mask], axis=0).mode[0]
+    msg = 'January modes do not match!'
+    assert np.allclose(truth, test_stats['Jan_mode'].values), msg
+
 
 @pytest.mark.parametrize("max_workers", [1, None])
 def test_multi_year_stats(max_workers):
@@ -197,9 +207,11 @@ def test_multi_year_stats(max_workers):
     res_h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
     with MultiYearWindResource(res_h5) as f:
         res_data = f[DATASET]
+        time_index = f.time_index
 
     test_stats = TemporalStats.run(res_h5, DATASET,
                                    statistics='mean',
+                                   month=True, combinations=True,
                                    res_cls=MultiYearWindResource,
                                    max_workers=max_workers)
 
@@ -212,6 +224,11 @@ def test_multi_year_stats(max_workers):
     msg = 'Means do not match!'
     assert np.allclose(truth, test_stats['mean'].values), msg
 
+    mask = time_index.month == 1
+    truth = np.mean(res_data[mask], axis=0)
+    msg = 'January means do not match!'
+    assert np.allclose(truth, test_stats['Jan_mean'].values), msg
+
 
 @pytest.mark.parametrize("weights", [None, "windspeed_100m"])
 def test_weighted_circular_means(weights):
@@ -222,23 +239,27 @@ def test_weighted_circular_means(weights):
     with WindResource(RES_H5) as f:
         res_data = f[dataset]
         if weights is not None:
+            statistics = {'weighted_circular_mean': {'func': circular_mean,
+                                                     'kwargs': {'weights':
+                                                                weights}}}
             w = f[weights]
 
             # Ensure linear weights are normalized propertly
-            norm_w = w / np.nansum(w, axis=1)[:, np.newaxis]
-            assert np.allclose(np.nansum(norm_w, axis=1), 1)
+            norm_w = w / np.expand_dims(np.nansum(w, axis=0), 0)
+            assert np.allclose(np.nansum(norm_w, axis=0), 1)
 
-            norm_w = np.exp(w) / np.nansum(np.exp(w), axis=1)[:, np.newaxis]
-            assert np.allclose(np.nansum(norm_w, axis=1), 1)
+            norm_w = (np.exp(w)
+                      / np.expand_dims(np.nansum(np.exp(w), axis=0), 0))
+            assert np.allclose(np.nansum(norm_w, axis=0), 1)
         else:
             w = None
+            statistics = {'circular_mean': {'func': circular_mean}}
 
-    kwargs = {'weights': weights}
-    statistics = {'weighted_circular_mean': {'func': circular_mean,
-                                             'kwargs': kwargs}}
     test_stats = TemporalStats.run(RES_H5, dataset,
                                    statistics=statistics,
-                                   res_cls=WindResource)
+                                   month=True, combinations=True,
+                                   res_cls=WindResource,
+                                   max_workers=1)
 
     gids = np.arange(res_data.shape[1], dtype=int)
 
@@ -247,7 +268,17 @@ def test_weighted_circular_means(weights):
 
     truth = circular_mean(res_data, weights=w)
     msg = 'Circular Means do not match!'
-    assert np.allclose(truth, test_stats['weighted_mean'].values), msg
+    name = list(statistics)[0]
+    assert np.allclose(truth, test_stats[name].values), msg
+
+    mask = TIME_INDEX.month == 1
+    if w is not None:
+        w = w[mask]
+
+    truth = circular_mean(res_data[mask], weights=w)
+    name = 'Jan_{}'.format(name)
+    msg = 'January circular means do not match!'
+    assert np.allclose(truth, test_stats[name].values, rtol=0, atol=0.01), msg
 
 
 def test_cli(runner):
