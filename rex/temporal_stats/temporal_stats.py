@@ -51,9 +51,11 @@ def circular_mean(data, weights=None, degrees=True, axis=0,
     if degrees:
         data = np.radians(data, dtype=np.float32)
 
+    sin = np.sin(data)
+    cos = np.cos(data)
     if weights is None:
-        sin = np.nanmean(np.sin(data), axis=axis)
-        cos = np.nanmean(np.cos(data), axis=axis)
+        sin = np.nanmean(sin, axis=axis)
+        cos = np.nanmean(cos, axis=axis)
     else:
         if exponential_weights:
             weights = np.exp(weights)
@@ -66,14 +68,17 @@ def circular_mean(data, weights=None, degrees=True, axis=0,
             raise RuntimeError(msg)
 
         n_weights = np.expand_dims(np.nansum(weights, axis=axis), axis)
-        sin = np.nansum(np.sin(data) * weights, axis=axis) / n_weights
-        cos = np.nansum(np.cos(data) * weights, axis=axis) / n_weights
+        sin = np.nansum(sin * weights, axis=axis) / n_weights
+        cos = np.nansum(cos * weights, axis=axis) / n_weights
 
     mean = np.arctan2(sin, cos)
     if degrees:
         mean = np.degrees(mean)
         mask = mean < 0
-        mean[mask] += 360
+        if isinstance(mask, np.ndarray):
+            mean[mask] += 360
+        elif mask:
+            mean += 360
 
     return mean
 
@@ -267,7 +272,7 @@ class TemporalStats:
         return columns_map
 
     @staticmethod
-    def _compute_weighted_stats(func, res_data, column_names=None,
+    def _compute_weighted_stats(func, res_data, weights, column_names,
                                 **kwargs):
         """
         Computed the weighted means using given function and kwargs
@@ -277,33 +282,42 @@ class TemporalStats:
         func : object
             Function to use to compute the weighted means
         res_data : pandas.DataFrame | pandas.GroupBy
-            Resource data to compute circular means for
-        column_names : list, optional
+            Resource data to compute weighted stats from
+        weights : pandas.DataFrame | pandas.GroupBy
+            Weights to use for weighted stats calculation
             Column names based on group by names, by default None
+        column_names : list | str
+            Either the state name or the list of output stat names,
+            used out output column names.
         kwargs : dict
             Function kwargs
         """
-        weights = kwargs.pop('weights', None)
-        if column_names:
-            s_data = []
-            for grp_name, res_grp in res_data:
+        if isinstance(column_names, list):
+            s_data = {}
+            for c_name, (grp_name, res_grp) in zip(column_names, res_data):
                 if weights is not None:
                     grp_w = weights.get_group(grp_name)
                 else:
                     grp_w = None
 
-                s_data[grp_name] = func(res_grp, weights=grp_w, **kwargs)
+                grp_s = func(res_grp, weights=grp_w, **kwargs)
+                if grp_s.shape[0] == 1:
+                    grp_s = grp_s[0]
 
-            s_data = pd.DataFrame(s_data, columns=column_names)
+                s_data[c_name] = grp_s
+
+            s_data = pd.DataFrame(s_data)
         else:
             s_data = func(res_data, weights=weights, **kwargs)
-            s_data = pd.DataFrame(s_data.flatten(), columns=['weighted_mean'])
+            if s_data.shape[0] == 1:
+                s_data = s_data[0]
+
+            s_data = pd.DataFrame(s_data.flatten(), columns=[column_names])
 
         return s_data
 
     @classmethod
-    def _compute_stats(cls, res_data, statistics, diurnal=False, month=False,
-                       weights=None):
+    def _compute_stats(cls, res_data, statistics, diurnal=False, month=False):
         """
         Compute desired stats for desired time intervals from res_data
 
@@ -317,8 +331,6 @@ class TemporalStats:
             Extract diurnal stats, by default False
         month : bool, optional
             Extract monthly stats, by default False
-        weights : pandas.DataFrame, optional
-            Weights to use for weighted means calculation, by default None
 
         Returns
         -------
@@ -335,20 +347,23 @@ class TemporalStats:
 
         if groupby:
             res_data = res_data.groupby(groupby)
-            if weights is not None:
-                weights = weights.groupyby(groupby)
-
             column_names = cls._create_names(list(res_data.groups),
                                              list(statistics))
 
         res_stats = []
-        for name, stat in statistics.items():
+        for name, stat in statistics.copy().items():
             func = stat['func']
-            kwargs = stat.get('kwargs', {})
+            kwargs = stat.get('kwargs', {}).copy()
             if name.lower().startswith('weight'):
-                s_data = cls._compute_weighted_stats(func, res_data,
-                                                     column_names=column_names,
-                                                     **kwargs)
+                weights = kwargs.pop('weights').copy()
+                if groupby:
+                    weights = weights.groupby(groupby)
+                    weight_names = column_names[name]
+                else:
+                    weight_names = name
+
+                s_data = cls._compute_weighted_stats(func, res_data, weights,
+                                                     weight_names, **kwargs)
             else:
                 s_data = res_data.aggregate(func, **kwargs)
 
