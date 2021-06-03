@@ -26,9 +26,6 @@ Welcome to The REsource eXtraction (rex) tool!
 .. image:: https://codecov.io/gh/nrel/rex/branch/master/graph/badge.svg?token=WQ95L11SRS
     :target: https://codecov.io/gh/nrel/rex
 
-.. image:: https://mybinder.org/badge_logo.svg
-    :target: https://mybinder.org/v2/gh/NREL/rex/master
-
 .. image:: https://zenodo.org/badge/253541811.svg
    :target: https://zenodo.org/badge/latestdoi/253541811
 
