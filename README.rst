@@ -17,11 +17,11 @@ Welcome to The REsource eXtraction (rex) tool!
 .. image:: https://badge.fury.io/py/NREL-rex.svg
     :target: https://badge.fury.io/py/NREL-rex
 
-.. image:: https://anaconda.org/nrel/rex/badges/version.svg
-    :target: https://anaconda.org/nrel/rex
+.. image:: https://anaconda.org/nrel/nrel-rex/badges/version.svg
+    :target: https://anaconda.org/nrel/nrel-rex
 
-.. image:: https://anaconda.org/nrel/rex/badges/license.svg
-    :target: https://anaconda.org/nrel/rex
+.. image:: https://anaconda.org/nrel/nrel-rex/badges/license.svg
+    :target: https://anaconda.org/nrel/nrel-rex
 
 .. image:: https://codecov.io/gh/nrel/rex/branch/master/graph/badge.svg?token=WQ95L11SRS
     :target: https://codecov.io/gh/nrel/rex
@@ -81,7 +81,7 @@ Option 1: Install from PIP or Conda (recommended for analysts):
 
 3. Install rex:
     1) ``pip install NREL-rex`` or
-    2) ``conda install rex --channel=nrel``
+    2) ``conda install nrel-rex --channel=nrel``
 
        - NOTE: If you install using conda and want to use `HSDS <https://github.com/NREL/hsds-examples>`_
          you will also need to install h5pyd manually: ``pip install h5pyd``
