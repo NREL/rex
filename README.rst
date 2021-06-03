@@ -84,7 +84,7 @@ Option 1: Install from PIP or Conda (recommended for analysts):
 
 3. Install rex:
     1) ``pip install NREL-rex`` or
-    2) ``conda install nrel-rex --channel=nrel``
+    2) ``conda install rex --channel=nrel``
 
        - NOTE: If you install using conda and want to use `HSDS <https://github.com/NREL/hsds-examples>`_
          you will also need to install h5pyd manually: ``pip install h5pyd``
