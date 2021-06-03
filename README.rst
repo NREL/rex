@@ -17,11 +17,11 @@ Welcome to The REsource eXtraction (rex) tool!
 .. image:: https://badge.fury.io/py/NREL-rex.svg
     :target: https://badge.fury.io/py/NREL-rex
 
-.. image:: https://anaconda.org/nrel/nrel-rex/badges/version.svg
-    :target: https://anaconda.org/nrel/nrel-rex
+.. image:: https://anaconda.org/nrel/rex/badges/version.svg
+    :target: https://anaconda.org/nrel/rex
 
-.. image:: https://anaconda.org/nrel/nrel-rex/badges/license.svg
-    :target: https://anaconda.org/nrel/nrel-rex
+.. image:: https://anaconda.org/nrel/rex/badges/license.svg
+    :target: https://anaconda.org/nrel/rex
 
 .. image:: https://codecov.io/gh/nrel/rex/branch/master/graph/badge.svg?token=WQ95L11SRS
     :target: https://codecov.io/gh/nrel/rex
