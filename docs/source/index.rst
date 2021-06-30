@@ -21,6 +21,7 @@ Radiation Database (NSRDB)
 
 .. autosummary::
    :toctree: _rex
+   :template: custom-module-template.rst
    :recursive:
 
    rex
