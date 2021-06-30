@@ -69,6 +69,7 @@ class SAMResource:
     # valid data ranges for wind resource in SAM based on the cpp file:
     # https://github.com/NREL/ssc/blob/develop/shared/lib_windfile.cpp
     WIND_DATA_RANGES = {'windspeed': (0, 120),
+                        'winddirection': (0, 360),
                         'pressure': (0.5, 1.099),
                         'temperature': (-200, 100),
                         'rh': (0.1, 99.9)}
