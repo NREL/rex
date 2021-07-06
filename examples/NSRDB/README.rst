@@ -85,6 +85,30 @@ to install `h5pyd`:
 
   pip install h5pyd
 
+Next you'll need to configure HSDS:
+
+.. code-block:: bash
+
+  hsconfigure
+
+and enter at the prompt:
+
+.. code-block:: bash
+
+  hs_endpoint = https://developer.nrel.gov/api/hsds
+  hs_username =
+  hs_password =
+  hs_api_key = 3K3JQbjZmWctY0xmIfSYvYgtIcM3CN0cb1Y2w9bf
+
+**The example API key here is for demonstation and is rate-limited per IP. To
+get your own API key, visit https://developer.nrel.gov/signup/**
+**Please note that our HSDS service is for demonstration purposes only, if you
+would like to use HSDS for production runs of reV please setup your own
+service: https://github.com/HDFGroup/hsds and point it to our public HSDS
+bucket: s3://nrel-pds-hsds**
+
+You can also add the above contents to a configuration file at `~/.hscfg`
+
 NSRDB CLI
 +++++++++
 
