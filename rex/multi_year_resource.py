@@ -467,7 +467,7 @@ class MultiYearResource(MultiTimeResource):
     SUFFIX = '.h5'
 
     def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
-                 hsds=False, res_cls=Resource):
+                 res_cls=Resource, hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -483,11 +483,14 @@ class MultiYearResource(MultiTimeResource):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
         res_cls : obj
             Resource handler to us to open individual .h5 files
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         self.h5_dir, prefix, suffix = MultiH5Path.multi_file_args(h5_path)
         if prefix is None:
@@ -499,7 +502,7 @@ class MultiYearResource(MultiTimeResource):
         self._time_index = None
         # Map variables to their .h5 files
         cls_kwargs = {'unscale': unscale, 'str_decode': str_decode,
-                      'hsds': hsds}
+                      'hsds': hsds, 'hsds_kwargs': hsds_kwargs}
         self._h5 = MultiYearH5(self.h5_dir, prefix=prefix, suffix=suffix,
                                years=years, res_cls=res_cls, **cls_kwargs)
         self.h5_files = self._h5.h5_files
@@ -525,7 +528,7 @@ class MultiYearSolarResource:
     multiple .h5 files
     """
     def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
-                 hsds=False):
+                 hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -541,12 +544,16 @@ class MultiYearSolarResource:
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         super().__init__(h5_path, years=years, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, res_cls=SolarResource)
+                         hsds_kwargs=hsds_kwargs, str_decode=str_decode,
+                         res_cls=SolarResource)
 
 
 class MultiYearNSRDB(MultiYearResource):
@@ -557,7 +564,7 @@ class MultiYearNSRDB(MultiYearResource):
     PREFIX = 'nsrdb'
 
     def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
-                 hsds=False):
+                 hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -573,12 +580,16 @@ class MultiYearNSRDB(MultiYearResource):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         super().__init__(h5_path, years=years, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, res_cls=NSRDB)
+                         hsds_kwargs=hsds_kwargs, str_decode=str_decode,
+                         res_cls=NSRDB)
 
 
 class MultiYearWindResource(MultiYearResource):
@@ -589,7 +600,7 @@ class MultiYearWindResource(MultiYearResource):
     PREFIX = 'wtk'
 
     def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
-                 hsds=False):
+                 hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -605,12 +616,16 @@ class MultiYearWindResource(MultiYearResource):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         super().__init__(h5_path, years=years, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, res_cls=WindResource)
+                         hsds_kwargs=hsds_kwargs, str_decode=str_decode,
+                         res_cls=WindResource)
 
 
 class MultiYearWaveResource(MultiYearResource):
@@ -620,7 +635,7 @@ class MultiYearWaveResource(MultiYearResource):
     """
 
     def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
-                 hsds=False):
+                 hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -636,9 +651,13 @@ class MultiYearWaveResource(MultiYearResource):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         super().__init__(h5_path, years=years, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, res_cls=WaveResource)
+                         hsds_kwargs=hsds_kwargs, str_decode=str_decode,
+                         res_cls=WaveResource)

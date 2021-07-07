@@ -531,8 +531,8 @@ class BaseResource(ABC):
     ADD_ATTR = 'add_offset'
     UNIT_ATTR = 'units'
 
-    def __init__(self, h5_file, unscale=True, hsds=False, str_decode=True,
-                 group=None, mode='r'):
+    def __init__(self, h5_file, unscale=True, str_decode=True,
+                 group=None, mode='r', hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -541,9 +541,6 @@ class BaseResource(ABC):
         unscale : bool, optional
             Boolean flag to automatically unscale variables on extraction,
             by default True
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
         str_decode : bool, optional
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read,
@@ -552,6 +549,12 @@ class BaseResource(ABC):
             Group within .h5 resource file to open, by default None
         mode : str, optional
             Mode to instantiate h5py.File instance, by default 'r'
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         self.h5_file = h5_file
         if hsds:
@@ -559,7 +562,11 @@ class BaseResource(ABC):
                 raise IOError('Cannot write to files accessed vias HSDS!')
 
             import h5pyd
-            self._h5 = h5pyd.File(self.h5_file, mode='r', use_cache=False)
+            if hsds_kwargs is None:
+                hsds_kwargs = {}
+
+            self._h5 = h5pyd.File(self.h5_file, mode='r', use_cache=False,
+                                  **hsds_kwargs)
         else:
             self._h5 = h5py.File(self.h5_file, mode=mode)
 
@@ -1255,9 +1262,9 @@ class BaseResource(ABC):
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, tech, unscale=True, hsds=False,
-                    str_decode=True, group=None, time_index_step=None,
-                    means=False):
+    def preload_SAM(cls, h5_file, sites, tech, unscale=True, str_decode=True,
+                    group=None, hsds=False, hsds_kwargs=None,
+                    time_index_step=None, means=False):
         """
         Pre-load project_points for SAM
 
@@ -1271,14 +1278,17 @@ class BaseResource(ABC):
             Technology to be run by SAM
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
-        hsds : bool
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
@@ -1292,7 +1302,7 @@ class BaseResource(ABC):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        kwargs = {"unscale": unscale, "hsds": hsds,
+        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, tech,
@@ -1481,8 +1491,8 @@ class Resource(BaseResource):
     ADD_ATTR = 'add_offset'
     UNIT_ATTR = 'units'
 
-    def __init__(self, h5_file, unscale=True, hsds=False, str_decode=True,
-                 group=None):
+    def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
+                 hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -1491,15 +1501,19 @@ class Resource(BaseResource):
         unscale : bool, optional
             Boolean flag to automatically unscale variables on extraction,
             by default True
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
         str_decode : bool, optional
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read,
             by default True
         group : str, optional
             Group within .h5 resource file to open, by default None
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
-        super().__init__(h5_file, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, group=group)
+        super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
+                         group=group, mode='r', hsds=hsds,
+                         hsds_kwargs=hsds_kwargs)

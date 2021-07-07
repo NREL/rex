@@ -34,6 +34,8 @@ class MultiTimeH5:
         hsds : bool
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
+        res_cls_kwargs : dict, optional
+            Kwargs for `res_cls`
         """
         self.h5_dir = h5_dir
         self._file_map = self._map_files(h5_dir, prefix=prefix,
@@ -469,8 +471,8 @@ class MultiTimeResource:
     PREFIX = ''
     SUFFIX = '.h5'
 
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False,
-                 res_cls=Resource):
+    def __init__(self, h5_path, unscale=True, str_decode=True,
+                 res_cls=Resource, hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -484,11 +486,14 @@ class MultiTimeResource:
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
         res_cls : obj
             Resource handler to us to open individual .h5 files
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         self.h5_dir, prefix, suffix = MultiH5Path.multi_file_args(h5_path)
         if prefix is None:
@@ -500,7 +505,7 @@ class MultiTimeResource:
         self._time_index = None
         # Map variables to their .h5 files
         cls_kwargs = {'unscale': unscale, 'str_decode': str_decode,
-                      'hsds': hsds}
+                      'hsds': hsds, 'hsds_kwargs': hsds_kwargs}
         self._h5 = MultiTimeH5(self.h5_dir, prefix=prefix, suffix=suffix,
                                res_cls=res_cls, **cls_kwargs)
         self.h5_files = self._h5.h5_files
@@ -843,7 +848,8 @@ class MultiTimeSolarResource:
     files
     """
 
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False,
+                 hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -857,12 +863,16 @@ class MultiTimeSolarResource:
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         super().__init__(h5_path, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, res_cls=SolarResource)
+                         hsds_kwargs=hsds_kwargs, str_decode=str_decode,
+                         res_cls=SolarResource)
 
 
 class MultiTimeNSRDB(MultiTimeResource):
@@ -872,7 +882,8 @@ class MultiTimeNSRDB(MultiTimeResource):
     """
     PREFIX = 'nsrdb'
 
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False,
+                 hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -886,12 +897,16 @@ class MultiTimeNSRDB(MultiTimeResource):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         super().__init__(h5_path, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, res_cls=NSRDB)
+                         hsds_kwargs=hsds_kwargs, str_decode=str_decode,
+                         res_cls=NSRDB)
 
 
 class MultiTimeWindResource(MultiTimeResource):
@@ -901,7 +916,8 @@ class MultiTimeWindResource(MultiTimeResource):
     """
     PREFIX = 'wtk'
 
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False,
+                 hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -915,12 +931,16 @@ class MultiTimeWindResource(MultiTimeResource):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         super().__init__(h5_path, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, res_cls=WindResource)
+                         hsds_kwargs=hsds_kwargs, str_decode=str_decode,
+                         res_cls=WindResource)
 
 
 class MultiTimeWaveResource(MultiTimeResource):
@@ -929,7 +949,8 @@ class MultiTimeWaveResource(MultiTimeResource):
     files
     """
 
-    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False):
+    def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False,
+                 hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -943,9 +964,13 @@ class MultiTimeWaveResource(MultiTimeResource):
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
-        hsds : bool
+        hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         super().__init__(h5_path, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, res_cls=WaveResource)
+                         hsds_kwargs=hsds_kwargs, str_decode=str_decode,
+                         res_cls=WaveResource)
