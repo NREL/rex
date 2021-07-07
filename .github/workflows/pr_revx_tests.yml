@@ -41,4 +41,5 @@ jobs:
       shell: bash -l {0}
       run: |
         conda install pytest
+        conda update pandas
         pytest -v --disable-warnings
