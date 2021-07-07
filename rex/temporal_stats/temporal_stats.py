@@ -365,7 +365,8 @@ class TemporalStats:
                 s_data = cls._compute_weighted_stats(func, res_data, weights,
                                                      weight_names, **kwargs)
             else:
-                s_data = res_data.aggregate(func, **kwargs)
+                axis = kwargs.pop('axis', 0)
+                s_data = res_data.aggregate(func, axis=axis, **kwargs)
 
                 if groupby:
                     columns = column_names[name]
