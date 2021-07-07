@@ -114,10 +114,10 @@ class SolarResource(BaseResource):
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
-                    str_decode=True, group=None, tech='pvwattsv7',
-                    time_index_step=None, means=False, clearsky=False,
-                    bifacial=False):
+    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
+                    group=None, hsds=False, hsds_kwargs=None,
+                    tech='pvwattsv7', time_index_step=None, means=False,
+                    clearsky=False, bifacial=False):
         """
         Pre-load project_points for SAM
 
@@ -129,14 +129,17 @@ class SolarResource(BaseResource):
             List of sites to be provided to SAM
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
-        hsds : bool
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         tech : str, optional
             SAM technology string, by default 'pvwattsv7'
         time_index_step: int, optional
@@ -156,7 +159,7 @@ class SolarResource(BaseResource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        kwargs = {"unscale": unscale, "hsds": hsds,
+        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, tech=tech,
@@ -243,10 +246,10 @@ class NSRDB(SolarResource):
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
-                    str_decode=True, group=None, tech='pvwattsv7',
-                    time_index_step=None, means=False, clearsky=False,
-                    bifacial=False, downscale=None):
+    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
+                    group=None, hsds=False, hsds_kwargs=None,
+                    tech='pvwattsv7', time_index_step=None, means=False,
+                    clearsky=False, bifacial=False, downscale=None):
         """
         Pre-load project_points for SAM
 
@@ -258,14 +261,17 @@ class NSRDB(SolarResource):
             List of sites to be provided to SAM
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
-        hsds : bool
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         tech : str, optional
             SAM technology string, by default 'pvwattsv7'
        time_index_step: int, optional
@@ -290,7 +296,7 @@ class NSRDB(SolarResource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        kwargs = {"unscale": unscale, "hsds": hsds,
+        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, tech=tech,
@@ -349,8 +355,8 @@ class WindResource(BaseResource):
      [10.698757  10.857258  11.174257  ... 16.585903  16.676476  16.653833 ]]
     """
 
-    def __init__(self, h5_file, unscale=True, hsds=False, str_decode=True,
-                 group=None):
+    def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
+                 hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -358,18 +364,21 @@ class WindResource(BaseResource):
             Path to .h5 resource file
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
-        hsds : bool
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         self._heights = None
-        super().__init__(h5_file, unscale=unscale, hsds=hsds,
-                         str_decode=str_decode, group=group)
+        super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
+                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
 
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)
@@ -1058,7 +1067,7 @@ class WindResource(BaseResource):
 
     @classmethod
     def preload_SAM(cls, h5_file, sites, hub_heights, unscale=True,
-                    hsds=False, str_decode=True, group=None,
+                    str_decode=True, group=None, hsds=False, hsds_kwargs=None,
                     time_index_step=None, means=False,
                     require_wind_dir=False, precip_rate=False, icing=False):
         """
@@ -1074,14 +1083,17 @@ class WindResource(BaseResource):
             Hub heights to extract for SAM
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
-        hsds : bool
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
@@ -1104,7 +1116,7 @@ class WindResource(BaseResource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        kwargs = {"unscale": unscale, "hsds": hsds,
+        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, hub_heights,
@@ -1192,8 +1204,8 @@ class WaveResource(BaseResource):
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, unscale=True, hsds=False,
-                    str_decode=True, group=None, means=False,
+    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
+                    group=None, hsds=False, hsds_kwargs=None, means=False,
                     time_index_step=None):
         """
         Pre-load project_points for SAM
@@ -1206,14 +1218,17 @@ class WaveResource(BaseResource):
             List of sites to be provided to SAM
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
-        hsds : bool
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
         str_decode : bool
             Boolean flag to decode the bytestring meta data into normal
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         means : bool
             Boolean flag to compute mean resource when res_array is set
         time_index_step: int, optional
@@ -1226,7 +1241,7 @@ class WaveResource(BaseResource):
             Instance of SAMResource pre-loaded with Wave resource for sites
             in project_points
         """
-        kwargs = {"unscale": unscale, "hsds": hsds,
+        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
             SAM_res = res._preload_SAM(sites, means=means,
