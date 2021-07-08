@@ -241,8 +241,8 @@ class MultiTimeH5:
         import h5pyd
 
         file_map = {}
-        if not hsds_dir.endswith('/'):
-            hsds_dir += '/'
+        if not hsds_dir.endswith(os.sep):
+            hsds_dir += os.sep
 
         with h5pyd.Folder(hsds_dir) as f:
             for file in f:
