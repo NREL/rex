@@ -303,7 +303,7 @@ class JointPD:
                              .format(meta_fpath))
                 meta.to_csv(meta_fpath, index=False)
         elif out_fpath.endswith('.h5'):
-            with h5py.File(out_fpath) as f:
+            with h5py.File(out_fpath, mode='w') as f:
                 f.attrs['rex version'] = __version__
                 for i, n in enumerate(jpd.index.names):
                     logger.info('')
