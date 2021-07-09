@@ -1028,7 +1028,7 @@ class ResourceX:
         datasets = self._get_datasets(datasets=datasets)
         gids = self.region_gids(region, region_col=region_col)
         with h5py.File(out_fpath, mode='w-') as f_out:
-            for k, v in self.attrs.items():
+            for k, v in self.global_attrs.items():
                 try:
                     f_out.attrs[k] = v
                 except Exception as ex:
