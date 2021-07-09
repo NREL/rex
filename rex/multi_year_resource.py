@@ -143,8 +143,8 @@ class MultiYearH5(MultiTimeH5):
         import h5pyd
 
         file_map = {}
-        if not hsds_dir.endswith(os.sep):
-            hsds_dir += os.sep
+        if not hsds_dir.endswith('/'):
+            hsds_dir += '/'
 
         with h5pyd.Folder(hsds_dir) as f:
             for file in f:
