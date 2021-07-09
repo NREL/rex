@@ -247,7 +247,7 @@ class ResourceX:
         -------
         global_attrs : dict
         """
-        return self.resource.attrs
+        return self.resource.global_attrs
 
     @property
     def attrs(self):
@@ -258,7 +258,7 @@ class ResourceX:
         -------
         attrs : dict
         """
-        return self.global_attrs
+        return self.resource.attrs
 
     @property
     def tree(self):
