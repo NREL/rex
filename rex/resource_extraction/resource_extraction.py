@@ -1003,30 +1003,26 @@ class ResourceX:
 
         return sorted(set(datasets))
 
-    def save_region(self, out_fpath, region, datasets=None,
-                    region_col='state'):
+    def save_subset(self, out_fpath, gids, datasets=None):
         """
-        Extract desired datasets from desired region and save to a new
+        Extract desired datasets for given gids and save to a new
         out_fpath .h5 file
 
         Parameters
         ----------
         out_fpath : str
             Path to .h5 file to save region datasets to
-        region : str, optional
-            Region to extract all pixels for, by default None
+        gids : list
+            List of gids to extract data from and save to .h5
         datasets : str | list, optional
             Dataset(s) to extract from given region and save to out_fpath,
             if None extract all datasets, by default None
-        region_col : str, optional
-            Region column to search, by default 'state'
         """
         scale_attr = self.resource.SCALE_ATTR
         add_attr = self.resource.ADD_ATTR
         unscale = False
 
         datasets = self._get_datasets(datasets=datasets)
-        gids = self.region_gids(region, region_col=region_col)
         with h5py.File(out_fpath, mode='w-') as f_out:
             for k, v in self.global_attrs.items():
                 try:
@@ -1060,6 +1056,28 @@ class ResourceX:
                     msg = ("Dataset {} is not available in {} and will "
                            "not be saved to {}".format(dset, self, out_fpath))
                     warn(msg, ResourceWarning)
+
+    def save_region(self, out_fpath, region, datasets=None,
+                    region_col='state'):
+        """
+        Extract desired datasets from desired region and save to a new
+        out_fpath .h5 file
+
+        Parameters
+        ----------
+        out_fpath : str
+            Path to .h5 file to save region datasets to
+        region : str, optional
+            Region to extract all pixels for, by default None
+        datasets : str | list, optional
+            Dataset(s) to extract from given region and save to out_fpath,
+            if None extract all datasets, by default None
+        region_col : str, optional
+            Region column to search, by default 'state'
+        """
+        gids = self.region_gids(region, region_col=region_col)
+
+        self.save_subset(out_fpath, gids, datasets=datasets)
 
 
 class MultiFileResourceX(ResourceX):
