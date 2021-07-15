@@ -18,6 +18,7 @@ Documentation config file
 import os
 import sphinx_rtd_theme
 import sys
+sys.path.insert(0, os.path.abspath('../../'))
 
 # -- Project information -----------------------------------------------------
 
@@ -59,11 +60,12 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
     'sphinx_click.ext',
+    'sphinx_autopackagesummary'
 ]
 
-autosummary_generate = True
-
-intersphinx_mapping = {'python': ('http://docs.python.org/3.8', None)}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -88,11 +90,16 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ["_build", ".DS_Store"]
+exclude_patterns = [
+    "**.ipynb_checkpoints",
+    "**__pycache__**",
+    # to ensure that include files (partial pages) aren't built, exclude them
+    # https://github.com/sphinx-doc/sphinx/issues/1965#issuecomment-124732907
+    "**/includes/**",
+]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
-
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -107,12 +114,13 @@ html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {"navigation_depth": 4, "collapse_navigation": False}
+html_css_file = ["custom.css"]
 
 html_context = {
     "display_github": True,
     "github_user": "nrel",
     "github_repo": "rex",
-    "github_version": "master",
+    "github_version": "main",
     "conf_py_path": "/docs/source/",
     "source_suffix": source_suffix,
 }
@@ -137,7 +145,6 @@ html_static_path = ['_static']
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'rexdoc'
-
 
 # -- Options for LaTeX output ------------------------------------------------
 
@@ -167,7 +174,6 @@ latex_documents = [
      'Michael Rossol, Grant Buster', 'manual'),
 ]
 
-
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
@@ -176,7 +182,6 @@ man_pages = [
     (master_doc, 'rex', 'rex Documentation',
      [author], 1)
 ]
-
 
 # -- Options for Texinfo output ----------------------------------------------
 
@@ -189,11 +194,15 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-
 # -- Extension configuration -------------------------------------------------
 
-autoclass_content = 'both'
+autosummary_generate = True  # Turn on sphinx.ext.autosummary
+autoclass_content = "both"  # Add __init__ doc (ie. params) to class summaries
 autodoc_member_order = 'bysource'
+autodoc_inherit_docstrings = True  # If no docstring, inherit from base class
+add_module_names = False  # Remove namespaces from class/method signatures
+# Remove 'view source code' from top of page (for html, not python)
+html_show_sourcelink = False
 numpy_show_class_member = True
 napoleon_google_docstring = False
 napoleon_use_param = False

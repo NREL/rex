@@ -13,13 +13,14 @@ conda install sphinx_rtd_theme
 
 pip install ghp-import
 pip install sphinx-click
+pip install sphinx-autopackagesummary
 ```
 
 ## Refreshing the API Documentation
 
 - Make sure reV is in your PYTHONPATH
 - Remove source/rex/rex.rst
-- Run `sphinx-apidoc -eMT -o source/rex ../rex` from the `docs` folder.
+- Run `sphinx-apidoc -eMT -o source/_rex ../rex` from the `docs` folder.
 - Add the following to the top of any CLI module's .rst file:
 ```
 .. click:: module_path:main

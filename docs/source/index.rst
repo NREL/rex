@@ -1,3 +1,12 @@
+.. toctree::
+   :hidden:
+
+   Home page <self>
+   Installation and Usage <misc/installation_usage>
+   Examples <misc/examples>
+   API reference <_autosummary/rex>
+   CLI reference <_cli/cli>
+
 rex documentation
 *******************
 
@@ -12,23 +21,3 @@ Radiation Database (NSRDB)
 
 .. include:: ../../README.rst
    :start-after: inclusion-intro
-
-.. toctree::
-   :maxdepth: 3
-   :caption: Contents:
-
-   misc/misc
-
-.. autosummary::
-   :toctree: _rex
-   :template: custom-module-template.rst
-   :recursive:
-
-   rex
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
