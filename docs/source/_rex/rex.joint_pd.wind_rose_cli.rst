@@ -1,4 +1,0 @@
-rex.joint\_pd.wind\_rose\_cli
-=============================
-
-.. automodule:: rex.joint_pd.wind_rose_cli

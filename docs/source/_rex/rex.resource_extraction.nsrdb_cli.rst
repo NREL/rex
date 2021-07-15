@@ -1,4 +1,0 @@
-rex.resource\_extraction.nsrdb\_cli
-===================================
-
-.. automodule:: rex.resource_extraction.nsrdb_cli

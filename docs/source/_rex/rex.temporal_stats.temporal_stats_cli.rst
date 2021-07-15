@@ -1,4 +1,0 @@
-rex.temporal\_stats.temporal\_stats\_cli
-========================================
-
-.. automodule:: rex.temporal_stats.temporal_stats_cli

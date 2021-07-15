@@ -1,4 +1,0 @@
-rex.version
-===========
-
-.. automodule:: rex.version
