@@ -60,7 +60,6 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
     'sphinx_click.ext',
-    'sphinx_autopackagesummary'
 ]
 
 intersphinx_mapping = {
