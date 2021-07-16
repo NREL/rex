@@ -100,7 +100,7 @@ Option 2: Clone repo (recommended for developers)
     2) Run the command: ``conda activate rex``
     3) cd into the repo cloned in 1.
     4) prior to running ``pip`` below, make sure the branch is correct (install
-       from master!)
+       from main!)
     5) Install ``rex`` and its dependencies by running:
        ``pip install .`` (or ``pip install -e .`` if running a dev branch
        or working on the source code)
