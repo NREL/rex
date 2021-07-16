@@ -23,7 +23,7 @@ Welcome to The REsource eXtraction (rex) tool!
 .. image:: https://anaconda.org/nrel/nrel-rex/badges/license.svg
     :target: https://anaconda.org/nrel/nrel-rex
 
-.. image:: https://codecov.io/gh/nrel/rex/branch/master/graph/badge.svg?token=WQ95L11SRS
+.. image:: https://codecov.io/gh/nrel/rex/branch/main/graph/badge.svg?token=WQ95L11SRS
     :target: https://codecov.io/gh/nrel/rex
 
 .. image:: https://zenodo.org/badge/253541811.svg
@@ -34,13 +34,15 @@ Welcome to The REsource eXtraction (rex) tool!
 rex command line tools
 ======================
 
-- `rex <https://nrel.github.io/rex/rex/rex.resource_extraction.resource_cli.html#rex>`_
-- `NSRDBX <https://nrel.github.io/rex/rex/rex.resource_extraction.nsrdb_cli.html#nsrdbx>`_
-- `WINDX <https://nrel.github.io/rex/rex/rex.resource_extraction.wind_cli.html#windx>`_
-- `WaveX <https://nrel.github.io/rex/rex/rex.resource_extraction.wave_cli.html#wavex>`_
-- `MultiYearX <https://nrel.github.io/rex/rex/rex.resource_extraction.multi_year_resource_cli.html#multiyearx>`_
-- `rechunk <https://nrel.github.io/rex/rex/rex.rechunk_h5.rechunk_cli.html#rechunk>`_
-- `temporal-stats <https://nrel.github.io/rex/rex/rex.temporal_stats.temporal_stats_cli.html#temporal-stats>`_
+- `rex <https://nrel.github.io/rex/_cli/rex.html#rex>`_
+- `NSRDBX <https://nrel.github.io/rex/_cli/NSRDBX.html#NSRDBX>`_
+- `WINDX <https://nrel.github.io/rex/_cli/WINDX.html#WINDX>`_
+- `US-wave <https://nrel.github.io/rex/_cli/US-wave.html#US-wave>`_
+- `WaveX <https://nrel.github.io/rex/_cli/WaveX.html#Wavex>`_
+- `MultiYearX <https://nrel.github.io/rex/_cli/MultiYearX.html#MultiYearX>`_
+- `rechunk <https://nrel.github.io/rex/_cli/rechunk.html#rechunk>`_
+- `temporal-stats <https://nrel.github.io/rex/_cli/temporal-stats.html#temporal-stats>`_
+- `wind-rose <https://nrel.github.io/rex/_cli/wind-rose.html#wind-rose>`_
 
 Using Eagle Env
 ===============
@@ -108,9 +110,9 @@ Option 2: Clone repo (recommended for developers)
        help pages for the CLI's.
 
         - ``rex``
-        - ``NSRDB``
-        - ``WIND``
-        - ``rechunk``
+        - ``NSRDBX``
+        - ``WINDX``
+        - ``US-wave``
 
 Recommended Citation
 ====================
