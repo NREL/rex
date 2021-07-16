@@ -2,6 +2,6 @@ Examples
 ========
 .. toctree::
 
-   nsrdb
-   wind
-   us_wave
+   examples.nsrdb
+   examples.wind
+   examples.us_wave

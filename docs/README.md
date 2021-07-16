@@ -13,15 +13,12 @@ conda install sphinx_rtd_theme
 
 pip install ghp-import
 pip install sphinx-click
-pip install sphinx-autopackagesummary
 ```
 
-## Refreshing the API Documentation
+## Add any new CLI docs
 
-- Make sure reV is in your PYTHONPATH
-- Remove source/rex/rex.rst
-- Run `sphinx-apidoc -eMT -o source/_rex ../rex` from the `docs` folder.
-- Add the following to the top of any CLI module's .rst file:
+- Create a new file .rest file in source/_cli
+- Add the following to the top of the new CLI module's .rst file:
 ```
 .. click:: module_path:main
    :prog: CLI-Alias # e.g. NSRDB
