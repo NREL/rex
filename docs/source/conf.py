@@ -30,10 +30,7 @@ pkg = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 pkg = os.path.dirname(pkg)
 sys.path.append(pkg)
 
-with open(os.path.join(pkg, "rex", "version.py"), encoding="utf-8") as f:
-    v = f.read()
-
-v = v.split('=')[-1].strip().strip('"').strip("'")
+from rex.version import __version__ as v
 # The short X.Y version
 version = v
 # The full version, including alpha/beta/rc tags
