@@ -9,7 +9,9 @@ from pandas.testing import assert_frame_equal
 import pytest
 
 from rex import TESTDATADIR
-from rex.multi_time_resource import MultiTimeNSRDB, MultiTimeWindResource
+from rex.multi_file_resource import MultiH5Path
+from rex.multi_time_resource import (MultiTimeH5, MultiTimeNSRDB,
+                                     MultiTimeWindResource)
 from rex.resource import Resource
 
 
@@ -252,6 +254,23 @@ class TestMultiTimeWindResource:
         """
         check_dset(MultiTimeWind_res, ds_name)
         MultiTimeWind_res.close()
+
+
+def test_map_hsds_files():
+    """
+    Test map hsds files method
+    """
+    files = [f'/nrel/US_wave/West_Coast/West_Coast_wave_{year}.h5'
+             for year in range(1979, 2011)]
+    hsds_kwargs = {'endpoint': 'https://developer.nrel.gov/api/hsds',
+                   'api_key': 'oHP7dGu4VZeg4rVo8PZyb5SVmYigedRHxi3OfiqI'}
+    path = '/nrel/US_wave/West_Coast/West_Coast_wave_*.h5'
+
+    h5_dir, prefix, suffix = MultiH5Path.multi_file_args(path)
+    file_map = MultiTimeH5._map_files(h5_dir, prefix=prefix, suffix=suffix,
+                                      hsds=True, hsds_kwargs=hsds_kwargs)
+
+    assert all(f in files for f in file_map.values())
 
 
 def execute_pytest(capture='all', flags='-rapP'):

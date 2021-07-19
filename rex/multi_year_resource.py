@@ -22,7 +22,8 @@ class MultiYearH5(MultiTimeH5):
     """
 
     def __init__(self, h5_dir, prefix='', suffix='.h5', years=None,
-                 res_cls=Resource, hsds=False, **res_cls_kwargs):
+                 res_cls=Resource, hsds=False, hsds_kwargs=None,
+                 **res_cls_kwargs):
         """
         Parameters
         ----------
@@ -39,10 +40,14 @@ class MultiYearH5(MultiTimeH5):
         hsds : bool
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         """
         self.h5_dir = h5_dir
         self._file_map = self._map_files(h5_dir, prefix=prefix,
                                          suffix=suffix, hsds=hsds,
+                                         hsds_kwargs=hsds_kwargs,
                                          years=years)
         res_cls_kwargs.update({'hsds': hsds})
         self._h5_map = self._map_file_instances(list(self._file_map.values()),
@@ -122,7 +127,7 @@ class MultiYearH5(MultiTimeH5):
         return self._time_index
 
     @staticmethod
-    def _map_hsds_files(hsds_dir, prefix='', suffix='.h5'):
+    def _map_hsds_files(hsds_dir, prefix='', suffix='.h5', hsds_kwargs=None):
         """
         Map hsds file paths to year for which it contains data
 
@@ -134,6 +139,9 @@ class MultiYearH5(MultiTimeH5):
             Prefix for resource .h5 files
         suffix : str
             Suffix for resource .h5 files
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
 
         Returns
         -------
@@ -146,7 +154,10 @@ class MultiYearH5(MultiTimeH5):
         if not hsds_dir.endswith('/'):
             hsds_dir += '/'
 
-        with h5pyd.Folder(hsds_dir) as f:
+        if hsds_kwargs is None:
+            hsds_kwargs = {}
+
+        with h5pyd.Folder(hsds_dir, **hsds_kwargs) as f:
             for file in f:
                 if file.startswith(prefix) and file.endswith(suffix):
                     try:
@@ -240,7 +251,7 @@ class MultiYearH5(MultiTimeH5):
 
     @classmethod
     def _map_files(cls, h5_dir, prefix='', suffix='.h5', hsds=False,
-                   years=None):
+                   hsds_kwargs=None, years=None):
         """
         Map file paths to year for which it contains data
 
@@ -255,6 +266,9 @@ class MultiYearH5(MultiTimeH5):
         hsds : bool
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
         years : list, optional
             List of years to access, by default None
 
@@ -265,7 +279,8 @@ class MultiYearH5(MultiTimeH5):
         """
         if hsds:
             file_map = cls._map_hsds_files(h5_dir, prefix=prefix,
-                                           suffix=suffix)
+                                           suffix=suffix,
+                                           hsds_kwargs=hsds_kwargs)
         else:
             file_map = cls._map_local_files(h5_dir, prefix=prefix,
                                             suffix=suffix)
