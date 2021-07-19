@@ -9,8 +9,7 @@ from pandas.testing import assert_frame_equal
 import pytest
 
 from rex import TESTDATADIR
-from rex.multi_year_resource import (MultiYearNSRDB, MultiYearWindResource,
-                                     MultiYearResource)
+from rex.multi_year_resource import MultiYearNSRDB, MultiYearWindResource
 from rex.resource import Resource
 
 
@@ -289,35 +288,6 @@ class TestMultiYearWindResource:
         check_dset(MultiYearWind_res, ds_name)
         check_years(MultiYearWind_res, ds_name)
         MultiYearWind_res.close()
-
-
-def test_hsds():
-    """
-    Test HSDS reads
-    """
-    dsets = ['coordinates',
-             'directionality_coefficient',
-             'energy_period',
-             'maximum_energy_direction',
-             'mean_absolute_period',
-             'mean_wave_direction',
-             'mean_zero-crossing_period',
-             'meta',
-             'omni-directional_wave_power',
-             'peak_period',
-             'significant_wave_height',
-             'spectral_width',
-             'time_index',
-             'water_depth']
-    files = [f'/nrel/US_wave/West_Coast/West_Coast_wave_{year}.h5'
-             for year in range(1979, 2011)]
-
-    hsds_kwargs = {'hs_endpoint': 'https://developer.nrel.gov/api/hsds',
-                   'hs_api_key': 'oHP7dGu4VZeg4rVo8PZyb5SVmYigedRHxi3OfiqI'}
-    path = '/nrel/US_wave/West_Coast/West_Coast_wave_*.h5'
-    with MultiYearResource(path, hsds=True, hsds_kwargs=hsds_kwargs) as f:
-        assert all(dset in dsets for dset in f.datasets)
-        assert all(h5_file in files for h5_file in f.h5_files)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
