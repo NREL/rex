@@ -5,7 +5,7 @@ pytests for unstupify_path utility
 import os
 import pytest
 
-from rex import TESTDATADIR, REXDIR
+from rex import TESTDATADIR
 from rex.utilities.utilities import unstupify_path
 
 HERE = os.path.realpath(__file__)
@@ -15,10 +15,12 @@ DIR, FILE = os.path.split(HERE)
 def test_unstupify_home_path():
     """
     Test unstupify path logic for a path relative to home
-    NOTE: This will not pass locally and is setup for Github Actions!!!
     """
-    test = unstupify_path('~/rex/')
-    assert test == os.path.dirname(REXDIR)
+    home = os.path.expanduser('~')
+    file = sorted(os.listdir(home))[0]
+    truth = os.path.join(home, file)
+    test = unstupify_path('~/' + file)
+    assert test == truth
 
 
 def test_unstupify_relative_file():
