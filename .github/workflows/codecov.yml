@@ -16,14 +16,15 @@ jobs:
         python-version: 3.9
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install pytest
-        python -m pip install pytest-cov
-        python -m pip install .
+        pip install --upgrade pip
+        pip install pytest
+        pip install pytest-cov
+        pip install .
     - name: Generate coverage report
       run: |
-        python -m pip install pytest-cov
-        python -m  pytest --disable-warnings --cov=./ --cov-report=xml:coverage.xml
+        pip install pytest-cov
+        cd tests
+        pytest --disable-warnings --cov=./ --cov-report=xml:coverage.xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
