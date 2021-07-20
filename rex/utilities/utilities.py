@@ -860,3 +860,29 @@ def row_col_indices(sc_point_gids, row_length):
     cols = sc_point_gids % row_length
 
     return rows, cols
+
+
+def unstupify_path(path):
+    """
+    Utility to create sensical os agnostic paths from relative or local path
+    such as:
+    - ~/file
+    - file
+    - /.
+    - ./file
+
+    Parameters
+    ----------
+    path : str
+        Path or relative path
+
+    Returns
+    -------
+    path: str
+        Absolute/real path
+    """
+    path = os.path.expanduser(path)
+    if not os.path.isabs(path) and not path.startswith('/'):
+        path = os.path.realpath(path)
+
+    return path

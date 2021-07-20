@@ -16,6 +16,7 @@ from warnings import warn
 
 from rex.version import __version__
 from rex.utilities.exceptions import LoggerWarning
+from rex.utilities.utilities import unstupify_path
 
 FORMAT = '%(levelname)s - %(asctime)s [%(filename)s:%(lineno)d] : %(message)s'
 LOG_LEVEL = {'INFO': logging.INFO,
@@ -70,7 +71,7 @@ def get_handler(log_level="INFO", log_file=None, log_format=FORMAT):
     """
     if log_file:
         # file handler with mode "a"
-        log_file = os.path.realpath(log_file)
+        log_file = unstupify_path(log_file)
         log_dir = os.path.dirname(log_file)
         if os.path.exists(log_dir):
             name = log_file
@@ -276,7 +277,7 @@ class LoggingAttributes:
         """
         if not isinstance(new_handlers, (list, tuple)):
             new_handlers = [new_handlers]
-            new_handlers = [os.path.realpath(h) for h in new_handlers
+            new_handlers = [unstupify_path(h) for h in new_handlers
                             if h is not None]
 
         for h in new_handlers:
