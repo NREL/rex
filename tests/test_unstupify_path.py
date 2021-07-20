@@ -20,7 +20,7 @@ def test_unstupify_home_path():
     file = sorted(os.listdir(home))[0]
     truth = os.path.join(home, file)
     test = unstupify_path('~/' + file)
-    assert test == truth
+    assert os.path.samefile(test, truth)
 
 
 def test_unstupify_relative_file():
@@ -28,7 +28,7 @@ def test_unstupify_relative_file():
     Test unstupify path logic for a relative file
     """
     test = unstupify_path(FILE)
-    assert test == HERE
+    assert os.path.samefile(test, HERE)
 
 
 @pytest.mark.parametrize("path", ['./data',
@@ -43,7 +43,7 @@ def test_unstupify_relative_dir(path):
         truth = DIR
 
     test = unstupify_path(path)
-    assert test == truth
+    assert os.path.samefile(test, truth)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
