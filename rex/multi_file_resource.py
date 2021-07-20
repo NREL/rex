@@ -9,6 +9,7 @@ import os
 from rex.renewable_resource import NSRDB, WindResource
 from rex.resource import Resource
 from rex.utilities.exceptions import ResourceRuntimeError
+from rex.utilities.utilities import unstupify_path
 
 
 class MultiH5:
@@ -293,8 +294,7 @@ class MultiH5Path(MultiH5):
         suffix : str
             File suffix for files in h5_dir.
         """
-        if not os.path.isabs(h5_path):
-            h5_path = os.path.abspath(h5_path)
+        h5_path = unstupify_path(h5_path)
 
         if '*' in h5_path:
             h5_dir, fn = os.path.split(h5_path)
