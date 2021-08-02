@@ -50,7 +50,7 @@ class SAMResource:
                          'windspeed'),
                 'windpower': ('pressure', 'temperature', 'winddirection',
                               'windspeed'),
-                'wave': ('significant_wave_height', 'peak_period')}
+                'wave': ('significant_wave_height', 'energy_period')}
 
     # valid data ranges for PV solar resource:
     PV_DATA_RANGES = {'dni': (0.0, 1360.0),
