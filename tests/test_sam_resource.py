@@ -8,7 +8,7 @@ import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
 
-from rex.renewable_resource import WindResource, NSRDB
+from rex.renewable_resource import WindResource, NSRDB, WaveResource
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceRuntimeError
 from rex.utilities.utilities import roll_timeseries
@@ -317,6 +317,21 @@ def test_bifacial():
         assert 'surface_albedo' in res_df
         assert res_df['surface_albedo'].min() > 0.0
         assert res_df['surface_albedo'].min() < 1.0
+
+
+def test_wave():
+    """
+    Test wave preload sam method
+    """
+    fp = os.path.join(TESTDATADIR, 'wave/ri_wave_2010.h5')
+    sites = slice(0, 100)
+    res = WaveResource.preload_SAM(fp, sites)
+
+    with WaveResource(fp) as f:
+        for var in res.var_list:
+            truth = f[var]
+            test = res[var].values
+            assert np.allclose(truth, test)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
