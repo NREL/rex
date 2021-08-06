@@ -1195,6 +1195,9 @@ class BaseResource(ABC):
         site : int
             Site to extract SAM DataFrame for
         """
+        msg = ('Method to retrieve SAM dataframe not implemented for vanilla '
+               'Resource handler. Use an NSRDB or WTK handler instead.')
+        raise NotImplementedError(msg)
 
     def _get_ds(self, ds_name, ds_slice):
         """
