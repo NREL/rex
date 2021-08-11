@@ -21,9 +21,11 @@ from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
                                     WindResource)
 from rex.temporal_stats.temporal_stats import TemporalStats
 from rex.utilities.exceptions import ResourceValueError, ResourceWarning
+from rex.utilities.execution import SpawnProcessPool
 from rex.utilities.loggers import log_versions
 from rex.utilities.utilities import parse_year, check_tz, res_dist_threshold
 
+# pylint: disable=R1732
 TREE_DIR = TemporaryDirectory()
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,10 @@ class ResourceX:
     """
     Resource data extraction tool
     """
-    def __init__(self, res_h5, res_cls=Resource, tree=None, unscale=True,
+
+    DEFAULT_RES_CLS = Resource
+
+    def __init__(self, res_h5, res_cls=None, tree=None, unscale=True,
                  str_decode=True, group=None, hsds=False, hsds_kwargs=None):
         """
         Parameters
@@ -41,7 +46,7 @@ class ResourceX:
             Path to resource .h5 file of interest
         res_cls : obj, optional
             Resource class to use to open and access resource data,
-            by default Resource
+            by default Resource (default changes for subclasses like NSRDBX)
         tree : str | cKDTree, optional
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates, by default None
@@ -62,6 +67,7 @@ class ResourceX:
             password, by default None
         """
         log_versions(logger)
+        res_cls = self.DEFAULT_RES_CLS if res_cls is None else res_cls
         self._res = res_cls(res_h5, unscale=unscale, str_decode=str_decode,
                             group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
         self._dist_thresh = None
@@ -1002,6 +1008,44 @@ class ResourceX:
 
         return ts_map
 
+    @classmethod
+    def make_SAM_files(cls, res_h5, gids, out_path, write_time=True,
+                       max_workers=1, n_chunks=36, **kwargs):
+        """A performant parallel entry point for making many SAM csv
+        files for many gids
+
+        Parameters
+        ----------
+        res_h5 : str
+            Filepath to resource h5 file.
+        gids : list | tuple | np.ndarray
+            Resource gid(s) of interset
+        out_path : str, optional
+            Path to save SAM data to in SAM .csv format. A gid index
+            "*_{gid}.csv" will be appended to the file path
+        write_time : bool
+            Flag to write the time columns (Year, Month, Day, Hour, Minute)
+        max_workers : int | None
+            Number of parallel workers. None for all workers.
+        n_chunks : int
+            Number of chunks to split gids into for parallelization
+        kwargs : dict
+            Internal kwargs for get_SAM_df
+        """
+
+        if max_workers == 1:
+            with cls(res_h5) as res:
+                res.get_SAM_gid(gids, out_path=out_path,
+                                write_time=write_time, **kwargs)
+        else:
+            msg = 'Bad gids dtype: {}'.format(type(gids))
+            assert isinstance(gids, (list, tuple, np.ndarray)), msg
+            gid_chunks = np.array_split(np.array(gids), n_chunks)
+            with SpawnProcessPool(max_workers=max_workers) as spp:
+                for chunk in gid_chunks:
+                    spp.submit(cls.make_SAM_files, res_h5, chunk, out_path,
+                               write_time=write_time, max_workers=1, **kwargs)
+
     def close(self):
         """
         Close res_cls instance
@@ -1116,7 +1160,9 @@ class MultiFileResourceX(ResourceX):
     Multi-File resource extraction class
     """
 
-    def __init__(self, resource_path, res_cls=MultiFileResource, tree=None,
+    DEFAULT_RES_CLS = MultiFileResource
+
+    def __init__(self, resource_path, res_cls=None, tree=None,
                  unscale=True, str_decode=True, check_files=False):
         """
         Parameters
@@ -1140,6 +1186,7 @@ class MultiFileResourceX(ResourceX):
             Check to ensure files have the same coordinates and time_index
         """
         log_versions(logger)
+        res_cls = self.DEFAULT_RES_CLS if res_cls is None else res_cls
         self._res = res_cls(resource_path, unscale=unscale,
                             str_decode=str_decode, check_files=check_files)
         self._dist_thresh = None
@@ -1151,8 +1198,11 @@ class MultiYearResourceX(ResourceX):
     """
     Multi Year resource extraction class
     """
+
+    DEFAULT_RES_CLS = Resource
+
     def __init__(self, resource_path, years=None, tree=None, unscale=True,
-                 str_decode=True, res_cls=Resource, hsds=False,
+                 str_decode=True, res_cls=None, hsds=False,
                  hsds_kwargs=None):
         """
         Parameters
@@ -1182,6 +1232,7 @@ class MultiYearResourceX(ResourceX):
             password, by default None
         """
         log_versions(logger)
+        res_cls = self.DEFAULT_RES_CLS if res_cls is None else res_cls
         self._res = MultiYearResource(resource_path, years=years,
                                       unscale=unscale, str_decode=str_decode,
                                       res_cls=res_cls, hsds=hsds,
@@ -1241,7 +1292,7 @@ class MultiTimeResourceX(ResourceX):
     """
 
     def __init__(self, resource_path, tree=None, unscale=True,
-                 str_decode=True, res_cls=Resource, hsds=False,
+                 str_decode=True, res_cls=None, hsds=False,
                  hsds_kwargs=None):
         """
         Parameters
@@ -1269,6 +1320,7 @@ class MultiTimeResourceX(ResourceX):
             password, by default None
         """
         log_versions(logger)
+        res_cls = self.DEFAULT_RES_CLS if res_cls is None else res_cls
         self._res = MultiTimeResource(resource_path, unscale=unscale,
                                       str_decode=str_decode, res_cls=res_cls,
                                       hsds=hsds, hsds_kwargs=hsds_kwargs)
@@ -1281,209 +1333,45 @@ class SolarX(ResourceX):
     """
     Solar Resource extraction class
     """
-    def __init__(self, solar_h5, tree=None, unscale=True,
-                 str_decode=True, group=None, hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        solar_h5 : str
-            Path to solar .h5 file of interest
-        tree : str | cKDTree, optional
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates, by default None
-        unscale : bool, optional
-            Boolean flag to automatically unscale variables on extraction,
-            by default True
-        str_decode : bool, optional
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-            by default True
-        group : str, optional
-            Group within .h5 resource file to open, by default None
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(solar_h5, unscale=unscale, str_decode=str_decode,
-                         group=group, tree=tree, res_cls=SolarResource,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = SolarResource
 
 
 class NSRDBX(ResourceX):
     """
     NSRDB extraction class
     """
-    def __init__(self, nsrdb_h5, tree=None, unscale=True,
-                 str_decode=True, group=None, hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        nsrdb_h5 : str
-            Path to NSRDB .h5 file of interest
-        tree : str | cKDTree, optional
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates, by default None
-        unscale : bool, optional
-            Boolean flag to automatically unscale variables on extraction,
-            by default True
-        str_decode : bool, optional
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-            by default True
-        group : str, optional
-            Group within .h5 resource file to open, by default None
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(nsrdb_h5, unscale=unscale, str_decode=str_decode,
-                         group=group, tree=tree, res_cls=NSRDB,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = NSRDB
 
 
 class MultiFileNSRDBX(MultiFileResourceX):
     """
     Multi-File NSRDB extraction class
     """
-    def __init__(self, nsrdb_source, tree=None, unscale=True, str_decode=True,
-                 check_files=False):
-        """
-        Parameters
-        ----------
-        nsrdb_source : str | list
-            Path to directory containing multi-file NSRDB file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-            Or list of source NSRDB .h5 files
-        tree : str | cKDTree
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        check_files : bool
-            Check to ensure files have the same coordinates and time_index
-        """
-        super().__init__(nsrdb_source, unscale=unscale, str_decode=str_decode,
-                         check_files=check_files, tree=tree,
-                         res_cls=MultiFileNSRDB)
+    DEFAULT_RES_CLS = MultiFileNSRDB
 
 
 class MultiYearNSRDBX(MultiYearResourceX):
     """
     Multi Year NSRDB extraction class
     """
-    def __init__(self, nsrdb_path, years=None, tree=None, unscale=True,
-                 str_decode=True, hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        nsrdb_path : str
-            Path to NSRDB .h5 files
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-        years : list, optional
-            List of years to access, by default None
-        tree : str | cKDTree
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(nsrdb_path, years=years, tree=tree, unscale=unscale,
-                         str_decode=str_decode, res_cls=NSRDB,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = NSRDB
 
 
 class MultiTimeNSRDBX(MultiTimeResourceX):
     """
     NSRDB extraction class for data stored temporaly accross multiple files
     """
-
-    def __init__(self, nsrdb_path, tree=None, unscale=True,
-                 str_decode=True, hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        nsrdb_path : str
-            Path to NSRDB .h5 files
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-        tree : str | cKDTree
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(nsrdb_path, tree=tree, unscale=unscale,
-                         str_decode=str_decode, res_cls=NSRDB,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = NSRDB
 
 
 class WindX(ResourceX):
     """
     Wind Resource extraction class
     """
-    def __init__(self, wind_h5, tree=None, unscale=True,
-                 str_decode=True, group=None, hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        wind_h5 : str
-            Path to Wind .h5 file of interest
-        tree : str | cKDTree, optional
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates, by default None
-        unscale : bool, optional
-            Boolean flag to automatically unscale variables on extraction,
-            by default True
-        str_decode : bool, optional
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-            by default True
-        group : str, optional
-            Group within .h5 resource file to open, by default None
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(wind_h5, unscale=unscale, str_decode=str_decode,
-                         group=group, tree=tree, res_cls=WindResource,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = WindResource
 
-    def get_SAM_gid(self, hub_height, gid, out_path=None, **kwargs):
+    def get_SAM_gid(self, hub_height, gid, out_path=None, write_time=True,
+                    **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given resource gid and hub height
@@ -1496,6 +1384,8 @@ class WindX(ResourceX):
             Resource gid(s) of interset
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
+        write_time : bool
+            Flag to write the time columns (Year, Month, Day, Hour, Minute)
         kwargs : dict
             Internal kwargs for get_SAM_df:
             - require_wind_dir
@@ -1508,20 +1398,9 @@ class WindX(ResourceX):
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        if isinstance(gid, (int, np.integer)):
-            gid = [gid, ]
-
-        SAM_df = []
-        for res_id in gid:
-            df = self.resource.get_SAM_df(res_id, hub_height, **kwargs)
-            SAM_df.append(df)
-            if out_path is not None:
-                site_meta = self['meta', res_id]
-                self._to_SAM_csv(df, site_meta, out_path)
-
-        if len(SAM_df) == 1:
-            SAM_df = SAM_df[0]
-
+        kwargs['height'] = hub_height
+        SAM_df = super().get_SAM_gid(gid, out_path=out_path,
+                                     write_time=write_time, **kwargs)
         return SAM_df
 
     def get_SAM_lat_lon(self, hub_height, lat_lon, check_lat_lon=True,
@@ -1561,72 +1440,50 @@ class WindX(ResourceX):
 
         return SAM_df
 
+    @classmethod
+    def make_SAM_files(cls, hub_height, res_h5, gids, out_path,
+                       write_time=True, max_workers=1, n_chunks=36, **kwargs):
+        """A performant parallel entry point for making many SAM csv
+        files for many gids
+
+        Parameters
+        ----------
+        hub_height : int
+            Hub height of interest
+        res_h5 : str
+            Filepath to resource h5 file.
+        gids : list | tuple | np.ndarray
+            Resource gid(s) of interset
+        out_path : str, optional
+            Path to save SAM data to in SAM .csv format. A gid index
+            "*_{gid}.csv" will be appended to the file path
+        write_time : bool
+            Flag to write the time columns (Year, Month, Day, Hour, Minute)
+        max_workers : int | None
+            Number of parallel workers. None for all workers.
+        n_chunks : int
+            Number of chunks to split gids into for parallelization
+        kwargs : dict
+            Internal kwargs for get_SAM_df
+        """
+        kwargs['height'] = hub_height
+        super().get_SAM_gid(res_h5, gids, out_path, write_time=write_time,
+                            max_workers=max_workers, n_chunks=n_chunks,
+                            **kwargs)
+
 
 class MultiFileWindX(MultiFileResourceX):
     """
     Multi-File Wind Resource extraction class
     """
-    def __init__(self, wtk_source, tree=None, unscale=True, str_decode=True,
-                 check_files=False):
-        """
-        Parameters
-        ----------
-        wtk_source : str | list
-            Path to directory containing multi-file WTK file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-            Or list of source WTK .h5 files
-        tree : str | cKDTree
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        check_files : bool
-            Check to ensure files have the same coordinates and time_index
-        """
-        super().__init__(wtk_source, unscale=unscale, str_decode=str_decode,
-                         check_files=check_files, tree=tree,
-                         res_cls=MultiFileWTK)
+    DEFAULT_RES_CLS = MultiFileWTK
 
 
 class MultiYearWindX(MultiYearResourceX):
     """
     Multi Year Wind Resource extraction class
     """
-    def __init__(self, wtk_path, years=None, tree=None, unscale=True,
-                 str_decode=True, hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        wtk_path : str
-            Path to annual WTK .h5 files
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-        years : list, optional
-            List of years to access, by default None
-        tree : str | cKDTree
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(wtk_path, years=years, tree=tree, unscale=unscale,
-                         str_decode=str_decode, res_cls=WindResource,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = WindResource
 
 
 class MultiTimeWindX(MultiTimeResourceX):
@@ -1634,71 +1491,14 @@ class MultiTimeWindX(MultiTimeResourceX):
     Wind resource extraction class for data stored temporaly accross multiple
     files
     """
-
-    def __init__(self, wtk_path, tree=None, unscale=True, str_decode=True,
-                 hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        wtk_path : str
-            Path to annual WTK .h5 files
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-        tree : str | cKDTree
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(wtk_path, tree=tree, unscale=unscale,
-                         str_decode=str_decode, res_cls=WindResource,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = WindResource
 
 
 class WaveX(ResourceX):
     """
     Wave data extraction class
     """
-
-    def __init__(self, wave_h5, tree=None, unscale=True,
-                 str_decode=True, group=None, hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        wave_h5 : str
-            Path to US_Wave .h5 file of interest
-        tree : str | cKDTree, optional
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates, by default None
-        unscale : bool, optional
-            Boolean flag to automatically unscale variables on extraction,
-            by default True
-        str_decode : bool, optional
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-            by default True
-        group : str, optional
-            Group within .h5 resource file to open, by default None
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(wave_h5, unscale=unscale, str_decode=str_decode,
-                         group=group, tree=tree, res_cls=WaveResource,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = WaveResource
 
     def get_gid_ts(self, ds_name, gid):
         """
@@ -1768,37 +1568,7 @@ class MultiYearWaveX(MultiYearResourceX):
     """
     Multi Year Wave extraction class
     """
-
-    def __init__(self, wave_path, years=None, tree=None, unscale=True,
-                 str_decode=True, hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        wave_path : str
-            Path to US_Wave .h5 files
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-        years : list, optional
-            List of years to access, by default None
-        tree : str | cKDTree
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(wave_path, years=years, tree=tree, unscale=unscale,
-                         str_decode=str_decode, res_cls=WaveResource,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = WaveResource
 
 
 class MultiTimeWaveX(MultiTimeResourceX):
@@ -1806,32 +1576,4 @@ class MultiTimeWaveX(MultiTimeResourceX):
     Wave resource extraction class for data stored temporaly accross multiple
     files
     """
-
-    def __init__(self, wave_path, tree=None, unscale=True, str_decode=True,
-                 hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        wave_path : str
-            Path to US_Wave .h5 files
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-        tree : str | cKDTree
-            cKDTree or path to .pkl file containing pre-computed tree
-            of lat, lon coordinates
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(wave_path, tree=tree, unscale=unscale,
-                         str_decode=str_decode, res_cls=WindResource,
-                         hsds=hsds, hsds_kwargs=hsds_kwargs)
+    DEFAULT_RES_CLS = WaveResource
