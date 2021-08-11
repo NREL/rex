@@ -823,6 +823,17 @@ class BaseResource(ABC):
         return self._lat_lon
 
     @property
+    def data_version(self):
+        """
+        Get the version attribute of the data. None if not available.
+
+        Returns
+        -------
+        version : str | None
+        """
+        return self.global_attrs.get('version', None)
+
+    @property
     def global_attrs(self):
         """
         Global (file) attributes

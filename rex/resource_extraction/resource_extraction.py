@@ -239,6 +239,17 @@ class ResourceX:
         return self.resource.lat_lon
 
     @property
+    def data_version(self):
+        """
+        Get the version attribute of the data. None if not available.
+
+        Returns
+        -------
+        version : str | None
+        """
+        return self.resource.data_version
+
+    @property
     def global_attrs(self):
         """
         Global (file) attributes
@@ -469,9 +480,9 @@ class ResourceX:
 
         col_map = {}
         for c in site_meta.columns:
-            if c == 'timezone':
+            if c.lower() == 'timezone':
                 col_map[c] = 'Time Zone'
-            elif c == 'gid':
+            elif c.lower() == 'gid':
                 col_map[c] = 'Location ID'
             else:
                 col_map[c] = c.capitalize()
@@ -901,6 +912,9 @@ class ResourceX:
                     i_out_path = i_out_path.replace('.csv', tag)
 
                 site_meta = self['meta', res_id]
+                if self.data_version is not None:
+                    site_meta['Version'] = self.data_version
+
                 self._to_SAM_csv(df, site_meta, i_out_path,
                                  write_time=write_time)
 
