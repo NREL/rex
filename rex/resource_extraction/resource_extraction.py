@@ -434,7 +434,7 @@ class ResourceX:
         return ds_slice
 
     @staticmethod
-    def _to_SAM_csv(sam_df, site_meta, out_path):
+    def _to_SAM_csv(sam_df, site_meta, out_path, write_time=True):
         """
         Save SAM dataframe to disk and add meta data to header to make
         SAM compliant
@@ -447,6 +447,8 @@ class ResourceX:
             Site meta data
         out_path : str
             Path to .csv file to save data too
+        write_time : bool
+            Flag to write the time columns (Year, Month, Day, Hour, Minute)
         """
         if not out_path.endswith('.csv'):
             if os.path.isfile(out_path):
@@ -454,7 +456,12 @@ class ResourceX:
 
             out_path = os.path.join(out_path, "{}.csv".format(sam_df.name))
 
-        sam_df.to_csv(out_path, index=False)
+        if write_time:
+            sam_df.to_csv(out_path, index=False)
+        else:
+            time_cols = ('year', 'month', 'day', 'hour', 'minute')
+            cols = [c for c in sam_df if c.lower() not in time_cols]
+            sam_df[cols].to_csv(out_path, index=False)
 
         if 'gid' not in site_meta:
             site_meta.index.name = 'gid'
@@ -854,7 +861,7 @@ class ResourceX:
 
         return box_df
 
-    def get_SAM_gid(self, gid, out_path=None, **kwargs):
+    def get_SAM_gid(self, gid, out_path=None, write_time=True, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given resource gid
@@ -865,6 +872,8 @@ class ResourceX:
             Resource gid(s) of interset
         out_path : str, optional
             Path to save SAM data to in SAM .csv format, by default None
+        write_time : bool
+            Flag to write the time columns (Year, Month, Day, Hour, Minute)
         kwargs : dict
             Internal kwargs for get_SAM_df
 
@@ -883,9 +892,17 @@ class ResourceX:
             # pylint: disable=E1111
             df = self.resource.get_SAM_df(res_id, **kwargs)
             SAM_df.append(df)
+
             if out_path is not None:
+                assert out_path.endswith('.csv'), 'out_path must be .csv!'
+                i_out_path = out_path
+                if len(gid) > 1:
+                    tag = '_{}.csv'.format(res_id)
+                    i_out_path = i_out_path.replace('.csv', tag)
+
                 site_meta = self['meta', res_id]
-                self._to_SAM_csv(df, site_meta, out_path)
+                self._to_SAM_csv(df, site_meta, i_out_path,
+                                 write_time=write_time)
 
         if len(SAM_df) == 1:
             SAM_df = SAM_df[0]
