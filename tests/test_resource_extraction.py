@@ -832,8 +832,8 @@ def test_cli_SAM(runner, WindX_cls):
         assert result.exit_code == 0, msg
         print(os.listdir(td))
 
-        out_path = "SAM_100m-{}.csv".format(gid)
-        test = pd.read_csv(os.path.join(td, out_path), skiprows=1)
+        test = pd.read_csv(os.path.join(td, 'SAM_{}.csv'.format(gid)),
+                           skiprows=1)
         assert_frame_equal(truth, test)
 
     WindX_cls.close()

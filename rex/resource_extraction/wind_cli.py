@@ -110,10 +110,14 @@ def sam_datasets(ctx, hub_height, lat_lon, gid, sites):
         logger.info('Saving data to {}'.format(ctx.obj['OUT_DIR']))
         with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
             if lat_lon is not None:
+                out_path = os.path.join(ctx.obj['OUT_DIR'],
+                                        'SAM_{}.csv'.format(lat_lon))
                 f.get_SAM_lat_lon(hub_height, lat_lon,
-                                  out_path=ctx.obj['OUT_DIR'])
+                                  out_path=out_path)
             elif gid is not None:
-                f.get_SAM_gid(hub_height, gid, out_path=ctx.obj['OUT_DIR'])
+                out_path = os.path.join(ctx.obj['OUT_DIR'],
+                                        'SAM_{}.csv'.format(gid))
+                f.get_SAM_gid(hub_height, gid, out_path=out_path)
 
     else:
         name, gid, lat_lon = _parse_sites(sites)
