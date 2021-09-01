@@ -177,7 +177,7 @@ class SAMResource:
             out = out.loc[var_slice[0]]
         elif isinstance(var, str):
             if var.startswith('mean_'):
-                var = var.lstrip('mean_')
+                var = var.replace('mean_', '')
                 out = self._get_var_mean(var, *var_slice)
             else:
                 out = self._get_var_ts(var, *var_slice)
