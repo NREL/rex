@@ -25,7 +25,6 @@ from rex.utilities.execution import SpawnProcessPool
 from rex.utilities.loggers import log_versions
 from rex.utilities.utilities import parse_year, check_tz, res_dist_threshold
 
-# pylint: disable=R1732
 TREE_DIR = TemporaryDirectory()
 logger = logging.getLogger(__name__)
 
@@ -919,6 +918,7 @@ class ResourceX:
 
                 site_meta = self['meta', res_id]
                 if self.data_version is not None:
+                    # pylint: disable=unsupported-assignment-operation
                     site_meta['Version'] = self.data_version
 
                 self._to_SAM_csv(df, site_meta, i_out_path,
