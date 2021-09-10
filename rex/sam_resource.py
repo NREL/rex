@@ -76,7 +76,11 @@ class SAMResource:
                         'temperature': (-200, 100),
                         'rh': (0.1, 99.9)}
 
-    WAVE_DATA_RANGES = {}
+    # prevent negative wave data; some negative periods are observed on the
+    # west coast along the shore. These are small wave areas and should be fine
+    # with setting period to zero
+    WAVE_DATA_RANGES = {'significant_wave_height': (0, 100),
+                        'energy_period': (0, 100)}
 
     # valid data ranges for trough physical process heat
     TPPH_DATA_RANGES = CSP_DATA_RANGES
