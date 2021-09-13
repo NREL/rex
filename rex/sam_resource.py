@@ -78,9 +78,11 @@ class SAMResource:
 
     # prevent negative wave data; some negative periods are observed on the
     # west coast along the shore. These are small wave areas and should be fine
-    # with setting period to zero
-    WAVE_DATA_RANGES = {'significant_wave_height': (0, 100),
-                        'energy_period': (0, 100)}
+    # with setting period to zero. Current limits of pysam (9/2021) cause
+    # errors when wave heights or energy periods are greater than the power
+    # matrix bin maximums (20.5 and 9.75 respectively)
+    WAVE_DATA_RANGES = {'significant_wave_height': (0, 20.5),
+                        'energy_period': (0, 9.75)}
 
     # valid data ranges for trough physical process heat
     TPPH_DATA_RANGES = CSP_DATA_RANGES
