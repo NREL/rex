@@ -11,7 +11,7 @@ import pandas as pd
 
 from rex.resource import Resource
 from rex.utilities.execution import SpawnProcessPool
-from rex.utilities.loggers import log_mem, log_versions
+from rex.utilities.loggers import log_mem, log_versions, create_dirs
 from rex.utilities.utilities import get_lat_lon_cols, slice_sites
 
 logger = logging.getLogger(__name__)
@@ -851,6 +851,9 @@ class TemporalStats:
 
         # Drop any wild card values
         out_fpath = out_fpath.replace('*', '')
+
+        out_dir = os.path.dirname(out_fpath)
+        create_dirs(out_dir)
 
         logger.info('Writing temporal statistics to {}'.format(out_fpath))
         if out_fpath.endswith('.csv'):
