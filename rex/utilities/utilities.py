@@ -77,7 +77,7 @@ def jsonify_dict(di):
     for k in list(di.keys()):
         try:
             float(k)
-        except ValueError as e:
+        except ValueError:
             pass
         else:
             di[str(k)] = di.pop(k)
@@ -398,6 +398,33 @@ def timestamp_format_to_redex(time_format):
     return redex
 
 
+def parse_timestamp(path, time_format='%Y-%m-%d_%H:%M:%S'):
+    """
+    extract timestamp with given format from given path
+
+    Parameters
+    ----------
+    path : str
+        file path
+    time_format : str, optional
+        datetime timestamp format, by default '%Y-%m-%d_%H:%M:%S'
+
+    Returns
+    -------
+    str
+        Portion of path that matches given format
+    """
+    pattern = timestamp_format_to_redex(time_format)
+    pattern = re.compile(pattern)
+    matcher = pattern.search(path)
+
+    if matcher is None:
+        raise RuntimeError("Could not find timestamp with format {} in {}!"
+                           .format(time_format, path))
+
+    return matcher.group()
+
+
 def filename_timestamp(file_name, time_format='%Y-%m-%d_%H:%M:%S'):
     """
     extract timestamp from file name
@@ -411,16 +438,13 @@ def filename_timestamp(file_name, time_format='%Y-%m-%d_%H:%M:%S'):
 
     Returns
     -------
-    datetime.datetime
-        datetime timestamp
+    str
+        Portion of file_name that matches given format
     """
-    pattern = timestamp_format_to_redex(time_format)
-    pattern = re.compile(pattern)
-    matcher = pattern.search(os.path.basename(file_name))
+    timestamp = parse_timestamp(os.path.basename(file_name),
+                                time_format=time_format)
 
-    time = matcher.group()
-
-    return time
+    return timestamp
 
 
 class Retry:
