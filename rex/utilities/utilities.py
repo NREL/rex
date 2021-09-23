@@ -77,7 +77,7 @@ def jsonify_dict(di):
     for k in list(di.keys()):
         try:
             float(k)
-        except ValueError as e:
+        except ValueError:
             pass
         else:
             di[str(k)] = di.pop(k)

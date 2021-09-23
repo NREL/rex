@@ -329,7 +329,9 @@ def test_wave():
 
     with WaveResource(fp) as f:
         for var in res.var_list:
-            truth = f[var]
+            valid_range = SAMResource.DATA_RANGES['wave'][var]
+            truth = SAMResource.enforce_arr_range(var, f[var], valid_range,
+                                                  np.arange(100))
             test = res[var].values
             assert np.allclose(truth, test)
 
