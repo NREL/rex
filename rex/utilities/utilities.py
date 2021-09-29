@@ -910,3 +910,19 @@ def unstupify_path(path):
         path = os.path.realpath(path)
 
     return path
+
+
+def write_json(path, data):
+    """
+    Write data to given json file
+
+    Parameters
+    ----------
+    path : str
+        Path to .json file to save data too
+    data : dict
+        Data to save to json file at path
+    """
+    assert path.endswith('.json'), "path should be to a .json file"
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=4)
