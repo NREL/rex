@@ -95,9 +95,7 @@ Option 1: Install from PIP or Conda (recommended for analysts):
 Option 2: Clone repo (recommended for developers)
 -------------------------------------------------
 
-1. from home dir, ``git clone https://github.com/NREL/rex.git``
-    1) enter github username
-    2) enter github password
+1. from home dir, ``git clone git@github.com:NREL/rex.git``
 
 2. Create ``rex`` environment and install package
     1) Create a conda env: ``conda create -n rex``
@@ -123,4 +121,6 @@ Recommended Citation
 
 Update with current version and DOI:
 
-Michael Rossol, Grant Buster. The REsource Extraction Tool (rex). https://github.com/NREL/rex (version v0.2.43), 2021. https://doi.org/10.5281/zenodo.4499033.
+Michael Rossol, Grant Buster. The REsource Extraction Tool (rex).
+https://github.com/NREL/rex (version v0.2.43), 2021.
+https://doi.org/10.5281/zenodo.4499033.
