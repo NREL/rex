@@ -6,6 +6,7 @@ import datetime
 import inspect
 import json
 import os
+from fnmatch import fnmatch
 import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype
@@ -14,7 +15,8 @@ from scipy.spatial import cKDTree
 import time
 from warnings import warn
 
-from rex.utilities.exceptions import JSONError, RetryError, RetryWarning
+from rex.utilities.exceptions import (FileInputError, JSONError, RetryError,
+                                      RetryWarning)
 
 
 def safe_json_load(fpath):
@@ -209,8 +211,9 @@ def check_res_file(res_file):
     Parameters
     ----------
     res_file : str
-        Filepath to single resource file, multi-h5 directory,
-        or /h5_dir/prefix*suffix
+        Filepath to single resource file, unix style multi-file path like
+        /h5_dir/prefix*suffix.h5, or an hsds filepath (filename of hsds
+        path can also contain wildcards *)
 
     Returns
     -------
@@ -222,24 +225,38 @@ def check_res_file(res_file):
     """
     multi_h5_res = False
     hsds = False
-    if os.path.isdir(res_file) or ('*' in res_file):
+
+    if os.path.isfile(res_file):
+        pass
+
+    elif '*' in res_file:
         multi_h5_res = True
+
+    elif os.path.isdir(res_file):
+        msg = ('Cannot parse directory, need to add wildcard * suffix: {}'
+               .format(res_file))
+        raise FileInputError(msg)
+
     else:
-        if not os.path.isfile(res_file):
-            try:
-                import h5pyd
-                hsds_dir, hsds_file = os.path.split(res_file)
-                with h5pyd.Folder(hsds_dir + '/') as f:
-                    hsds = True
-                    if hsds_file not in f:
-                        msg = ('{} is not a valid HSDS file path!'
-                               .format(res_file))
-                        raise FileNotFoundError(msg)
-            except Exception as ex:
-                msg = ("{} is not a valid file path, and HSDS "
-                       "cannot be check for a file at this path:{}!"
-                       .format(res_file, ex))
-                raise FileNotFoundError(msg) from ex
+        try:
+            import h5pyd
+            hsds_dir = os.path.dirname(res_file)
+            with h5pyd.Folder(hsds_dir + '/') as f:
+                hsds = True
+                fps = [os.path.join(hsds_dir, fn) for fn in f]
+                fps = [fp for fp in fps if fnmatch(fp, res_file)]
+                if not any(fps):
+                    msg = ('{} is not a valid HSDS file path!'
+                           .format(res_file))
+                    raise FileNotFoundError(msg)
+                elif len(fps) > 1:
+                    multi_h5_res = True
+
+        except Exception as ex:
+            msg = ("{} is not a valid file path, and HSDS "
+                   "cannot be check for a file at this path:{}!"
+                   .format(res_file, ex))
+            raise FileNotFoundError(msg) from ex
 
     return multi_h5_res, hsds
 

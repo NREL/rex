@@ -265,11 +265,10 @@ def test_map_hsds_files():
     hsds_kwargs = {'endpoint': 'https://developer.nrel.gov/api/hsds',
                    'api_key': 'oHP7dGu4VZeg4rVo8PZyb5SVmYigedRHxi3OfiqI'}
     path = '/nrel/US_wave/West_Coast/West_Coast_wave_*.h5'
-    h5_dir, prefix, suffix = MultiH5Path.multi_file_args(path)
-    file_map = MultiTimeH5._map_files(h5_dir, prefix=prefix, suffix=suffix,
-                                      hsds=True, hsds_kwargs=hsds_kwargs)
+    hsds_fps = MultiTimeH5._get_file_paths(path, hsds=True,
+                                           hsds_kwargs=hsds_kwargs)
 
-    assert all(f in files for f in file_map.values())
+    assert all(f in files for f in hsds_fps)
 
 
 def execute_pytest(capture='all', flags='-rapP'):

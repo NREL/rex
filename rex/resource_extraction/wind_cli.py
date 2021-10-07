@@ -47,14 +47,13 @@ def main(ctx, wind_h5, out_dir, log_file, verbose):
     ctx.obj['CLS_KWARGS'] = {}
 
     multi_h5_res, hsds = check_res_file(wind_h5)
-    if multi_h5_res:
+    if multi_h5_res and not hsds:
         assert os.path.exists(os.path.dirname(wind_h5))
         ctx.obj['CLS'] = MultiFileWindX
+    elif hsds:
+        ctx.obj['CLS_KWARGS']['hsds'] = hsds
     else:
-        if hsds:
-            ctx.obj['CLS_KWARGS']['hsds'] = hsds
-        else:
-            assert os.path.exists(wind_h5)
+        assert os.path.exists(wind_h5)
 
         ctx.obj['CLS'] = WindX
 

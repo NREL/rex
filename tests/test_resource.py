@@ -36,9 +36,8 @@ def NSRDB_2018_list():
     """
     Init NSRDB resource handler
     """
-    path = os.path.join(TESTDATADIR, 'nsrdb')
-    h5_files = MultiH5Path._get_h5_files(path, prefix='nsrdb',
-                                         suffix='2018.h5')
+    path = os.path.join(TESTDATADIR, 'nsrdb/nsrdb*2018.h5')
+    path, h5_files = MultiH5Path._get_h5_files(path)
 
     return MultiFileNSRDB(h5_files)
 
@@ -63,9 +62,8 @@ def FiveMinWind_list():
     """
     Init WindResource resource handler
     """
-    path = os.path.join(TESTDATADIR, 'wtk')
-    h5_files = MultiH5Path._get_h5_files(path, prefix='wtk',
-                                         suffix='m.h5')
+    path = os.path.join(TESTDATADIR, 'wtk/wtk*m.h5')
+    path, h5_files = MultiH5Path._get_h5_files(path)
     return MultiFileWTK(h5_files)
 
 

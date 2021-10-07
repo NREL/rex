@@ -1168,10 +1168,9 @@ class MultiFileResourceX(ResourceX):
         Parameters
         ----------
         resource_path : str
-            Path to resource .h5 files
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         res_cls : obj
             Resource class to use to open and access resource data
         tree : str | cKDTree
@@ -1208,10 +1207,9 @@ class MultiYearResourceX(ResourceX):
         Parameters
         ----------
         resource_path : str
-            Path to resource .h5 files
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         years : list, optional
             List of years to access, by default None
         tree : str | cKDTree
@@ -1298,10 +1296,9 @@ class MultiTimeResourceX(ResourceX):
         Parameters
         ----------
         resource_path : str
-            Path to resource .h5 files
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         tree : str | cKDTree
             cKDTree or path to .pkl file containing pre-computed tree
             of lat, lon coordinates

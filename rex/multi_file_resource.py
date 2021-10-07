@@ -2,9 +2,9 @@
 """
 Classes to handle resource data
 """
+from glob import glob
 import h5py
 import numpy as np
-import os
 
 from rex.renewable_resource import NSRDB, WindResource
 from rex.resource import Resource
@@ -240,100 +240,47 @@ class MultiH5Path(MultiH5):
     """
     Class to handle multiple h5 file Resources derived from a path
     """
-    def __init__(self, h5_path, prefix='', suffix='.h5', check_files=False):
+    def __init__(self, h5_path, check_files=False):
         """
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         check_files : bool
             Check to ensure files have the same coordinates and time_index
         """
-        self.h5_dir, pre, suf = self.multi_file_args(h5_path)
-        if pre is None:
-            pre = prefix
-
-        if suf is None:
-            suf = suffix
-
-        h5_files = self._get_h5_files(self.h5_dir, prefix=pre, suffix=suf)
+        self.h5_path, h5_files = self._get_h5_files(h5_path)
         super().__init__(h5_files, check_files=check_files)
 
     def __repr__(self):
         msg = ("{} for {}:\n Contains {} files and {} datasets"
-               .format(self.__class__.__name__, self.h5_dir,
+               .format(self.__class__.__name__, self.h5_path,
                        len(self), len(self._dset_map)))
 
         return msg
 
     @staticmethod
-    def multi_file_args(h5_path):
+    def _get_h5_files(h5_path):
         """
-        Get multi-h5 directory arguments for multi file resource paths.
-
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
+
         Returns
         -------
-        h5_dir : str
-            Directory containing multi-file resource files.
-        prefix : str
-            File prefix for files in h5_dir.
-        suffix : str
-            File suffix for files in h5_dir.
+        h5_path : str
+            Just like the input except unstupified
+        file_paths : list
+            List of full file paths found by matching the h5_path input.
         """
         h5_path = unstupify_path(h5_path)
-
-        if '*' in h5_path:
-            h5_dir, fn = os.path.split(h5_path)
-            prefix, suffix = fn.split('*')
-        elif os.path.isfile(h5_path):
-            raise RuntimeError("MultiFileResource cannot handle a single file"
-                               " use Resource instead.")
-        else:
-            h5_dir = h5_path
-            prefix = None
-            suffix = None
-
-        return h5_dir, prefix, suffix
-
-    @staticmethod
-    def _get_h5_files(h5_dir, prefix='', suffix='.h5'):
-        """
-        Map 5min variables to their .h5 files in given directory
-
-        Parameters
-        ----------
-        h5_dir : str
-            Path to directory containing 5min .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
-
-        Returns
-        -------
-        h5_files : list
-            List of .h5 files to source data from
-        """
-        h5_files = []
-        for file in sorted(os.listdir(h5_dir)):
-            if file.startswith(prefix) and file.endswith(suffix):
-                h5_files.append(os.path.join(h5_dir, file))
-
-        return h5_files
+        file_paths = glob(h5_path)
+        return h5_path, file_paths
 
 
 class MultiFileResource(Resource):
@@ -391,8 +338,6 @@ class MultiFileResource(Resource):
      [11.   11.19 11.79 ... 13.27 11.93 11.8 ]
      [12.16 12.44 13.09 ... 11.94 10.88 11.12]]
     """
-    PREFIX = ''
-    SUFFIX = '.h5'
 
     def __init__(self, h5_source, unscale=True, str_decode=True,
                  check_files=False):
@@ -400,11 +345,10 @@ class MultiFileResource(Resource):
         Parameters
         ----------
         h5_source : str | list
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-            Or list of source .h5 files
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets. Can also be an
+            explicit list of complete filepaths.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -433,18 +377,18 @@ class MultiFileResource(Resource):
         msg = "{}".format(self.__class__.__name__)
         return msg
 
-    def _init_multi_h5(self, h5_source, check_files=False):
+    @staticmethod
+    def _init_multi_h5(h5_source, check_files=False):
         """
         Initialize MultiH5 handler class based on input type
 
         Parameters
         ----------
         h5_source : str | list
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-            Or list of source .h5 files
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets. Can also be an
+            explicit list of complete filepaths.
         check_files : bool
             Check to ensure files have the same coordinates and time_index
 
@@ -454,8 +398,7 @@ class MultiFileResource(Resource):
             Initialized multi h5 handler
         """
         if isinstance(h5_source, str):
-            multi_h5 = MultiH5Path(h5_source, prefix=self.PREFIX,
-                                   suffix=self.SUFFIX, check_files=check_files)
+            multi_h5 = MultiH5Path(h5_source, check_files=check_files)
         elif isinstance(h5_source, (list, tuple)):
             multi_h5 = MultiH5(h5_source, check_files=check_files)
         else:
@@ -487,11 +430,10 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
         Parameters
         ----------
         h5_source : str | list
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-            Or list of source .h5 files
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets. Can also be an
+            explicit list of complete filepaths.
         sites : list
             List of sites to be provided to SAM
         unscale : bool
@@ -573,7 +515,6 @@ class MultiFileWTK(MultiFileResource, WindResource):
      [11.66     11.91     12.535    ... 13.31     12.23     12.335   ]
      [12.785    13.295    14.014999 ... 12.205    11.360001 11.64    ]]
     """
-    SUFFIX = 'm.h5'
 
     def __init__(self, h5_source, unscale=True, str_decode=True,
                  check_files=False):
@@ -581,11 +522,10 @@ class MultiFileWTK(MultiFileResource, WindResource):
         Parameters
         ----------
         h5_source : str | list
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-            Or list of source .h5 files
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets. Can also be an
+            explicit list of complete filepaths.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -609,11 +549,10 @@ class MultiFileWTK(MultiFileResource, WindResource):
         Parameters
         ----------
         h5_source : str | list
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
-            Or list of source .h5 files
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets. Can also be an
+            explicit list of complete filepaths.
         sites : list
             List of sites to be provided to SAM
         hub_heights : int | float | list

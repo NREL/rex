@@ -49,19 +49,18 @@ def main(ctx, solar_h5, out_dir, log_file, verbose):
 
     multi_h5_res, hsds = check_res_file(solar_h5)
     name = os.path.splitext(os.path.basename(solar_h5))[0]
-    if multi_h5_res:
+    if 'nsrdb' in name:
+        ctx.obj['CLS'] = NSRDBX
+    else:
+        ctx.obj['CLS'] = SolarX
+
+    if multi_h5_res and not hsds:
         assert os.path.exists(os.path.dirname(solar_h5))
         ctx.obj['CLS'] = MultiFileNSRDBX
+    elif hsds:
+        ctx.obj['CLS_KWARGS']['hsds'] = hsds
     else:
-        if hsds:
-            ctx.obj['CLS_KWARGS']['hsds'] = hsds
-        else:
-            assert os.path.exists(solar_h5)
-
-        if 'nsrdb' in name:
-            ctx.obj['CLS'] = NSRDBX
-        else:
-            ctx.obj['CLS'] = SolarX
+        assert os.path.exists(solar_h5)
 
     if verbose:
         log_level = 'DEBUG'

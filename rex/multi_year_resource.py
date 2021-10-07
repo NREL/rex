@@ -4,14 +4,11 @@ Classes to handle multiple years of resource data
 """
 import numpy as np
 import os
-from warnings import warn
 
-from rex.multi_file_resource import MultiH5Path
 from rex.multi_time_resource import MultiTimeH5, MultiTimeResource
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
 from rex.resource import Resource
-from rex.utilities.exceptions import ResourceWarning
 from rex.utilities.parse_keys import parse_slice
 from rex.utilities.utilities import parse_year
 
@@ -21,20 +18,17 @@ class MultiYearH5(MultiTimeH5):
     Class to handle multiple years of h5 Resources
     """
 
-    def __init__(self, h5_dir, prefix='', suffix='.h5', years=None,
-                 res_cls=Resource, hsds=False, hsds_kwargs=None,
-                 **res_cls_kwargs):
+    def __init__(self, h5_path, years=None, res_cls=Resource, hsds=False,
+                 hsds_kwargs=None, **res_cls_kwargs):
         """
         Parameters
         ----------
-        h5_dir : str
-            Path to directory containing 5min .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
+        h5_path : str
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         years : list, optional
-            List of years to access, by default None
+            List of integer years to access, by default None
         res_cls : obj
             Resource class to use to open and access resource data
         hsds : bool
@@ -44,13 +38,13 @@ class MultiYearH5(MultiTimeH5):
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
         """
-        self.h5_dir = h5_dir
-        self._file_map = self._map_files(h5_dir, prefix=prefix,
-                                         suffix=suffix, hsds=hsds,
-                                         hsds_kwargs=hsds_kwargs,
-                                         years=years)
+        self.h5_path = h5_path
+        self._file_paths = self._get_file_paths(h5_path, hsds=hsds,
+                                                hsds_kwargs=hsds_kwargs)
+        self._file_paths, self._years = self._get_years(self._file_paths,
+                                                        years)
         res_cls_kwargs.update({'hsds': hsds})
-        self._h5_map = self._map_file_instances(list(self._file_map.values()),
+        self._h5_map = self._map_file_instances(self._file_paths,
                                                 res_cls=res_cls,
                                                 **res_cls_kwargs)
         self._datasets = None
@@ -60,7 +54,7 @@ class MultiYearH5(MultiTimeH5):
 
     def __repr__(self):
         msg = ("{} for {}:\n Contains data for {} year"
-               .format(self.__class__.__name__, self.h5_dir, len(self)))
+               .format(self.__class__.__name__, self.h5_path, len(self)))
         return msg
 
     def __len__(self):
@@ -71,7 +65,8 @@ class MultiYearH5(MultiTimeH5):
             year = int(year)
 
         if year in self.years:
-            path = self._file_map[year]
+            ifp = self.years.index(year)
+            path = self._file_paths[ifp]
             h5 = self._h5_map[path]
         else:
             raise ValueError('{} is invalid, must be one of: {}'
@@ -98,14 +93,25 @@ class MultiYearH5(MultiTimeH5):
     @property
     def years(self):
         """
-        Available years
+        Available years ordered the same way as self.files
 
         Returns
         -------
         list
             List of dataset present in .h5 files
         """
-        return sorted(self._file_map)
+        return self._years
+
+    @property
+    def files(self):
+        """
+        Available file paths ordered the same way as self.years
+
+        Returns
+        -------
+        list
+        """
+        return self._file_paths
 
     @property
     def time_index(self):
@@ -127,168 +133,52 @@ class MultiYearH5(MultiTimeH5):
         return self._time_index
 
     @staticmethod
-    def _map_hsds_files(hsds_dir, prefix='', suffix='.h5', hsds_kwargs=None):
-        """
-        Map hsds file paths to year for which it contains data
+    def _get_years(file_paths, years):
+        """Reduce file path list to requested years and/or return list of
+        years corresponding to file paths
 
         Parameters
         ----------
-        hsds_dir : str
-            HSDS directory containing Resource .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
+        file_paths : list
+            List of filepaths for this handler to handle.
+        years : list | None
+            List of years of interest. Should be a subset of years in file_map.
+            Can also be None for all years found by the h5_path input.
 
         Returns
         -------
-        file_map : dict
-            Dictionary mapping years to file paths
-        """
-        import h5pyd
-
-        file_map = {}
-        if not hsds_dir.endswith('/'):
-            hsds_dir += '/'
-
-        if hsds_kwargs is None:
-            hsds_kwargs = {}
-
-        with h5pyd.Folder(hsds_dir, **hsds_kwargs) as f:
-            for file in f:
-                if file.startswith(prefix) and file.endswith(suffix):
-                    try:
-                        year = parse_year(file)
-                        path = os.path.join(hsds_dir, file)
-                        if year not in file_map:
-                            file_map[year] = path
-                        else:
-                            msg = ('WARNING: Skipping {} as {} has already '
-                                   ' been parsed'.format(path, year))
-                            warn(msg, ResourceWarning)
-                    except RuntimeError:
-                        msg = ('WARNING: Could not find a valid year in {}'
-                               .format(file))
-                        warn(msg, ResourceWarning)
-
-        return file_map
-
-    @staticmethod
-    def _map_local_files(h5_dir, prefix='', suffix='.h5'):
-        """
-        Map local file paths to year for which it contains data
-
-        Parameters
-        ----------
-        h5_dir : str
-            Path to directory containing Resource .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
-
-        Returns
-        -------
-        file_map : dict
-            Dictionary mapping years to file paths
-        """
-        file_map = {}
-        for file in sorted(os.listdir(h5_dir)):
-            if file.startswith(prefix) and file.endswith(suffix):
-                try:
-                    year = parse_year(file)
-                    path = os.path.join(h5_dir, file)
-                    if year not in file_map:
-                        file_map[year] = path
-                    else:
-                        msg = ('WARNING: Skipping {} as {} has already been '
-                               'parsed'.format(path, year))
-                        warn(msg, ResourceWarning)
-                except RuntimeError:
-                    msg = ('WARNING: Could not find a valid year in {}'
-                           .format(file))
-                    warn(msg, ResourceWarning)
-
-        return file_map
-
-    @staticmethod
-    def _get_years(file_map, years):
-        """
-        Reduce file_map to given years
-
-        Parameters
-        ----------
-        file_map : dict
-            Dictionary mapping years to file paths
+        file_paths : list
+            List of filepaths for this handler to handle.
         years : list
-            List of years of interest. Should be a subset of years in file_map
-
-        Returns
-        -------
-        new_map : dict
-            Dictionary mapping requested years to file paths
+            List of integer years corresponding to the file_paths list
         """
-        new_map = {}
+
+        if years is None:
+            years = [parse_year(os.path.basename(fp), option='raise')
+                     for fp in file_paths]
+
+        new_list = []
+        years = sorted([int(y) for y in years])
         for year in years:
-            if not isinstance(year, int):
-                year = int(year)
+            for fp in file_paths:
+                if str(year) in os.path.basename(fp):
+                    new_list.append(fp)
+                    break
 
-            if year in file_map:
-                new_map[year] = file_map[year]
-            else:
-                msg = ('A file for {} is unavailable!'.format(year))
-                warn(msg, ResourceWarning)
-
-        if not new_map:
+        if not new_list:
             msg = ('No files were found for the given years:\n{}'
                    .format(years))
             raise RuntimeError(msg)
 
-        return new_map
+        if len(new_list) != len(years):
+            msg = ('Found a bad file listing for requested years. '
+                   'Years requested: {}, files found: {}'
+                   .format(years, new_list))
+            raise RuntimeError(msg)
 
-    @classmethod
-    def _map_files(cls, h5_dir, prefix='', suffix='.h5', hsds=False,
-                   hsds_kwargs=None, years=None):
-        """
-        Map file paths to year for which it contains data
+        file_paths = new_list
 
-        Parameters
-        ----------
-        h5_dir : str
-            Path to directory containing Resource .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
-        hsds : bool
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        years : list, optional
-            List of years to access, by default None
-
-        Returns
-        -------
-        file_map : dict
-            Dictionary mapping years to file paths
-        """
-        if hsds:
-            file_map = cls._map_hsds_files(h5_dir, prefix=prefix,
-                                           suffix=suffix,
-                                           hsds_kwargs=hsds_kwargs)
-        else:
-            file_map = cls._map_local_files(h5_dir, prefix=prefix,
-                                            suffix=suffix)
-
-        if years is not None:
-            file_map = cls._get_years(file_map, years)
-
-        return file_map
+        return file_paths, years
 
     @staticmethod
     def _check_for_years(time_slice):
@@ -478,8 +368,6 @@ class MultiYearResource(MultiTimeResource):
     >>> temperature.shape
     (17520, 100)
     """
-    PREFIX = ''
-    SUFFIX = '.h5'
 
     def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
                  res_cls=Resource, hsds=False, hsds_kwargs=None):
@@ -487,10 +375,9 @@ class MultiYearResource(MultiTimeResource):
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -507,19 +394,13 @@ class MultiYearResource(MultiTimeResource):
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
         """
-        self.h5_dir, prefix, suffix = MultiH5Path.multi_file_args(h5_path)
-        if prefix is None:
-            prefix = self.PREFIX
-
-        if suffix is None:
-            suffix = self.SUFFIX
-
+        self.h5_path = h5_path
         self._time_index = None
         # Map variables to their .h5 files
         cls_kwargs = {'unscale': unscale, 'str_decode': str_decode,
                       'hsds': hsds, 'hsds_kwargs': hsds_kwargs}
-        self._h5 = MultiYearH5(self.h5_dir, prefix=prefix, suffix=suffix,
-                               years=years, res_cls=res_cls, **cls_kwargs)
+        self._h5 = MultiYearH5(self.h5_path, years=years, res_cls=res_cls,
+                               **cls_kwargs)
         self.h5_files = self._h5.h5_files
         self.h5_file = self.h5_files[0]
         self._i = 0
@@ -548,10 +429,9 @@ class MultiYearSolarResource:
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -576,7 +456,6 @@ class MultiYearNSRDB(MultiYearResource):
     Class to handle multiple years of NSRDB data stored accross
     multiple .h5 files
     """
-    PREFIX = 'nsrdb'
 
     def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
                  hsds=False, hsds_kwargs=None):
@@ -584,10 +463,9 @@ class MultiYearNSRDB(MultiYearResource):
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -612,7 +490,6 @@ class MultiYearWindResource(MultiYearResource):
     Class to handle multiple years of wind resource data stored accross
     multiple .h5 files
     """
-    PREFIX = 'wtk'
 
     def __init__(self, h5_path, years=None, unscale=True, str_decode=True,
                  hsds=False, hsds_kwargs=None):
@@ -620,10 +497,9 @@ class MultiYearWindResource(MultiYearResource):
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -655,10 +531,9 @@ class MultiYearWaveResource(MultiYearResource):
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         years : list, optional
             List of years to access, by default None
         unscale : bool

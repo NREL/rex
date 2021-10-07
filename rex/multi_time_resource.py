@@ -2,15 +2,14 @@
 """
 Classes to handle resource data stored over multiple files
 """
+from glob import glob
+from fnmatch import fnmatch
 import numpy as np
 import os
-from warnings import warn
 
-from rex.multi_file_resource import MultiH5Path
 from rex.resource import Resource
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
-from rex.utilities.exceptions import ResourceWarning
 from rex.utilities.parse_keys import parse_keys, parse_slice
 
 
@@ -18,18 +17,15 @@ class MultiTimeH5:
     """
     Class to handle h5 Resources stored over multiple temporal files
     """
-    def __init__(self, h5_dir, prefix='', suffix='.h5',
-                 res_cls=Resource, hsds=False, hsds_kwargs=None,
+    def __init__(self, h5_path, res_cls=Resource, hsds=False, hsds_kwargs=None,
                  **res_cls_kwargs):
         """
         Parameters
         ----------
-        h5_dir : str
-            Path to directory containing 5min .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
+        h5_path : str
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         res_cls : obj
             Resource class to use to open and access resource data
         hsds : bool
@@ -41,12 +37,11 @@ class MultiTimeH5:
         res_cls_kwargs : dict, optional
             Kwargs for `res_cls`
         """
-        self.h5_dir = h5_dir
-        self._file_map = self._map_files(h5_dir, prefix=prefix,
-                                         suffix=suffix, hsds=hsds,
-                                         hsds_kwargs=hsds_kwargs)
+        self.h5_path = h5_path
+        self._file_paths = self._get_file_paths(h5_path, hsds=hsds,
+                                                hsds_kwargs=hsds_kwargs)
         res_cls_kwargs.update({'hsds': hsds})
-        self._h5_map = self._map_file_instances(list(self._file_map.values()),
+        self._h5_map = self._map_file_instances(self._file_paths,
                                                 res_cls=res_cls,
                                                 **res_cls_kwargs)
         self._datasets = None
@@ -57,16 +52,18 @@ class MultiTimeH5:
 
     def __repr__(self):
         msg = ("{} for {}:\n Contains data from {} files"
-               .format(self.__class__.__name__, self.h5_dir, len(self)))
+               .format(self.__class__.__name__, self.h5_path, len(self)))
         return msg
 
     def __getitem__(self, file):
-        if file in self.files:
-            path = self._file_map[file]
-            h5 = self._h5_map[path]
+        fn_fp_map = {os.path.basename(fp): fp for fp in self._file_paths}
+        if file in self._h5_map:
+            h5 = self._h5_map[file]
+        elif file in fn_fp_map:
+            h5 = self._h5_map[fn_fp_map[file]]
         else:
             raise ValueError('{} is invalid, must be one of: {}'
-                             .format(file, self.files))
+                             .format(file, self._file_paths))
 
         return h5
 
@@ -86,13 +83,13 @@ class MultiTimeH5:
     @property
     def files(self):
         """
-        Available files
+        Available file paths
 
         Returns
         -------
         list
         """
-        return sorted(self._file_map)
+        return sorted(self._file_paths)
 
     @property
     def h5_files(self):
@@ -169,11 +166,10 @@ class MultiTimeH5:
         """
         if self._time_index is None:
             time_slice_map = []
-            for file in self.files:
-                path = self._file_map[file]
-                h5 = self._h5_map[path]
+            for fp in self.files:
+                h5 = self._h5_map[fp]
                 ti = h5.time_index
-                time_slice_map.append(np.full(len(ti), file))
+                time_slice_map.append(np.full(len(ti), os.path.basename(fp)))
                 if self._time_index is None:
                     self._time_index = ti
                 else:
@@ -193,95 +189,55 @@ class MultiTimeH5:
         return self._time_index
 
     @staticmethod
-    def _map_local_files(h5_dir, prefix='', suffix='.h5'):
+    def _get_hsds_file_paths(h5_path, hsds_kwargs=None):
         """
-        Map local file paths to file_name
+        Get a list of h5 filepaths matching the h5_path specification from HSDS
 
         Parameters
         ----------
-        h5_dir : str
-            Path to directory containing Resource .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
-
-        Returns
-        -------
-        file_map : dict
-            Dictionary mapping file names to file paths
-        """
-        file_map = {}
-        for file in sorted(os.listdir(h5_dir)):
-            if file.startswith(prefix) and file.endswith(suffix):
-                path = os.path.join(h5_dir, file)
-                if file not in file_map:
-                    file_map[file] = path
-                else:
-                    msg = ('WARNING: Skipping {} as {} has already been '
-                           'parsed'.format(path, file))
-                    warn(msg, ResourceWarning)
-
-        return file_map
-
-    @staticmethod
-    def _map_hsds_files(hsds_dir, prefix='', suffix='.h5', hsds_kwargs=None):
-        """
-        Map hsds file paths to file names
-
-        Parameters
-        ----------
-        hsds_dir : str
-            HSDS directory containing Resource .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
+        h5_path : str
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
 
         Returns
         -------
-        file_map : dict
-            Dictionary mapping file names to file paths
+        file_paths : list
+            List of filepaths for this handler to handle.
         """
         import h5pyd
-
-        file_map = {}
-        if not hsds_dir.endswith('/'):
-            hsds_dir += '/'
 
         if hsds_kwargs is None:
             hsds_kwargs = {}
 
-        with h5pyd.Folder(hsds_dir, **hsds_kwargs) as f:
-            for file in f:
-                if file.startswith(prefix) and file.endswith(suffix):
-                    path = os.path.join(hsds_dir, file)
-                    if file not in file_map:
-                        file_map[file] = path
-                    else:
-                        msg = ('WARNING: Skipping {} as {} has already '
-                               ' been parsed'.format(path, file))
-                        warn(msg, ResourceWarning)
+        hsds_dir = os.path.dirname(h5_path)
+        if '*' in hsds_dir:
+            msg = ('HSDS path specifications cannot handle wildcards in the '
+                   'directory name! The directory must be explicit but the '
+                   'filename can have wildcards. This HSDS h5_path input '
+                   'cannot be used: {}'.format(h5_path))
+            raise FileNotFoundError(msg)
 
-        return file_map
+        with h5pyd.Folder(hsds_dir + '/', **hsds_kwargs) as f:
+            file_paths = [os.path.join(hsds_dir, fn) for fn in f]
+            file_paths = [fp for fp in file_paths if fnmatch(fp, h5_path)]
+
+        return file_paths
 
     @classmethod
-    def _map_files(cls, h5_dir, prefix='', suffix='.h5', hsds=False,
-                   hsds_kwargs=None):
+    def _get_file_paths(cls, h5_path, hsds=False, hsds_kwargs=None):
         """
-        Map file paths to file names
+        Get a file list based on the h5_path specification.
 
         Parameters
         ----------
-        h5_dir : str
-            Path to directory containing Resource .h5 files
-        prefix : str
-            Prefix for resource .h5 files
-        suffix : str
-            Suffix for resource .h5 files
+        h5_path : str
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         hsds : bool
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
@@ -291,36 +247,35 @@ class MultiTimeH5:
 
         Returns
         -------
-        file_map : dict
-            Dictionary mapping file name to file paths
+        file_paths : list
+            List of filepaths for this handler to handle.
         """
         if hsds:
-            file_map = cls._map_hsds_files(h5_dir, prefix=prefix,
-                                           suffix=suffix,
-                                           hsds_kwargs=hsds_kwargs)
+            file_paths = cls._get_hsds_file_paths(h5_path,
+                                                  hsds_kwargs=hsds_kwargs)
         else:
-            file_map = cls._map_local_files(h5_dir, prefix=prefix,
-                                            suffix=suffix)
+            file_paths = glob(h5_path)
 
-        return file_map
+        return file_paths
 
     @staticmethod
-    def _map_file_instances(h5_files, res_cls=Resource, **res_cls_kwargs):
+    def _map_file_instances(file_paths, res_cls=Resource, **res_cls_kwargs):
         """
         Open all .h5 files and map the open h5py instances to the
         associated file paths
 
         Parameters
         ----------
-        h5_files : list
-            List of .h5 files to open
+        file_paths : list
+            List of filepaths for this handler to handle.
+
         Returns
         -------
         h5_map : dict
             Dictionary mapping file paths to open resource instances
         """
         h5_map = {}
-        for f_path in h5_files:
+        for f_path in file_paths:
             h5_map[f_path] = res_cls(f_path, **res_cls_kwargs)
 
         return h5_map
@@ -484,8 +439,6 @@ class MultiTimeResource:
     >>> temperature.shape
     (351, 100)
     """
-    PREFIX = ''
-    SUFFIX = '.h5'
 
     def __init__(self, h5_path, unscale=True, str_decode=True,
                  res_cls=Resource, hsds=False, hsds_kwargs=None):
@@ -493,10 +446,9 @@ class MultiTimeResource:
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -511,25 +463,19 @@ class MultiTimeResource:
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
         """
-        self.h5_dir, prefix, suffix = MultiH5Path.multi_file_args(h5_path)
-        if prefix is None:
-            prefix = self.PREFIX
 
-        if suffix is None:
-            suffix = self.SUFFIX
-
+        self.h5_path = h5_path
         self._time_index = None
         # Map variables to their .h5 files
         cls_kwargs = {'unscale': unscale, 'str_decode': str_decode,
                       'hsds': hsds, 'hsds_kwargs': hsds_kwargs}
-        self._h5 = MultiTimeH5(self.h5_dir, prefix=prefix, suffix=suffix,
-                               res_cls=res_cls, **cls_kwargs)
+        self._h5 = MultiTimeH5(self.h5_path, res_cls=res_cls, **cls_kwargs)
         self.h5_files = self._h5.h5_files
         self.h5_file = self.h5_files[0]
         self._i = 0
 
     def __repr__(self):
-        msg = "{} for {}".format(self.__class__.__name__, self.h5_dir)
+        msg = "{} for {}".format(self.__class__.__name__, self.h5_path)
         return msg
 
     def __enter__(self):
@@ -870,10 +816,9 @@ class MultiTimeSolarResource:
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -904,10 +849,9 @@ class MultiTimeNSRDB(MultiTimeResource):
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -938,10 +882,9 @@ class MultiTimeWindResource(MultiTimeResource):
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -971,10 +914,9 @@ class MultiTimeWaveResource(MultiTimeResource):
         Parameters
         ----------
         h5_path : str
-            Path to directory containing multi-file resource file sets.
-            Available formats:
-                /h5_dir/
-                /h5_dir/prefix*suffix
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
