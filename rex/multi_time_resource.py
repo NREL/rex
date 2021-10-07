@@ -230,9 +230,12 @@ class MultiTimeH5:
                    'directory specification: {}'.format(h5_path))
             raise FileInputError(msg)
 
-        with h5pyd.Folder(hsds_dir + '/', **hsds_kwargs) as f:
+        with h5pyd.Folder(hsds_dir, **hsds_kwargs) as f:
+            print('List of files: {}'.format(list(f)))
             file_paths = [os.path.join(hsds_dir, fn) for fn in f]
+            print('List of files: {}'.format(list(f)))
             file_paths = [fp for fp in file_paths if fnmatch(fp, h5_path)]
+            print('List of files: {}'.format(list(f)))
 
         return file_paths
 
