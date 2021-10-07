@@ -216,6 +216,7 @@ class MultiTimeH5:
 
         hsds_dir = os.path.dirname(h5_path)
         fn = os.path.basename(h5_path)
+        print(h5_path, hsds_dir, fn)
 
         if '*' in hsds_dir:
             msg = ('HSDS path specifications cannot handle wildcards in the '
