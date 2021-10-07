@@ -243,8 +243,8 @@ def check_res_file(res_file):
             hsds_dir = os.path.dirname(res_file)
             with h5pyd.Folder(hsds_dir + '/') as f:
                 hsds = True
-                fps = [os.path.join(hsds_dir, fn) for fn in f]
-                fps = [fp for fp in fps if fnmatch(fp, res_file)]
+                fps = [f'{hsds_dir}/{fn}' for fn in f
+                       if fnmatch(f'{hsds_dir}/{fn}', res_file)]
                 if not any(fps):
                     msg = ('{} is not a valid HSDS file path!'
                            .format(res_file))

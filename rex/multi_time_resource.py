@@ -11,6 +11,7 @@ from rex.resource import Resource
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
 from rex.utilities.parse_keys import parse_keys, parse_slice
+from rex.utilities.exceptions import FileInputError
 
 
 class MultiTimeH5:
@@ -24,8 +25,8 @@ class MultiTimeH5:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         res_cls : obj
             Resource class to use to open and access resource data
         hsds : bool
@@ -197,8 +198,8 @@ class MultiTimeH5:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -214,6 +215,8 @@ class MultiTimeH5:
             hsds_kwargs = {}
 
         hsds_dir = os.path.dirname(h5_path)
+        fn = os.path.basename(h5_path)
+
         if '*' in hsds_dir:
             msg = ('HSDS path specifications cannot handle wildcards in the '
                    'directory name! The directory must be explicit but the '
@@ -221,9 +224,15 @@ class MultiTimeH5:
                    'cannot be used: {}'.format(h5_path))
             raise FileNotFoundError(msg)
 
+        if not fn:
+            msg = ('h5_path must be a unix shell style pattern with '
+                   'wildcard * in order to find files, but received '
+                   'directory specification: {}'.format(h5_path))
+            raise FileInputError(msg)
+
         with h5pyd.Folder(hsds_dir + '/', **hsds_kwargs) as f:
-            file_paths = [os.path.join(hsds_dir, fn) for fn in f]
-            file_paths = [fp for fp in file_paths if fnmatch(fp, h5_path)]
+            file_paths = [f'{hsds_dir}/{fn}' for fn in f
+                          if fnmatch(f'{hsds_dir}/{fn}', h5_path)]
 
         return file_paths
 
@@ -236,8 +245,8 @@ class MultiTimeH5:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         hsds : bool
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
@@ -250,11 +259,22 @@ class MultiTimeH5:
         file_paths : list
             List of filepaths for this handler to handle.
         """
+
         if hsds:
             file_paths = cls._get_hsds_file_paths(h5_path,
                                                   hsds_kwargs=hsds_kwargs)
+        elif os.path.isdir(h5_path):
+            msg = ('h5_path must be a unix shell style pattern with '
+                   'wildcard * in order to find files, but received '
+                   'directory specification: {}'.format(h5_path))
+            raise FileInputError(msg)
         else:
             file_paths = glob(h5_path)
+
+        if not any(file_paths):
+            msg = ('Could not find any file paths with pattern: {}'
+                   .format(h5_path))
+            raise FileInputError(msg)
 
         return file_paths
 
@@ -447,8 +467,8 @@ class MultiTimeResource:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -817,8 +837,8 @@ class MultiTimeSolarResource:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -850,8 +870,8 @@ class MultiTimeNSRDB(MultiTimeResource):
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -883,8 +903,8 @@ class MultiTimeWindResource(MultiTimeResource):
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -915,8 +935,8 @@ class MultiTimeWaveResource(MultiTimeResource):
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool

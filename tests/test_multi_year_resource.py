@@ -305,7 +305,10 @@ def test_map_hsds_files():
     my_files = MultiYearH5._get_file_paths(path, hsds=True,
                                            hsds_kwargs=hsds_kwargs)
 
-    assert all(f in files for f in my_files)
+    missing = [f for f in files if f not in my_files]
+    wrong = [f for f in my_files if f not in files]
+    assert not any(missing), 'Missed files: {}'.format(missing)
+    assert not any(wrong), 'Wrong files: {}'.format(wrong)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
