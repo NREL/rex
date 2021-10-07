@@ -24,8 +24,8 @@ class MultiTimeH5:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         res_cls : obj
             Resource class to use to open and access resource data
         hsds : bool
@@ -197,8 +197,8 @@ class MultiTimeH5:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -236,8 +236,8 @@ class MultiTimeH5:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         hsds : bool
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
@@ -447,8 +447,8 @@ class MultiTimeResource:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -817,8 +817,8 @@ class MultiTimeSolarResource:
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -850,8 +850,8 @@ class MultiTimeNSRDB(MultiTimeResource):
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -883,8 +883,8 @@ class MultiTimeWindResource(MultiTimeResource):
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -915,8 +915,8 @@ class MultiTimeWaveResource(MultiTimeResource):
         ----------
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets.
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
