@@ -216,7 +216,6 @@ class MultiTimeH5:
 
         hsds_dir = os.path.dirname(h5_path)
         fn = os.path.basename(h5_path)
-        print(h5_path, hsds_dir, fn)
 
         if '*' in hsds_dir:
             msg = ('HSDS path specifications cannot handle wildcards in the '
@@ -231,7 +230,7 @@ class MultiTimeH5:
                    'directory specification: {}'.format(h5_path))
             raise FileInputError(msg)
 
-        with h5pyd.Folder(hsds_dir, **hsds_kwargs) as f:
+        with h5pyd.Folder(hsds_dir + '/', **hsds_kwargs) as f:
             print('List of files: {}'.format(list(f)))
             file_paths = [os.path.join(hsds_dir, fn) for fn in f]
             print('List of files: {}'.format(list(f)))
