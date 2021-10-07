@@ -2,13 +2,14 @@
 """
 Classes to handle resource data
 """
+import os
 from glob import glob
 import h5py
 import numpy as np
 
 from rex.renewable_resource import NSRDB, WindResource
 from rex.resource import Resource
-from rex.utilities.exceptions import ResourceRuntimeError
+from rex.utilities.exceptions import FileInputError, ResourceRuntimeError
 from rex.utilities.utilities import unstupify_path
 
 
@@ -279,7 +280,20 @@ class MultiH5Path(MultiH5):
             List of full file paths found by matching the h5_path input.
         """
         h5_path = unstupify_path(h5_path)
+
+        if os.path.isdir(h5_path):
+            msg = ('h5_path must be a unix shell style pattern with '
+                   'wildcard * in order to find files, but received '
+                   'directory specification: {}'.format(h5_path))
+            raise FileInputError(msg)
+
         file_paths = glob(h5_path)
+
+        if not any(file_paths):
+            msg = ('Could not find any file paths with pattern: {}'
+                   .format(h5_path))
+            raise FileInputError(msg)
+
         return h5_path, file_paths
 
 

@@ -268,7 +268,10 @@ def test_map_hsds_files():
     hsds_fps = MultiTimeH5._get_file_paths(path, hsds=True,
                                            hsds_kwargs=hsds_kwargs)
 
-    assert all(f in files for f in hsds_fps)
+    missing = [f for f in files if f not in hsds_fps]
+    wrong = [f for f in hsds_fps if f not in files]
+    assert not any(missing), 'Missed files: {}'.format(missing)
+    assert not any(wrong), 'Wrong files: {}'.format(wrong)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
