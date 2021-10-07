@@ -12,7 +12,6 @@ from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.exceptions import FileInputError
-from rex.utilities.utilities import unstupify_path
 
 
 class MultiTimeH5:
@@ -232,13 +231,8 @@ class MultiTimeH5:
             raise FileInputError(msg)
 
         with h5pyd.Folder(hsds_dir + '/', **hsds_kwargs) as f:
-            file_paths = [os.path.join(hsds_dir, fn) for fn in f]
-            print('File paths: {}'.format(file_paths))
-            file_paths = [unstupify_path(fp) for fp in file_paths]
-            print('File paths: {}'.format(file_paths))
-            file_paths = [fp for fp in file_paths if fnmatch(fp, h5_path)]
-            print('File paths: {}'.format(file_paths))
-            print('h5_path: {}'.format(h5_path))
+            file_paths = [f'{hsds_dir}/{fn}' for fn in f
+                          if fnmatch(f'{hsds_dir}/{fn}', h5_path)]
 
         return file_paths
 
