@@ -52,22 +52,13 @@ conda env:
 
 .. code-block:: bash
 
-    conda activate /datasets/modulefiles/conda_env
+    conda activate /shared-projects/rev/modulefiles/conda_env
 
 or
 
 .. code-block:: bash
 
-    source activate /datasets/modulefiles/conda_env
-
-.. or module:
-
-.. .. code-block:: bash
-
-..     module use /datasets/modulefiles
-..     module load rex
-
-.. **NOTE: Loading the rex module can take several minutes**
+    source activate /shared-projects/rev/modulefiles/conda_env
 
 Installing rex
 ==============
