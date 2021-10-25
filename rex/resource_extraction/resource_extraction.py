@@ -1396,8 +1396,13 @@ class WindX(ResourceX):
             returned
         """
         kwargs['height'] = hub_height
+        if out_path is not None:
+            write_time = False
+            kwargs.update({'add_header': True})
+
         SAM_df = super().get_SAM_gid(gid, out_path=out_path,
                                      write_time=write_time, **kwargs)
+
         return SAM_df
 
     def get_SAM_lat_lon(self, hub_height, lat_lon, check_lat_lon=True,

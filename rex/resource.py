@@ -1058,10 +1058,9 @@ class BaseResource(ABC):
         float
             Dataset scale factor, used to unscale int values to floats
         """
-        attrs = self.get_attrs(dset=dset)
+        return self.scale_factors[dset]
 
-        return attrs.get(self.SCALE_ATTR, 1)
-
+    # pylint: disable=redefined-argument-from-local
     def get_units(self, dset):
         """
         Get dataset units
@@ -1076,9 +1075,13 @@ class BaseResource(ABC):
         str
             Dataset units, None if not defined
         """
-        attrs = self.get_attrs(dset=dset)
+        if dset not in self:
+            name = dset.split('_')[0]
+            for dset in self.resource_datasets:
+                if dset.startswith(name):
+                    break
 
-        return attrs.get(self.UNIT_ATTR, None)
+        return self.units[dset]
 
     def get_meta_arr(self, rec_name, rows=slice(None)):
         """Get a meta array by name (faster than DataFrame extraction).
@@ -1197,6 +1200,7 @@ class BaseResource(ABC):
                                          unscale=False)
         return coords
 
+    # pylint: disable=unused-argument,no-self-use
     def get_SAM_df(self, site):
         """
         Placeholder for get_SAM_df method that it resource specific
