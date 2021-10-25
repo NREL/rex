@@ -922,7 +922,8 @@ class WindResource(BaseResource):
 
         return out
 
-    def get_SAM_df(self, site, height, require_wind_dir=False, icing=False):
+    def get_SAM_df(self, site, height, require_wind_dir=False, icing=False,
+                   add_header=False):
         """
         Get SAM wind resource DataFrame for given site
 
@@ -938,6 +939,9 @@ class WindResource(BaseResource):
         icing : bool, optional
             Boolean flag to include relativehumitidy for icing calculation,
             by default False
+        add_header : bool, optional
+            Add units and hub_height below variable names, needed for SAM .csv,
+            by default False
 
         Returns
         -------
@@ -948,6 +952,7 @@ class WindResource(BaseResource):
             raise ResourceValueError("SAM requires unscaled values")
 
         height = self._check_hub_height(height)
+        units = ['year', 'month', 'day', 'hour']
         res_df = pd.DataFrame({'Year': self.time_index.year,
                                'Month': self.time_index.month,
                                'Day': self.time_index.day,
@@ -963,7 +968,7 @@ class WindResource(BaseResource):
             variables.remove('winddirection')
 
         if icing:
-            variables.append('relativehumidity')
+            variables.append('relativehumidity_2m')
 
         for var in variables:
             var_name = "{}_{}m".format(var, height)
@@ -979,9 +984,15 @@ class WindResource(BaseResource):
 
         col_map = {'pressure': 'Pressure', 'temperature': 'Temperature',
                    'windspeed': 'Speed', 'winddirection': 'Direction',
-                   'relativehumidity': 'Relative Humidity'}
+                   'relativehumidity_2m': 'Relative Humidity'}
         res_df = res_df.rename(columns=col_map)
         res_df.name = "SAM_{}m-{}".format(height, site)
+
+        if add_header:
+            header = pd.DataFrame(columns=res_df.columns)
+            header.at[0] = units + [self.get_units(v) for v in variables]
+            header.at[1] = height
+            res_df = pd.concat((header, res_df)).reset_index(drop=True)
 
         return res_df
 
