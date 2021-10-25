@@ -418,7 +418,7 @@ class WindResource(BaseResource):
             for ds in self.datasets:
                 if ds not in ignore:
                     ds_name, h = self._parse_name(ds)
-                    if ds_name in heights.keys():
+                    if ds_name in heights:
                         heights[ds_name].append(h)
 
             self._heights = heights
