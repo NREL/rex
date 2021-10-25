@@ -2,6 +2,7 @@
 """
 Resource Extraction Tools
 """
+import copy
 import h5py
 import logging
 import numpy as np
@@ -1007,6 +1008,198 @@ class ResourceX:
                                ds_name: ts_map})
 
         return ts_map
+
+    def get_grid_vectors(self, target, meta=None):
+        """Get vectors representing pure horizontal/vertical movements in the
+        meta data coordinate system. Note that this can break down if a target
+        is requested outside of the main grid area.
+
+        Parameters
+        ----------
+        target : tuple
+            Starting coordinate (latitude, longitude) in decimal degrees for
+            the bottom left hand corner of the raster grid.
+        meta : pd.DataFrame | None
+            Optional meta data input with latitude, longitude fields. Default
+            is None which extracts self.meta from the resource data.
+
+        Returns
+        -------
+        gid_target : np.ndarray
+            1D array of shape (2,) with (latitude, longitude) corresponding to
+            the meta data grid cell closest to the requested target.
+        vector_x : np.ndarray
+            1D array of shape (2,) with (delta_latitude, delta_longitude)
+            corresponding to the vector for pure positive horizontal movement
+            in the meta data
+        vector_y : np.ndarray
+            1D array of shape (2,) with (delta_latitude, delta_longitude)
+            corresponding to the vector for pure positive vertical movement in
+            the meta data
+        order : str
+            Order 'F' or 'C' in which to reshape the raster_index output to
+            form the correctly formatted 2D rectangular grid. For example:
+            raster_index_2d = raster_index.reshape(shape, order=order)
+        """
+
+        meta = meta if meta is not None else self.meta
+
+        out_of_bounds = ((target[0] > meta['latitude']).all()
+                         | (target[0] < meta['latitude']).all()
+                         | (target[1] > meta['longitude']).all()
+                         | (target[1] < meta['longitude']).all())
+        if out_of_bounds:
+            msg = 'Target {} is outside of meta data extent'.format(target)
+            raise RuntimeError(msg)
+
+        # find the actual meta data point closest to the target
+        dist = ((meta['latitude'] - target[0])**2
+                + (meta['longitude'] - target[1])**2)
+        i = np.argmin(dist)
+        gid_target = np.array([meta['latitude'].values[i],
+                               meta['longitude'].values[i]])
+
+        # find the 3x3 box of points around the target
+        dist = ((meta['latitude'] - gid_target[0])**2
+                + (meta['longitude'] - gid_target[1])**2)
+        ilocs = np.argsort(dist)[:9]
+        locs = meta.index.values[ilocs]
+
+        # determine whether the meta data is row or column major
+        order = 'F'
+        i1 = meta.loc[locs].sort_values(['latitude', 'longitude']).index
+        i2 = sorted(meta.loc[locs].index)
+        if all(i1 == i2):
+            order = 'C'
+
+        dx = meta.loc[locs, 'longitude'] - gid_target[1]
+        dy = meta.loc[locs, 'latitude'] - gid_target[0]
+
+        # set thresholds for movement in the horizontal/vertical
+        # directions or no movement at all.
+        dx_move_thresh = 0.9 * np.max(dx)
+        dy_move_thresh = 0.9 * np.max(dy)
+        dx_static_thresh = 0.1 * np.max(dx)
+        dy_static_thresh = 0.1 * np.max(dy)
+
+        # get the original meta data locs that correspond to pure
+        # horizontal/vertical movements
+        dx_mask = (dx >= dx_move_thresh) & (np.abs(dy) <= dy_static_thresh)
+        dy_mask = (dy >= dy_move_thresh) & (np.abs(dx) <= dx_static_thresh)
+        dx_loc = locs[dx_mask]
+        dy_loc = locs[dy_mask]
+
+        if not any(dx_loc):
+            msg = ('Could not find a valid horizontal vector '
+                   'from input target {}, gid target {}, '
+                   'with dx_move_thresh {} and dy_static_thresh {}. '
+                   '\nHere are the dx values: {} \nand dy values: {}'
+                   .format(target, gid_target, dx_move_thresh,
+                           dy_static_thresh, dx, dy))
+            raise RuntimeError(msg)
+
+        if not any(dy_loc):
+            msg = ('Could not find a valid vertical vector '
+                   'from input target {}, gid target {}, '
+                   'with dy_move_thresh {} and dx_static_thresh {}. '
+                   '\nHere are the dx values: {} \nand dy values: {}'
+                   .format(target, gid_target, dy_move_thresh,
+                           dx_static_thresh, dx, dy))
+            raise RuntimeError(msg)
+
+        # get (delta_latitude, delta_longitude) vectors
+        # for pure horizontal/vertical movements
+        vector_dx = np.array([dy.loc[dx_loc[0]], dx.loc[dx_loc[0]]])
+        vector_dy = np.array([dy.loc[dy_loc[0]], dx.loc[dy_loc[0]]])
+
+        return gid_target, vector_dx, vector_dy, order
+
+    def get_raster_index(self, target, shape, meta=None):
+        """Get meta data index values that correspond to a 2D rectangular grid
+        of the requested shape starting with the target coordinate in the
+        bottom left hand corner. Note that this can break down if a target is
+        requested outside of the main grid area.
+
+        Parameters
+        ----------
+        target : tuple
+            Starting coordinate (latitude, longitude) in decimal degrees for
+            the bottom left hand corner of the raster grid.
+        shape : tuple
+            Desired raster shape in format (number_rows, number_cols)
+        meta : pd.DataFrame | None
+            Optional meta data input with latitude, longitude fields. Default
+            is None which extracts self.meta from the resource data.
+
+        Returns
+        -------
+        raster_index : np.ndarray
+            Flat 1D array of meta data index values that form a 2D rectangular
+            grid.
+        order : str
+            Order 'F' or 'C' in which to reshape the raster_index output to
+            form the correctly formatted 2D rectangular grid. For example:
+            raster_index_2d = raster_index.reshape(shape, order=order)
+        """
+
+        meta = meta if meta is not None else self.meta
+        n_vert, n_horiz = shape
+
+        gid_target, vec_dx, vec_dy, order = self.get_grid_vectors(target,
+                                                                  meta=meta)
+
+        # Set points for origin, horizontal/verical movements, and final
+        start_xy = copy.deepcopy(gid_target)
+        point_x = copy.deepcopy(gid_target)
+        point_y = copy.deepcopy(gid_target)
+        end_xy = copy.deepcopy(gid_target)
+
+        start_xy[0] -= 0.5 * vec_dy[0]
+        start_xy[1] -= 0.5 * vec_dx[1]
+
+        point_x[0] -= 0.5 * vec_dy[0]
+        point_x += (n_horiz - 0.5) * vec_dx
+
+        point_y[1] -= 0.5 * vec_dx[1]
+        point_y += (n_vert - 0.5) * vec_dy
+
+        end_xy += (n_vert - 0.5) * vec_dy
+        end_xy += (n_horiz - 0.5) * vec_dx
+
+        # slopes of horizontal / vertical vectors
+        m_horiz = vec_dx[0] / vec_dx[1]
+        m_vert = vec_dy[0] / vec_dy[1]
+
+        # horizontal lines (low, high)
+        lin_y_1 = (m_horiz * (meta['longitude'].values - start_xy[1])
+                   + start_xy[0])
+        lin_y_2 = (m_horiz * (meta['longitude'].values - point_y[1])
+                   + point_y[0])
+
+        # vertical lines (left, right)
+        lin_x_1 = ((meta['latitude'].values - start_xy[0]) / m_vert
+                   + start_xy[1])
+        lin_x_2 = ((meta['latitude'].values - point_x[0]) / m_vert
+                   + point_x[1])
+
+        # get the mask of the bounding box
+        mask = ((meta['latitude'] > lin_y_1)
+                & (meta['latitude'] < lin_y_2)
+                & (meta['longitude'] > lin_x_1)
+                & (meta['longitude'] < lin_x_2))
+
+        if mask.sum() != (n_horiz * n_vert):
+            msg = ('Found {} gids but should have found {} by {}. '
+                   'Input target was {}, gid target was {}, '
+                   'bounding points were calculated to be {} {} {} {},'
+                   'and the final found coordinates are: \n{}'
+                   .format(mask.sum(), n_horiz, n_vert, target, gid_target,
+                           start_xy, point_x, point_y, end_xy, meta[mask]))
+            raise RuntimeError(msg)
+
+        raster_index = meta[mask].index.values
+
+        return raster_index, order
 
     @classmethod
     def make_SAM_files(cls, res_h5, gids, out_path, write_time=True,

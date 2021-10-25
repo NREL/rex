@@ -899,6 +899,59 @@ def test_cli_box(runner, WindX_cls):
     LOGGERS.clear()
 
 
+def test_get_raster_index(plot=False):
+    """Test the get raster meta index functionality. Plotting is the best way
+    to sanity check this."""
+    res_fp = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+
+    # use a custom meta df because NSRDB/WTK resource test files are too small
+    fp = os.path.join(TESTDATADIR, 'wtk/hawaii_grid.csv')
+    meta = pd.read_csv(fp)
+
+    target = (16, -162)
+    shape = (10, 5)
+
+    with NSRDBX(res_fp) as ext:
+        raster_index, order = ext.get_raster_index(target, shape, meta=meta)
+
+    assert len(raster_index) == (shape[0] * shape[1])
+    assert order == 'C'
+
+    raster_index_2d = raster_index.reshape(shape, order=order)
+    assert raster_index_2d[0, 0] + 1 == raster_index_2d[0, 1]
+
+    if plot:
+        import matplotlib.pyplot as plt
+        plt.scatter(meta.longitude, meta.latitude, linewidth=0, s=10)
+        plt.scatter(meta.loc[raster_index, 'longitude'],
+                    meta.loc[raster_index, 'latitude'],
+                    linewidth=0, s=20, marker='s')
+        plt.xlim(-162.05, -161.825)
+        plt.ylim(15.95, 16.18)
+        plt.savefig('test.png')
+
+
+def test_get_bad_raster_index():
+    """Test the get raster meta index functionality with a bad target input"""
+    res_fp = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+
+    # use a custom meta df because NSRDB/WTK resource test files are too small
+    fp = os.path.join(TESTDATADIR, 'wtk/hawaii_grid.csv')
+    meta = pd.read_csv(fp)
+
+    target = (-90, -162)
+    shape = (10, 5)
+    with pytest.raises(RuntimeError):
+        with NSRDBX(res_fp) as ext:
+            ext.get_raster_index(target, shape, meta=meta)
+
+    target = (16, 0)
+    shape = (10, 5)
+    with pytest.raises(RuntimeError):
+        with NSRDBX(res_fp) as ext:
+            ext.get_raster_index(target, shape, meta=meta)
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 
