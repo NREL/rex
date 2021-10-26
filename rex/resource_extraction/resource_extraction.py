@@ -1040,6 +1040,9 @@ class ResourceX:
             Order 'F' or 'C' in which to reshape the raster_index output to
             form the correctly formatted 2D rectangular grid. For example:
             raster_index_2d = raster_index.reshape(shape, order=order)
+        close : np.ndarray
+            Meta data index values corresponding to the 3x3 box of pixels
+            closest to gid_target.
         """
 
         meta = meta if meta is not None else self.meta
@@ -1049,7 +1052,11 @@ class ResourceX:
                          | (target[1] > meta['longitude']).all()
                          | (target[1] < meta['longitude']).all())
         if out_of_bounds:
-            msg = 'Target {} is outside of meta data extent'.format(target)
+            msg = ('Target {} is outside of meta data extent with latitude '
+                   'range {} to {} and longitude range {} to {}'
+                   .format(target, meta['latitude'].min(),
+                           meta['latitude'].max(), meta['longitude'].min(),
+                           meta['longitude'].max()))
             raise RuntimeError(msg)
 
         # find the actual meta data point closest to the target
@@ -1060,59 +1067,29 @@ class ResourceX:
                                meta['longitude'].values[i]])
 
         # find the 3x3 box of points around the target
-        dist = ((meta['latitude'] - gid_target[0])**2
-                + (meta['longitude'] - gid_target[1])**2)
-        ilocs = np.argsort(dist)[:9]
-        locs = meta.index.values[ilocs]
+        dy = meta['latitude'] - gid_target[0]
+        dx = meta['longitude'] - gid_target[1]
+        dist = np.sqrt(dx**2 + dy**2)
+        close = meta.index.values[np.argsort(dist)[:9]]
 
         # determine whether the meta data is row or column major
         order = 'F'
-        i1 = meta.loc[locs].sort_values(['latitude', 'longitude']).index
-        i2 = sorted(meta.loc[locs].index)
+        i1 = meta.loc[close].sort_values(['latitude', 'longitude']).index
+        i2 = sorted(meta.loc[close].index)
         if all(i1 == i2):
             order = 'C'
 
-        dx = meta.loc[locs, 'longitude'] - gid_target[1]
-        dy = meta.loc[locs, 'latitude'] - gid_target[0]
-
-        # set thresholds for movement in the horizontal/vertical
-        # directions or no movement at all.
-        dx_move_thresh = 0.9 * np.max(dx)
-        dy_move_thresh = 0.9 * np.max(dy)
-        dx_static_thresh = 0.1 * np.max(dx)
-        dy_static_thresh = 0.1 * np.max(dy)
-
-        # get the original meta data locs that correspond to pure
-        # horizontal/vertical movements
-        dx_mask = (dx >= dx_move_thresh) & (np.abs(dy) <= dy_static_thresh)
-        dy_mask = (dy >= dy_move_thresh) & (np.abs(dx) <= dx_static_thresh)
-        dx_loc = locs[dx_mask]
-        dy_loc = locs[dy_mask]
-
-        if not any(dx_loc):
-            msg = ('Could not find a valid horizontal vector '
-                   'from input target {}, gid target {}, '
-                   'with dx_move_thresh {} and dy_static_thresh {}. '
-                   '\nHere are the dx values: {} \nand dy values: {}'
-                   .format(target, gid_target, dx_move_thresh,
-                           dy_static_thresh, dx, dy))
-            raise RuntimeError(msg)
-
-        if not any(dy_loc):
-            msg = ('Could not find a valid vertical vector '
-                   'from input target {}, gid target {}, '
-                   'with dy_move_thresh {} and dx_static_thresh {}. '
-                   '\nHere are the dx values: {} \nand dy values: {}'
-                   .format(target, gid_target, dy_move_thresh,
-                           dx_static_thresh, dx, dy))
-            raise RuntimeError(msg)
+        # get the vectors closest to pure horizontal/vertical movement
+        theta = np.arctan2(dy.loc[close].values, dx.loc[close].values)
+        dx_loc = close[np.argsort(np.abs(theta))[1]]
+        dy_loc = close[np.argmin(np.abs(theta - np.pi / 2))]
 
         # get (delta_latitude, delta_longitude) vectors
         # for pure horizontal/vertical movements
-        vector_dx = np.array([dy.loc[dx_loc[0]], dx.loc[dx_loc[0]]])
-        vector_dy = np.array([dy.loc[dy_loc[0]], dx.loc[dy_loc[0]]])
+        vector_dx = np.array([dy.loc[dx_loc], dx.loc[dx_loc]])
+        vector_dy = np.array([dy.loc[dy_loc], dx.loc[dy_loc]])
 
-        return gid_target, vector_dx, vector_dy, order
+        return gid_target, vector_dx, vector_dy, order, close
 
     def get_raster_index(self, target, shape, meta=None):
         """Get meta data index values that correspond to a 2D rectangular grid
@@ -1145,8 +1122,8 @@ class ResourceX:
         meta = meta if meta is not None else self.meta
         n_vert, n_horiz = shape
 
-        gid_target, vec_dx, vec_dy, order = self.get_grid_vectors(target,
-                                                                  meta=meta)
+        gid_target, vec_dx, vec_dy, order, _ = self.get_grid_vectors(target,
+                                                                     meta=meta)
 
         # Set points for origin, horizontal/verical movements, and final
         start_xy = copy.deepcopy(gid_target)

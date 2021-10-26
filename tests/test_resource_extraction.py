@@ -912,6 +912,8 @@ def test_get_raster_index(plot=False):
     shape = (10, 5)
 
     with NSRDBX(res_fp) as ext:
+        gid_target, vector_dx, vector_dy, order, close = \
+            ext.get_grid_vectors(target, meta=meta)
         raster_index, order = ext.get_raster_index(target, shape, meta=meta)
 
     assert len(raster_index) == (shape[0] * shape[1])
@@ -922,13 +924,75 @@ def test_get_raster_index(plot=False):
 
     if plot:
         import matplotlib.pyplot as plt
-        plt.scatter(meta.longitude, meta.latitude, linewidth=0, s=10)
+        xrange = (-162.05, -161.85)
+        yrange = (15.95, 16.2)
+        mask = ((xrange[0] < meta['longitude'])
+                & (xrange[1] > meta['longitude'])
+                & (yrange[0] < meta['latitude'])
+                & (yrange[1] > meta['latitude']))
+
+        plt.plot([gid_target[1], gid_target[1] + vector_dx[1]],
+                 [gid_target[0], gid_target[0] + vector_dx[0]])
+        plt.plot([gid_target[1], gid_target[1] + vector_dy[1]],
+                 [gid_target[0], gid_target[0] + vector_dy[0]])
+
+        plt.scatter(meta.loc[close, 'longitude'],
+                    meta.loc[close, 'latitude'], marker='s')
         plt.scatter(meta.loc[raster_index, 'longitude'],
                     meta.loc[raster_index, 'latitude'],
-                    linewidth=0, s=20, marker='s')
-        plt.xlim(-162.05, -161.825)
-        plt.ylim(15.95, 16.18)
-        plt.savefig('test.png')
+                    s=50, marker='x')
+
+        plt.scatter(meta[mask].longitude, meta[mask].latitude, s=10)
+        plt.scatter(gid_target[1], gid_target[0], marker='x', s=20)
+
+        plt.legend(['X Vector', 'Y Vector', 'Closest', 'Raster Meta',
+                    'Full Meta', 'GID Target'])
+        plt.savefig('test.png', dpi=300)
+
+
+def test_get_raster_index_skewed(plot=False):
+    """Test retrieval of raster index on skewed data in RI"""
+    res_fp = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    target = (41.25, -71.8)
+    shape = (5, 5)
+
+    with WindX(res_fp) as ext:
+        meta = ext.meta
+        gid_target, vector_dx, vector_dy, order, close = \
+            ext.get_grid_vectors(target)
+        raster_index, order = ext.get_raster_index(target, shape)
+
+    assert order == 'C'
+
+    xrange = (-71.85, -71.6)
+    yrange = (41.1, 41.4)
+    mask = ((xrange[0] < meta['longitude'])
+            & (xrange[1] > meta['longitude'])
+            & (yrange[0] < meta['latitude'])
+            & (yrange[1] > meta['latitude']))
+
+    plot = True
+    if plot:
+        import matplotlib.pyplot as plt
+        plt.plot([gid_target[1], gid_target[1] + vector_dx[1]],
+                 [gid_target[0], gid_target[0] + vector_dx[0]])
+        plt.plot([gid_target[1], gid_target[1] + vector_dy[1]],
+                 [gid_target[0], gid_target[0] + vector_dy[0]])
+
+        plt.scatter(meta.loc[close, 'longitude'],
+                    meta.loc[close, 'latitude'], marker='s')
+        plt.scatter(meta.loc[raster_index, 'longitude'],
+                    meta.loc[raster_index, 'latitude'],
+                    s=50, marker='x')
+
+        plt.scatter(meta[mask].longitude, meta[mask].latitude, s=10)
+        plt.scatter(gid_target[1], gid_target[0], marker='x', s=20)
+
+        plt.axis('equal')
+        plt.legend(['X Vector', 'Y Vector', 'Closest', 'Raster Meta',
+                    'Full Meta', 'GID Target'])
+        plt.savefig('./test.png', dpi=300)
 
 
 def test_get_bad_raster_index():
