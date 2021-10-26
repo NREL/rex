@@ -1081,6 +1081,8 @@ class ResourceX:
         # for pure horizontal/vertical movements
         vector_dx = np.array([dy.loc[dx_loc], dx.loc[dx_loc]])
         vector_dy = np.array([dy.loc[dy_loc], dx.loc[dy_loc]])
+        vector_dx[1] = 1e-6 if vector_dx[1] == 0 else vector_dx[1]
+        vector_dy[1] = 1e-6 if vector_dy[1] == 0 else vector_dy[1]
 
         # determine whether the meta data is row or column major
         order = 'F'
