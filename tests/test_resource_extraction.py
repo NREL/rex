@@ -914,13 +914,17 @@ def test_get_raster_index(plot=False):
     with NSRDBX(res_fp) as ext:
         gid_target, vector_dx, vector_dy, order, close = \
             ext.get_grid_vectors(target, meta=meta)
-        raster_index, order = ext.get_raster_index(target, shape, meta=meta)
+        raster_index = ext.get_raster_index(target, shape, meta=meta)
 
-    assert len(raster_index) == (shape[0] * shape[1])
+    assert raster_index.shape == shape
     assert order == 'C'
 
-    raster_index_2d = raster_index.reshape(shape, order=order)
-    assert raster_index_2d[0, 0] + 1 == raster_index_2d[0, 1]
+    lat_row0 = meta.loc[raster_index[0, :], 'latitude'].values
+    lat_row1 = meta.loc[raster_index[1, :], 'latitude'].values
+    lon_row0 = meta.loc[raster_index[0, :], 'longitude'].values
+    lon_row1 = meta.loc[raster_index[1, :], 'longitude'].values
+    assert all(lat_row1 < lat_row0)
+    assert np.allclose(lon_row1, lon_row0, rtol=0.001)
 
     if plot:
         import matplotlib.pyplot as plt
@@ -938,8 +942,8 @@ def test_get_raster_index(plot=False):
 
         plt.scatter(meta.loc[close, 'longitude'],
                     meta.loc[close, 'latitude'], marker='s')
-        plt.scatter(meta.loc[raster_index, 'longitude'],
-                    meta.loc[raster_index, 'latitude'],
+        plt.scatter(meta.loc[raster_index.flatten(), 'longitude'],
+                    meta.loc[raster_index.flatten(), 'latitude'],
                     s=50, marker='x')
 
         plt.scatter(meta[mask].longitude, meta[mask].latitude, s=10)
@@ -961,9 +965,15 @@ def test_get_raster_index_skewed(plot=False):
         meta = ext.meta
         gid_target, vector_dx, vector_dy, order, close = \
             ext.get_grid_vectors(target)
-        raster_index, order = ext.get_raster_index(target, shape)
+        raster_index = ext.get_raster_index(target, shape)
 
-    assert order == 'C'
+    assert order == 'F'
+    lat_row0 = meta.loc[raster_index[0, :], 'latitude'].values
+    lat_row1 = meta.loc[raster_index[1, :], 'latitude'].values
+    lon_row0 = meta.loc[raster_index[0, :], 'longitude'].values
+    lon_row1 = meta.loc[raster_index[1, :], 'longitude'].values
+    assert all(lat_row1 < lat_row0)
+    assert np.allclose(lon_row1, lon_row0, rtol=0.01)
 
     xrange = (-71.85, -71.6)
     yrange = (41.1, 41.4)
@@ -972,7 +982,6 @@ def test_get_raster_index_skewed(plot=False):
             & (yrange[0] < meta['latitude'])
             & (yrange[1] > meta['latitude']))
 
-    plot = True
     if plot:
         import matplotlib.pyplot as plt
         plt.plot([gid_target[1], gid_target[1] + vector_dx[1]],
@@ -982,8 +991,8 @@ def test_get_raster_index_skewed(plot=False):
 
         plt.scatter(meta.loc[close, 'longitude'],
                     meta.loc[close, 'latitude'], marker='s')
-        plt.scatter(meta.loc[raster_index, 'longitude'],
-                    meta.loc[raster_index, 'latitude'],
+        plt.scatter(meta.loc[raster_index.flatten(), 'longitude'],
+                    meta.loc[raster_index.flatten(), 'latitude'],
                     s=50, marker='x')
 
         plt.scatter(meta[mask].longitude, meta[mask].latitude, s=10)

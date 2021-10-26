@@ -1062,22 +1062,15 @@ class ResourceX:
         # find the actual meta data point closest to the target
         dist = ((meta['latitude'] - target[0])**2
                 + (meta['longitude'] - target[1])**2)
-        i = np.argmin(dist)
-        gid_target = np.array([meta['latitude'].values[i],
-                               meta['longitude'].values[i]])
+        target_loc = meta.index.values[np.argmin(dist)]
+        gid_target = np.array([meta.at[target_loc, 'latitude'],
+                               meta.at[target_loc, 'longitude']])
 
         # find the 3x3 box of points around the target
         dy = meta['latitude'] - gid_target[0]
         dx = meta['longitude'] - gid_target[1]
         dist = np.sqrt(dx**2 + dy**2)
         close = meta.index.values[np.argsort(dist)[:9]]
-
-        # determine whether the meta data is row or column major
-        order = 'F'
-        i1 = meta.loc[close].sort_values(['latitude', 'longitude']).index
-        i2 = sorted(meta.loc[close].index)
-        if all(i1 == i2):
-            order = 'C'
 
         # get the vectors closest to pure horizontal/vertical movement
         theta = np.arctan2(dy.loc[close].values, dx.loc[close].values)
@@ -1088,6 +1081,11 @@ class ResourceX:
         # for pure horizontal/vertical movements
         vector_dx = np.array([dy.loc[dx_loc], dx.loc[dx_loc]])
         vector_dy = np.array([dy.loc[dy_loc], dx.loc[dy_loc]])
+
+        # determine whether the meta data is row or column major
+        order = 'F'
+        if dx_loc == (target_loc + 1):
+            order = 'C'
 
         return gid_target, vector_dx, vector_dy, order, close
 
@@ -1111,12 +1109,9 @@ class ResourceX:
         Returns
         -------
         raster_index : np.ndarray
-            Flat 1D array of meta data index values that form a 2D rectangular
-            grid.
-        order : str
-            Order 'F' or 'C' in which to reshape the raster_index output to
-            form the correctly formatted 2D rectangular grid. For example:
-            raster_index_2d = raster_index.reshape(shape, order=order)
+            2D array of meta data index values that form a 2D rectangular grid
+            with latitudes descending from top to bottom and longitudes
+            ascending from left to right.
         """
 
         meta = meta if meta is not None else self.meta
@@ -1175,8 +1170,26 @@ class ResourceX:
             raise RuntimeError(msg)
 
         raster_index = meta[mask].index.values
+        raster_index = raster_index.reshape(shape, order=order)
 
-        return raster_index, order
+        lats = meta.loc[raster_index.flatten(order=order), 'latitude'].values
+        lats = lats.reshape(shape, order=order)
+        lons = meta.loc[raster_index.flatten(order=order), 'longitude'].values
+        lons = lons.reshape(shape, order=order)
+
+        # make sure the latitudes are descending from top to bottom
+        if (np.diff(lats.mean(axis=1)) > 0).sum() > 0.5 * lats.shape[0]:
+            raster_index = raster_index[::-1]
+            lats = lats[::-1]
+            lons = lons[::-1]
+
+        # make sure the longitudes are ascending from left to right
+        if (np.diff(lons.mean(axis=0)) < 0).sum() > 0.5 * lons.shape[0]:
+            raster_index = raster_index[:, ::-1]
+            lats = lats[:, ::-1]
+            lons = lons[:, ::-1]
+
+        return raster_index
 
     @classmethod
     def make_SAM_files(cls, res_h5, gids, out_path, write_time=True,
