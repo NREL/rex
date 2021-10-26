@@ -954,6 +954,60 @@ def test_get_raster_index(plot=False):
         plt.savefig('test.png', dpi=300)
 
 
+def test_get_raster_index_big(plot=False):
+    """Test the retrieval of a very large raster that needs to be chunked"""
+    res_fp = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+
+    # use a custom meta df because NSRDB/WTK resource test files are too small
+    fp = os.path.join(TESTDATADIR, 'wtk/hawaii_grid.csv')
+    meta = pd.read_csv(fp)
+
+    target = (16, -163)
+    shape = (50, 500)
+
+    with NSRDBX(res_fp) as ext:
+        raster_index = ext.get_raster_index(target, shape, meta=meta,
+                                            max_delta=13)
+
+    assert not (raster_index == 0).any()
+
+    for i in range(1, shape[0]):
+        lat_row0 = meta.loc[raster_index[i - 1, :], 'latitude'].values
+        lat_row1 = meta.loc[raster_index[i, :], 'latitude'].values
+        assert all(lat_row1 < lat_row0)
+
+    for j in range(1, shape[1]):
+        assert (raster_index[:, j - 1] == (raster_index[:, j] - 1)).all()
+        lon_row0 = meta.loc[raster_index[:, j - 1], 'longitude'].values
+        lon_row1 = meta.loc[raster_index[:, j], 'longitude'].values
+        assert all(lon_row1 > lon_row0)
+
+    if plot:
+        import matplotlib.pyplot as plt
+
+        lats = meta.loc[raster_index.flatten(), 'latitude']
+        lons = meta.loc[raster_index.flatten(), 'longitude']
+        lats = lats.values.reshape(shape)
+        lons = lons.values.reshape(shape)
+
+        a = plt.imshow(lats)
+        plt.colorbar(a, label='lats')
+        plt.savefig('./lats.png')
+        plt.close()
+
+        a = plt.imshow(lons)
+        plt.colorbar(a, label='lons')
+        plt.savefig('./lons.png')
+        plt.close()
+
+        plt.scatter(meta.longitude, meta.latitude, s=10)
+        plt.scatter(meta.loc[raster_index.flatten(), 'longitude'],
+                    meta.loc[raster_index.flatten(), 'latitude'], s=5)
+
+        plt.axis('equal')
+        plt.savefig('test.png', dpi=300)
+
+
 def test_get_raster_index_skewed(plot=False):
     """Test retrieval of raster index on skewed data in RI"""
     res_fp = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
@@ -965,6 +1019,8 @@ def test_get_raster_index_skewed(plot=False):
         meta = ext.meta
         gid_target, vector_dx, vector_dy, order, close = \
             ext.get_grid_vectors(target)
+        _, start_xy, point_x, point_y, end_xy = ext._get_raster_index(
+            meta, gid_target, vector_dx, vector_dy, order, shape)
         raster_index = ext.get_raster_index(target, shape)
 
     assert order == 'F'
@@ -997,10 +1053,15 @@ def test_get_raster_index_skewed(plot=False):
 
         plt.scatter(meta[mask].longitude, meta[mask].latitude, s=10)
         plt.scatter(gid_target[1], gid_target[0], marker='x', s=20)
+        plt.scatter(start_xy[1], start_xy[0], marker='x', s=20)
+        plt.scatter(point_x[1], point_x[0], marker='x', s=20)
+        plt.scatter(point_y[1], point_y[0], marker='x', s=20)
+        plt.scatter(end_xy[1], end_xy[0], marker='x', s=20)
 
         plt.axis('equal')
         plt.legend(['X Vector', 'Y Vector', 'Closest', 'Raster Meta',
-                    'Full Meta', 'GID Target'])
+                    'Full Meta', 'GID Target', 'Start XY', 'Point X',
+                    'Point Y', 'End XY'])
         plt.savefig('./test.png', dpi=300)
 
 

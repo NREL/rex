@@ -1089,22 +1089,87 @@ class ResourceX:
 
         return gid_target, vector_dx, vector_dy, order, close
 
-    def get_raster_index(self, target, shape, meta=None):
-        """Get meta data index values that correspond to a 2D rectangular grid
-        of the requested shape starting with the target coordinate in the
-        bottom left hand corner. Note that this can break down if a target is
-        requested outside of the main grid area.
+    @staticmethod
+    def _order_raster_index(raster_index, meta, order, shape,
+                            lat_descending=True):
+        """Ensure that the raster index is propertly sorted.
 
         Parameters
         ----------
-        target : tuple
-            Starting coordinate (latitude, longitude) in decimal degrees for
-            the bottom left hand corner of the raster grid.
+        raster_index : np.ndarray
+            2D array of meta data index values that form a 2D rectangular grid
+        meta : pd.DataFrame
+            Resource meta data with latitude and longitude columns
+        order : str
+            Order 'F' or 'C' in which to reshape the raster_index output to
+            form the correctly formatted 2D rectangular grid. For example:
+            raster_index_2d = raster_index.reshape(shape, order=order)
         shape : tuple
             Desired raster shape in format (number_rows, number_cols)
-        meta : pd.DataFrame | None
-            Optional meta data input with latitude, longitude fields. Default
-            is None which extracts self.meta from the resource data.
+        lat_descending : bool
+            Flat to have descending latitudes (this is how the raster would
+            appear on the map with north upwards). This option can be changed
+            for ease of vertical chunking / indexing.
+
+        Returns
+        -------
+        raster_index : np.ndarray
+            2D array of meta data index values that form a 2D rectangular grid
+        """
+
+        lats = meta.loc[raster_index.flatten(order=order), 'latitude'].values
+        lats = lats.reshape(shape, order=order)
+        lons = meta.loc[raster_index.flatten(order=order), 'longitude'].values
+        lons = lons.reshape(shape, order=order)
+
+        # make sure the latitudes are descending from top to bottom
+        if ((np.diff(lats.mean(axis=1)) > 0).sum() > 0.5 * lats.shape[0]
+                and lat_descending):
+            raster_index = raster_index[::-1]
+
+        # option for reversed latitudes for ease of chunking
+        elif ((np.diff(lats.mean(axis=1)) < 0).sum() > 0.5 * lats.shape[0]
+                and not lat_descending):
+            raster_index = raster_index[::-1]
+
+        # make sure the longitudes are ascending from left to right
+        if (np.diff(lons.mean(axis=0)) < 0).sum() > 0.5 * lons.shape[0]:
+            raster_index = raster_index[:, ::-1]
+
+        return raster_index
+
+    @classmethod
+    def _get_raster_index(cls, meta, gid_target, vec_dx, vec_dy, order,
+                          shape, lat_descending=True):
+        """Get meta data index values that correspond to a 2D rectangular grid
+        of the requested shape. This is a hidden compute method that can be
+        called iteratively for adaptive sampling.
+
+        Parameters
+        ----------
+        meta : pd.DataFrame
+            Resource meta data with latitude and longitude columns
+        gid_target : tuple
+            Actual starting coordinates corresponding to a real gid point in
+            meta data.
+        vector_x : np.ndarray
+            1D array of shape (2,) with (delta_latitude, delta_longitude)
+            corresponding to the vector for pure positive horizontal movement
+            in the meta data
+        vector_y : np.ndarray
+            1D array of shape (2,) with (delta_latitude, delta_longitude)
+            corresponding to the vector for pure positive vertical movement in
+            the meta data
+        order : str
+            Order 'F' or 'C' in which to reshape the raster_index output to
+            form the correctly formatted 2D rectangular grid. For example:
+            raster_index_2d = raster_index.reshape(shape, order=order)
+        shape : tuple
+            Desired raster shape in format (number_rows, number_cols)
+        lat_descending : bool
+            Flat to have descending latitudes (this is how the raster would
+            appear on the map with north upwards). This option can be changed
+            for ease of vertical chunking / indexing.
 
         Returns
         -------
@@ -1112,31 +1177,27 @@ class ResourceX:
             2D array of meta data index values that form a 2D rectangular grid
             with latitudes descending from top to bottom and longitudes
             ascending from left to right.
+        start_xy : np.ndarray
+            1D array of shape (2,) coordinates of the starting search point
+        point_x : np.ndarray
+            1D array of shape (2,) coordinates of the horizonital search point
+        point_y : np.ndarray
+            1D array of shape (2,) coordinates of the vertical search point
+        end_xy : np.ndarray
+            1D array of shape (2,) coordinates of the final search point
         """
-
-        meta = meta if meta is not None else self.meta
         n_vert, n_horiz = shape
-
-        gid_target, vec_dx, vec_dy, order, _ = self.get_grid_vectors(target,
-                                                                     meta=meta)
-
         # Set points for origin, horizontal/verical movements, and final
         start_xy = copy.deepcopy(gid_target)
         point_x = copy.deepcopy(gid_target)
         point_y = copy.deepcopy(gid_target)
         end_xy = copy.deepcopy(gid_target)
 
-        start_xy[0] -= 0.5 * vec_dy[0]
-        start_xy[1] -= 0.5 * vec_dx[1]
-
-        point_x[0] -= 0.5 * vec_dy[0]
-        point_x += (n_horiz - 0.5) * vec_dx
-
-        point_y[1] -= 0.5 * vec_dx[1]
-        point_y += (n_vert - 0.5) * vec_dy
-
-        end_xy += (n_vert - 0.5) * vec_dy
-        end_xy += (n_horiz - 0.5) * vec_dx
+        # add offsets so bounding box is between grid lines
+        start_xy -= (0.5 * (vec_dy + vec_dx))
+        point_x += (n_horiz - 0.5) * vec_dx - (0.5 * vec_dy)
+        point_y += (n_vert - 0.5) * vec_dy - (0.5 * vec_dx)
+        end_xy += (n_vert - 0.5) * vec_dy + (n_horiz - 0.5) * vec_dx
 
         # slopes of horizontal / vertical vectors
         m_horiz = vec_dx[0] / vec_dx[1]
@@ -1162,32 +1223,94 @@ class ResourceX:
 
         if mask.sum() != (n_horiz * n_vert):
             msg = ('Found {} gids but should have found {} by {}. '
-                   'Input target was {}, gid target was {}, '
+                   'Gid target was {}, '
                    'bounding points were calculated to be {} {} {} {},'
                    'and the final found coordinates are: \n{}'
-                   .format(mask.sum(), n_horiz, n_vert, target, gid_target,
+                   .format(mask.sum(), n_horiz, n_vert, gid_target,
                            start_xy, point_x, point_y, end_xy, meta[mask]))
             raise RuntimeError(msg)
 
         raster_index = meta[mask].index.values
         raster_index = raster_index.reshape(shape, order=order)
+        raster_index = cls._order_raster_index(raster_index, meta,
+                                               order, shape,
+                                               lat_descending=lat_descending)
 
-        lats = meta.loc[raster_index.flatten(order=order), 'latitude'].values
-        lats = lats.reshape(shape, order=order)
-        lons = meta.loc[raster_index.flatten(order=order), 'longitude'].values
-        lons = lons.reshape(shape, order=order)
+        return raster_index, start_xy, point_x, point_y, end_xy
 
-        # make sure the latitudes are descending from top to bottom
-        if (np.diff(lats.mean(axis=1)) > 0).sum() > 0.5 * lats.shape[0]:
-            raster_index = raster_index[::-1]
-            lats = lats[::-1]
-            lons = lons[::-1]
+    def get_raster_index(self, target, shape, meta=None, max_delta=50):
+        """Get meta data index values that correspond to a 2D rectangular grid
+        of the requested shape starting with the target coordinate in the
+        bottom left hand corner. Note that this can break down if a target is
+        requested outside of the main grid area.
 
-        # make sure the longitudes are ascending from left to right
-        if (np.diff(lons.mean(axis=0)) < 0).sum() > 0.5 * lons.shape[0]:
-            raster_index = raster_index[:, ::-1]
-            lats = lats[:, ::-1]
-            lons = lons[:, ::-1]
+        Parameters
+        ----------
+        target : tuple
+            Starting coordinate (latitude, longitude) in decimal degrees for
+            the bottom left hand corner of the raster grid.
+        shape : tuple
+            Desired raster shape in format (number_rows, number_cols)
+        meta : pd.DataFrame | None
+            Optional meta data input with latitude, longitude fields. Default
+            is None which extracts self.meta from the resource data.
+        max_delta : int
+            Optional maximum limit on the raster shape that is retrieved at
+            once. If shape is (20, 20) and max_delta=10, the full raseter will
+            be retrieved in four chunks of (10, 10). This helps adapt to
+            non-regular grids that curve over large distances.
+
+        Returns
+        -------
+        raster_index : np.ndarray
+            2D array of meta data index values that form a 2D rectangular grid
+            with latitudes descending from top to bottom and longitudes
+            ascending from left to right.
+        """
+
+        meta = meta if meta is not None else self.meta
+
+        raster_index = np.zeros(shape, dtype=int)
+
+        next_target = None
+        order = 'C'
+        gid_target = self.get_grid_vectors(target, meta=meta)[0]
+
+        # chunk the row (i) and columns (j) rasters
+        i_split = int(np.ceil(shape[0] / max_delta))
+        j_split = int(np.ceil(shape[1] / max_delta))
+        i_chunks = np.array_split(np.arange(shape[0]), i_split)
+        j_chunks = np.array_split(np.arange(shape[1]), j_split)
+
+        for i_chunk in i_chunks:
+            i_slice = slice(i_chunk[0], i_chunk[-1] + 1)
+
+            for jj, j_chunk in enumerate(j_chunks):
+                j_slice = slice(j_chunk[0], j_chunk[-1] + 1)
+                temp_shape = (len(i_chunk), len(j_chunk))
+
+                # get the grid vectors using the gid_target from the
+                # previous raster chunk
+                gid_target, vec_dx, vec_dy, order, _ = self.get_grid_vectors(
+                    gid_target, meta=meta)
+
+                # get the raster using the current grid vectors
+                temp, _, point_x, point_y, _ = self._get_raster_index(
+                    meta, gid_target, vec_dx, vec_dy, order, temp_shape,
+                    lat_descending=False)
+
+                raster_index[i_slice, j_slice] = temp
+                gid_target = point_x + (0.5 * (vec_dx + vec_dy))
+
+                if jj == 0:
+                    # save the gid_target for the next row
+                    next_target = point_y + (0.5 * (vec_dx + vec_dy))
+                elif jj == len(j_chunks) - 1:
+                    # use the saved gid_target for the next row
+                    gid_target = next_target
+
+        raster_index = self._order_raster_index(raster_index, meta, order,
+                                                shape, lat_descending=True)
 
         return raster_index
 
