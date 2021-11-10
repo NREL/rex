@@ -105,9 +105,15 @@ class JointPD:
         dset2 : str
             Dataset 2 to generate joint probabilty distribution for
         bins1 : tuple
-            (start, stop, step) for dataset 1 bins
+            (start, stop, step) for dataset 1 bins. The stop value is
+            inclusive, so (0, 6, 2) would yield three bins with edges (0, 2, 4,
+            6). If the stop value is not perfectly divisible by the step, the
+            last bin will overshoot the stop value.
         bins2 : tuple
-            (start, stop, step) for dataset 2 bins
+            (start, stop, step) for dataset 2 bins. The stop value is
+            inclusive, so (0, 6, 2) would yield three bins with edges (0, 2, 4,
+            6). If the stop value is not perfectly divisible by the step, the
+            last bin will overshoot the stop value.
         sites : list | slice, optional
         res_cls : Class, optional
             Resource handler class to use to access res_h5,
@@ -197,9 +203,15 @@ class JointPD:
         dset2 : str
             Dataset 2 to generate joint probabilty distribution for
         bins1 : tuple
-            (start, stop, step) for dataset 1 bins
+            (start, stop, step) for dataset 1 bins. The stop value is
+            inclusive, so (0, 6, 2) would yield three bins with edges (0, 2, 4,
+            6). If the stop value is not perfectly divisible by the step, the
+            last bin will overshoot the stop value.
         bins2 : tuple
-            (start, stop, step) for dataset 2 bins
+            (start, stop, step) for dataset 2 bins. The stop value is
+            inclusive, so (0, 6, 2) would yield three bins with edges (0, 2, 4,
+            6). If the stop value is not perfectly divisible by the step, the
+            last bin will overshoot the stop value.
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
         max_workers : None | int, optional
@@ -375,9 +387,15 @@ class JointPD:
         dset2 : str
             Dataset 2 to generate joint probabilty distribution for
         bins1 : tuple
-            (start, stop, step) for dataset 1 bins
+            (start, stop, step) for dataset 1 bins. The stop value is
+            inclusive, so (0, 6, 2) would yield three bins with edges (0, 2, 4,
+            6). If the stop value is not perfectly divisible by the step, the
+            last bin will overshoot the stop value.
         bins2 : tuple
-            (start, stop, step) for dataset 2 bins
+            (start, stop, step) for dataset 2 bins. The stop value is
+            inclusive, so (0, 6, 2) would yield three bins with edges (0, 2, 4,
+            6). If the stop value is not perfectly divisible by the step, the
+            last bin will overshoot the stop value.
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
         res_cls : Class, optional
