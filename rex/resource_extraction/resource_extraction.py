@@ -38,7 +38,8 @@ class ResourceX:
     DEFAULT_RES_CLS = Resource
 
     def __init__(self, res_h5, res_cls=None, tree=None, unscale=True,
-                 str_decode=True, group=None, hsds=False, hsds_kwargs=None):
+                 str_decode=True, group=None, hsds=False, hsds_kwargs=None,
+                 log_vers=True):
         """
         Parameters
         ----------
@@ -65,8 +66,14 @@ class ResourceX:
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
+        log_vers : bool
+            Flag to log rex versions, True by default. Disable this if wrapping
+            in a parallel process (logs get very verbose).
         """
-        log_versions(logger)
+
+        if log_vers:
+            log_versions(logger)
+
         res_cls = self.DEFAULT_RES_CLS if res_cls is None else res_cls
         self._res = res_cls(res_h5, unscale=unscale, str_decode=str_decode,
                             group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
