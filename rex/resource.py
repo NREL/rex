@@ -324,7 +324,10 @@ class ResourceDataset:
 
     def _extract_list_slice(self, ds_slice):
         """
-        Optimize and extract list slice request along a single dimension
+        Optimize and extract list slice request along a single dimension. This
+        function checks if sequential gid requests are more than one chunk size
+        apart and then splits them into multiple separate requests (more
+        efficient to do multipl reads than to read all gids in-between).
 
         Parameters
         ----------
@@ -351,6 +354,10 @@ class ResourceDataset:
                     idx = np.argsort(ax_slice)
                     sort_idx.append(np.argsort(idx))
                     ax_slice = ax_slice[idx]
+
+                    # this checks if sequential gid requests are more than one
+                    # chunk size apart and then splits them into multiple
+                    # separate requests
                     diff = np.diff(ax_slice) > c
                     if np.any(diff):
                         pos = np.where(diff)[0] + 1
