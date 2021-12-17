@@ -201,10 +201,11 @@ class SubprocessManager:
         walltime : str
             SLURM walltime request in format "HH:MM:SS"
         """
-
-        m_str = '{0:02d}'.format(round(60 * (hours % 1)))
-        h_str = '{0:02d}'.format(floor(hours))
-        return '{}:{}:00'.format(h_str, m_str)
+        if hours is not None:
+            m_str = '{0:02d}'.format(round(60 * (hours % 1)))
+            h_str = '{0:02d}'.format(floor(hours))
+            hours = '{}:{}:00'.format(h_str, m_str)
+        return hours
 
 
 class SpawnProcessPool(cf.ProcessPoolExecutor):
