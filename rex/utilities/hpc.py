@@ -728,7 +728,7 @@ class SLURM(HpcJobManager):
                     script_args.append(sb_arg)
 
             script_args.append('echo Running on: $HOSTNAME, '
-                          'Machine Type: $MACHTYPE')
+                               'Machine Type: $MACHTYPE')
             script_args.append(cmd)
 
             script = '\n'.join(script_args)
@@ -745,7 +745,7 @@ class SLURM(HpcJobManager):
                 logger.warning(msg)
                 warn(msg, SlurmWarning)
             else:
-                job_id = int(out.split(' ')[-1])
+                job_id = int(out.split(' ', maxsplit=-1)[-1])
                 out = str(job_id)
                 logger.debug('SLURM job "{}" with id #{} submitted '
                              'successfully'.format(name, job_id))
