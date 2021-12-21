@@ -642,8 +642,8 @@ class SLURM(HpcJobManager):
 
         return feature_str, mem_str, env_str
 
-    def sbatch(self, cmd, alloc, walltime, memory=None, feature=None,
-               name='reV', stdout_path='./stdout', keep_sh=False,
+    def sbatch(self, cmd, alloc=None, walltime=None, memory=None, nodes=1,
+               feature=None, name='reV', stdout_path='./stdout', keep_sh=False,
                conda_env=None, module=None,
                module_root='/shared-projects/rev/modulefiles'):
         """Submit a SLURM job via sbatch command and SLURM shell script
@@ -654,11 +654,15 @@ class SLURM(HpcJobManager):
             Command to be submitted in SLURM shell script. Example:
                 'python -m reV.generation.cli_gen'
         alloc : str
-            HPC project (allocation) handle. Example: 'rev'.
+            HPC project (allocation) handle. Example: 'rev'. Default is not to
+            state an allocation (does not work on Eagle slurm).
         walltime : float
-            Node walltime request in hours.
+            Node walltime request in hours. Default is not to state a walltime
+            (does not work on Eagle slurm).
         memory : int
             Node memory request in GB.
+        nodes : int
+            Number of nodes to use for this sbatch job. Default is 1.
         feature : str
             Additional flags for SLURM job. Format is "--qos=high"
             or "--depend=[state:job_id]". Default is None.
@@ -701,22 +705,33 @@ class SLURM(HpcJobManager):
             err = 'already_running'
 
         else:
-            self.make_path(stdout_path)
-            special = self._special_cmd_strs(feature, memory, module,
-                                             module_root, conda_env)
             fname = '{}.sh'.format(name)
-            script = ('#!/bin/bash\n'
-                      '#SBATCH --account={a}  # allocation account\n'
-                      '#SBATCH --time={t}  # walltime\n'
-                      '#SBATCH --job-name={n}  # job name\n'
-                      '#SBATCH --nodes=1  # number of nodes\n'
-                      '#SBATCH --output={p}/{n}_%j.o\n'
-                      '#SBATCH --error={p}/{n}_%j.e\n{m}{f}'
-                      'echo Running on: $HOSTNAME, Machine Type: $MACHTYPE\n'
-                      '{e}\n{cmd}'
-                      .format(a=alloc, t=self.format_walltime(walltime),
-                              n=name, p=stdout_path, m=special[1],
-                              f=special[0], e=special[2], cmd=cmd))
+            self.make_path(stdout_path)
+
+            # make all the sbatch arguments
+            sb_a = f'#SBATCH --account={alloc}' if alloc is not None else ''
+            walltime = self.format_walltime(walltime)
+            sb_t = f'#SBATCH --time={walltime}' if walltime is not None else ''
+            sb_jn = f'#SBATCH --job-name={name}  # job name'
+            sb_no = f'#SBATCH --nodes={nodes}  # number of nodes'
+            sb_out = f'#SBATCH --output={stdout_path}/{name}_%j.o'
+            sb_err = f'#SBATCH --error={stdout_path}/{name}_%j.e'
+
+            sbf, sbm, env_str = self._special_cmd_strs(feature, memory, module,
+                                                       module_root, conda_env)
+
+            script_args = ['#!/bin/bash']
+            sb_args = (sb_a, sb_t, sb_jn, sb_no, sb_out, sb_err, sbf, sbm,
+                       env_str)
+            for sb_arg in sb_args:
+                if sb_arg:
+                    script_args.append(sb_arg)
+
+            script_args.append('echo Running on: $HOSTNAME, '
+                               'Machine Type: $MACHTYPE')
+            script_args.append(cmd)
+
+            script = '\n'.join(script_args)
 
             # write the shell script file and submit as qsub job
             self.make_sh(fname, script)
@@ -730,7 +745,7 @@ class SLURM(HpcJobManager):
                 logger.warning(msg)
                 warn(msg, SlurmWarning)
             else:
-                job_id = int(out.split(' ')[-1])
+                job_id = int(out.split(' ', maxsplit=-1)[-1])
                 out = str(job_id)
                 logger.debug('SLURM job "{}" with id #{} submitted '
                              'successfully'.format(name, job_id))
