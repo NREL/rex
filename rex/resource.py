@@ -575,7 +575,12 @@ class BaseResource(ABC):
             self._h5 = h5pyd.File(self.h5_file, mode='r', use_cache=False,
                                   **hsds_kwargs)
         else:
-            self._h5 = h5py.File(self.h5_file, mode=mode)
+            try:
+                self._h5 = h5py.File(self.h5_file, mode=mode)
+            except Exception as e:
+                msg = ('Could not open file in mode "{}": "{}"'
+                       .format(mode, self.h5_file))
+                raise IOError(msg) from e
 
         self._group = group
         self._unscale = unscale
