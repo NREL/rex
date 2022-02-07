@@ -5,6 +5,7 @@ Collection of helpful functions
 import datetime
 import inspect
 import json
+import yaml
 import os
 from fnmatch import fnmatch
 import numpy as np
@@ -29,7 +30,7 @@ def safe_json_load(fpath):
 
     Returns
     -------
-    j : dict
+    dict
         Loaded json dictionary.
 
     Examples
@@ -40,25 +41,114 @@ def safe_json_load(fpath):
      key2: value2}
     """
 
-    if not isinstance(fpath, str):
-        raise TypeError('Filepath must be str to load json: {}'.format(fpath))
+    validate_filepath(fpath, file_extension='.json', exception_type=JSONError)
+    return _read_data_file(fpath, json.load, exception_type=JSONError)
 
-    if not fpath.endswith('.json'):
-        raise JSONError('Filepath must end in .json to load json: {}'
-                        .format(fpath))
+
+def safe_yaml_load(fpath):
+    """Perform a yaml file load with better exception handling.
+
+    Parameters
+    ----------
+    fpath : str
+        Filepath to .yaml (or .yml) file.
+
+    Returns
+    -------
+    dict
+        Loaded yaml dictionary.
+
+    Examples
+    --------
+    >>> yaml_path = "./path_to_yaml.yaml"
+    >>> safe_yaml_load(yaml_path)
+    {key1: value1,
+     key2: value2}
+    """
+
+    validate_filepath(fpath, file_extension=('.yml', '.yaml'),
+                      exception_type=yaml.YAMLError)
+    return _read_data_file(fpath, yaml.safe_load,
+                           exception_type=yaml.YAMLError)
+
+
+def validate_filepath(fpath, file_extension, exception_type):
+    """Validate an input filepath.
+
+    The input is verified to be a string with a valid ending, and
+    it is validated that the file exists on disk. If any of these conditions
+    are not met, an exception is raised.
+
+
+    Parameters
+    ----------
+    fpath : str
+        Filepath to validate.
+    file_extension : str or iterable of str
+        A single file extension or an iterable of acceptable
+        file extensions for the input path.
+    exception_type : `Exception`
+        A class indicating the type of exception to raise if
+        file extension is incorrect.
+
+    Raises
+    ------
+    TypeError
+        If the input `fpath` is not a string.
+    exception_type
+        If the input `fpath` does not end in a valid extension.
+    FileNotFoundError
+        If the input `fpath` does not exist on disk.
+    """
+
+    if not isinstance(fpath, str):
+        raise TypeError('Filepath must be str to load: {}'.format(fpath))
+
+    if not fpath.endswith(file_extension):
+        raise exception_type('Filepath must end in {!r} to load: {}'
+                             .format(file_extension, fpath))
 
     if not os.path.isfile(fpath):
-        raise JSONError('Could not find json file to load: {}'.format(fpath))
+        raise FileNotFoundError('Could not find file to load: {}'
+                                .format(fpath))
+
+
+def _read_data_file(fpath, load_method, exception_type):
+    """Load the data in the file using a given load method.
+
+    This function performs additional exception handling during the
+    data loading process.
+
+    Parameters
+    ----------
+    fpath : str
+        Filepath containing data to load.
+    load_method : callable
+        Function that can be called on a stream to load the
+        data it contains.
+    exception_type : `Exception`
+        A class indicating the type of exception to raise if
+        data cannot be read.
+
+    Returns
+    -------
+    data : dict
+        Dictionary representation of the data in the file.
+
+    Raises
+    ------
+    exception_type
+        If there was an error loading the data.
+    """
 
     try:
         with open(fpath, 'r') as f:
-            j = json.load(f)
-    except json.decoder.JSONDecodeError as e:
-        emsg = ('JSON Error:\n{}\nCannot read json file: '
-                '"{}"'.format(e, fpath))
-        raise JSONError(emsg) from e
+            data = load_method(f)
+    except exception_type as e:
+        msg = 'Error:\n{}\nCannot read file: "{}"'.format(e, fpath)
+        raise exception_type(msg) from e
 
-    return j
+    return data
 
 
 def jsonify_dict(di):
