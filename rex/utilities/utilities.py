@@ -30,7 +30,7 @@ def safe_json_load(fpath):
 
     Returns
     -------
-    j : dict
+    dict
         Loaded json dictionary.
 
     Examples
@@ -55,7 +55,7 @@ def safe_yaml_load(fpath):
 
     Returns
     -------
-    j : dict
+    dict
         Loaded yaml dictionary.
 
     Examples
@@ -132,7 +132,7 @@ def _read_data_file(fpath, load_method, exception_type):
 
     Returns
     -------
-    dict
+    data : dict
         Dictionary representation of the data in the file.
 
     Raises
@@ -143,12 +143,12 @@ def _read_data_file(fpath, load_method, exception_type):
 
     try:
         with open(fpath, 'r') as f:
-            j = load_method(f)
+            data = load_method(f)
     except exception_type as e:
         msg = 'Error:\n{}\nCannot read file: "{}"'.format(e, fpath)
         raise exception_type(msg) from e
 
-    return j
+    return data
 
 
 def jsonify_dict(di):
