@@ -61,6 +61,47 @@ def safe_json_load(fpath):
     return j
 
 
+def validate_filepath(fpath, file_extension, exception_type):
+    """Validate an input filepath.
+
+    The input is verified to be a string with a valid ending, and
+    it is validated that the file exists on disk. If any of these conditions
+    are not met, an exception is raised.
+
+
+    Parameters
+    ----------
+    fpath : str
+        Filepath to validate.
+    file_extension : str or iterable of str
+        A single file extension or an iterable of acceptable
+        file extensions for the input path.
+    exception_type : `Exception`
+        A class indicating the type of exception to raise if
+        file extension is incorrect.
+
+    Raises
+    ------
+    TypeError
+        If the input `fpath` is not a string.
+    exception_type
+        If the input `fpath` does not end in a valid extension.
+    FileNotFoundError
+        If the input `fpath` does not exist on disk.
+    """
+
+    if not isinstance(fpath, str):
+        raise TypeError('Filepath must be str to load: {}'.format(fpath))
+
+    if not fpath.endswith(file_extension):
+        raise exception_type('Filepath must end in {!r} to load: {}'
+                             .format(file_extension, fpath))
+
+    if not os.path.isfile(fpath):
+        raise FileNotFoundError('Could not find file to load: {}'
+                                .format(fpath))
+
+
 def jsonify_dict(di):
     """Jsonify a dictionary into a string with handling for int/float keys.
 
