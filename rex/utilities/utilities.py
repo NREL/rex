@@ -42,16 +42,7 @@ def safe_json_load(fpath):
     """
 
     validate_filepath(fpath, file_extension='.json', exception_type=JSONError)
-
-    try:
-        with open(fpath, 'r') as f:
-            j = json.load(f)
-    except json.decoder.JSONDecodeError as e:
-        emsg = ('JSON Error:\n{}\nCannot read json file: '
-                '"{}"'.format(e, fpath))
-        raise JSONError(emsg) from e
-
-    return j
+    return _read_data_file(fpath, json.load, exception_type=JSONError)
 
 
 def safe_yaml_load(fpath):
@@ -77,16 +68,8 @@ def safe_yaml_load(fpath):
 
     validate_filepath(fpath, file_extension=('.yml', '.yaml'),
                       exception_type=yaml.YAMLError)
-
-    try:
-        with open(fpath, 'r') as f:
-            j = yaml.safe_load(f)
-    except yaml.YAMLError as e:
-        emsg = ('YAML Error:\n{}\nCannot read yaml file: '
-                '"{}"'.format(e, fpath))
-        raise yaml.YAMLError(emsg) from e
-
-    return j
+    return _read_data_file(fpath, yaml.safe_load,
+                           exception_type=yaml.YAMLError)
 
 
 def validate_filepath(fpath, file_extension, exception_type):
@@ -128,6 +111,44 @@ def validate_filepath(fpath, file_extension, exception_type):
     if not os.path.isfile(fpath):
         raise FileNotFoundError('Could not find file to load: {}'
                                 .format(fpath))
+
+
+def _read_data_file(fpath, load_method, exception_type):
+    """Load the data in the file using a given load method.
+
+    This function performs additional exception handling during the
+    data loading process.
+
+    Parameters
+    ----------
+    fpath : str
+        Filepath containing data to load.
+    load_method : callable
+        Function that can be called on a stream to load the
+        data it contains.
+    exception_type : `Exception`
+        A class indicating the type of exception to raise if
+        data cannot be read.
+
+    Returns
+    -------
+    dict
+        Dictionary representation of the data in the file.
+
+    Raises
+    ------
+    exception_type
+        If there was an error loading the data.
+    """
+
+    try:
+        with open(fpath, 'r') as f:
+            j = load_method(f)
+    except exception_type as e:
+        msg = 'Error:\n{}\nCannot read file: "{}"'.format(e, fpath)
+        raise exception_type(msg) from e
+
+    return j
 
 
 def jsonify_dict(di):
