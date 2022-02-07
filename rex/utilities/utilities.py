@@ -5,6 +5,7 @@ Collection of helpful functions
 import datetime
 import inspect
 import json
+import yaml
 import os
 from fnmatch import fnmatch
 import numpy as np
@@ -40,15 +41,7 @@ def safe_json_load(fpath):
      key2: value2}
     """
 
-    if not isinstance(fpath, str):
-        raise TypeError('Filepath must be str to load json: {}'.format(fpath))
-
-    if not fpath.endswith('.json'):
-        raise JSONError('Filepath must end in .json to load json: {}'
-                        .format(fpath))
-
-    if not os.path.isfile(fpath):
-        raise JSONError('Could not find json file to load: {}'.format(fpath))
+    validate_filepath(fpath, file_extension='.json', exception_type=JSONError)
 
     try:
         with open(fpath, 'r') as f:
@@ -57,6 +50,41 @@ def safe_json_load(fpath):
         emsg = ('JSON Error:\n{}\nCannot read json file: '
                 '"{}"'.format(e, fpath))
         raise JSONError(emsg) from e
+
+    return j
+
+
+def safe_yaml_load(fpath):
+    """Perform a yaml file load with better exception handling.
+
+    Parameters
+    ----------
+    fpath : str
+        Filepath to .yaml (or .yml) file.
+
+    Returns
+    -------
+    j : dict
+        Loaded yaml dictionary.
+
+    Examples
+    --------
+    >>> yaml_path = "./path_to_yaml.yaml"
+    >>> safe_yaml_load(yaml_path)
+    {key1: value1,
+     key2: value2}
+    """
+
+    validate_filepath(fpath, file_extension=('.yml', '.yaml'),
+                      exception_type=yaml.YAMLError)
+
+    try:
+        with open(fpath, 'r') as f:
+            j = yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        emsg = ('YAML Error:\n{}\nCannot read yaml file: '
+                '"{}"'.format(e, fpath))
+        raise yaml.YAMLError(emsg) from e
 
     return j
 
