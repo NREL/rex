@@ -1306,10 +1306,14 @@ class ResourceX:
         i_chunks = np.array_split(np.arange(shape[0]), i_split)
         j_chunks = np.array_split(np.arange(shape[1]), j_split)
 
-        for i_chunk in i_chunks:
+        for ii, i_chunk in enumerate(i_chunks):
             i_slice = slice(i_chunk[0], i_chunk[-1] + 1)
+            logger.info('Working on row chunk {} out of {}'
+                        .format(ii + 1, len(i_chunks)))
 
             for jj, j_chunk in enumerate(j_chunks):
+                logger.debug('Working on column chunk {} out of {}'
+                             .format(jj + 1, len(j_chunks)))
                 j_slice = slice(j_chunk[0], j_chunk[-1] + 1)
                 temp_shape = (len(i_chunk), len(j_chunk))
 
