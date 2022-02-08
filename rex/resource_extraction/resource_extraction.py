@@ -1707,7 +1707,7 @@ class WindX(ResourceX):
     DEFAULT_RES_CLS = WindResource
 
     def get_SAM_gid(self, hub_height, gid, out_path=None, write_time=True,
-                    **kwargs):
+                    extra_meta_data=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given resource gid and hub height
@@ -1722,6 +1722,11 @@ class WindX(ResourceX):
             Path to save SAM data to in SAM .csv format, by default None
         write_time : bool
             Flag to write the time columns (Year, Month, Day, Hour, Minute)
+        extra_meta_data : dict, optional
+            Dictionary that maps the names and values of extra meta
+            info. For example, extra_meta_data={'TMY Year': '2020'}
+            will add a column 'TMY Year' to the meta data with
+            a value of '2020'.
         kwargs : dict
             Internal kwargs for get_SAM_df:
             - require_wind_dir
@@ -1740,7 +1745,9 @@ class WindX(ResourceX):
             kwargs.update({'add_header': True})
 
         SAM_df = super().get_SAM_gid(gid, out_path=out_path,
-                                     write_time=write_time, **kwargs)
+                                     write_time=write_time,
+                                     extra_meta_data=extra_meta_data,
+                                     **kwargs)
 
         return SAM_df
 
