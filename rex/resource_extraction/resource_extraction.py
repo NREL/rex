@@ -1790,7 +1790,8 @@ class WindX(ResourceX):
 
     @classmethod
     def make_SAM_files(cls, hub_height, res_h5, gids, out_path,
-                       write_time=True, max_workers=1, n_chunks=36, **kwargs):
+                       write_time=True, extra_meta_data=None, max_workers=1,
+                       n_chunks=36, **kwargs):
         """A performant parallel entry point for making many SAM csv
         files for many gids
 
@@ -1807,6 +1808,11 @@ class WindX(ResourceX):
             "*_{gid}.csv" will be appended to the file path
         write_time : bool
             Flag to write the time columns (Year, Month, Day, Hour, Minute)
+        extra_meta_data : dict, optional
+            Dictionary that maps the names and values of extra meta
+            info. For example, extra_meta_data={'TMY Year': '2020'}
+            will add a column 'TMY Year' to the meta data with
+            a value of '2020'.
         max_workers : int | None
             Number of parallel workers. None for all workers.
         n_chunks : int
@@ -1816,6 +1822,7 @@ class WindX(ResourceX):
         """
         kwargs['height'] = hub_height
         super().get_SAM_gid(res_h5, gids, out_path, write_time=write_time,
+                            extra_meta_data=extra_meta_data,
                             max_workers=max_workers, n_chunks=n_chunks,
                             **kwargs)
 
