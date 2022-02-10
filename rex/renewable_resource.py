@@ -51,7 +51,8 @@ class SolarResource(BaseResource):
                                'Month': self.time_index.month,
                                'Day': self.time_index.day,
                                'Hour': self.time_index.hour})
-        if len(self) > 8784:
+
+        if len(self) > 8784 or (self.time_index.minute != 0).any():
             res_df['Minute'] = self.time_index.minute
 
         time_zone = self.meta.loc[site, 'timezone']
