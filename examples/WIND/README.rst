@@ -56,12 +56,16 @@ are provided below:
 The easiest way to access and extract data is by using the Resource eXtraction
 tool `rex <https://nrel.github.io/rex/>`_
 
-To use `rex` with `HSDS <https://github.com/NREL/hsds-examples>`_ you will need
-to install `h5pyd`:
+To use ``rex`` with `HSDS
+<https://www.hdfgroup.org/solutions/highly-scalable-data-service-hsds/>`_ you
+will need to install ``h5pyd`` with ``pip install h5pyd`` and then run
+``hsconfigure`` as described in the `NREL HSDS Examples
+<https://github.com/NREL/hsds-examples>`_.
 
-.. code-block:: bash
-
-  pip install h5pyd
+*Please note that our HSDS service is for demonstration purposes only, if you
+would like to use HSDS for production runs of reV please setup your own
+service: https://github.com/HDFGroup/hsds and point it to our public HSDS
+bucket: s3://nrel-pds-hsds**
 
 WINDX CLI
 +++++++++
