@@ -72,13 +72,19 @@ The units for the variable data is also provided as an attribute
 Data Access Examples
 --------------------
 
+The easiest way to access and extract WTK and NSRDB data is by using the
+Resource eXtraction tool `rex <https://nrel.github.io/rex/>`_.
+
 Example scripts to extract wave resource data using the command line or python
-are provided below:
+are provided below.
 
-The easiest way to access and extract data is by using the Resource eXtraction
-tool `rex <https://nrel.github.io/rex/>`_.
+If you are on the NREL Eagle supercomputer, you can use the example below, but
+change the filepath to the appropriate WTK or NSRDB file location on
+``/datasets/`` and set ``hsds=False``. See the basic `rex Resource handler
+examples <https://nrel.github.io/rex/_autosummary/rex.resource.Resource.html#rex-resource-resource>`_
+for similar use examples.
 
-To use ``rex`` with `HSDS
+You can use ``rex`` to access WTK and NSRDB data on Amazon S3 using `HSDS
 <https://www.hdfgroup.org/solutions/highly-scalable-data-service-hsds/>`_ you
 will need to install ``h5pyd`` with ``pip install h5pyd`` and then run
 ``hsconfigure`` as described in the `NREL HSDS Examples
