@@ -557,6 +557,15 @@ class RechunkH5:
 
         name = dset_attrs.get('name', None)
         if name is not None:
+            if name is not str:
+                msg = ("dataset attribute `name` (value: {}, type: {}) must "
+                    "be a string. "
+                    "Check the attributes of the dataset ({}). If using an external "
+                    "json file for variable attributes, it might be using"
+                    " `null` for the name."
+                    .format(name, type(name), dset_name))
+                logger.error(msg)
+                raise RuntimeError(msg)
             dset_name = name
 
         logger.debug('Creating {} with shape: {}, dtype: {}, chunks: {}'
