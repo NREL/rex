@@ -138,12 +138,16 @@ class MultiH5:
         """
         unique_dsets = []
         shared_dsets = []
-        with h5py.File(h5_path, mode='r') as f:
-            for dset in f:
-                if dset not in ['meta', 'time_index', 'coordinates']:
-                    unique_dsets.append(dset)
-                else:
-                    shared_dsets.append(dset)
+        try:
+            with h5py.File(h5_path, mode='r') as f:
+                for dset in f:
+                    if dset not in ['meta', 'time_index', 'coordinates']:
+                        unique_dsets.append(dset)
+                    else:
+                        shared_dsets.append(dset)
+        except Exception as e:
+            msg = ('Could not read file: "{}"'.format(h5_path))
+            raise IOError(msg) from e
 
         return unique_dsets, shared_dsets
 
