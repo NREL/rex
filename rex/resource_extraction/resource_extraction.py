@@ -497,7 +497,7 @@ class ResourceX:
                 col_map[c] = 'Time Zone'
             elif c.lower() == 'gid':
                 col_map[c] = 'Location ID'
-            else:
+            elif c.islower():
                 col_map[c] = c.capitalize()
 
         site_meta = site_meta.rename(columns=col_map)
@@ -886,7 +886,8 @@ class ResourceX:
 
         return box_df
 
-    def get_SAM_gid(self, gid, out_path=None, write_time=True, **kwargs):
+    def get_SAM_gid(self, gid, out_path=None, write_time=True,
+                    extra_meta_data=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given resource gid
@@ -899,6 +900,11 @@ class ResourceX:
             Path to save SAM data to in SAM .csv format, by default None
         write_time : bool
             Flag to write the time columns (Year, Month, Day, Hour, Minute)
+        extra_meta_data : dict, optional
+            Dictionary that maps the names and values of extra meta
+            info. For example, extra_meta_data={'TMY Year': '2020'}
+            will add a column 'TMY Year' to the meta data with
+            a value of '2020'.
         kwargs : dict
             Internal kwargs for get_SAM_df
 
@@ -926,6 +932,11 @@ class ResourceX:
                     i_out_path = i_out_path.replace('.csv', tag)
 
                 site_meta = self['meta', res_id]
+
+                extra_meta_data = extra_meta_data or {}
+                for col_name, val in extra_meta_data.items():
+                    site_meta[col_name] = val
+
                 if self.data_version is not None:
                     # pylint: disable=unsupported-assignment-operation
                     site_meta['Version'] = self.data_version
@@ -1332,7 +1343,8 @@ class ResourceX:
 
     @classmethod
     def make_SAM_files(cls, res_h5, gids, out_path, write_time=True,
-                       max_workers=1, n_chunks=36, **kwargs):
+                       extra_meta_data=None, max_workers=1, n_chunks=36,
+                       **kwargs):
         """A performant parallel entry point for making many SAM csv
         files for many gids
 
@@ -1347,6 +1359,11 @@ class ResourceX:
             "*_{gid}.csv" will be appended to the file path
         write_time : bool
             Flag to write the time columns (Year, Month, Day, Hour, Minute)
+        extra_meta_data : dict, optional
+            Dictionary that maps the names and values of extra meta
+            info. For example, extra_meta_data={'TMY Year': '2020'}
+            will add a column 'TMY Year' to the meta data with
+            a value of '2020'.
         max_workers : int | None
             Number of parallel workers. None for all workers.
         n_chunks : int
@@ -1358,7 +1375,9 @@ class ResourceX:
         if max_workers == 1:
             with cls(res_h5) as res:
                 res.get_SAM_gid(gids, out_path=out_path,
-                                write_time=write_time, **kwargs)
+                                write_time=write_time,
+                                extra_meta_data=extra_meta_data,
+                                **kwargs)
         else:
             msg = 'Bad gids dtype: {}'.format(type(gids))
             assert isinstance(gids, (list, tuple, np.ndarray)), msg
@@ -1366,7 +1385,9 @@ class ResourceX:
             with SpawnProcessPool(max_workers=max_workers) as spp:
                 for chunk in gid_chunks:
                     spp.submit(cls.make_SAM_files, res_h5, chunk, out_path,
-                               write_time=write_time, max_workers=1, **kwargs)
+                               write_time=write_time,
+                               extra_meta_data=extra_meta_data,
+                               max_workers=1, **kwargs)
 
     def close(self):
         """
@@ -1690,7 +1711,7 @@ class WindX(ResourceX):
     DEFAULT_RES_CLS = WindResource
 
     def get_SAM_gid(self, hub_height, gid, out_path=None, write_time=True,
-                    **kwargs):
+                    extra_meta_data=None, **kwargs):
         """
         Extract time-series of all variables needed to run SAM for nearest
         site to given resource gid and hub height
@@ -1705,6 +1726,11 @@ class WindX(ResourceX):
             Path to save SAM data to in SAM .csv format, by default None
         write_time : bool
             Flag to write the time columns (Year, Month, Day, Hour, Minute)
+        extra_meta_data : dict, optional
+            Dictionary that maps the names and values of extra meta
+            info. For example, extra_meta_data={'TMY Year': '2020'}
+            will add a column 'TMY Year' to the meta data with
+            a value of '2020'.
         kwargs : dict
             Internal kwargs for get_SAM_df:
             - require_wind_dir
@@ -1723,7 +1749,9 @@ class WindX(ResourceX):
             kwargs.update({'add_header': True})
 
         SAM_df = super().get_SAM_gid(gid, out_path=out_path,
-                                     write_time=write_time, **kwargs)
+                                     write_time=write_time,
+                                     extra_meta_data=extra_meta_data,
+                                     **kwargs)
 
         return SAM_df
 
@@ -1766,7 +1794,8 @@ class WindX(ResourceX):
 
     @classmethod
     def make_SAM_files(cls, hub_height, res_h5, gids, out_path,
-                       write_time=True, max_workers=1, n_chunks=36, **kwargs):
+                       write_time=True, extra_meta_data=None, max_workers=1,
+                       n_chunks=36, **kwargs):
         """A performant parallel entry point for making many SAM csv
         files for many gids
 
@@ -1783,6 +1812,11 @@ class WindX(ResourceX):
             "*_{gid}.csv" will be appended to the file path
         write_time : bool
             Flag to write the time columns (Year, Month, Day, Hour, Minute)
+        extra_meta_data : dict, optional
+            Dictionary that maps the names and values of extra meta
+            info. For example, extra_meta_data={'TMY Year': '2020'}
+            will add a column 'TMY Year' to the meta data with
+            a value of '2020'.
         max_workers : int | None
             Number of parallel workers. None for all workers.
         n_chunks : int
@@ -1792,6 +1826,7 @@ class WindX(ResourceX):
         """
         kwargs['height'] = hub_height
         super().get_SAM_gid(res_h5, gids, out_path, write_time=write_time,
+                            extra_meta_data=extra_meta_data,
                             max_workers=max_workers, n_chunks=n_chunks,
                             **kwargs)
 

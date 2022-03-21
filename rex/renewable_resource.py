@@ -23,14 +23,21 @@ class SolarResource(BaseResource):
     --------
     resource.BaseResource : Parent class
     """
-    def get_SAM_df(self, site):
+    def get_SAM_df(self, site, extra_cols=None):
         """
         Get SAM solar resource DataFrame for given site
 
         Parameters
         ----------
         site : int
-            Site to extract SAM DataFrame for
+            Site to extract SAM DataFrame for.
+        extra_cols : dict, optional
+            A dictionary where they keys are extra columns
+            to extract from the SAM solar resource DataFrame
+            and the values are the names the new columns should
+            have (e.g. extra_cols={'surface_albedo': 'Surface
+            Albedo'} will extract the 'surface_albedo' from the
+            resource file and call it 'Surface Albedo' in the output).
 
         Returns
         -------
@@ -44,13 +51,16 @@ class SolarResource(BaseResource):
                                'Month': self.time_index.month,
                                'Day': self.time_index.day,
                                'Hour': self.time_index.hour})
-        if len(self) > 8784:
+
+        if len(self) > 8784 or (self.time_index.minute != 0).any():
             res_df['Minute'] = self.time_index.minute
 
         time_zone = self.meta.loc[site, 'timezone']
         time_interval = len(self.time_index) // 8760
 
-        for var in ['dni', 'dhi', 'wind_speed', 'air_temperature']:
+        main_cols = ['dni', 'dhi', 'wind_speed', 'air_temperature']
+        extra_cols = extra_cols or {}
+        for var in main_cols + list(extra_cols):
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var, ds_slice)
             var_array = SAMResource.roll_timeseries(var_array, time_zone,
@@ -60,6 +70,7 @@ class SolarResource(BaseResource):
 
         col_map = {'dni': 'DNI', 'dhi': 'DHI', 'wind_speed': 'Wind Speed',
                    'air_temperature': 'Temperature'}
+        col_map.update(extra_cols)
         res_df = res_df.rename(columns=col_map)
         res_df.name = "SAM_-{}".format(site)
 
