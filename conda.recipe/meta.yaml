@@ -22,6 +22,7 @@ requirements:
     - psutil
     - scipy
     - toml
+    - PyYAML
   run:
     - python
     - pip
@@ -32,6 +33,7 @@ requirements:
     - psutil
     - scipy
     - toml
+    - PyYAML
   run-constrained:
     - h5pyd
 
