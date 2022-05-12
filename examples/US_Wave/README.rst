@@ -186,7 +186,7 @@ location:
     wave_file = '/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5'
     lat_lon = (34.399408, -119.841181)
     with WaveX(wave_file, hsds=True) as f:
-        lat_lon_swh = f.get_lat_lon_df('significant_wave_height', nwtc)
+        lat_lon_swh = f.get_lat_lon_df('significant_wave_height', lat_lon)
 
 
 or to extract all sites in a given region:
