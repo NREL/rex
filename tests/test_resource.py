@@ -648,6 +648,17 @@ def test_group_raise():
             check_res(res)
 
 
+def test_missing_dset():
+    """
+    test WindResource missing data set
+    """
+    with pytest.raises(ResourceKeyError) as excinfo:
+        with WindResource_res() as res:
+            __ = res['pressure_150m']
+
+    assert 'dne_dset not in' in str(excinfo.value)
+
+
 def test_check_files():
     """
     test MultiH5 check_files
