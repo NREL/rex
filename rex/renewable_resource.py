@@ -6,13 +6,18 @@ import numpy as np
 import os
 import pandas as pd
 import warnings
+import logging
 
 from rex.resource import BaseResource
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import (ResourceValueError, ExtrapolationWarning,
                                       ResourceWarning, ResourceRuntimeError,
+                                      ResourceKeyError,
                                       MoninObukhovExtrapolationError)
 from rex.utilities.parse_keys import parse_keys
+
+
+logger = logging.getLogger(__name__)
 
 
 class SolarResource(BaseResource):
@@ -97,6 +102,7 @@ class SolarResource(BaseResource):
             Boolean flag to pull clearsky instead of real irradiance
         bifacial : bool
             Boolean flag to pull surface albedo for bifacial modeling.
+
         Returns
         -------
         SAM_res : SAMResource
@@ -433,6 +439,17 @@ class WindResource(BaseResource):
                         heights[ds_name].append(h)
 
             self._heights = heights
+
+            missing = []
+            for dset, h_vals in heights.items():
+                if not h_vals:
+                    missing.append(dset)
+
+            if missing:
+                msg = ("Missing height info for dataset(s): {} in {}"
+                       .format(missing, self.h5_file))
+                logger.error(msg)
+                raise ResourceKeyError(msg)
 
         return self._heights
 

@@ -8,6 +8,8 @@ import numpy as np
 import os
 import pandas as pd
 import pytest
+import shutil
+import tempfile
 
 from rex import TESTDATADIR
 from rex.multi_file_resource import (MultiH5, MultiH5Path, MultiFileNSRDB,
@@ -657,6 +659,27 @@ def test_missing_dset():
             __ = res['pressure_150m']
 
     assert 'dne_dset not in' in str(excinfo.value)
+
+
+def test_missing_dset_for_heights():
+    """
+    test WindResource missing data set for `self.heights`
+    """
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    with tempfile.TemporaryDirectory() as td:
+        res_fp = os.path.join(td, 'ri_100_wtk_2012.h5')
+        shutil.copy(path, res_fp)
+        with h5py.File(res_fp, 'a') as fh:
+            del fh['temperature_80m']
+            del fh['temperature_100m']
+
+        with pytest.raises(ResourceKeyError) as excinfo:
+            with WindResource(res_fp) as res:
+                __ = res.heights
+
+    expected_str = "Missing height info for dataset(s): ['temperature']"
+    assert expected_str in str(excinfo.value)
 
 
 def test_check_files():
