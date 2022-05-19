@@ -658,7 +658,7 @@ def test_missing_dset():
         with WindResource_res() as res:
             __ = res['pressure_150m']
 
-    assert 'dne_dset not in' in str(excinfo.value)
+    assert 'pressure_150m not in' in str(excinfo.value)
 
 
 def test_missing_dset_for_heights():
