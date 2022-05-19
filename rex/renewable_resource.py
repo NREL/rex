@@ -6,13 +6,18 @@ import numpy as np
 import os
 import pandas as pd
 import warnings
+import logging
 
 from rex.resource import BaseResource
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import (ResourceValueError, ExtrapolationWarning,
                                       ResourceWarning, ResourceRuntimeError,
+                                      ResourceKeyError,
                                       MoninObukhovExtrapolationError)
 from rex.utilities.parse_keys import parse_keys
+
+
+logger = logging.getLogger(__name__)
 
 
 class SolarResource(BaseResource):
@@ -97,6 +102,7 @@ class SolarResource(BaseResource):
             Boolean flag to pull clearsky instead of real irradiance
         bifacial : bool
             Boolean flag to pull surface albedo for bifacial modeling.
+
         Returns
         -------
         SAM_res : SAMResource
@@ -848,7 +854,7 @@ class WindResource(BaseResource):
     def _get_ds_height(self, ds_name, ds_slice):
         """
         Extract data from given dataset at desired height, interpolate or
-        extrapolate if neede
+        extrapolate if needed.
 
         Parameters
         ----------
@@ -867,7 +873,12 @@ class WindResource(BaseResource):
         var_name, h = self._parse_name(ds_name)
         heights = self.heights[var_name]
 
-        if h in heights:
+        if not heights:
+            msg = ("Missing height info for dataset '{}' in {}"
+                   .format(var_name, self.h5_file))
+            logger.error(msg)
+            raise ResourceKeyError(msg)
+        elif h in heights:
             ds_name = '{}_{}m'.format(var_name, int(h))
             out = super()._get_ds(ds_name, ds_slice)
         elif len(heights) == 1:

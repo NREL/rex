@@ -156,6 +156,7 @@ disable=
         unexpected-keyword-arg,
         no-value-for-parameter,
         too-many-lines,
+        arguments-renamed,
         arguments-differ,
         import-outside-toplevel,
         super-init-not-called,
