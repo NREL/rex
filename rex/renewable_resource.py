@@ -440,17 +440,6 @@ class WindResource(BaseResource):
 
             self._heights = heights
 
-            missing = []
-            for dset, h_vals in heights.items():
-                if not h_vals:
-                    missing.append(dset)
-
-            if missing:
-                msg = ("Missing height info for dataset(s): {} in {}"
-                       .format(missing, self.h5_file))
-                logger.error(msg)
-                raise ResourceKeyError(msg)
-
         return self._heights
 
     @staticmethod
@@ -865,7 +854,7 @@ class WindResource(BaseResource):
     def _get_ds_height(self, ds_name, ds_slice):
         """
         Extract data from given dataset at desired height, interpolate or
-        extrapolate if neede
+        extrapolate if needed.
 
         Parameters
         ----------
@@ -884,7 +873,12 @@ class WindResource(BaseResource):
         var_name, h = self._parse_name(ds_name)
         heights = self.heights[var_name]
 
-        if h in heights:
+        if not heights:
+            msg = ("Missing height info for dataset '{}' in {}"
+                   .format(var_name, self.h5_file))
+            logger.error(msg)
+            raise ResourceKeyError(msg)
+        elif h in heights:
             ds_name = '{}_{}m'.format(var_name, int(h))
             out = super()._get_ds(ds_name, ds_slice)
         elif len(heights) == 1:

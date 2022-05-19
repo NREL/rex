@@ -656,9 +656,9 @@ def test_missing_dset():
     """
     with pytest.raises(ResourceKeyError) as excinfo:
         with WindResource_res() as res:
-            __ = res['pressure_150m']
+            __ = res['dne_dset']
 
-    assert 'pressure_150m not in' in str(excinfo.value)
+    assert 'dne_dset not in' in str(excinfo.value)
 
 
 def test_missing_dset_for_heights():
@@ -676,9 +676,9 @@ def test_missing_dset_for_heights():
 
         with pytest.raises(ResourceKeyError) as excinfo:
             with WindResource(res_fp) as res:
-                __ = res.heights
+                __ = res._get_ds_height('temperature', (0, 0))
 
-    expected_str = "Missing height info for dataset(s): ['temperature']"
+    expected_str = "Missing height info for dataset 'temperature'"
     assert expected_str in str(excinfo.value)
 
 
