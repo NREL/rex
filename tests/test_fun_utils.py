@@ -8,10 +8,11 @@ from rex.utilities.fun_utils import (has_class, get_class, is_standalone_fun,
                                      get_fun_call_str)
 
 
+# pylint: disable=unused-argument
 def myfun(a, b, *args, c=0, d=1, **kwargs):
     """Test standalone function"""
     out = a + b + c + d
-    for k, v in kwargs.items():
+    for v in kwargs.values():
         out += v
     return out
 

@@ -143,14 +143,13 @@ def get_arg_str(fun, config):
             elif is_star_arg:
                 msg = '"args" key in config must be mapped to a list!'
                 assert isinstance(config[arg_name], (list, tuple)), msg
-                for star_arg in config[arg_name]:
-                    arg_strs.append(f'{star_arg}')
+                arg_strs += [f'{star_arg}' for star_arg in config[arg_name]]
 
             elif is_star_kwa:
                 msg = '"kwargs" key in config must be mapped to a dict!'
                 assert isinstance(config[arg_name], dict), msg
-                for star_name, star_kw in config[arg_name].items():
-                    arg_strs.append(f'{star_name}={star_kw}')
+                arg_strs += [f'{star_name}={star_kw}' for star_name, star_kw
+                             in config[arg_name].items()]
 
         elif not (is_kw or is_star_arg or is_star_kwa):
             msg = (f'Positional argument "{arg_name}" '
