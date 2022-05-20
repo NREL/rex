@@ -117,7 +117,7 @@ def test_get_call_str():
               'kwargs': {'d': 1}}
 
     call_str = get_fun_call_str(myfun, config)
-    assert call_str == 'myfun(0, 2.2, 4.01, 1.01, c=3.4, d=1.01)'
+    assert call_str == 'myfun(0, 2.2, 4.01, 1.01, c=3.4, d=1)'
 
     call_str = get_fun_call_str(MyClass.cls_meth, config)
     assert call_str == 'MyClass.cls_meth(2.2, c=3.4)'

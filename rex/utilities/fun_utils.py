@@ -150,7 +150,7 @@ def get_arg_str(fun, config):
                 msg = '"kwargs" key in config must be mapped to a dict!'
                 assert isinstance(config[arg_name], dict), msg
                 for star_name, star_kw in config[arg_name].items():
-                    arg_strs.append(f'{star_name}={star_arg}')
+                    arg_strs.append(f'{star_name}={star_kw}')
 
         elif not (is_kw or is_star_arg or is_star_kwa):
             msg = (f'Positional argument "{arg_name}" '
