@@ -2,7 +2,7 @@
 """
 rex utilities.
 """
-from .fun_utils import (has_class, get_class, is_standalone_fun,
+from .fun_utils import (arg_to_str, has_class, get_class, is_standalone_fun,
                         is_instance_method, get_fun_str, get_arg_str,
                         get_fun_call_str)
 from .execution import SpawnProcessPool

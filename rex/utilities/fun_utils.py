@@ -10,6 +10,20 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def arg_to_str(arg):
+    """Format input as str w/ appropriate quote types for python call
+
+    Examples
+    --------
+        int, float, None -> '0'
+        str, other -> 'string'
+    """
+    if isinstance(arg, str):
+        return f'"{arg}"'
+    else:
+        return f'{arg}'
+
+
 def has_class(obj):
     """Determine whether an object is a method that is bound to a class
 
@@ -135,20 +149,24 @@ def get_arg_str(fun, config):
 
         if arg_name in config:
             if not is_kw and not (is_star_arg or is_star_kwa):
-                arg_strs.append(f'{config[arg_name]}')
+                arg = arg_to_str(config[arg_name])
+                arg_strs.append(f'{arg}')
 
             elif is_kw and not (is_star_arg or is_star_kwa):
-                arg_strs.append(f'{arg_name}={config[arg_name]}')
+                arg = arg_to_str(config[arg_name])
+                arg_strs.append(f'{arg_name}={arg}')
 
             elif is_star_arg:
                 msg = '"args" key in config must be mapped to a list!'
                 assert isinstance(config[arg_name], (list, tuple)), msg
-                arg_strs += [f'{star_arg}' for star_arg in config[arg_name]]
+                arg_strs += [f'{arg_to_str(star_arg)}'
+                             for star_arg in config[arg_name]]
 
             elif is_star_kwa:
                 msg = '"kwargs" key in config must be mapped to a dict!'
                 assert isinstance(config[arg_name], dict), msg
-                arg_strs += [f'{star_name}={star_kw}' for star_name, star_kw
+                arg_strs += [f'{star_name}={arg_to_str(star_kw)}'
+                             for star_name, star_kw
                              in config[arg_name].items()]
 
         elif not (is_kw or is_star_arg or is_star_kwa):
