@@ -141,4 +141,4 @@ def test_str_args():
     """Test parsing of non-numeric string and None arguments"""
     config = {'a': {'test': 'x'}, 'b': 'y', 'd': None}
     call_str = get_fun_call_str(my_str_fun, config)
-    assert call_str == 'my_str_fun({\'test\': \'x\'}, "y", d=None)'
+    assert call_str == 'my_str_fun({\"test\": \"x\"}, \"y\", d=None)'

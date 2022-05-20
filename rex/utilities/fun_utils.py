@@ -180,7 +180,7 @@ def get_arg_str(fun, config):
     return arg_str
 
 
-def get_fun_call_str(fun, config):
+def get_fun_call_str(fun, config, quote_char='\"'):
     """Get a string that will call a function using args and kwargs from a
     generic config.
 
@@ -203,6 +203,8 @@ def get_fun_call_str(fun, config):
         used, but all required inputs to fun must be provided in config. Can
         include "args" and "kwargs" which must be mapped to a list and a
         dictionary, respectively.
+    quote_char : str
+        Character to use for string quotes in the fun_call_str output.
 
     Returns
     -------
@@ -221,5 +223,11 @@ def get_fun_call_str(fun, config):
     fun_str = get_fun_str(fun)
     arg_str = get_arg_str(fun, config)
     call_str = f'{fun_str}({arg_str})'
+
+    if quote_char:
+        call_str = call_str.replace('"', quote_char)
+        call_str = call_str.replace("'", quote_char)
+        call_str = call_str.replace("/'", quote_char)
+        call_str = call_str.replace('/"', quote_char)
 
     return call_str
