@@ -206,11 +206,3 @@ def get_fun_call_str(fun, config):
     call_str = f'{fun_str}({arg_str})'
 
     return call_str
-
-
-if __name__ == '__main__':
-    config = {'a': 0, 'b': 2.2, 'c': 3.4, 'args': [4.01, 1.01], 'kwargs': {'d': 1}}
-    fun = MyClass.static_meth
-
-    call_str = get_fun_call_str(fun, config)
-    print(call_str)
