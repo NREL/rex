@@ -13,10 +13,12 @@ logger = logging.getLogger(__name__)
 def arg_to_str(arg):
     """Format input as str w/ appropriate quote types for python call
 
-    Examples
+    Returns
     --------
-        int, float, None -> '0'
-        str, other -> 'string'
+    out : str
+        String rep of the input arg with proper quotation for formatting in
+        python -c '{commands}' cli calls. For example, int, float, None -> '0'
+        str -> \"string\"
     """
     if isinstance(arg, str):
         return f'"{arg}"'
@@ -29,7 +31,10 @@ def has_class(obj):
 
     Returns
     -------
-    bool
+    out : bool
+        Whether the input object belongs to a class. For example,
+        MyClass.bound_method will return True, whereas standalone_fun will
+        return False.
     """
     if hasattr(obj, '__qualname__'):
         if len(obj.__qualname__.split('.')) > 1:
@@ -44,7 +49,10 @@ def get_class(obj):
 
     Returns
     -------
-    str
+    out : str
+        The class name the input object method belongs to. For example,
+        MyClass.bound_method will return "MyClass", whereas standalone_fun will
+        return an empty string.
     """
     class_name = ''
     if has_class(obj):
@@ -58,19 +66,23 @@ def is_standalone_fun(obj):
 
     Returns
     -------
-    bool
+    out : bool
+        Whether the input object is a standalone function. For example,
+        MyClass.bound_method will return False, whereas standalone_fun will
+        return True.
     """
     return inspect.isfunction(obj) and not has_class(obj)
 
 
 def is_instance_method(obj):
-    """Determine whether an object is an instance method bound to a class. This
-    will return False if the object is an instance method bound to an
-    instantiated object (known limitation, could cause issues).
+    """Determine whether an object is an instance method bound to a class.
 
     Returns
     -------
-    bool
+    out : bool
+        Whether or not the object is an instance method with self as the first
+        argument. This will return False if the object is an instance method
+        bound to an instantiated object (known limitation, could cause issues).
     """
     if inspect.isfunction(obj) and has_class(obj):
         sig = signature(obj)
@@ -87,7 +99,10 @@ def get_fun_str(fun):
 
     Returns
     -------
-    str
+    out : str
+        The function string to call the input function. For example
+        MyClass.bound_method will return "MyClass.bound_method", whereas
+        standalone_fun will return "standalone_fun".
     """
     fun_name = fun.__name__
     if is_standalone_fun(fun):
@@ -128,7 +143,8 @@ def get_arg_str(fun, config):
     Returns
     -------
     arg_str : str
-        Argument string that can be used to call fun programmatically.
+        Argument string that can be used to call fun programmatically, e.g.
+        fun(arg_str)
     """
 
     if is_instance_method(fun):
