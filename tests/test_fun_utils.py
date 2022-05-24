@@ -4,8 +4,7 @@ Utilities for building efficient command line interfaces on Click
 """
 import pytest
 from rex.utilities.fun_utils import (has_class, get_class, is_standalone_fun,
-                                     is_instance_method, get_fun_str,
-                                     get_fun_call_str)
+                                     get_fun_str, get_fun_call_str)
 
 
 # pylint: disable=unused-argument
@@ -81,20 +80,6 @@ def test_is_standalone():
     assert not is_standalone_fun(myclass.cls_meth)
 
 
-def test_isinstance_method():
-    """Test the method to tell if an obj is an instance function"""
-    myclass = MyClass(0)
-    assert not is_instance_method(my_fun)
-    assert is_instance_method(MyClass.inst_meth)
-    assert not is_instance_method(MyClass.static_meth)
-    assert not is_instance_method(MyClass.cls_meth)
-    assert not is_instance_method(myclass.static_meth)
-    assert not is_instance_method(myclass.cls_meth)
-
-    # this is a known limitation right now
-    assert not is_instance_method(myclass.inst_meth)
-
-
 def test_get_fun_str():
     """Test the function string retrieval method"""
     myclass = MyClass(0)
@@ -110,9 +95,12 @@ def test_get_fun_str():
 def test_bad_args():
     """Test bad function and config arguments"""
     config = {}
-    with pytest.raises(TypeError):
+
+    # missing required argument b
+    with pytest.raises(KeyError):
         _ = get_fun_call_str(MyClass.inst_meth, config)
 
+    # missing required argument b
     with pytest.raises(KeyError):
         _ = get_fun_call_str(MyClass.static_meth, config)
 
@@ -135,6 +123,14 @@ def test_get_call_str():
     config = {'a': 0, 'b': 2.2}
     call_str = get_fun_call_str(MyClass.static_meth, config)
     assert call_str == 'MyClass.static_meth(2.2)'
+
+
+def test_init_str():
+    """Test the parsing of a class init function"""
+    assert get_fun_str(MyClass) == 'MyClass'
+    config = {'a': 0, 'b': 2.2}
+    call_str = get_fun_call_str(MyClass, config)
+    assert call_str == 'MyClass(0)'
 
 
 def test_str_args():
