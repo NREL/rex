@@ -74,25 +74,6 @@ def is_standalone_fun(obj):
     return inspect.isfunction(obj) and not has_class(obj)
 
 
-def is_instance_method(obj):
-    """Determine whether an object is an instance method bound to a class.
-
-    Returns
-    -------
-    out : bool
-        Whether or not the object is an instance method with self as the first
-        argument. This will return False if the object is an instance method
-        bound to an instantiated object (known limitation, could cause issues).
-    """
-    if inspect.isfunction(obj) and has_class(obj):
-        sig = signature(obj)
-        params = list(sig.parameters)
-        if params[0] == 'self':
-            return True
-
-    return False
-
-
 def get_fun_str(fun):
     """Get the function string from a function object including the
     ClassName.function if the function is bound
@@ -111,9 +92,7 @@ def get_fun_str(fun):
         class_name = get_class(fun)
         return f'{class_name}.{fun_name}'
     else:
-        msg = (f'Could not get function string from {fun} of type {type(fun)}')
-        logger.error(msg)
-        raise TypeError(msg)
+        return fun_name
 
 
 def get_arg_str(fun, config):
@@ -131,9 +110,8 @@ def get_arg_str(fun, config):
     Parameters
     ----------
     fun : obj
-        Either a standalone, static, or class method with a function signature.
-        The function signature will be parsed for args and kwargs which will be
-        taken from the config.
+        A callable object with a function signature. The function signature
+        will be parsed for args and kwargs which will be taken from the config.
     config : dict
         A namespace of arguments to run fun. Not all entries in config may be
         used, but all required inputs to fun must be provided in config. Can
@@ -147,21 +125,17 @@ def get_arg_str(fun, config):
         fun(arg_str)
     """
 
-    if is_instance_method(fun):
-        msg = (f'Cannot get a call string for an instance method "{fun}". '
-               'This utility is intended only to get function call strings '
-               'for standalone, static, or class methods')
-        logger.error(msg)
-        raise TypeError(msg)
-
     sig = signature(fun)
 
     arg_strs = []
 
     for arg_name, value in sig.parameters.items():
+        is_self = arg_name == 'self'
         is_kw = value.default != value.empty
         is_star_arg = str(value).startswith('*') and str(value).count('*') == 1
         is_star_kwa = str(value).startswith('*') and str(value).count('*') == 2
+        not_required = (is_self or is_kw or is_star_arg or is_star_kwa)
+        required = not not_required
 
         if arg_name in config:
             if not is_kw and not (is_star_arg or is_star_kwa):
@@ -185,7 +159,7 @@ def get_arg_str(fun, config):
                              for star_name, star_kw
                              in config[arg_name].items()]
 
-        elif not (is_kw or is_star_arg or is_star_kwa):
+        elif required:
             msg = (f'Positional argument "{arg_name}" '
                    'needs to be defined in config!')
             logger.error(msg)
@@ -211,9 +185,8 @@ def get_fun_call_str(fun, config, quote_char='\"'):
     Parameters
     ----------
     fun : obj
-        Either a standalone, static, or class method with a function signature.
-        The function signature will be parsed for args and kwargs which will be
-        taken from the config.
+        A callable object with a function signature. The function signature
+        will be parsed for args and kwargs which will be taken from the config.
     config : dict
         A namespace of arguments to run fun. Not all entries in config may be
         used, but all required inputs to fun must be provided in config. Can
@@ -228,13 +201,6 @@ def get_fun_call_str(fun, config, quote_char='\"'):
         A string representation of a function call e.g. "fun(arg1, arg2,
         kw1=kw1)" where arg1, arg2, and kw1 were found in the config.
     """
-
-    if is_instance_method(fun):
-        msg = (f'Cannot get a call string for an instance method "{fun}". '
-               'This utility is intended only to get function call strings '
-               'for standalone, static, or class methods')
-        logger.error(msg)
-        raise TypeError(msg)
 
     fun_str = get_fun_str(fun)
     arg_str = get_arg_str(fun, config)
