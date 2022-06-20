@@ -29,8 +29,9 @@ from rex.utilities import (SpawnProcessPool, SLURM, init_logger, init_mult,
                            setup_logger, log_mem, log_versions, LOGGERS,
                            SolarPosition, safe_json_load, jsonify_dict,
                            parse_year, check_res_file, parse_table,
-                           check_eval_str, to_records_array, Outputs)
+                           check_eval_str, to_records_array)
 from rex.resource import Resource
+from rex.outputs import Outputs
 from rex.version import __version__
 
 __author__ = """Michael Rossol"""

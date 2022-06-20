@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-PyTest file for reV LCOE economies of scale
+PyTest file for rex outputs handler
 """
 import h5py
 import numpy as np
@@ -10,8 +10,8 @@ import os
 import tempfile
 
 from rex.version import __version__
-from rex.utilities.outputs import Outputs
-from reV.utilities.exceptions import HandlerRuntimeError, HandlerValueError
+from rex import Outputs
+from rex.utilities.exceptions import HandlerRuntimeError, HandlerValueError
 
 
 arr1 = np.ones(100)
