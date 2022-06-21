@@ -7,6 +7,11 @@ import logging
 import numpy as np
 import pandas as pd
 import time
+import sys
+import click
+import h5py
+import h5pyd
+import scipy
 
 from rex.version import __version__
 from rex.utilities.exceptions import (HandlerRuntimeError, HandlerValueError)
@@ -181,9 +186,29 @@ class Outputs(BaseResource):
             else:
                 self._set_ds_array(ds, arr, ds_slice)
 
+    @property
+    def full_version_record(self):
+        """Get record of versions for dependencies
+
+        Returns
+        -------
+        dict
+            Dictionary of package versions for dependencies
+        """
+        versions = {'rex': __version__,
+                    'pandas': pd.__version__,
+                    'numpy': np.__version__,
+                    'python': sys.version,
+                    'click': click.__version__,
+                    'h5py': h5py.__version__,
+                    'h5pyd': h5pyd.__version__,
+                    'scipy': scipy.__version__
+                    }
+        return versions
+
     def set_version_attr(self):
         """Set the version attribute to the h5 file."""
-        self.h5.attrs['version'] = __version__
+        self.h5.attrs['version'] = self.full_version_record
         self.h5.attrs['package'] = 'rex'
 
     @property
