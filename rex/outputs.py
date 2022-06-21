@@ -208,7 +208,9 @@ class Outputs(BaseResource):
 
     def set_version_attr(self):
         """Set the version attribute to the h5 file."""
-        self.h5.attrs['version'] = self.full_version_record
+        self.h5.attrs['version'] = __version__
+        self.h5.attrs['full_version_record'] = json.dumps(
+            self.full_version_record)
         self.h5.attrs['package'] = 'rex'
 
     @property
