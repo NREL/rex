@@ -116,3 +116,14 @@ class LoggerWarning(Warning):
     """
     Warning for bad logger inputs
     """
+
+class HandlerRuntimeError(Exception):
+    """
+    RuntimeError for Handlers
+    """
+
+
+class HandlerValueError(Exception):
+    """
+    ValueError for Handlers
+    """

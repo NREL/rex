@@ -107,7 +107,7 @@ ENV/
 */.DS_Store
 
 # VSCode
-*.vscode
+.vs*
 
 # vim
 *.swp
