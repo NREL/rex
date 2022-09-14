@@ -9,7 +9,6 @@ from pandas.testing import assert_frame_equal
 import pytest
 
 from rex import TESTDATADIR
-from rex.multi_file_resource import MultiH5Path
 from rex.multi_time_resource import (MultiTimeH5, MultiTimeNSRDB,
                                      MultiTimeWindResource)
 from rex.resource import Resource
@@ -23,6 +22,17 @@ def MultiTimeNSRDB_res():
     path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_*.h5')
 
     return MultiTimeNSRDB(path)
+
+
+@pytest.fixture
+def MultiTimeNSRDB_list_res():
+    """
+    Init NSRDB resource handler
+    """
+    files = [os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5'),
+             os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2013.h5')]
+
+    return MultiTimeNSRDB(files)
 
 
 @pytest.fixture
@@ -207,6 +217,45 @@ class TestMultiTimeNSRDB:
         check_attrs(MultiTimeNSRDB_res, ds_name)
         check_properties(MultiTimeNSRDB_res, ds_name)
         MultiTimeNSRDB_res.close()
+
+
+class TestMultiTimeList:
+    """
+    Test multi time resource handler from list of files
+    """
+    @staticmethod
+    def test_res(MultiTimeNSRDB_list_res):
+        """
+        test NSRDB class calls
+        """
+        check_res(MultiTimeNSRDB_list_res)
+        MultiTimeNSRDB_list_res.close()
+
+    @staticmethod
+    def test_meta(MultiTimeNSRDB_list_res):
+        """
+        test extraction of NSRDB meta data
+        """
+        check_meta(MultiTimeNSRDB_list_res)
+        MultiTimeNSRDB_list_res.close()
+
+    @staticmethod
+    def test_time_index(MultiTimeNSRDB_list_res):
+        """
+        test extraction of NSRDB time_index
+        """
+        check_time_index(MultiTimeNSRDB_list_res)
+        MultiTimeNSRDB_list_res.close()
+
+    @staticmethod
+    def test_ds(MultiTimeNSRDB_list_res, ds_name='dni'):
+        """
+        test extraction of a variable array, attributes, and properties
+        """
+        check_dset(MultiTimeNSRDB_list_res, ds_name)
+        check_attrs(MultiTimeNSRDB_list_res, ds_name)
+        check_properties(MultiTimeNSRDB_list_res, ds_name)
+        MultiTimeNSRDB_list_res.close()
 
 
 class TestMultiTimeWindResource:
