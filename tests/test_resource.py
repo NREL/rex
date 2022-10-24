@@ -11,7 +11,7 @@ import pytest
 import shutil
 import tempfile
 
-from rex import TESTDATADIR
+from rex import TESTDATADIR, Resource, Outputs
 from rex.multi_file_resource import (MultiH5, MultiH5Path, MultiFileNSRDB,
                                      MultiFileWTK)
 from rex.renewable_resource import (NSRDB, WindResource)
@@ -691,6 +691,30 @@ def test_check_files():
     with pytest.raises(ResourceRuntimeError):
         with MultiH5(h5_files, check_files=True) as f:
             check_res(f)
+
+
+def test_time_index_out_of_bounds():
+    """
+    Test that resource allows a time index that is "out of bounds" for pandas
+    """
+    with tempfile.TemporaryDirectory() as td:
+        out_fp = os.path.join(td, "temp.h5")
+        time = np.arange(1000001, 1001001)
+        shapes = {"data": (len(time), 1)}
+        attrs = {"data": None}
+        chunks = {"data": None}
+        dtypes = {"data": "float32"}
+
+        Outputs.init_h5(out_fp, ["data"], shapes,attrs, chunks, dtypes,
+            meta=pd.DataFrame(data={"lat": [0], "lon": [1]}),
+            time_index=time,
+        )
+        with Outputs(out_fp, 'a') as out:
+            out["data", :, 0] = time + 10
+
+        with Resource(out_fp) as res:
+            assert np.allclose(res.time_index, time)
+            assert np.allclose(res["data"][:, 0], time + 10)
 
 
 def execute_pytest(capture='all', flags='-rapP'):

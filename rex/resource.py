@@ -7,6 +7,7 @@ import h5py
 import numpy as np
 import os
 import pandas as pd
+import dateutil
 
 from rex.sam_resource import SAMResource
 from rex.utilities.parse_keys import parse_keys, parse_slice
@@ -1140,10 +1141,12 @@ class BaseResource(ABC):
         time_index = self.h5[ds_name]
         time_index = ResourceDataset.extract(time_index, ds_slice[0],
                                              unscale=False)
+        try:
+            datetime_index = pd.to_datetime(time_index.astype(str))
+        except (pd.errors.OutOfBoundsDatetime, dateutil.parser.ParserError):
+            return time_index
 
-        time_index = check_tz(pd.to_datetime(time_index.astype(str)))
-
-        return time_index
+        return check_tz(datetime_index)
 
     def _get_meta(self, ds_name, ds_slice):
         """
