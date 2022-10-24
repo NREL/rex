@@ -705,10 +705,9 @@ def test_time_index_out_of_bounds():
         chunks = {"data": None}
         dtypes = {"data": "float32"}
 
-        Outputs.init_h5(out_fp, ["data"], shapes,attrs, chunks, dtypes,
-            meta=pd.DataFrame(data={"lat": [0], "lon": [1]}),
-            time_index=time,
-        )
+        Outputs.init_h5(out_fp, ["data"], shapes, attrs, chunks, dtypes,
+                        meta=pd.DataFrame(data={"lat": [0], "lon": [1]}),
+                        time_index=time)
         with Outputs(out_fp, 'a') as out:
             out["data", :, 0] = time + 10
 
