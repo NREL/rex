@@ -954,7 +954,7 @@ def to_records_array(df):
     """
     meta_arrays = []
     dtypes = []
-    for c_name, c_data in df.iteritems():
+    for c_name, c_data in df.items():
         dtype = get_dtype(c_data)
 
         if np.issubdtype(dtype, np.bytes_):

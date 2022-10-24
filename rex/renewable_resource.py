@@ -1012,8 +1012,10 @@ class WindResource(BaseResource):
 
         if add_header:
             header = pd.DataFrame(columns=res_df.columns)
-            header.at[0] = units + [self.get_units(v) for v in variables]
-            header.at[1] = height
+            header_units = units + [self.get_units(v) for v in variables]
+            header_heights = [height] * len(header_units)
+            header = pd.DataFrame([header_units, header_heights],
+                                  columns=res_df.columns)
             res_df = pd.concat((header, res_df)).reset_index(drop=True)
 
         return res_df
