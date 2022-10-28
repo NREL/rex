@@ -10,7 +10,7 @@ import os
 import tempfile
 
 from rex.version import __version__
-from rex import Outputs
+from rex import Outputs, Resource
 from rex.utilities.exceptions import HandlerRuntimeError, HandlerValueError
 
 
@@ -144,6 +144,24 @@ def test_bad_shape():
         with pytest.raises(HandlerValueError):
             Outputs.add_dataset(fp, 'dset3', np.ones((10, 10)), float,
                                 attrs=None)
+
+
+def test_1D_dataset_shape():
+    """Negative test for bad data shapes"""
+
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, 'outputs.h5')
+
+        with Outputs(fp, 'w') as f:
+            f.meta = meta
+            f.time_index = time_index
+
+        Outputs.add_dataset(fp, 'dset3', np.ones(100), float, attrs=None,
+                            chunks=(100,))
+
+        with Resource(fp) as res:
+            assert 'dset3' in res.dsets
+            assert res['dset3'].shape == (100,)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
