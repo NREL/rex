@@ -11,8 +11,8 @@ import tempfile
 
 from rex.version import __version__
 from rex import Outputs, Resource
-from rex.utilities.exceptions import HandlerRuntimeError, HandlerValueError
-
+from rex.utilities.exceptions import (HandlerRuntimeError, HandlerValueError,
+                                      ResourceKeyError)
 
 arr1 = np.ones(100)
 arr2 = np.ones((8760, 100))
@@ -146,8 +146,47 @@ def test_bad_shape():
                                 attrs=None)
 
 
+def test_1d_datasets_not_added_before_meta_ti():
+    """Test the storing 1D data shapes not allowed before meta/ti."""
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, 'outputs.h5')
+
+        with Outputs(fp, 'w') as f:
+            pass
+        with pytest.raises(ResourceKeyError):
+            Outputs.add_dataset(
+                fp, 'dset3', np.ones(10), float, attrs=None
+            )
+        with Outputs(fp, 'w') as f:
+            f.meta = meta
+        with pytest.raises(ResourceKeyError):
+            Outputs.add_dataset(
+                fp, 'dset3', np.ones(10), float, attrs=None
+            )
+        with Outputs(fp, 'w') as f:
+            f.time_index = time_index
+        with pytest.raises(ResourceKeyError):
+            Outputs.add_dataset(
+                fp, 'dset3', np.ones(10), float, attrs=None
+            )
+        with Outputs(fp, 'w') as f:
+            f.meta = np.empty((0))
+            f.time_index = np.empty((0))
+        with pytest.raises(HandlerRuntimeError):
+            Outputs.add_dataset(
+                fp, 'dset3', np.ones(10), float, attrs=None
+            )
+
+        with Outputs(fp, 'w') as f:
+            f.meta = meta
+            f.time_index = np.empty((0))
+        with pytest.raises(HandlerRuntimeError):
+            Outputs.add_dataset(
+                fp, 'dset3', np.ones(10), float, attrs=None
+            )
+
 def test_1D_dataset_shape():
-    """Negative test for bad data shapes"""
+    """Tests for storing 1D spatiotemporal data shapes"""
 
     with tempfile.TemporaryDirectory() as td:
         fp = os.path.join(td, 'outputs.h5')
@@ -162,6 +201,20 @@ def test_1D_dataset_shape():
         with Resource(fp) as res:
             assert 'dset3' in res.dsets
             assert res['dset3'].shape == (100,)
+
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, 'outputs.h5')
+
+        with Outputs(fp, 'w') as f:
+            f.meta = meta
+            f.time_index = time_index
+
+        Outputs.add_dataset(fp, 'dset3', np.ones(8760), float, attrs=None,
+                            chunks=(100,))
+
+        with Resource(fp) as res:
+            assert 'dset3' in res.dsets
+            assert res['dset3'].shape == (8760,)
 
 
 def execute_pytest(capture='all', flags='-rapP'):

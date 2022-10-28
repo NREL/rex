@@ -664,17 +664,21 @@ class Outputs(BaseResource):
         """
         dset_shape = dset_data.shape
         if len(dset_shape) == 1:
-            shape = len(self.meta)
-            if shape:
-                shape = (shape,)
-                if dset_shape != shape:
-                    msg = ('1D dataset "{}" with shape {} is not of '
-                           'the proper spatial shape: {}'
-                           .format(dset_name, dset_shape, shape))
-                    logger.error(msg)
-                    raise HandlerValueError(msg)
-            else:
+            spatial_shape = len(self.meta)
+            if not spatial_shape:
                 raise HandlerRuntimeError("'meta' has not been loaded")
+            temporal_shape = len(self.time_index)
+            if not temporal_shape:
+                raise HandlerRuntimeError("'time_index' has not been loaded")
+
+            spatial_shape, temporal_shape = (spatial_shape,), (temporal_shape,)
+            if dset_shape not in {spatial_shape, temporal_shape}:
+                msg = ('1D dataset "{}" with shape {} is not of '
+                       'the proper spatial {} or temporal {} shape!'
+                       .format(dset_name, dset_shape, spatial_shape,
+                               temporal_shape))
+                logger.error(msg)
+                raise HandlerValueError(msg)
         else:
             shape = self.shape
             if shape:
