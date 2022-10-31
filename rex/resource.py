@@ -1216,7 +1216,7 @@ class BaseResource(ABC):
                                          unscale=False)
         return coords
 
-    # pylint: disable=unused-argument,no-self-use
+    # pylint: disable=unused-argument
     def get_SAM_df(self, site):
         """
         Placeholder for get_SAM_df method that it resource specific
