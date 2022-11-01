@@ -1282,7 +1282,9 @@ class BaseResource(ABC):
             ndarray of variable timeseries data
             If unscale, returned in native units else in scaled units
         """
-        if self.shapes['meta'] == self.shapes['time_index']:
+        ti_shape = self.shapes.get('time_index')
+        meta_shape = self.shapes.get('meta')
+        if ti_shape == meta_shape:
             msg = ("Attempting to use a 2D slice on a 1D dataset when the "
                    "meta and time index have the same shape - unable to "
                    "disambiguate the slice dimensions. Please either update "
@@ -1291,9 +1293,9 @@ class BaseResource(ABC):
                    "1-dimensional slice.".format(ds_name, ds.shape))
             raise ResourceRuntimeError(msg)
 
-        if ds.shape == self.shapes['time_index']:
+        if ds.shape == ti_shape:
             return self._get_ds_with_spatial_repeat(ds, ds_name, ds_slice)
-        if ds.shape == self.shapes['meta']:
+        if ds.shape == meta_shape:
             return self._get_ds_with_temporal_repeat(ds, ds_name, ds_slice)
 
         msg = ("Attempting to use a 2D slice on a 1D dataset ({0!r}) when "
@@ -1301,8 +1303,7 @@ class BaseResource(ABC):
                "of the meta {2!r})or the time index {3!r}. Please either "
                "update the length of ({0!r}) to match either the meta or "
                "index, or use a 1-dimensional slice."
-               .format(ds_name, ds.shape, self.shapes['meta'],
-                       self.shapes['time_index']))
+               .format(ds_name, ds.shape, meta_shape, ti_shape))
         raise ResourceRuntimeError(msg)
 
     def _get_ds_with_spatial_repeat(self, ds, ds_name, ds_slice):
