@@ -1336,12 +1336,12 @@ class BaseResource(ABC):
                                       scale_attr=self.SCALE_ATTR,
                                       add_attr=self.ADD_ATTR,
                                       unscale=self._unscale)
-        try:
+        if not isinstance(out, np.ndarray):
+            out *= np.ones(self.shapes['meta'], dtype=np.float32)
+            out = out[ds_slice[1]]
+        else:
             out = np.repeat(out[:, None], self.shapes['meta'][0], axis=1)
             out = out[:, ds_slice[1]]
-        except (TypeError, IndexError):  # "out" is an int, float, etc.
-            out = np.ones(self.shapes['meta']) * out
-            out = out[ds_slice[1]]
 
         return out.astype(np.float32)
 
@@ -1375,10 +1375,12 @@ class BaseResource(ABC):
                                       scale_attr=self.SCALE_ATTR,
                                       add_attr=self.ADD_ATTR,
                                       unscale=self._unscale)
-        try:
+
+        if not isinstance(out, np.ndarray):
+            out *= np.ones(self.shapes['time_index'], dtype=np.float32)
+        else:
             out = np.ones((self.shapes['time_index'][0], len(out))) * out
-        except TypeError: # "out" is an int, float, etc.
-            out = np.ones(self.shapes['time_index']) * out
+
         return out[ds_slice[0]].astype(np.float32)
 
     def close(self):
