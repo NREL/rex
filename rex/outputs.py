@@ -14,7 +14,8 @@ import h5pyd
 import scipy
 
 from rex.version import __version__
-from rex.utilities.exceptions import (HandlerRuntimeError, HandlerValueError)
+from rex.utilities.exceptions import (HandlerRuntimeError, HandlerValueError,
+                                      ResourceKeyError)
 from rex.resource import BaseResource
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import to_records_array
@@ -664,19 +665,29 @@ class Outputs(BaseResource):
         """
         dset_shape = dset_data.shape
         if len(dset_shape) == 1:
-            spatial_shape = len(self.meta)
-            if not spatial_shape:
-                raise HandlerRuntimeError("'meta' has not been loaded")
-            temporal_shape = len(self.time_index)
-            if not temporal_shape:
-                raise HandlerRuntimeError("'time_index' has not been loaded")
+            possible_shapes = {}
+            try:
+                possible_shapes["spatial"] = (len(self.meta),)
+            except ResourceKeyError:
+                pass
+            try:
+                possible_shapes["temporal"] = (len(self.time_index),)
+            except ResourceKeyError:
+                pass
 
-            spatial_shape, temporal_shape = (spatial_shape,), (temporal_shape,)
-            if dset_shape not in {spatial_shape, temporal_shape}:
+            if not possible_shapes:
+                msg = ("Please load either 'meta' or 'time_index' before "
+                       "loading a 1D dataset.")
+                logger.error(msg)
+                raise HandlerRuntimeError(msg)
+
+            if dset_shape not in possible_shapes.values():
+                possible_shapes_str = " or ".join(["{} {}".format(k, v)
+                                                   for k, v
+                                                   in possible_shapes.items()])
                 msg = ('1D dataset "{}" with shape {} is not of '
-                       'the proper spatial {} or temporal {} shape!'
-                       .format(dset_name, dset_shape, spatial_shape,
-                               temporal_shape))
+                       'the proper {} shape!'
+                       .format(dset_name, dset_shape, possible_shapes_str))
                 logger.error(msg)
                 raise HandlerValueError(msg)
         else:
@@ -689,8 +700,9 @@ class Outputs(BaseResource):
                     logger.error(msg)
                     raise HandlerValueError(msg)
             else:
-                raise HandlerRuntimeError("'meta' and 'time_index' have not "
-                                          "been loaded")
+                msg = ("'meta' and 'time_index' have not been loaded")
+                logger.error(msg)
+                raise HandlerRuntimeError(msg)
 
     def _add_dset(self, dset_name, data, dtype, chunks=None, attrs=None):
         """

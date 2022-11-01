@@ -153,26 +153,26 @@ def test_1d_datasets_not_added_before_meta_ti():
 
         with Outputs(fp, 'w') as f:
             pass
-        with pytest.raises(ResourceKeyError):
+        with pytest.raises(HandlerRuntimeError):
             Outputs.add_dataset(
                 fp, 'dset3', np.ones(10), float, attrs=None
             )
         with Outputs(fp, 'w') as f:
             f.meta = meta
-        with pytest.raises(ResourceKeyError):
+        with pytest.raises(HandlerValueError):
             Outputs.add_dataset(
                 fp, 'dset3', np.ones(10), float, attrs=None
             )
         with Outputs(fp, 'w') as f:
             f.time_index = time_index
-        with pytest.raises(ResourceKeyError):
+        with pytest.raises(HandlerValueError):
             Outputs.add_dataset(
                 fp, 'dset3', np.ones(10), float, attrs=None
             )
         with Outputs(fp, 'w') as f:
             f.meta = np.empty((0))
             f.time_index = np.empty((0))
-        with pytest.raises(HandlerRuntimeError):
+        with pytest.raises(HandlerValueError):
             Outputs.add_dataset(
                 fp, 'dset3', np.ones(10), float, attrs=None
             )
@@ -180,7 +180,15 @@ def test_1d_datasets_not_added_before_meta_ti():
         with Outputs(fp, 'w') as f:
             f.meta = meta
             f.time_index = np.empty((0))
-        with pytest.raises(HandlerRuntimeError):
+        with pytest.raises(HandlerValueError):
+            Outputs.add_dataset(
+                fp, 'dset3', np.ones(10), float, attrs=None
+            )
+
+        with Outputs(fp, 'w') as f:
+            f.meta = np.empty((0))
+            f.time_index = time_index
+        with pytest.raises(HandlerValueError):
             Outputs.add_dataset(
                 fp, 'dset3', np.ones(10), float, attrs=None
             )
@@ -207,6 +215,32 @@ def test_1D_dataset_shape():
 
         with Outputs(fp, 'w') as f:
             f.meta = meta
+            f.time_index = time_index
+
+        Outputs.add_dataset(fp, 'dset3', np.ones(8760), float, attrs=None,
+                            chunks=(100,))
+
+        with Resource(fp) as res:
+            assert 'dset3' in res.dsets
+            assert res['dset3'].shape == (8760,)
+
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, 'outputs.h5')
+
+        with Outputs(fp, 'w') as f:
+            f.meta = meta
+
+        Outputs.add_dataset(fp, 'dset3', np.ones(100), float, attrs=None,
+                            chunks=(100,))
+
+        with Resource(fp) as res:
+            assert 'dset3' in res.dsets
+            assert res['dset3'].shape == (100,)
+
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, 'outputs.h5')
+
+        with Outputs(fp, 'w') as f:
             f.time_index = time_index
 
         Outputs.add_dataset(fp, 'dset3', np.ones(8760), float, attrs=None,
