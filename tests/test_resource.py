@@ -716,6 +716,49 @@ def test_time_index_out_of_bounds():
             assert np.allclose(res["data"][:, 0], time + 10)
 
 
+def test_5D_dataset_slicing():
+    """Test that slices into 5D datasets work as expected. """
+    meta = pd.DataFrame({'latitude': np.ones(100),
+                         'longitude': np.zeros(100)})
+    time_index = pd.date_range('20210101', '20220101', freq='1D',
+                               closed='right')
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, 'outputs.h5')
+
+        with Outputs(fp, 'w') as f:
+            f.meta = meta.iloc[0:3]
+            f.time_index = time_index[0:3]
+
+        data = np.arange(243).reshape(3, 3, 3, 3, 3)
+        with h5py.File(fp, mode="a") as h5:
+            h5.create_dataset('dset3', shape=data.shape, dtype=np.float32,
+                              chunks=(1, 1, 1, 1, 1), data=data)
+
+        with Resource(fp) as res:
+            assert 'dset3' in res.dsets
+            assert res['dset3'].shape == (3, 3, 3, 3, 3)
+            assert res['dset3'].dtype == np.float32
+            assert np.allclose(res['dset3'], data)
+            assert np.allclose(res['dset3', 1], data[1])
+            assert np.allclose(res['dset3', 0, 1], data[0, 1])
+            assert np.allclose(res['dset3', 0, 1, 2], data[0, 1, 2])
+            assert np.allclose(res['dset3', 0, 1, 2, 0], data[0, 1, 2, 0])
+            assert np.allclose(res['dset3', 0, 1, 2, 0, 1],
+                               data[0, 1, 2, 0, 1])
+            assert np.allclose(res['dset3', 1:], data[1:])
+            assert np.allclose(res['dset3', 0:, 1], data[0:, 1])
+            assert np.allclose(res['dset3', 0:, 1:, 2], data[0:, 1:, 2])
+            assert np.allclose(res['dset3', 0:, 1:, 2:, 0],
+                               data[0:, 1:, 2:, 0])
+            assert np.allclose(res['dset3', 0:, 1:, 2:, 0:, 1],
+                               data[0:, 1:, 2:, 0:, 1])
+            assert np.allclose(res['dset3', 0:, 1:, 2:, 0:, 1:],
+                               data[0:, 1:, 2:, 0:, 1:])
+            assert np.allclose(res['dset3', ..., 0], data[..., 0])
+            assert np.allclose(res['dset3', :, :, :, :, 1],
+                               data[:, :, :, :, 1])
+
+
 def test_bad_1D_dataset_slicing():
     """Test that 2D slices into 1D datasets raise errors as expected. """
     meta = pd.DataFrame({'latitude': np.ones(100),
@@ -729,12 +772,13 @@ def test_bad_1D_dataset_slicing():
         with Outputs(fp, 'w') as f:
             f.meta = meta
             f.time_index = time_index[0:100]
-        Outputs.add_dataset(fp, 'dset3', np.ones(100), float, attrs=None,
+        Outputs.add_dataset(fp, 'dset3', np.ones(100), np.float32, attrs=None,
                             chunks=(100,))
 
         with Resource(fp) as res:
             assert 'dset3' in res.dsets
             assert res['dset3'].shape == (100,)
+            assert res['dset3'].dtype == np.float32
             assert np.allclose(res['dset3'], 1)
             assert np.allclose(res['dset3', 0:10], 1)
             with pytest.raises(ResourceRuntimeError):
@@ -767,24 +811,29 @@ def test_1D_dataset_slicing_temporal_repeat():
             f.meta = meta
             f.time_index = time_index
 
-        Outputs.add_dataset(fp, 'dset3', np.arange(100), float, attrs=None,
-                            chunks=(100,))
+        Outputs.add_dataset(fp, 'dset3', np.arange(100), np.float32,
+                            attrs=None, chunks=(100,))
 
         with Resource(fp) as res:
             assert 'dset3' in res.dsets
             assert res['dset3'].shape == (100,)
+            assert res['dset3'].dtype == np.float32
             assert np.allclose(res['dset3'], np.arange(100))
             assert np.allclose(res['dset3', 1], 1)
+            assert res['dset3', 1].dtype == np.float32
             assert np.allclose(res['dset3', [50, 75, 23]], [50, 75, 23])
+            assert res['dset3', [50, 75, 23]].dtype == np.float32
 
             with pytest.warns(UserWarning):
                 data = res['dset3', :, 99]
             assert data.shape == (365,)
+            assert data.dtype == np.float32
             assert np.allclose(data, 99)
 
             with pytest.warns(UserWarning):
                 data = res['dset3', :, [50, 75, 23]]
             assert data.shape == (365, 3)
+            assert data.dtype == np.float32
             assert np.allclose(data[:, 0], 50)
             assert np.allclose(data[:, 1], 75)
             assert np.allclose(data[:, 2], 23)
@@ -792,11 +841,13 @@ def test_1D_dataset_slicing_temporal_repeat():
             with pytest.warns(UserWarning):
                 data = res['dset3', 10:20, :]
             assert data.shape == (10, 100)
+            assert data.dtype == np.float32
             for t_ind in range(10):
                 assert np.allclose(data[t_ind], np.arange(100))
 
             with pytest.warns(UserWarning):
                 assert res['dset3', 55, 79] == 79
+                assert res['dset3', 55, 79].dtype == np.float32
 
 
 def test_1D_dataset_slicing_spatial_repeat():
@@ -812,24 +863,29 @@ def test_1D_dataset_slicing_spatial_repeat():
             f.meta = meta
             f.time_index = time_index
 
-        Outputs.add_dataset(fp, 'dset3', np.arange(365), float, attrs=None,
-                            chunks=(100,))
+        Outputs.add_dataset(fp, 'dset3', np.arange(365), np.float32,
+                            attrs=None, chunks=(100,))
 
         with Resource(fp) as res:
             assert 'dset3' in res.dsets
             assert res['dset3'].shape == (365,)
+            assert res['dset3'].dtype == np.float32
             assert np.allclose(res['dset3'], np.arange(365))
             assert np.allclose(res['dset3', 1], 1)
+            assert res['dset3', 1].dtype == np.float32
             assert np.allclose(res['dset3', [50, 75, 23]], [50, 75, 23])
+            assert res['dset3', [50, 75, 23]].dtype == np.float32
 
             with pytest.warns(UserWarning):
                 data = res['dset3', 99, :]
             assert data.shape == (100,)
+            assert data.dtype == np.float32
             assert np.allclose(data, 99)
 
             with pytest.warns(UserWarning):
                 data = res['dset3', [50, 75, 23], :]
             assert data.shape == (3, 100)
+            assert data.dtype == np.float32
             assert np.allclose(data[0], 50)
             assert np.allclose(data[1], 75)
             assert np.allclose(data[2], 23)
@@ -837,11 +893,13 @@ def test_1D_dataset_slicing_spatial_repeat():
             with pytest.warns(UserWarning):
                 data = res['dset3', :, 10:20]
             assert data.shape == (365, 10)
+            assert data.dtype == np.float32
             for s_ind in range(10):
                 assert np.allclose(data[:, s_ind], np.arange(365))
 
             with pytest.warns(UserWarning):
                 assert res['dset3', 55, 79] == 55
+                assert res['dset3', 55, 79].dtype == np.float32
 
 
 def execute_pytest(capture='all', flags='-rapP'):

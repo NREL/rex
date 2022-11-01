@@ -1337,11 +1337,13 @@ class BaseResource(ABC):
                                       add_attr=self.ADD_ATTR,
                                       unscale=self._unscale)
         try:
-            out = (np.ones((len(out), self.shapes['meta'][0])).T * out).T
-            return out[:, ds_slice[1]]
-        except TypeError:
+            out = np.repeat(out[:, None], self.shapes['meta'][0], axis=1)
+            out = out[:, ds_slice[1]]
+        except (TypeError, IndexError):  # "out" is an int, float, etc.
             out = np.ones(self.shapes['meta']) * out
-            return out[ds_slice[1]]
+            out = out[ds_slice[1]]
+
+        return out.astype(np.float32)
 
     def _get_ds_with_temporal_repeat(self, ds, ds_name, ds_slice):
         """
@@ -1375,9 +1377,9 @@ class BaseResource(ABC):
                                       unscale=self._unscale)
         try:
             out = np.ones((self.shapes['time_index'][0], len(out))) * out
-        except TypeError:
+        except TypeError: # "out" is an int, float, etc.
             out = np.ones(self.shapes['time_index']) * out
-        return out[ds_slice[0]]
+        return out[ds_slice[0]].astype(np.float32)
 
     def close(self):
         """
