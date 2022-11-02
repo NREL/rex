@@ -14,7 +14,8 @@ import h5pyd
 import scipy
 
 from rex.version import __version__
-from rex.utilities.exceptions import (HandlerRuntimeError, HandlerValueError)
+from rex.utilities.exceptions import (HandlerRuntimeError, HandlerValueError,
+                                      ResourceKeyError)
 from rex.resource import BaseResource
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import to_records_array
@@ -542,6 +543,7 @@ class Outputs(BaseResource):
         """
         Convert dataset chunk size into valid tuple based on variable array
         shape
+
         Parameters
         ----------
         chunks : tuple
@@ -551,30 +553,27 @@ class Outputs(BaseResource):
 
         Returns
         -------
-        ds_chunks : tuple
+        ds_chunks : tuple | None
             dataset chunk size
         """
-        if chunks is not None:
-            if data is not None:
-                shape = data.shape
-            else:
-                shape = self.shape
+        if chunks is None:
+            return None
 
-            if chunks[0] is None:
-                chunk_0 = shape[0]
-            else:
-                chunk_0 = np.min((shape[0], chunks[0]))
-
-            if chunks[1] is None:
-                chunk_1 = shape[1]
-            else:
-                chunk_1 = np.min((shape[1], chunks[1]))
-
-            ds_chunks = (chunk_0, chunk_1)
+        if data is not None:
+            shape = data.shape
         else:
-            ds_chunks = None
+            shape = self.shape
 
-        return ds_chunks
+        if len(shape) != len(chunks):
+            msg = ('Shape dimensions ({}) are not the same length as chunks '
+                   '({}). Please provide a single chunk value for each '
+                   'dimension!'
+                    .format(shape, chunks))
+            logger.error(msg)
+            raise HandlerRuntimeError(msg)
+
+        return tuple(np.min((s, s if c is None else c))
+                     for s, c in zip(shape, chunks))
 
     def _create_dset(self, ds_name, shape, dtype, chunks=None, attrs=None,
                      data=None, replace=True):
@@ -666,17 +665,31 @@ class Outputs(BaseResource):
         """
         dset_shape = dset_data.shape
         if len(dset_shape) == 1:
-            shape = len(self.meta)
-            if shape:
-                shape = (shape,)
-                if dset_shape != shape:
-                    msg = ('1D dataset "{}" with shape {} is not of '
-                           'the proper spatial shape: {}'
-                           .format(dset_name, dset_shape, shape))
-                    logger.error(msg)
-                    raise HandlerValueError(msg)
-            else:
-                raise HandlerRuntimeError("'meta' has not been loaded")
+            possible_shapes = {}
+            try:
+                possible_shapes["spatial"] = (len(self.meta),)
+            except ResourceKeyError:
+                pass
+            try:
+                possible_shapes["temporal"] = (len(self.time_index),)
+            except ResourceKeyError:
+                pass
+
+            if not possible_shapes:
+                msg = ("Please load either 'meta' or 'time_index' before "
+                       "loading a 1D dataset.")
+                logger.error(msg)
+                raise HandlerRuntimeError(msg)
+
+            if dset_shape not in possible_shapes.values():
+                possible_shapes_str = " or ".join(["{} {}".format(k, v)
+                                                   for k, v
+                                                   in possible_shapes.items()])
+                msg = ('1D dataset "{}" with shape {} is not of '
+                       'the proper {} shape!'
+                       .format(dset_name, dset_shape, possible_shapes_str))
+                logger.error(msg)
+                raise HandlerValueError(msg)
         else:
             shape = self.shape
             if shape:
@@ -687,8 +700,9 @@ class Outputs(BaseResource):
                     logger.error(msg)
                     raise HandlerValueError(msg)
             else:
-                raise HandlerRuntimeError("'meta' and 'time_index' have not "
-                                          "been loaded")
+                msg = ("'meta' and 'time_index' have not been loaded")
+                logger.error(msg)
+                raise HandlerRuntimeError(msg)
 
     def _add_dset(self, dset_name, data, dtype, chunks=None, attrs=None):
         """

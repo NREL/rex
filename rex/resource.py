@@ -8,6 +8,7 @@ import numpy as np
 import os
 import pandas as pd
 import dateutil
+from warnings import warn
 
 from rex.sam_resource import SAMResource
 from rex.utilities.parse_keys import parse_keys, parse_slice
@@ -1215,7 +1216,7 @@ class BaseResource(ABC):
                                          unscale=False)
         return coords
 
-    # pylint: disable=unused-argument,no-self-use
+    # pylint: disable=unused-argument
     def get_SAM_df(self, site):
         """
         Placeholder for get_SAM_df method that it resource specific
@@ -1253,11 +1254,134 @@ class BaseResource(ABC):
 
         ds = self.h5[ds_name]
         ds_slice = parse_slice(ds_slice)
-        out = ResourceDataset.extract(ds, ds_slice, scale_attr=self.SCALE_ATTR,
+        if len(ds_slice) > len(ds.shape):
+            return self._get_ds_with_repeated_values(ds, ds_name, ds_slice)
+        return ResourceDataset.extract(ds, ds_slice,
+                                       scale_attr=self.SCALE_ATTR,
+                                       add_attr=self.ADD_ATTR,
+                                       unscale=self._unscale)
+
+    def _get_ds_with_repeated_values(self, ds, ds_name, ds_slice):
+        """
+        Extract 1D data using 2D slice by repeating the 1D data along
+        the spatial or temporal dimension
+
+        Parameters
+        ----------
+        ds : h5py.dataset
+            Open .h5 dataset instance to extract data from
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        ti_shape = self.shapes.get('time_index')
+        meta_shape = self.shapes.get('meta')
+        if ti_shape == meta_shape:
+            msg = ("Attempting to use a 2D slice on a 1D dataset when the "
+                   "meta and time index have the same shape - unable to "
+                   "disambiguate the slice dimensions. Please either update "
+                   "the length of the meta and/or index, set the shape of "
+                   "{!r} to be 2-dimensional (current shape: {!r}), or use a "
+                   "1-dimensional slice.".format(ds_name, ds.shape))
+            raise ResourceRuntimeError(msg)
+
+        if ds.shape == ti_shape:
+            return self._get_ds_with_spatial_repeat(ds, ds_name, ds_slice)
+        if ds.shape == meta_shape:
+            return self._get_ds_with_temporal_repeat(ds, ds_name, ds_slice)
+
+        msg = ("Attempting to use a 2D slice on a 1D dataset ({0!r}) when "
+               "the shape of the dataset {1!r} does not match the shape "
+               "of the meta {2!r})or the time index {3!r}. Please either "
+               "update the length of ({0!r}) to match either the meta or "
+               "index, or use a 1-dimensional slice."
+               .format(ds_name, ds.shape, meta_shape, ti_shape))
+        raise ResourceRuntimeError(msg)
+
+    def _get_ds_with_spatial_repeat(self, ds, ds_name, ds_slice):
+        """
+        Extract 1D data using 2D slice by repeating the 1D data along
+        the spatial dimension
+
+        Parameters
+        ----------
+        ds : h5py.dataset
+            Open .h5 dataset instance to extract data from
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        msg = ("Attempting to use a 2D slice on a 1D dataset ({!r}). 1D "
+               "dataset values will be repeated along the spatial dimension"
+               .format(ds_name))
+        warn(msg)
+
+        out = ResourceDataset.extract(ds, ds_slice[:1],
+                                      scale_attr=self.SCALE_ATTR,
+                                      add_attr=self.ADD_ATTR,
+                                      unscale=self._unscale)
+        if not isinstance(out, np.ndarray):
+            out *= np.ones(self.shapes['meta'], dtype=np.float32)
+            out = out[ds_slice[1]]
+        else:
+            out = np.repeat(out[:, None], self.shapes['meta'][0], axis=1)
+            out = out[:, ds_slice[1]]
+
+        return out.astype(np.float32)
+
+    def _get_ds_with_temporal_repeat(self, ds, ds_name, ds_slice):
+        """
+        Extract 1D data using 2D slice by repeating the 1D data along
+        the temporal dimension
+
+        Parameters
+        ----------
+        ds : h5py.dataset
+            Open .h5 dataset instance to extract data from
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from ds,
+            each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        msg = ("Attempting to use a 2D slice on a 1D dataset ({!r}). 1D "
+               "dataset values will be repeated along the temporal dimension"
+               .format(ds_name))
+        warn(msg)
+
+        out = ResourceDataset.extract(ds, ds_slice[1:],
+                                      scale_attr=self.SCALE_ATTR,
                                       add_attr=self.ADD_ATTR,
                                       unscale=self._unscale)
 
-        return out
+        if not isinstance(out, np.ndarray):
+            out *= np.ones(self.shapes['time_index'], dtype=np.float32)
+        else:
+            out = np.ones((self.shapes['time_index'][0], len(out))) * out
+
+        return out[ds_slice[0]].astype(np.float32)
 
     def close(self):
         """
