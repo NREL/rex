@@ -666,42 +666,6 @@ class WindResource(BaseResource):
         return out
 
     @staticmethod
-    def linear_interp(ts_1, h_1, ts_2, h_2, h):
-        """
-        Linear interpolate/extrapolate time-series data to height h
-
-        Parameters
-        ----------
-        ts_1 : ndarray
-            Time-series array at height h_1
-        h_1 : int | float
-            Height corresponding to time-seris ts_1
-        ts_2 : ndarray
-            Time-series array at height h_2
-        h_2 : int | float
-            Height corresponding to time-seris ts_2
-        h : int | float
-            Height of desired time-series
-
-        Returns
-        -------
-        out : ndarray
-            Time-series array at height h
-        """
-        if h_1 > h_2:
-            h_1, h_2 = h_2, h_1
-            ts_1, ts_2 = ts_2, ts_1
-
-        # Calculate slope for every posiiton in variable arrays
-        m = (ts_2 - ts_1) / (h_2 - h_1)
-        # Calculate intercept for every position in variable arrays
-        b = ts_2 - m * h_2
-
-        out = m * h + b
-
-        return out
-
-    @staticmethod
     def shortest_angle(a0, a1):
         """
         Calculate the shortest angle distance between a0 and a1
@@ -914,7 +878,7 @@ class WindResource(BaseResource):
             elif var_name == 'winddirection':
                 out = self.circular_interp(ts1, h1, ts2, h2, h)
             else:
-                out = self.linear_interp(ts1, h1, ts2, h2, h)
+                out = linear_interp(ts1, h1, ts2, h2, h)
 
         return out
 
@@ -1283,3 +1247,346 @@ class WaveResource(BaseResource):
                                        time_index_step=time_index_step)
 
         return SAM_res
+
+
+class GeothermalResource(BaseResource):
+    """
+    Class to handle Geothermal Resource .h5 files
+
+    See Also
+    --------
+    resource.BaseResource : Parent class
+
+    Examples
+    --------
+    >>> file = '$TESTDATADIR/geo/template_geo_data.h5'
+    >>> with GeothermalResource(file) as res:
+    >>>     print(res.datasets)
+    ['meta', 'temperature_3500m', 'temperature_4500m']
+
+    GeothermalResource can interpolate between available depths
+    (3.5km & 4.5km).
+
+    >>> with GeothermalResource(file) as res:
+    >>>     temp_4km = res['temperature_4000m']
+    >>>
+    >>> temp_4km
+    [450.5, 434. , 383.5, 422. , 387. , 316.5, 438. , 419. , 424. ,
+     438.5]
+
+    GeothermalResource can also extrapolate beyond available depths
+
+    >>> with GeothermalResource(file) as res:
+    >>>     temp_5km = res['temperature_5000m']
+    >>>
+    >>> temp_5km
+    ExtrapolationWarning: 5000 is outside the depth range (3500, 4500).
+    Extrapolation to be used.
+    [501.5, 338. , 428.5, 548. , 405. , 301.5, 440. , 565. , 446. ,
+     341.5]
+    """
+
+    def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
+                 hsds=False, hsds_kwargs=None):
+        """
+        Parameters
+        ----------
+        h5_file : str
+            Path to .h5 resource file
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
+        """
+        self._depths = None
+        super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
+                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
+
+    @property
+    def depths(self):
+        """
+        Extract available depths for temperature and potential_MW
+        variables. Used for interpolation/extrapolation.
+
+        Returns
+        -------
+        dict
+            Dictionary of available depths for temperature and
+            potential_MW
+        """
+        if self._depths is None:
+            depths = {'temperature': [],
+                      'potential_MW': []}
+
+            ignore = ['meta', 'time_index', 'coordinates']
+            for ds in self.datasets:
+                if ds not in ignore:
+                    ds_name, d = self._parse_name(ds)
+                    if ds_name in depths and d is not None:
+                        depths[ds_name].append(d)
+
+            self._depths = depths
+
+        return self._depths
+
+    @staticmethod
+    def _parse_depth(name):
+        """Extract depth from given string
+
+        Parameters
+        ----------
+        name : str
+            String to parse depth from
+
+        Returns
+        -------
+        d : int | float
+            Depth as a numeric value.
+        """
+        d = name.strip('m')
+        try:
+            d = int(d)
+        except ValueError:
+            d = float(d)
+
+        return d
+
+    @classmethod
+    def _parse_name(cls, ds_name):
+        """Extract dataset name and depth from dataset name
+
+        Parameters
+        ----------
+        ds_name : str
+            Dataset name
+
+        Returns
+        -------
+        name : str
+            Variable name
+        d : int | float
+            Depth of variable
+        """
+        try:
+            if ds_name.endswith('m'):
+                name = '_'.join(ds_name.split('_')[:-1])
+                d = ds_name.split('_')[-1]
+                d = cls._parse_depth(d)
+            else:
+                raise ValueError('{} does not end with "_m"'
+                                 .format(ds_name))
+        except ValueError:
+            name = ds_name
+            d = None
+
+        return name, d
+
+    @staticmethod
+    def get_nearest_d(d, depths):
+        """
+        Get two nearest d values in depths.
+        Determine if d is inside or outside the range of depths
+        (requiring extrapolation instead of interpolation)
+
+        Parameters
+        ----------
+        d : int | float
+            Depth value of interest
+        depths : list
+            List of available depths
+
+        Returns
+        -------
+        nearest_d : list
+            list of 1st and 2nd nearest depth in depths
+        extrapolate : bool
+            Flag as to whether d is inside or outside depths range
+        """
+
+        depths_arr = np.array(depths, dtype='float32')
+        dist = np.abs(depths_arr - d)
+        pos = dist.argsort()[:2]
+        nearest_d = sorted([depths[p] for p in pos])
+        extrapolate = np.all(d < depths_arr) or np.all(d > depths_arr)
+
+        if extrapolate:
+            d_min, d_max = np.sort(depths)[[0, -1]]
+            msg = ('{} is outside the depth range'.format(d),
+                   '({}, {}).'.format(d_min, d_max),
+                   'Extrapolation to be used.')
+            warnings.warn(' '.join(msg), ExtrapolationWarning)
+
+        return nearest_d, extrapolate
+
+    def get_attrs(self, dset=None):
+        """
+        Get h5 attributes either from file or dataset
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get attributes for, if None get file (global) attributes
+
+        Returns
+        -------
+        attrs : dict
+            Dataset or file attributes
+        """
+        if dset is None:
+            attrs = dict(self.h5.attrs)
+        else:
+            var_name, d = self._parse_name(dset)
+            if d is not None and var_name in self.depths:
+                (d, _), _ = self.get_nearest_d(d, self.depths[var_name])
+                dset = '{}_{}m'.format(var_name, d)
+
+            attrs = super().get_attrs(dset=dset)
+
+        return attrs
+
+    def get_dset_properties(self, dset):
+        """
+        Get dataset properties (shape, dtype, chunks)
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get scale factor for
+
+        Returns
+        -------
+        shape : tuple
+            Dataset array shape
+        dtype : str
+            Dataset array dtype
+        chunks : tuple
+            Dataset chunk size
+        """
+        var_name, d = self._parse_name(dset)
+        if d is not None and var_name in self.depths:
+            (d, _), _ = self.get_nearest_d(d, self.depths[var_name])
+            dset = '{}_{}m'.format(var_name, d)
+
+        return super().get_dset_properties(dset)
+
+    def _get_ds_depth(self, ds_name, ds_slice):
+        """Extract data from given dataset at desired depth.
+
+        Data is interpolated or extrapolated as needed.
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract
+            from ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        var_name, d = self._parse_name(ds_name)
+        depths = self.depths[var_name]
+
+        if not depths:
+            warnings.warn('No depth info available for {!r}, returning '
+                          'single {!r} value for requested depth {}m'
+                          .format(ds_name, var_name, d), ResourceWarning)
+            out = super()._get_ds(var_name, ds_slice)
+        elif d in depths:
+            ds_name = '{}_{}m'.format(var_name, int(d))
+            out = super()._get_ds(ds_name, ds_slice)
+        elif len(depths) == 1:
+            d = depths[0]
+            ds_name = '{}_{}m'.format(var_name, d)
+            warnings.warn('Only one depth available, returning {!r}'
+                          .format(ds_name), ResourceWarning)
+            out = super()._get_ds(ds_name, ds_slice)
+        else:
+            (d1, d2), extrapolate = self.get_nearest_d(d, depths)
+
+            if extrapolate:
+                msg = ('Extrapolating {} using linear extrapolation'
+                       .format(ds_name))
+                warnings.warn(msg, ExtrapolationWarning)
+
+            ts1 = super()._get_ds('{}_{}m'.format(var_name, d1), ds_slice)
+            ts2 = super()._get_ds('{}_{}m'.format(var_name, d2), ds_slice)
+
+            out = linear_interp(ts1, d1, ts2, d2, d)
+
+        return out
+
+    def _get_ds(self, ds_name, ds_slice):
+        """
+        Extract data from given dataset
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from
+            ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        var_name, d = self._parse_name(ds_name)
+        if d is not None and var_name in self.depths:
+            out = self._get_ds_depth(ds_name, ds_slice)
+        else:
+            out = super()._get_ds(ds_name, ds_slice)
+
+        return out
+
+
+def linear_interp(ts_1, h_1, ts_2, h_2, h):
+    """
+    Linear interpolate/extrapolate time-series data to height h
+
+    Parameters
+    ----------
+    ts_1 : ndarray
+        Time-series array at height h_1
+    h_1 : int | float
+        Height corresponding to time-seris ts_1
+    ts_2 : ndarray
+        Time-series array at height h_2
+    h_2 : int | float
+        Height corresponding to time-seris ts_2
+    h : int | float
+        Height of desired time-series
+
+    Returns
+    -------
+    out : ndarray
+        Time-series array at height h
+    """
+    if h_1 > h_2:
+        h_1, h_2 = h_2, h_1
+        ts_1, ts_2 = ts_2, ts_1
+
+    # Calculate slope for every position in variable arrays
+    m = (ts_2 - ts_1) / (h_2 - h_1)
+    # Calculate intercept for every position in variable arrays
+    b = ts_2 - m * h_2
+
+    out = m * h + b
+
+    return out
