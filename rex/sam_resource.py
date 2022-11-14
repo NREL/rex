@@ -50,7 +50,10 @@ class SAMResource:
                          'windspeed'),
                 'windpower': ('pressure', 'temperature', 'winddirection',
                               'windspeed'),
-                'wave': ('significant_wave_height', 'energy_period')}
+                'wave': ('significant_wave_height', 'energy_period'),
+                # geothermal module uses hourly solar data
+                'geothermal': ('dni', 'dhi', 'ghi', 'wind_speed',
+                               'air_temperature')}
 
     # valid data ranges for PV solar resource:
     PV_DATA_RANGES = {'dni': (0.0, 1360.0),
@@ -105,7 +108,9 @@ class SAMResource:
                    'troughphysicalheat': TPPH_DATA_RANGES,
                    'lineardirectsteam': LF_DATA_RANGES,
                    'solarwaterheat': SWH_DATA_RANGES,
-                   'wave': WAVE_DATA_RANGES}
+                   'wave': WAVE_DATA_RANGES,
+                   # geothermal module uses hourly solar data
+                   'geothermal': PV_DATA_RANGES}
 
     def __init__(self, sites, tech, time_index, hub_heights=None,
                  require_wind_dir=False, means=False):
