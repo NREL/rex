@@ -77,6 +77,8 @@ def test_no_depth(sample_meta):
             assert warn_msg == expected_message
             assert np.allclose(potential, potential_3km)
 
+            assert res.depths == {'temperature': [], 'potential_MW': []}
+
 
 def test_single_depth(sample_meta):
     """Test extracting data from file with a single depth."""
@@ -106,6 +108,8 @@ def test_single_depth(sample_meta):
             assert "Only one depth available" in warn_msg
             assert np.allclose(temps, temps_3km)
 
+            assert res.depths == {'temperature': [3500], 'potential_MW': []}
+
 
 def test_interpolation_and_extrapolation():
     """Test interpolation and extrapolation of data. """
@@ -129,6 +133,37 @@ def test_interpolation_and_extrapolation():
 
         expected_temps = (temps_4500m - temps_3500m) / 2 + temps_4500m
         assert np.allclose(temps_5000m, expected_temps)
+
+        assert not res.depths['potential_MW']
+        assert all(d in res.depths['temperature'] for d in [3500, 4500])
+        assert (res.get_attrs("temperature_3000m")
+                == res.get_attrs("temperature_3100m"))
+        assert (res.get_dset_properties("temperature_3000m")
+                == res.get_dset_properties("temperature_3100m"))
+
+
+def test_get_nearest_val():
+    """Test the `_get_nearest_val` function. """
+    sample_depths = [500, 1000, 3000, 100]
+    nearest, extrapolate = GeothermalResource._get_nearest_val(0,
+                                                               sample_depths)
+    assert extrapolate
+    assert nearest == [100, 500]
+
+    nearest, extrapolate = GeothermalResource._get_nearest_val(700,
+                                                               sample_depths)
+    assert not extrapolate
+    assert nearest == [500, 1000]
+
+    nearest, extrapolate = GeothermalResource._get_nearest_val(2900,
+                                                               sample_depths)
+    assert not extrapolate
+    assert nearest == [1000, 3000]
+
+    nearest, extrapolate = GeothermalResource._get_nearest_val(5000,
+                                                               sample_depths)
+    assert extrapolate
+    assert nearest == [1000, 3000]
 
 
 def execute_pytest(capture='all', flags='-rapP'):
