@@ -395,7 +395,7 @@ def check_interp(res_cls, var, h):
     ds_name = '{}_{}m'.format(var, h)
     ds_value = res_cls[ds_name, 0, 0]
 
-    (h1, h2), _ = res_cls.get_nearest_h(h, res_cls.heights[var])
+    (h1, h2), _ = res_cls._get_nearest_val(h, res_cls.heights[var])
 
     ds_name = '{}_{}m'.format(var, h1)
     h1_value = res_cls[ds_name, 0, 0]
@@ -676,7 +676,7 @@ def test_missing_dset_for_heights():
 
         with pytest.raises(ResourceKeyError) as excinfo:
             with WindResource(res_fp) as res:
-                __ = res._get_ds_height('temperature', (0, 0))
+                __ = res._get_ds_interpolated('temperature', (0, 0))
 
     expected_str = "Missing height info for dataset 'temperature'"
     assert expected_str in str(excinfo.value)

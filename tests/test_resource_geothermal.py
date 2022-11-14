@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=no-member
 """
 pytests for Geothermal resource handlers
 """
@@ -142,26 +143,42 @@ def test_interpolation_and_extrapolation():
                 == res.get_dset_properties("temperature_3100m"))
 
 
+def test_parse_name():
+    """Test the `_parse_name` function. """
+    func = GeothermalResource._parse_name
+
+    name, val = func("temp")
+    assert name == "temp"
+    assert val is None
+
+    name, val = func("temp_1m")
+    assert name == "temp"
+    assert val  == 1
+
+    name, val = func("temp_3.5m")
+    assert name == "temp"
+    assert np.isclose(val, 3.5)
+
+
+
 def test_get_nearest_val():
     """Test the `_get_nearest_val` function. """
     sample_depths = [500, 1000, 3000, 100]
-    nearest, extrapolate = GeothermalResource._get_nearest_val(0,
-                                                               sample_depths)
+    func = GeothermalResource._get_nearest_val
+
+    nearest, extrapolate = func(0, sample_depths)
     assert extrapolate
     assert nearest == [100, 500]
 
-    nearest, extrapolate = GeothermalResource._get_nearest_val(700,
-                                                               sample_depths)
+    nearest, extrapolate = func(700, sample_depths)
     assert not extrapolate
     assert nearest == [500, 1000]
 
-    nearest, extrapolate = GeothermalResource._get_nearest_val(2900,
-                                                               sample_depths)
+    nearest, extrapolate = func(2900, sample_depths)
     assert not extrapolate
     assert nearest == [1000, 3000]
 
-    nearest, extrapolate = GeothermalResource._get_nearest_val(5000,
-                                                               sample_depths)
+    nearest, extrapolate = func(5000, sample_depths)
     assert extrapolate
     assert nearest == [1000, 3000]
 
