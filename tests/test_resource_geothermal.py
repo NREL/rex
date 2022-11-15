@@ -15,6 +15,7 @@ from rex.utilities.exceptions import ExtrapolationWarning, ResourceWarning
 
 SAMPLE_ATTRS = {'units': 'Celsius'}
 
+
 @pytest.fixture
 def sample_meta():
     """Sample 10-point meta file. """
@@ -25,7 +26,6 @@ def sample_meta():
     meta = meta.iloc[0:10].copy()
     return meta[['latitude', 'longitude', 'country', 'state', 'county',
                  'timezone', 'elevation']]
-
 
 
 def test_no_depth(sample_meta):
@@ -126,7 +126,6 @@ def test_interpolation_and_extrapolation():
         expected_temps = (temps_4500m - temps_3500m) / 2 + temps_3500m
         assert np.allclose(temps_4000m, expected_temps)
 
-
         with pytest.warns(ExtrapolationWarning) as record:
             temps_5000m = res['temperature_5000m']
         warn_msg = record[0].message.args[0]
@@ -153,12 +152,11 @@ def test_parse_name():
 
     name, val = func("temp_1m")
     assert name == "temp"
-    assert val  == 1
+    assert val == 1
 
     name, val = func("temp_3.5m")
     assert name == "temp"
     assert np.isclose(val, 3.5)
-
 
 
 def test_get_nearest_val():

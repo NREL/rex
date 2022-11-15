@@ -569,8 +569,8 @@ class AbstractInterpolatedResource(BaseResource):
         if extrapolate:
             v_min, v_max = np.sort(vals)[[0, -1]]
             msg = ('{} is outside the {} range'.format(val, cls.VARIABLE_NAME),
-                    '({}, {}).'.format(v_min, v_max),
-                    'Extrapolation to be used.')
+                   '({}, {}).'.format(v_min, v_max),
+                   'Extrapolation to be used.')
             warnings.warn(' '.join(msg), ExtrapolationWarning)
 
         return nearest_d, extrapolate
@@ -705,7 +705,7 @@ class AbstractInterpolatedResource(BaseResource):
 
         if extrapolate:
             msg = ('Extrapolating {} using linear extrapolation'
-                    .format(ds_name))
+                   .format(ds_name))
             warnings.warn(msg, ExtrapolationWarning)
 
         dset_name_1 = '{}_{}{}'.format(var_name, v1, self.VARIABLE_UNIT)
