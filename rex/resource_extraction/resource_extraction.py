@@ -502,7 +502,8 @@ class ResourceX:
 
         site_meta = site_meta.rename(columns=col_map)
         cols = ','.join(site_meta.columns)
-        values = ','.join(site_meta.values[0].astype(str))
+        values = site_meta.values[0].astype(str)
+        values = ','.join([value.replace(',', '') for value in values])
         values = values.replace('\n', '').replace('\r', '').replace('\t', '')
 
         with open(out_path, 'r+') as f:

@@ -105,6 +105,20 @@ def MultiTimeWindX_cls():
     return MultiTimeWindX(path)
 
 
+def test_sam_csv_with_extra_commas(NSRDBX_cls):
+    """Test that extra commas are removed from meta values. """
+
+    with tempfile.TemporaryDirectory() as td:
+        out_path = os.path.join(td, 'test.csv')
+        NSRDBX_cls.get_SAM_gid(0, out_path=out_path,
+                               extra_meta_data={"urban": "Washington, D.C."})
+        with open(out_path, "r") as fh:
+            col_names = fh.readline()
+            values = fh.readline()
+        assert (sum(char == "," for char in col_names)
+                == sum(char == "," for char in values))
+
+
 def check_props(res_cls):
     """
     Test extraction class properties
