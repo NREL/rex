@@ -26,6 +26,7 @@ from rex.utilities.execution import SpawnProcessPool
 from rex.utilities.loggers import log_versions
 from rex.utilities.utilities import parse_year, check_tz, res_dist_threshold
 
+# pylint: disable=consider-using-with
 TREE_DIR = TemporaryDirectory()
 logger = logging.getLogger(__name__)
 
