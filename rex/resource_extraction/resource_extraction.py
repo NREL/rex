@@ -26,6 +26,7 @@ from rex.utilities.execution import SpawnProcessPool
 from rex.utilities.loggers import log_versions
 from rex.utilities.utilities import parse_year, check_tz, res_dist_threshold
 
+# pylint: disable=consider-using-with
 TREE_DIR = TemporaryDirectory()
 logger = logging.getLogger(__name__)
 
@@ -502,7 +503,8 @@ class ResourceX:
 
         site_meta = site_meta.rename(columns=col_map)
         cols = ','.join(site_meta.columns)
-        values = ','.join(site_meta.values[0].astype(str))
+        values = site_meta.values[0].astype(str)
+        values = ','.join([value.replace(',', '') for value in values])
         values = values.replace('\n', '').replace('\r', '').replace('\t', '')
 
         with open(out_path, 'r+') as f:
