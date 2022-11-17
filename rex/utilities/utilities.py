@@ -449,10 +449,11 @@ def parse_table(table):
             raise ValueError('Cannot parse {}, expecting a .csv or .json file'
                              .format(table))
     elif isinstance(table, dict):
-        table = pd.DataFrame(dict)
+        table = pd.DataFrame(table)
     elif not isinstance(table, pd.DataFrame):
         raise ValueError('Cannot parse table from type {}, expecting a .csv, '
-                         '.json, or pandas.DataFrame'.format(type(table)))
+                         '.json, dictionary, or pandas.DataFrame'
+                         .format(type(table)))
 
     return table
 
