@@ -51,9 +51,7 @@ class SAMResource:
                 'windpower': ('pressure', 'temperature', 'winddirection',
                               'windspeed'),
                 'wave': ('significant_wave_height', 'energy_period'),
-                # geothermal module uses hourly solar data
-                'geothermal': ('dni', 'dhi', 'ghi', 'wind_speed',
-                               'air_temperature')}
+                'geothermal': ('temperature', 'potential_MW')}
 
     # valid data ranges for PV solar resource:
     PV_DATA_RANGES = {'dni': (0.0, 1360.0),
@@ -96,6 +94,10 @@ class SAMResource:
     # valid data ranges for solar water heater
     SWH_DATA_RANGES = CSP_DATA_RANGES
 
+    # valid data ranges for solar water heater
+    GEOTHERMAL_DATA_RANGES = {'temperature': (-200, 1000),
+                              'potential_MW': (0, 10000)}
+
     # Data range mapping by SAM tech string
     DATA_RANGES = {'windpower': WIND_DATA_RANGES,
                    'wind': WIND_DATA_RANGES,
@@ -109,8 +111,7 @@ class SAMResource:
                    'lineardirectsteam': LF_DATA_RANGES,
                    'solarwaterheat': SWH_DATA_RANGES,
                    'wave': WAVE_DATA_RANGES,
-                   # geothermal module uses hourly solar data
-                   'geothermal': PV_DATA_RANGES}
+                   'geothermal': GEOTHERMAL_DATA_RANGES}
 
     def __init__(self, sites, tech, time_index, hub_heights=None,
                  require_wind_dir=False, means=False):
