@@ -149,6 +149,7 @@ class SAMResource:
         if means:
             self._mean_arrays = {}
 
+        # pylint: disable=C0201
         if tech.lower() in self.DATA_RANGES.keys():
             self._tech = tech.lower()
         else:
@@ -667,6 +668,7 @@ class SAMResource:
             raise ResourceRuntimeError(msg)
         else:
             for var in self.var_list:
+                # pylint: disable=C0201
                 if var not in self._res_arrays.keys():
                     msg = '{} has not been set!'.format(var)
                     logger.error(msg)
