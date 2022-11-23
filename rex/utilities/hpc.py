@@ -8,6 +8,7 @@ import logging
 import getpass
 import shlex
 from warnings import warn
+import re
 
 from rex.utilities.execution import SubprocessManager
 from rex.utilities.exceptions import (ExecutionError, HpcError, SlurmWarning,
@@ -642,6 +643,28 @@ class SLURM(HpcJobManager):
 
         return feature_str, mem_str, env_str
 
+    @staticmethod
+    def _job_id_or_out(out):
+        """Check stdout for a job id and return just the job id if present,
+        otherwise return full stdout.
+
+        Parameters
+        ----------
+        out : str
+            stdout from self.submit()
+
+        Returns
+        -------
+        stdout : str
+            If job id is present in out then this is just the job id otherwise
+            it is the full stdout
+        """
+
+        stdout = re.sub("[^0-9]", "", str(out))
+        if not stdout:
+            stdout = out
+        return stdout
+
     def sbatch(self, cmd, alloc=None, walltime=None, memory=None, nodes=1,
                feature=None, name='reV', stdout_path='./stdout', keep_sh=False,
                conda_env=None, module=None,
@@ -736,6 +759,7 @@ class SLURM(HpcJobManager):
             # write the shell script file and submit as qsub job
             self.make_sh(fname, script)
             out, err = self.submit('sbatch {script}'.format(script=fname))
+            out = self._job_id_or_out(out)
 
             if not keep_sh:
                 self.rm(fname)
