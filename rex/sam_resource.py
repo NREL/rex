@@ -96,7 +96,7 @@ class SAMResource:
 
     # valid data ranges for solar water heater
     GEOTHERMAL_DATA_RANGES = {'temperature': (-200, 1000),
-                              'potential_MW': (0, 10000)}
+                              'potential_MW': (0, 1_000_000)}
 
     # Data range mapping by SAM tech string
     DATA_RANGES = {'windpower': WIND_DATA_RANGES,
