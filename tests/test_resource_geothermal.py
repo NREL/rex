@@ -134,7 +134,6 @@ def test_interpolation_and_extrapolation():
         expected_temps = (temps_4500m - temps_3500m) / 2 + temps_4500m
         assert np.allclose(temps_5000m, expected_temps)
 
-        assert not res.depths['potential_MW']
         assert all(d in res.depths['temperature'] for d in [3500, 4500])
         assert (res.get_attrs("temperature_3000m")
                 == res.get_attrs("temperature_3100m"))
