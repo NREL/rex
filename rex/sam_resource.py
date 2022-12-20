@@ -479,7 +479,7 @@ class SAMResource:
                 # convert pressure from Pa to hPa
                 var_array /= 100
 
-        elif 'temperature' in var_name:
+        elif 'temperature' in var_name and "geothermal" not in tech.lower():
             # Check if tempearture is in K, if so convert to C
             if np.median(var_array) > 200.00:
                 var_array -= 273.15
