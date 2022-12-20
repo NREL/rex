@@ -716,6 +716,26 @@ class AbstractInterpolatedResource(BaseResource):
         out = linear_interp(ts1, v1, ts2, v2, val)
         return out
 
+    def _set_sam_res(self, values, dset, SAM_res, time_slice, sites):
+        """
+        Set the resource for individual sites at various values
+        (i.e. hub-heights, depths, etc).
+        """
+
+        if isinstance(values, (int, float)):
+            ds_name = "{}_{}{}".format(dset, values, self.VARIABLE_UNIT)
+            SAM_res[dset] = self[ds_name, time_slice, sites]
+            return
+
+        _, unique_index = np.unique(values, return_inverse=True)
+        unique_values = sorted(list(set(values)))
+
+        for index, value in enumerate(unique_values):
+            pos = np.where(unique_index == index)[0]
+            res_sites = np.array(SAM_res.sites)[pos]
+            ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
+            SAM_res[dset, :, pos] = self[ds_name, time_slice, res_sites]
+
     @property
     @abstractmethod
     def INTERPOLABLE_DSETS(self):
@@ -1254,24 +1274,8 @@ class WindResource(AbstractInterpolatedResource):
             var_list.remove('winddirection')
 
         h = self._check_hub_height(SAM_res.h)
-        if isinstance(h, (int, float)):
-            for var in var_list:
-                ds_name = "{}_{}m".format(var, h)
-                SAM_res[var] = self[ds_name, time_slice, sites]
-        else:
-            _, unq_idx = np.unique(h, return_inverse=True)
-            unq_h = sorted(list(set(h)))
-
-            site_list = np.array(SAM_res.sites)
-            height_slices = {}
-            for i, h_i in enumerate(unq_h):
-                pos = np.where(unq_idx == i)[0]
-                height_slices[h_i] = (site_list[pos], pos)
-
-            for var in var_list:
-                for h_i, (h_pos, sam_pos) in height_slices.items():
-                    ds_name = '{}_{}m'.format(var, h_i)
-                    SAM_res[var, :, sam_pos] = self[ds_name, time_slice, h_pos]
+        for dset in var_list:
+            self._set_sam_res(h, dset, SAM_res, time_slice, sites)
 
         if precip_rate:
             var = 'precipitationrate'
@@ -1391,7 +1395,7 @@ class GeothermalResource(AbstractInterpolatedResource):
     VARIABLE_NAME = "depth"
     VARIABLE_UNIT = "m"
 
-    def _preload_SAM(self, sites, tech='geothermal', time_index_step=None,
+    def _preload_SAM(self, sites, depths, time_index_step=None,
                      means=False):
         """
         Pre-load project_points for SAM
@@ -1400,8 +1404,8 @@ class GeothermalResource(AbstractInterpolatedResource):
         ----------
         sites : list
             List of sites to be provided to SAM
-        tech : str, optional
-            SAM technology string, by default 'geothermal'
+        depths :  int | float | list
+            Depths to extract for SAM
         time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
@@ -1416,21 +1420,21 @@ class GeothermalResource(AbstractInterpolatedResource):
             in project_points
         """
         time_slice = slice(None, None, time_index_step)
-        SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
-                              means=means)
+        SAM_res = SAMResource(sites, "geothermal",
+                              self['time_index', time_slice],
+                              depths=depths, means=means)
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
 
-        for var in SAM_res.var_list:
-            if var in self.datasets:
-                SAM_res[var] = self[var, time_slice, sites]
+        for dset in SAM_res.var_list:
+            self._set_sam_res(SAM_res.d, dset, SAM_res, time_slice, sites)
 
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
+    def preload_SAM(cls, h5_file, sites, depths, unscale=True, str_decode=True,
                     group=None, hsds=False, hsds_kwargs=None,
-                    tech='geothermal', time_index_step=None, means=False):
+                    time_index_step=None, means=False):
         """
         Pre-load project_points for SAM
 
@@ -1440,6 +1444,8 @@ class GeothermalResource(AbstractInterpolatedResource):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
+        depths :  int | float | list
+            Depths to extract for SAM
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -1471,7 +1477,7 @@ class GeothermalResource(AbstractInterpolatedResource):
         kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(sites, tech=tech,
+            SAM_res = res._preload_SAM(sites, depths,
                                        time_index_step=time_index_step,
                                        means=means)
 

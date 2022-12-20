@@ -8,7 +8,8 @@ import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
 
-from rex.renewable_resource import WindResource, NSRDB, WaveResource
+from rex.renewable_resource import (WindResource, NSRDB, WaveResource,
+                                    GeothermalResource)
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceRuntimeError
 from rex.utilities.utilities import roll_timeseries
@@ -337,6 +338,33 @@ def test_wave():
                                                   np.arange(100))
             test = res[var].values
             assert np.allclose(truth, test)
+
+
+def test_preload_sam_geothermal():
+    """Test the preload_SAM method for geothermal data. """
+
+    h5 = os.path.join(TESTDATADIR, 'geo/template_geo_data.h5')
+    sites = [0, 5, 3]
+    depths = 4000
+
+    res = GeothermalResource.preload_SAM(h5, sites, depths)
+
+    with GeothermalResource(h5) as f:
+        for var in res.var_list:
+            res_var_name = "{}_4000m".format(var)
+            assert np.allclose(res[var].values, f[res_var_name, :, sites])
+
+
+    depths = [4500, 3500, 3000]
+    res = GeothermalResource.preload_SAM(h5, sites, depths)
+
+    with GeothermalResource(h5) as f:
+        for var in res.var_list:
+            for depth, site in zip(depths, sites):
+                res_var_name = "{}_{}m".format(var, depth)
+                test = res[var][site].values
+                truth = f[res_var_name, :, site]
+                assert np.allclose(test, truth)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
