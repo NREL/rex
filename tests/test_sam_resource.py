@@ -354,7 +354,6 @@ def test_preload_sam_geothermal():
             res_var_name = "{}_4000m".format(var)
             assert np.allclose(res[var].values, f[res_var_name, :, sites])
 
-
     depths = [4500, 3500, 3000]
     res = GeothermalResource.preload_SAM(h5, sites, depths)
 
