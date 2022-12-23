@@ -113,8 +113,8 @@ def test_single_depth(sample_meta):
             assert res.depths == {'temperature': [3500], 'potential_MW': []}
 
 
-def test_interpolation_and_extrapolation(sample_meta):
-    """Test interpolation and extrapolation of data. """
+def test_interpolation_extrapolation_and_preload(sample_meta):
+    """Test interpolation, extrapolation, and SAM preload of data. """
 
     time_index = pd.date_range(start='1/1/2011', end='1/1/2012', freq='H')
     dsets = ["temperature_3500m", "temperature_4500m", "potential_MW"]
@@ -164,6 +164,25 @@ def test_interpolation_and_extrapolation(sample_meta):
                     == res.get_attrs("temperature_3100m"))
             assert (res.get_dset_properties("temperature_3000m")
                     == res.get_dset_properties("temperature_3100m"))
+
+        # preload_SAM tests for this geothermal resource
+        sites = [0, 5, 3]
+        depths = 4000
+        res = GeothermalResource.preload_SAM(fp, sites, depths)
+        with GeothermalResource(fp) as f:
+            for var in res.var_list:
+                res_var_name = "{}_4000m".format(var)
+                assert np.allclose(res[var].values, f[res_var_name, :, sites])
+
+        depths = [4500, 3500, 3000]
+        res = GeothermalResource.preload_SAM(fp, sites, depths)
+        with GeothermalResource(fp) as f:
+            for var in res.var_list:
+                for depth, site in zip(depths, sites):
+                    res_var_name = "{}_{}m".format(var, depth)
+                    test = res[var][site].values
+                    truth = f[res_var_name, :, site]
+                    assert np.allclose(test, truth)
 
 
 def test_parse_name():
