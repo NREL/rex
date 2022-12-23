@@ -3,6 +3,7 @@
 """
 pytests for Geothermal resource handlers
 """
+import pandas as pd
 import numpy as np
 import os
 import pytest
@@ -112,33 +113,57 @@ def test_single_depth(sample_meta):
             assert res.depths == {'temperature': [3500], 'potential_MW': []}
 
 
-def test_interpolation_and_extrapolation():
+def test_interpolation_and_extrapolation(sample_meta):
     """Test interpolation and extrapolation of data. """
-    fp = os.path.join(TESTDATADIR, "geo", "template_geo_data.h5")
-    with GeothermalResource(fp) as res:
-        assert "temperature_3500m" in res.dsets
-        assert "temperature_4500m" in res.dsets
-        temps_3500m = res['temperature_3500m']
-        temps_4500m = res['temperature_4500m']
-        assert not np.allclose(temps_3500m, temps_4500m)
 
-        temps_4000m = res['temperature_4000m']
-        expected_temps = (temps_4500m - temps_3500m) / 2 + temps_3500m
-        assert np.allclose(temps_4000m, expected_temps)
+    time_index = pd.date_range(start='1/1/2011', end='1/1/2012', freq='H')
+    dsets = ["temperature_3500m", "temperature_4500m", "potential_MW"]
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, 'outputs.h5')
+        Outputs.init_h5(fp, dsets,
+                        shapes={"temperature_3500m": (10,),
+                                "temperature_4500m": (10,),
+                                "potential_MW": (10,)},
+                        attrs={"temperature_3500m": SAMPLE_ATTRS,
+                               "temperature_4500m": SAMPLE_ATTRS,
+                               "potential_MW": {"units": "MW"}},
+                        chunks={"temperature_3500m": (10,),
+                                "temperature_4500m": (10,),
+                                "potential_MW": (10,)},
+                        dtypes={"temperature_3500m": np.float32,
+                                "temperature_4500m": np.float32, "potential_MW": np.float32},
+                        meta=sample_meta)
 
-        with pytest.warns(ExtrapolationWarning) as record:
-            temps_5000m = res['temperature_5000m']
-        warn_msg = record[0].message.args[0]
-        assert "5000 is outside the depth range (3500, 4500)" in warn_msg
+        with Outputs(fp, "a") as out:
+            out.time_index = time_index[:-1]
+            out["temperature_3500m"] = np.random.randint(300, 500, size=10)
+            out["temperature_4500m"] = np.random.randint(300, 500, size=10)
+            out["potential_MW"] = np.random.randint(100, 200, size=10)
 
-        expected_temps = (temps_4500m - temps_3500m) / 2 + temps_4500m
-        assert np.allclose(temps_5000m, expected_temps)
+        with GeothermalResource(fp) as res:
+            assert "temperature_3500m" in res.dsets
+            assert "temperature_4500m" in res.dsets
+            temps_3500m = res['temperature_3500m']
+            temps_4500m = res['temperature_4500m']
+            assert not np.allclose(temps_3500m, temps_4500m)
 
-        assert all(d in res.depths['temperature'] for d in [3500, 4500])
-        assert (res.get_attrs("temperature_3000m")
-                == res.get_attrs("temperature_3100m"))
-        assert (res.get_dset_properties("temperature_3000m")
-                == res.get_dset_properties("temperature_3100m"))
+            temps_4000m = res['temperature_4000m']
+            expected_temps = (temps_4500m - temps_3500m) / 2 + temps_3500m
+            assert np.allclose(temps_4000m, expected_temps)
+
+            with pytest.warns(ExtrapolationWarning) as record:
+                temps_5000m = res['temperature_5000m']
+            warn_msg = record[0].message.args[0]
+            assert "5000 is outside the depth range (3500, 4500)" in warn_msg
+
+            expected_temps = (temps_4500m - temps_3500m) / 2 + temps_4500m
+            assert np.allclose(temps_5000m, expected_temps)
+
+            assert all(d in res.depths['temperature'] for d in [3500, 4500])
+            assert (res.get_attrs("temperature_3000m")
+                    == res.get_attrs("temperature_3100m"))
+            assert (res.get_dset_properties("temperature_3000m")
+                    == res.get_dset_properties("temperature_3100m"))
 
 
 def test_parse_name():
