@@ -131,7 +131,8 @@ def test_interpolation_extrapolation_and_preload(sample_meta):
                                 "temperature_4500m": (10,),
                                 "potential_MW": (10,)},
                         dtypes={"temperature_3500m": np.float32,
-                                "temperature_4500m": np.float32, "potential_MW": np.float32},
+                                "temperature_4500m": np.float32,
+                                "potential_MW": np.float32},
                         meta=sample_meta)
 
         with Outputs(fp, "a") as out:
