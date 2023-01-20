@@ -116,6 +116,10 @@ class SAMResource:
                    'wave': WAVE_DATA_RANGES,
                    'geothermal': GEOTHERMAL_DATA_RANGES}
 
+    # Dataset aliases for flexiblity between NSRDB and WTK naming conventions
+    ALIASES = {'wind_speed': 'windspeed',
+               'air_temperature': 'temperature'}
+
     def __init__(self, sites, tech, time_index, hub_heights=None, depths=None,
                  require_wind_dir=False, means=False):
         """
@@ -901,9 +905,18 @@ class SAMResource:
             Unit suffix for the hub height input.
         """
 
-        for var in var_list:
-            if var in rex_res.datasets:
-                self._set_var_array(var, rex_res[var, time_slice, sites])
-            elif hh is not None:
-                var_hh = "{}_{}{}".format(var, hh, hh_unit)
-                self._set_var_array(var, rex_res[var_hh, time_slice, sites])
+        for sam_var in var_list:
+            alias = self.ALIASES.get(sam_var, None)
+            var_hh = "{}_{}{}".format(sam_var, hh, hh_unit)
+            alias_hh = "{}_{}{}".format(alias, hh, hh_unit)
+
+            if sam_var in rex_res.datasets:
+                res_var = sam_var
+            elif alias in rex_res.datasets:
+                res_var = alias
+            elif hh is not None and alias is None:
+                res_var = var_hh
+            elif hh is not None and alias is not None:
+                res_var = alias_hh
+
+            self._set_var_array(sam_var, rex_res[res_var, time_slice, sites])

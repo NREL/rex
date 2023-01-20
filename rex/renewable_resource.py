@@ -246,7 +246,7 @@ class SolarResource(BaseResource):
             SAM_res._var_list.append('surface_albedo')
 
         SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
-        SAM_res.load_rex_resource(self, time_slice, sites)
+        SAM_res.load_rex_resource(self, time_slice, sites, hh=2)
         SAM_res.compute_irradiance(clearsky=clearsky)
 
         return SAM_res
@@ -368,7 +368,7 @@ class NSRDB(SolarResource):
 
         SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
         if not downscale:
-            SAM_res.load_rex_resource(self, time_slice, sites)
+            SAM_res.load_rex_resource(self, time_slice, sites, hh=2)
             SAM_res.compute_irradiance(clearsky=clearsky)
         else:
             # contingent import to avoid dependencies
