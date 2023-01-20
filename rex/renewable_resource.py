@@ -149,7 +149,19 @@ class AbstractInterpolatedResource(BaseResource):
     """Class to handle resource dataset interpolation.
 
     Default type of interpolation is linear.
+
+    Pressure and Temperature lapse rates are used if only p and t are only
+    given at a single hub height and the lapse rates are from the International
+    Standard Atmosphere (ISA) or ICAO Standard Atmosphere:
+    (https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/
+     phak/media/06_phak_ch4.pdf)
     """
+
+    P_LAPSE_RATE = 11110
+    """Pressure lapse rate in Pa/km"""
+
+    T_LAPSE_RATE = 6.56
+    """Temperature lapse rate in C/km"""
 
     def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
                  hsds=False, hsds_kwargs=None):
@@ -382,9 +394,16 @@ class AbstractInterpolatedResource(BaseResource):
                           .format(self.VARIABLE_NAME, ds_name, var_name, val,
                                   self.VARIABLE_UNIT), ResourceWarning)
             out = super()._get_ds(var_name, ds_slice)
+
         elif val in interpolation_values:
             ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
             out = super()._get_ds(ds_name, ds_slice)
+
+        elif (len(interpolation_values) == 1
+              and (ds_name.startswith('pressure')
+                   or ds_name.startswith('temperature'))):
+            out = self._get_ds_lapse(ds_name, ds_slice)
+
         elif len(interpolation_values) == 1:
             val = interpolation_values[0]
             ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
@@ -392,10 +411,53 @@ class AbstractInterpolatedResource(BaseResource):
                           .format(self.VARIABLE_NAME, ds_name),
                           ResourceWarning)
             out = super()._get_ds(ds_name, ds_slice)
+
         else:
             out = self._get_calculated_ds(val, ds_name, var_name, ds_slice)
 
         return out
+
+    def _get_ds_lapse(self, ds_name, ds_slice):
+        """Extract data from given dataset where there is only temperature or
+        pressure data at a single elevation and a lapse rate must be used to
+        adjust to a new elevation.
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract
+            from ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        if ds_name.startswith('pressure'):
+            lapse_rate = self.P_LAPSE_RATE
+        elif ds_name.startswith('temperature'):
+            lapse_rate = self.T_LAPSE_RATE
+        else:
+            msg = ('Cannot use lapse rate on dataset: {}'.format(ds_name))
+            logger.error(msg)
+            raise KeyError(msg)
+
+        var_name, val = self._parse_name(ds_name)
+        interpolation_values = self._interpolation_variable[var_name]
+        ds_name = '{}_{}{}'.format(var_name, int(interpolation_values[0]),
+                                   self.VARIABLE_UNIT)
+        warnings.warn('Only one {} available for {} at {}, using '
+                      'lapse rate of {} to get to {}'
+                      .format(self.VARIABLE_NAME, var_name,
+                              interpolation_values[0], lapse_rate, val),
+                      ResourceWarning)
+        out = super()._get_ds(ds_name, ds_slice)
+        diff = (interpolation_values[0] - val) / 1000
+        lapse = diff * lapse_rate
+        return out + lapse
 
     def _get_calculated_ds(self, val, ds_name, var_name, ds_slice):
         """Get interpolated/extrapolated values for the dataset. """
