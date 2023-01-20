@@ -953,6 +953,4 @@ def execute_pytest(capture='all', flags='-rapP'):
 
 
 if __name__ == '__main__':
-#    execute_pytest()
-
-    raise
+    execute_pytest()

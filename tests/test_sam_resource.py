@@ -2,14 +2,17 @@
 """
 pytests for sam_resource
 """
+import tempfile
 import numpy as np
+import shutil
+import h5py
 import os
 import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
 
-from rex.renewable_resource import (WindResource, NSRDB, WaveResource,
-                                    GeothermalResource)
+from rex.renewable_resource import WindResource, NSRDB, WaveResource
+from rex.multi_file_resource import MultiFileNSRDB
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceRuntimeError
 from rex.utilities.utilities import roll_timeseries
@@ -338,6 +341,31 @@ def test_wave():
                                                   np.arange(100))
             test = res[var].values
             assert np.allclose(truth, test)
+
+
+def test_nsrdb_and_wtk():
+    """Test a mixed resource with solar from nsrdb and wind+temp from wtk."""
+    with tempfile.TemporaryDirectory() as td:
+        og_fp_nsrdb = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+        og_fp_wtk = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+        fp_nsrdb = os.path.join(td, 'ri_100_nsrdb_2012.h5')
+        fp_wtk = os.path.join(td, 'ri_100_wtk_2012.h5')
+        shutil.copy(og_fp_nsrdb, fp_nsrdb)
+        shutil.copy(og_fp_wtk, fp_wtk)
+
+        with h5py.File(fp_nsrdb, 'a') as f:
+            del f['wind_speed']
+            del f['air_temperature']
+        with h5py.File(fp_wtk, 'a') as f:
+            f.create_dataset('temperature_2m', data=f['temperature_80m'][...])
+            for k, v in f['temperature_80m'].attrs.items():
+                f['temperature_2m'].attrs[k] = v
+
+        sites = slice(0, 10)
+        res = MultiFileNSRDB.preload_SAM([fp_nsrdb, fp_wtk], sites,
+                                         bifacial=False)
+        df, meta = res._get_res_df(0)
+        print(df)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
