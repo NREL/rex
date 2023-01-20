@@ -3,6 +3,7 @@
 """
 Classes to handle renewable resource data
 """
+import re
 from abc import abstractmethod
 import numpy as np
 import os
@@ -144,7 +145,323 @@ class WaveResource(BaseResource):
         return SAM_res
 
 
-class SolarResource(BaseResource):
+class AbstractInterpolatedResource(BaseResource):
+    """Class to handle resource dataset interpolation.
+
+    Default type of interpolation is linear.
+    """
+
+    def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
+                 hsds=False, hsds_kwargs=None):
+        """
+        Parameters
+        ----------
+        h5_file : str
+            Path to .h5 resource file
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
+        """
+        self._interp_var = None
+        super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
+                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
+        prop_name = "{}s".format(self.VARIABLE_NAME)
+        setattr(self, prop_name, self._interpolation_variable)
+
+    @property
+    def _interpolation_variable(self):
+        """
+        Extract available interpolation variable values for the
+        interpolable datasets. Used for interpolation/extrapolation.
+
+        Returns
+        -------
+         dict
+            Dictionary of available interpolation variable values for
+            the interpolable datasets.
+        """
+        if self._interp_var is None:
+            interp_var = {dset: [] for dset in self.INTERPOLABLE_DSETS}
+            ignore = ['meta', 'time_index', 'coordinates']
+            for ds in self.datasets:
+                if ds not in ignore:
+                    ds_name, val = self._parse_name(ds)
+                    if ds_name in interp_var and val is not None:
+                        interp_var[ds_name].append(val)
+
+            self._interp_var = interp_var
+
+        return self._interp_var
+
+    @classmethod
+    def _parse_name(cls, ds_name):
+        """Extract dataset name and interpolation variable value from
+        dataset name.
+
+        Parameters
+        ----------
+        ds_name : str
+            Dataset name
+
+        Returns
+        -------
+        name : str
+            Dataset name without interpolation value.
+        val : int | float
+            Variable value.
+        """
+
+        regex = "_[0-9]+(.[0-9]+)?{}$".format(cls.VARIABLE_UNIT)
+        regex = re.search(regex, ds_name)
+        if regex:
+            *name, val = ds_name.split('_')
+            name = '_'.join(name)
+            val = val.strip(cls.VARIABLE_UNIT)
+
+            try:
+                val = int(val)
+            except ValueError:
+                val = float(val)
+
+            return name, val
+
+        return ds_name, None
+
+    @classmethod
+    def _get_nearest_val(cls, val, vals):
+        """
+        Get two nearest two values in `vals`.
+        Determine if val is inside or outside the range of vals
+        (requiring extrapolation instead of interpolation)
+
+        Parameters
+        ----------
+        val : int | float
+            Value of interest.
+        vals : list
+            List of available values.
+
+        Returns
+        -------
+        nearest_val : list
+            List of 1st and 2nd nearest val in vals.
+        extrapolate : bool
+            Flag as to whether val is inside or outside vals range
+        """
+
+        vals_arr = np.array(vals, dtype='float32')
+        dist = np.abs(vals_arr - val)
+        pos = dist.argsort()[:2]
+        nearest_d = sorted([vals[p] for p in pos])
+        extrapolate = np.all(val < vals_arr) or np.all(val > vals_arr)
+
+        if extrapolate:
+            v_min, v_max = np.sort(vals)[[0, -1]]
+            msg = ('{} is outside the {} range'.format(val, cls.VARIABLE_NAME),
+                   '({}, {}).'.format(v_min, v_max),
+                   'Extrapolation to be used.')
+            warnings.warn(' '.join(msg), ExtrapolationWarning)
+
+        return nearest_d, extrapolate
+
+    def _get_closest_existing_dset_name(self, dset):
+        """Get the name of an existing dataset closest to interp value. """
+
+        var_name, val = self._parse_name(dset)
+        if val is not None and var_name in self._interpolation_variable:
+            available_vals = self._interpolation_variable[var_name]
+            (val, _), _ = self._get_nearest_val(val, available_vals)
+            dset = '{}_{}{}'.format(var_name, val, self.VARIABLE_UNIT)
+
+        return dset
+
+    def get_dset_properties(self, dset):
+        """
+        Get dataset properties (shape, dtype, chunks)
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get scale factor for
+
+        Returns
+        -------
+        shape : tuple
+            Dataset array shape
+        dtype : str
+            Dataset array dtype
+        chunks : tuple
+            Dataset chunk size
+        """
+        dset = self._get_closest_existing_dset_name(dset)
+        return super().get_dset_properties(dset)
+
+    def get_attrs(self, dset=None):
+        """
+        Get h5 attributes either from file or dataset
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get attributes for, if None get file (global) attributes
+
+        Returns
+        -------
+        attrs : dict
+            Dataset or file attributes
+        """
+        if dset is None:
+            attrs = dict(self.h5.attrs)
+        else:
+            dset = self._get_closest_existing_dset_name(dset)
+            attrs = super().get_attrs(dset=dset)
+
+        return attrs
+
+    def _get_ds(self, ds_name, ds_slice):
+        """
+        Extract data from given dataset
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from
+            ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        var_name, val = self._parse_name(ds_name)
+        if val is not None and var_name in self._interpolation_variable:
+            out = self._get_ds_interpolated(ds_name, ds_slice)
+        else:
+            out = super()._get_ds(ds_name, ds_slice)
+
+        return out
+
+    def _get_ds_interpolated(self, ds_name, ds_slice):
+        """Extract data from given dataset at desired interpolation value.
+
+        Data is interpolated or extrapolated as needed.
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract
+            from ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        var_name, val = self._parse_name(ds_name)
+        interpolation_values = self._interpolation_variable[var_name]
+
+        if not interpolation_values:
+            warnings.warn('No {0} info available for {1!r}, returning '
+                          'single {2!r} value for requested {0} {3}{4}'
+                          .format(self.VARIABLE_NAME, ds_name, var_name, val,
+                                  self.VARIABLE_UNIT), ResourceWarning)
+            out = super()._get_ds(var_name, ds_slice)
+        elif val in interpolation_values:
+            ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
+            out = super()._get_ds(ds_name, ds_slice)
+        elif len(interpolation_values) == 1:
+            val = interpolation_values[0]
+            ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
+            warnings.warn('Only one {} available, returning {!r}'
+                          .format(self.VARIABLE_NAME, ds_name),
+                          ResourceWarning)
+            out = super()._get_ds(ds_name, ds_slice)
+        else:
+            out = self._get_calculated_ds(val, ds_name, var_name, ds_slice)
+
+        return out
+
+    def _get_calculated_ds(self, val, ds_name, var_name, ds_slice):
+        """Get interpolated/extrapolated values for the dataset. """
+        vals = self._interpolation_variable[var_name]
+        (v1, v2), extrapolate = self._get_nearest_val(val, vals)
+
+        if extrapolate:
+            msg = ('Extrapolating {} using linear extrapolation'
+                   .format(ds_name))
+            warnings.warn(msg, ExtrapolationWarning)
+
+        dset_name_1 = '{}_{}{}'.format(var_name, v1, self.VARIABLE_UNIT)
+        ts1 = super()._get_ds(dset_name_1, ds_slice)
+        dset_name_2 = '{}_{}{}'.format(var_name, v2, self.VARIABLE_UNIT)
+        ts2 = super()._get_ds(dset_name_2, ds_slice)
+
+        out = linear_interp(ts1, v1, ts2, v2, val)
+        return out
+
+    def _set_sam_res(self, values, dsets, SAM_res, time_slice, sites):
+        """
+        Set the resource for individual sites at various values
+        (i.e. hub-heights, depths, etc).
+        """
+
+        if isinstance(values, (int, float)):
+            SAM_res.load_rex_resource(self, dsets, time_slice, sites,
+                                      hh=values, hh_unit=self.VARIABLE_UNIT)
+
+        else:
+            _, unique_index = np.unique(values, return_inverse=True)
+            unique_values = sorted(list(set(values)))
+            for dset in dsets:
+                for index, value in enumerate(unique_values):
+                    pos = np.where(unique_index == index)[0]
+                    sites = np.array(SAM_res.sites)[pos]
+                    ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
+                    SAM_res[dset, :, pos] = self[ds_name, time_slice, sites]
+
+    @property
+    @abstractmethod
+    def INTERPOLABLE_DSETS(self):
+        """
+        list: Names of the datasets allowed to be interpolated/extrapolated.
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def VARIABLE_NAME(self):
+        """
+        str: Name of the variable to interpolate over (e.g. "height").
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def VARIABLE_UNIT(self):
+        """
+        str: Abbreviation used in dataset names for the interpolation
+        variable unit  (e.g. "m").
+        """
+        raise NotImplementedError
+
+
+class SolarResource(AbstractInterpolatedResource):
     """
     Class to handle Solar BaseResource .h5 files
 
@@ -152,6 +469,11 @@ class SolarResource(BaseResource):
     --------
     resource.BaseResource : Parent class
     """
+
+    INTERPOLABLE_DSETS = ["temperature", "windspeed"]
+    VARIABLE_NAME = "height"
+    VARIABLE_UNIT = "m"
+
     def get_SAM_df(self, site, extra_cols=None):
         """
         Get SAM solar resource DataFrame for given site
@@ -443,320 +765,6 @@ class NSRDB(SolarResource):
         return SAM_res
 
 
-class AbstractInterpolatedResource(BaseResource):
-    """Class to handle resource dataset interpolation.
-
-    Default type of interpolation is linear.
-    """
-
-    def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
-                 hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        h5_file : str
-            Path to .h5 resource file
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        self._interp_var = None
-        super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
-                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
-        prop_name = "{}s".format(self.VARIABLE_NAME)
-        setattr(self, prop_name, self._interpolation_variable)
-
-    @property
-    def _interpolation_variable(self):
-        """
-        Extract available interpolation variable values for the
-        interpolable datasets. Used for interpolation/extrapolation.
-
-        Returns
-        -------
-         dict
-            Dictionary of available interpolation variable values for
-            the interpolable datasets.
-        """
-        if self._interp_var is None:
-            interp_var = {dset: [] for dset in self.INTERPOLABLE_DSETS}
-            ignore = ['meta', 'time_index', 'coordinates']
-            for ds in self.datasets:
-                if ds not in ignore:
-                    ds_name, val = self._parse_name(ds)
-                    if ds_name in interp_var and val is not None:
-                        interp_var[ds_name].append(val)
-
-            self._interp_var = interp_var
-
-        return self._interp_var
-
-    @classmethod
-    def _parse_name(cls, ds_name):
-        """Extract dataset name and interpolation variable value from
-        dataset name.
-
-        Parameters
-        ----------
-        ds_name : str
-            Dataset name
-
-        Returns
-        -------
-        name : str
-            Dataset name without interpolation value.
-        val : int | float
-            Variable value.
-        """
-
-        if ds_name.endswith(cls.VARIABLE_UNIT):
-            *name, val = ds_name.split('_')
-            name = '_'.join(name)
-            val = val.strip(cls.VARIABLE_UNIT)
-
-            try:
-                val = int(val)
-            except ValueError:
-                val = float(val)
-
-            return name, val
-
-        return ds_name, None
-
-    @classmethod
-    def _get_nearest_val(cls, val, vals):
-        """
-        Get two nearest two values in `vals`.
-        Determine if val is inside or outside the range of vals
-        (requiring extrapolation instead of interpolation)
-
-        Parameters
-        ----------
-        val : int | float
-            Value of interest.
-        vals : list
-            List of available values.
-
-        Returns
-        -------
-        nearest_val : list
-            List of 1st and 2nd nearest val in vals.
-        extrapolate : bool
-            Flag as to whether val is inside or outside vals range
-        """
-
-        vals_arr = np.array(vals, dtype='float32')
-        dist = np.abs(vals_arr - val)
-        pos = dist.argsort()[:2]
-        nearest_d = sorted([vals[p] for p in pos])
-        extrapolate = np.all(val < vals_arr) or np.all(val > vals_arr)
-
-        if extrapolate:
-            v_min, v_max = np.sort(vals)[[0, -1]]
-            msg = ('{} is outside the {} range'.format(val, cls.VARIABLE_NAME),
-                   '({}, {}).'.format(v_min, v_max),
-                   'Extrapolation to be used.')
-            warnings.warn(' '.join(msg), ExtrapolationWarning)
-
-        return nearest_d, extrapolate
-
-    def _get_closest_existing_dset_name(self, dset):
-        """Get the name of an existing dataset closest to interp value. """
-
-        var_name, val = self._parse_name(dset)
-        if val is not None and var_name in self._interpolation_variable:
-            available_vals = self._interpolation_variable[var_name]
-            (val, _), _ = self._get_nearest_val(val, available_vals)
-            dset = '{}_{}{}'.format(var_name, val, self.VARIABLE_UNIT)
-
-        return dset
-
-    def get_dset_properties(self, dset):
-        """
-        Get dataset properties (shape, dtype, chunks)
-
-        Parameters
-        ----------
-        dset : str
-            Dataset to get scale factor for
-
-        Returns
-        -------
-        shape : tuple
-            Dataset array shape
-        dtype : str
-            Dataset array dtype
-        chunks : tuple
-            Dataset chunk size
-        """
-        dset = self._get_closest_existing_dset_name(dset)
-        return super().get_dset_properties(dset)
-
-    def get_attrs(self, dset=None):
-        """
-        Get h5 attributes either from file or dataset
-
-        Parameters
-        ----------
-        dset : str
-            Dataset to get attributes for, if None get file (global) attributes
-
-        Returns
-        -------
-        attrs : dict
-            Dataset or file attributes
-        """
-        if dset is None:
-            attrs = dict(self.h5.attrs)
-        else:
-            dset = self._get_closest_existing_dset_name(dset)
-            attrs = super().get_attrs(dset=dset)
-
-        return attrs
-
-    def _get_ds(self, ds_name, ds_slice):
-        """
-        Extract data from given dataset
-
-        Parameters
-        ----------
-        ds_name : str
-            Variable dataset to be extracted
-        ds_slice : tuple
-            Tuple of (int, slice, list, ndarray) of what to extract from
-            ds, each arg is for a sequential axis
-
-        Returns
-        -------
-        out : ndarray
-            ndarray of variable timeseries data
-            If unscale, returned in native units else in scaled units
-        """
-        var_name, val = self._parse_name(ds_name)
-        if val is not None and var_name in self._interpolation_variable:
-            out = self._get_ds_interpolated(ds_name, ds_slice)
-        else:
-            out = super()._get_ds(ds_name, ds_slice)
-
-        return out
-
-    def _get_ds_interpolated(self, ds_name, ds_slice):
-        """Extract data from given dataset at desired interpolation value.
-
-        Data is interpolated or extrapolated as needed.
-
-        Parameters
-        ----------
-        ds_name : str
-            Variable dataset to be extracted
-        ds_slice : tuple
-            Tuple of (int, slice, list, ndarray) of what to extract
-            from ds, each arg is for a sequential axis
-
-        Returns
-        -------
-        out : ndarray
-            ndarray of variable timeseries data
-            If unscale, returned in native units else in scaled units
-        """
-        var_name, val = self._parse_name(ds_name)
-        interpolation_values = self._interpolation_variable[var_name]
-
-        if not interpolation_values:
-            warnings.warn('No {0} info available for {1!r}, returning '
-                          'single {2!r} value for requested {0} {3}{4}'
-                          .format(self.VARIABLE_NAME, ds_name, var_name, val,
-                                  self.VARIABLE_UNIT), ResourceWarning)
-            out = super()._get_ds(var_name, ds_slice)
-        elif val in interpolation_values:
-            ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
-            out = super()._get_ds(ds_name, ds_slice)
-        elif len(interpolation_values) == 1:
-            val = interpolation_values[0]
-            ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
-            warnings.warn('Only one {} available, returning {!r}'
-                          .format(self.VARIABLE_NAME, ds_name),
-                          ResourceWarning)
-            out = super()._get_ds(ds_name, ds_slice)
-        else:
-            out = self._get_calculated_ds(val, ds_name, var_name, ds_slice)
-
-        return out
-
-    def _get_calculated_ds(self, val, ds_name, var_name, ds_slice):
-        """Get interpolated/extrapolated values for the dataset. """
-        vals = self._interpolation_variable[var_name]
-        (v1, v2), extrapolate = self._get_nearest_val(val, vals)
-
-        if extrapolate:
-            msg = ('Extrapolating {} using linear extrapolation'
-                   .format(ds_name))
-            warnings.warn(msg, ExtrapolationWarning)
-
-        dset_name_1 = '{}_{}{}'.format(var_name, v1, self.VARIABLE_UNIT)
-        ts1 = super()._get_ds(dset_name_1, ds_slice)
-        dset_name_2 = '{}_{}{}'.format(var_name, v2, self.VARIABLE_UNIT)
-        ts2 = super()._get_ds(dset_name_2, ds_slice)
-
-        out = linear_interp(ts1, v1, ts2, v2, val)
-        return out
-
-    def _set_sam_res(self, values, dsets, SAM_res, time_slice, sites):
-        """
-        Set the resource for individual sites at various values
-        (i.e. hub-heights, depths, etc).
-        """
-
-        if isinstance(values, (int, float)):
-            SAM_res.load_rex_resource(self, dsets, time_slice, sites,
-                                      hh=values, hh_unit=self.VARIABLE_UNIT)
-
-        else:
-            _, unique_index = np.unique(values, return_inverse=True)
-            unique_values = sorted(list(set(values)))
-            for dset in dsets:
-                for index, value in enumerate(unique_values):
-                    pos = np.where(unique_index == index)[0]
-                    sites = np.array(SAM_res.sites)[pos]
-                    ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
-                    SAM_res[dset, :, pos] = self[ds_name, time_slice, sites]
-
-    @property
-    @abstractmethod
-    def INTERPOLABLE_DSETS(self):
-        """
-        list: Names of the datasets allowed to be interpolated/extrapolated.
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def VARIABLE_NAME(self):
-        """
-        str: Name of the variable to interpolate over (e.g. "height").
-        """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def VARIABLE_UNIT(self):
-        """
-        str: Abbreviation used in dataset names for the interpolation
-        variable unit  (e.g. "m").
-        """
-        raise NotImplementedError
-
-
 class WindResource(AbstractInterpolatedResource):
     """
     Class to handle Wind BaseResource .h5 files
@@ -809,30 +817,6 @@ class WindResource(AbstractInterpolatedResource):
                           "winddirection"]
     VARIABLE_NAME = "height"
     VARIABLE_UNIT = "m"
-
-    def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
-                 hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        h5_file : str
-            Path to .h5 resource file
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
-                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
 
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)

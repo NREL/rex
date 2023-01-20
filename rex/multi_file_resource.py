@@ -437,6 +437,30 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     resource.MultiFileResource : Parent class
     resource.NSRDB : Parent class
     """
+
+    def __init__(self, h5_source, unscale=True, str_decode=True,
+                 check_files=False):
+        """
+        Parameters
+        ----------
+        h5_source : str | list
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same time index and
+            coordinates but can have different datasets. Can also be an
+            explicit list of complete filepaths.
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        check_files : bool
+            Check to ensure files have the same coordinates and time_index
+        """
+        super().__init__(h5_source, unscale=unscale, str_decode=str_decode,
+                         check_files=check_files)
+        self._interp_var = None
+        self.heights = self._interpolation_variable
+
     @classmethod
     def preload_SAM(cls, h5_source, sites, unscale=True, str_decode=True,
                     tech='pvwattsv7', time_index_step=None, means=False,

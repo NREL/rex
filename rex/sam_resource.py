@@ -120,6 +120,10 @@ class SAMResource:
     ALIASES = {'wind_speed': 'windspeed',
                'air_temperature': 'temperature'}
 
+    # Variables without a height component that should never be interpolated
+    FLAT_VARS = ('dni', 'dhi', 'ghi', 'sza', 'solar_zenith_angle', 'dew_point',
+                 'significant_wave_height', 'energy_period')
+
     def __init__(self, sites, tech, time_index, hub_heights=None, depths=None,
                  require_wind_dir=False, means=False):
         """
@@ -909,14 +913,25 @@ class SAMResource:
             alias = self.ALIASES.get(sam_var, None)
             var_hh = "{}_{}{}".format(sam_var, hh, hh_unit)
             alias_hh = "{}_{}{}".format(alias, hh, hh_unit)
+            use_hh = sam_var not in self.FLAT_VARS
 
-            if sam_var in rex_res.datasets:
-                res_var = sam_var
+            res_var = sam_var
+            if res_var in rex_res.datasets:
+                pass
             elif alias in rex_res.datasets:
                 res_var = alias
-            elif hh is not None and alias is None:
+            elif hh is not None and alias is None and use_hh:
                 res_var = var_hh
-            elif hh is not None and alias is not None:
+            elif hh is not None and alias is not None and use_hh:
                 res_var = alias_hh
 
-            self._set_var_array(sam_var, rex_res[res_var, time_slice, sites])
+            try:
+                arr = rex_res[res_var, time_slice, sites]
+                self._set_var_array(sam_var, arr)
+            except ResourceKeyError as e:
+                msg = ('Could not get SAM resource "{}" with retrieval '
+                       'dataset "{}" from rex Resource handler: {}, received '
+                       'error: {}'
+                       .format(sam_var, res_var, rex_res, e))
+                logger.warning(msg)
+                warn(msg)

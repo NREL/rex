@@ -1485,7 +1485,7 @@ class BaseResource(ABC):
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
 
-        SAM_res.load_rex_resource(self, time_slice, sites)
+        SAM_res.load_rex_resource(self, SAM_res.var_list, time_slice, sites)
 
         return SAM_res
 

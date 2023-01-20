@@ -11,11 +11,13 @@ import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
 
+from rex.utilities.exceptions import ResourceRuntimeError
 from rex.renewable_resource import WindResource, NSRDB, WaveResource
 from rex.multi_file_resource import MultiFileNSRDB
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceRuntimeError
 from rex.utilities.utilities import roll_timeseries
+from rex.outputs import Outputs
 from rex import TESTDATADIR
 
 
@@ -298,12 +300,12 @@ def test_fill_irradiance():
     """
     Test check irradiance method
     """
-    baseline = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
     sites = slice(0, 100)
+
+    baseline = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
     baseline = NSRDB.preload_SAM(baseline, sites)
 
     test = os.path.join(TESTDATADIR, 'nsrdb/nsrdb_2012_missing.h5')
-    sites = slice(0, 100)
     test = NSRDB.preload_SAM(test, sites)
 
     for var in ['ghi', 'dni', 'dhi']:
@@ -344,7 +346,11 @@ def test_wave():
 
 
 def test_nsrdb_and_wtk():
-    """Test a mixed resource with solar from nsrdb and wind+temp from wtk."""
+    """Test a mixed resource style with solar from an nsrdb-styled file and
+    wind+temp interpolated from a wtk file. This was implemented to load data
+    from Sup3rCC which combines Solar+Wind data into multi-file resource sets.
+    """
+    sites = slice(0, 10)
     with tempfile.TemporaryDirectory() as td:
         og_fp_nsrdb = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
         og_fp_wtk = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
@@ -353,19 +359,30 @@ def test_nsrdb_and_wtk():
         shutil.copy(og_fp_nsrdb, fp_nsrdb)
         shutil.copy(og_fp_wtk, fp_wtk)
 
+        with Outputs(fp_nsrdb, mode='a') as f:
+            ti = f.time_index
         with h5py.File(fp_nsrdb, 'a') as f:
-            del f['wind_speed']
-            del f['air_temperature']
+            dni, dhi, ghi = f['dni'][...], f['dhi'][...], f['ghi'][...]
+            for var in ('wind_speed', 'air_temperature', 'dni', 'dhi', 'ghi',
+                        'time_index'):
+                del f[var]
+            f.create_dataset('ghi', data=ghi[::2])
+            f.create_dataset('dhi', data=dhi[::2])
+            f.create_dataset('dni', data=dni[::2])
+        with Outputs(fp_nsrdb, mode='a') as f:
+            f.time_index = ti[::2]
         with h5py.File(fp_wtk, 'a') as f:
             f.create_dataset('temperature_2m', data=f['temperature_80m'][...])
             for k, v in f['temperature_80m'].attrs.items():
                 f['temperature_2m'].attrs[k] = v
 
-        sites = slice(0, 10)
+        with pytest.raises(ResourceRuntimeError):
+            res = NSRDB.preload_SAM(fp_nsrdb, sites, bifacial=False)
+            df, meta = res._get_res_df(0)
+
         res = MultiFileNSRDB.preload_SAM([fp_nsrdb, fp_wtk], sites,
                                          bifacial=False)
-        df, meta = res._get_res_df(0)
-        print(df)
+        _ = res._get_res_df(0)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
