@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=no-member
 """
 Classes to handle renewable resource data
 """
+from abc import abstractmethod
 import numpy as np
 import os
 import pandas as pd
@@ -18,6 +20,128 @@ from rex.utilities.parse_keys import parse_keys
 
 
 logger = logging.getLogger(__name__)
+
+
+class WaveResource(BaseResource):
+    """
+    Class to handle Wave BaseResource .h5 files
+
+    See Also
+    --------
+    resource.BaseResource : Parent class
+    """
+
+    def get_SAM_df(self, site):
+        """
+        Get SAM wave resource DataFrame for given site
+
+        Parameters
+        ----------
+        site : int
+            Site to extract SAM DataFrame for
+
+        Returns
+        -------
+        res_df : pandas.DataFrame
+            time-series DataFrame of resource variables needed to run SAM
+        """
+        if not self._unscale:
+            raise ResourceValueError("SAM requires unscaled values")
+
+        res_df = pd.DataFrame({'Year': self.time_index.year,
+                               'Month': self.time_index.month,
+                               'Day': self.time_index.day,
+                               'Hour': self.time_index.hour})
+        if len(self) > 8784:
+            res_df['Minute'] = self.time_index.minute
+
+        time_zone = self.meta.loc[site, 'timezone']
+        time_interval = len(self.time_index) // 8760
+
+        for var in ['significant_wave_height', 'energy_period']:
+            ds_slice = (slice(None), site)
+            var_array = self._get_ds(var, ds_slice)
+            var_array = SAMResource.roll_timeseries(var_array, time_zone,
+                                                    time_interval)
+            res_df[var] = var_array
+
+        col_map = {'significant_wave_height': 'wave_height',
+                   'energy_period': 'wave_period'}
+        res_df = res_df.rename(columns=col_map)
+        res_df.name = "SAM_-{}".format(site)
+
+        return res_df
+
+    def _preload_SAM(self, sites, means=False, time_index_step=None):
+        """
+        Pre-load project_points for SAM
+
+        Parameters
+        ----------
+        sites : list
+            List of sites to be provided to SAM
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
+        time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with Wave resource for sites
+            in project_points
+        """
+        SAM_res = super()._preload_SAM(sites, 'wave', means=means,
+                                       time_index_step=time_index_step)
+
+        return SAM_res
+
+    @classmethod
+    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
+                    group=None, hsds=False, hsds_kwargs=None, means=False,
+                    time_index_step=None):
+        """
+        Pre-load project_points for SAM
+
+        Parameters
+        ----------
+        h5_file : str
+            h5_file to extract resource from
+        sites : list
+            List of sites to be provided to SAM
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
+        means : bool
+            Boolean flag to compute mean resource when res_array is set
+        time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with Wave resource for sites
+            in project_points
+        """
+        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
+                  "str_decode": str_decode, "group": group}
+        with cls(h5_file, **kwargs) as res:
+            SAM_res = res._preload_SAM(sites, means=means,
+                                       time_index_step=time_index_step)
+
+        return SAM_res
 
 
 class SolarResource(BaseResource):
@@ -324,13 +448,327 @@ class NSRDB(SolarResource):
         return SAM_res
 
 
-class WindResource(BaseResource):
+class AbstractInterpolatedResource(BaseResource):
+    """Class to handle resource dataset interpolation.
+
+    Default type of interpolation is linear.
+    """
+
+    def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
+                 hsds=False, hsds_kwargs=None):
+        """
+        Parameters
+        ----------
+        h5_file : str
+            Path to .h5 resource file
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
+        """
+        self._interp_var = None
+        super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
+                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
+        prop_name = "{}s".format(self.VARIABLE_NAME)
+        setattr(self, prop_name, self._interpolation_variable)
+
+    @property
+    def _interpolation_variable(self):
+        """
+        Extract available interpolation variable values for the
+        interpolable datasets. Used for interpolation/extrapolation.
+
+        Returns
+        -------
+         dict
+            Dictionary of available interpolation variable values for
+            the interpolable datasets.
+        """
+        if self._interp_var is None:
+            interp_var = {dset: [] for dset in self.INTERPOLABLE_DSETS}
+            ignore = ['meta', 'time_index', 'coordinates']
+            for ds in self.datasets:
+                if ds not in ignore:
+                    ds_name, val = self._parse_name(ds)
+                    if ds_name in interp_var and val is not None:
+                        interp_var[ds_name].append(val)
+
+            self._interp_var = interp_var
+
+        return self._interp_var
+
+    @classmethod
+    def _parse_name(cls, ds_name):
+        """Extract dataset name and interpolation variable value from
+        dataset name.
+
+        Parameters
+        ----------
+        ds_name : str
+            Dataset name
+
+        Returns
+        -------
+        name : str
+            Dataset name without interpolation value.
+        val : int | float
+            Variable value.
+        """
+
+        if ds_name.endswith(cls.VARIABLE_UNIT):
+            *name, val = ds_name.split('_')
+            name = '_'.join(name)
+            val = val.strip(cls.VARIABLE_UNIT)
+
+            try:
+                val = int(val)
+            except ValueError:
+                val = float(val)
+
+            return name, val
+
+        return ds_name, None
+
+    @classmethod
+    def _get_nearest_val(cls, val, vals):
+        """
+        Get two nearest two values in `vals`.
+        Determine if val is inside or outside the range of vals
+        (requiring extrapolation instead of interpolation)
+
+        Parameters
+        ----------
+        val : int | float
+            Value of interest.
+        vals : list
+            List of available values.
+
+        Returns
+        -------
+        nearest_val : list
+            List of 1st and 2nd nearest val in vals.
+        extrapolate : bool
+            Flag as to whether val is inside or outside vals range
+        """
+
+        vals_arr = np.array(vals, dtype='float32')
+        dist = np.abs(vals_arr - val)
+        pos = dist.argsort()[:2]
+        nearest_d = sorted([vals[p] for p in pos])
+        extrapolate = np.all(val < vals_arr) or np.all(val > vals_arr)
+
+        if extrapolate:
+            v_min, v_max = np.sort(vals)[[0, -1]]
+            msg = ('{} is outside the {} range'.format(val, cls.VARIABLE_NAME),
+                   '({}, {}).'.format(v_min, v_max),
+                   'Extrapolation to be used.')
+            warnings.warn(' '.join(msg), ExtrapolationWarning)
+
+        return nearest_d, extrapolate
+
+    def _get_closest_existing_dset_name(self, dset):
+        """Get the name of an existing dataset closest to interp value. """
+
+        var_name, val = self._parse_name(dset)
+        if val is not None and var_name in self._interpolation_variable:
+            available_vals = self._interpolation_variable[var_name]
+            (val, _), _ = self._get_nearest_val(val, available_vals)
+            dset = '{}_{}{}'.format(var_name, val, self.VARIABLE_UNIT)
+
+        return dset
+
+    def get_dset_properties(self, dset):
+        """
+        Get dataset properties (shape, dtype, chunks)
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get scale factor for
+
+        Returns
+        -------
+        shape : tuple
+            Dataset array shape
+        dtype : str
+            Dataset array dtype
+        chunks : tuple
+            Dataset chunk size
+        """
+        dset = self._get_closest_existing_dset_name(dset)
+        return super().get_dset_properties(dset)
+
+    def get_attrs(self, dset=None):
+        """
+        Get h5 attributes either from file or dataset
+
+        Parameters
+        ----------
+        dset : str
+            Dataset to get attributes for, if None get file (global) attributes
+
+        Returns
+        -------
+        attrs : dict
+            Dataset or file attributes
+        """
+        if dset is None:
+            attrs = dict(self.h5.attrs)
+        else:
+            dset = self._get_closest_existing_dset_name(dset)
+            attrs = super().get_attrs(dset=dset)
+
+        return attrs
+
+    def _get_ds(self, ds_name, ds_slice):
+        """
+        Extract data from given dataset
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract from
+            ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        var_name, val = self._parse_name(ds_name)
+        if val is not None and var_name in self._interpolation_variable:
+            out = self._get_ds_interpolated(ds_name, ds_slice)
+        else:
+            out = super()._get_ds(ds_name, ds_slice)
+
+        return out
+
+    def _get_ds_interpolated(self, ds_name, ds_slice):
+        """Extract data from given dataset at desired interpolation value.
+
+        Data is interpolated or extrapolated as needed.
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract
+            from ds, each arg is for a sequential axis
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+        var_name, val = self._parse_name(ds_name)
+        interpolation_values = self._interpolation_variable[var_name]
+
+        if not interpolation_values:
+            warnings.warn('No {0} info available for {1!r}, returning '
+                          'single {2!r} value for requested {0} {3}{4}'
+                          .format(self.VARIABLE_NAME, ds_name, var_name, val,
+                                  self.VARIABLE_UNIT), ResourceWarning)
+            out = super()._get_ds(var_name, ds_slice)
+        elif val in interpolation_values:
+            ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
+            out = super()._get_ds(ds_name, ds_slice)
+        elif len(interpolation_values) == 1:
+            val = interpolation_values[0]
+            ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
+            warnings.warn('Only one {} available, returning {!r}'
+                          .format(self.VARIABLE_NAME, ds_name),
+                          ResourceWarning)
+            out = super()._get_ds(ds_name, ds_slice)
+        else:
+            out = self._get_calculated_ds(val, ds_name, var_name, ds_slice)
+
+        return out
+
+    def _get_calculated_ds(self, val, ds_name, var_name, ds_slice):
+        """Get interpolated/extrapolated values for the dataset. """
+        vals = self._interpolation_variable[var_name]
+        (v1, v2), extrapolate = self._get_nearest_val(val, vals)
+
+        if extrapolate:
+            msg = ('Extrapolating {} using linear extrapolation'
+                   .format(ds_name))
+            warnings.warn(msg, ExtrapolationWarning)
+
+        dset_name_1 = '{}_{}{}'.format(var_name, v1, self.VARIABLE_UNIT)
+        ts1 = super()._get_ds(dset_name_1, ds_slice)
+        dset_name_2 = '{}_{}{}'.format(var_name, v2, self.VARIABLE_UNIT)
+        ts2 = super()._get_ds(dset_name_2, ds_slice)
+
+        out = linear_interp(ts1, v1, ts2, v2, val)
+        return out
+
+    def _set_sam_res(self, values, dset, SAM_res, time_slice, sites):
+        """
+        Set the resource for individual sites at various values
+        (i.e. hub-heights, depths, etc).
+        """
+
+        if isinstance(values, (int, float)):
+            ds_name = "{}_{}{}".format(dset, values, self.VARIABLE_UNIT)
+            SAM_res[dset] = self[ds_name, time_slice, sites]
+            return
+
+        _, unique_index = np.unique(values, return_inverse=True)
+        unique_values = sorted(list(set(values)))
+
+        for index, value in enumerate(unique_values):
+            pos = np.where(unique_index == index)[0]
+            res_sites = np.array(SAM_res.sites)[pos]
+            ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
+            SAM_res[dset, :, pos] = self[ds_name, time_slice, res_sites]
+
+    @property
+    @abstractmethod
+    def INTERPOLABLE_DSETS(self):
+        """
+        list: Names of the datasets allowed to be interpolated/extrapolated.
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def VARIABLE_NAME(self):
+        """
+        str: Name of the variable to interpolate over (e.g. "height").
+        """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def VARIABLE_UNIT(self):
+        """
+        str: Abbreviation used in dataset names for the interpolation
+        variable unit  (e.g. "m").
+        """
+        raise NotImplementedError
+
+
+class WindResource(AbstractInterpolatedResource):
     """
     Class to handle Wind BaseResource .h5 files
 
     See Also
     --------
-    resource.BaseResource : Parent class
+    resource.AbstractInterpolatedResource : Parent class
 
     Examples
     --------
@@ -372,6 +810,11 @@ class WindResource(BaseResource):
      [10.698757  10.857258  11.174257  ... 16.585903  16.676476  16.653833 ]]
     """
 
+    INTERPOLABLE_DSETS = ["temperature", "pressure", "windspeed",
+                          "winddirection"]
+    VARIABLE_NAME = "height"
+    VARIABLE_UNIT = "m"
+
     def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
                  hsds=False, hsds_kwargs=None):
         """
@@ -393,7 +836,6 @@ class WindResource(BaseResource):
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
         """
-        self._heights = None
         super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
                          group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
 
@@ -412,126 +854,6 @@ class WindResource(BaseResource):
             out = super().__getitem__(keys)
 
         return out
-
-    @property
-    def heights(self):
-        """
-        Extract available heights for pressure, temperature, windspeed, precip,
-        and winddirection variables. Used for interpolation/extrapolation.
-
-        Returns
-        -------
-        self._heights : dict
-            Dictionary of available heights for:
-            windspeed, winddirection, temperature, and pressure
-        """
-        if self._heights is None:
-            heights = {'pressure': [],
-                       'temperature': [],
-                       'windspeed': [],
-                       'winddirection': []}
-
-            ignore = ['meta', 'time_index', 'coordinates']
-            for ds in self.datasets:
-                if ds not in ignore:
-                    ds_name, h = self._parse_name(ds)
-                    if ds_name in heights:
-                        heights[ds_name].append(h)
-
-            self._heights = heights
-
-        return self._heights
-
-    @staticmethod
-    def _parse_hub_height(name):
-        """
-        Extract hub height from given string
-
-        Parameters
-        ----------
-        name : str
-            String to parse hub height from
-
-        Returns
-        -------
-        h : int | float
-            Hub Height as a numeric value
-        """
-        h = name.strip('m')
-        try:
-            h = int(h)
-        except ValueError:
-            h = float(h)
-
-        return h
-
-    @classmethod
-    def _parse_name(cls, ds_name):
-        """
-        Extract dataset name and height from dataset name
-
-        Parameters
-        ----------
-        ds_name : str
-            Dataset name
-
-        Returns
-        -------
-        name : str
-            Variable name
-        h : int | float
-            Height of variable
-        """
-        try:
-            if ds_name.endswith('m'):
-                name = '_'.join(ds_name.split('_')[:-1])
-                h = ds_name.split('_')[-1]
-                h = cls._parse_hub_height(h)
-            else:
-                raise ValueError('{} does not end with "_m"'
-                                 .format(ds_name))
-        except ValueError:
-            name = ds_name
-            h = None
-
-        return name, h
-
-    @staticmethod
-    def get_nearest_h(h, heights):
-        """
-        Get two nearest h values in heights.
-        Determine if h is inside or outside the range of heights
-        (requiring extrapolation instead of interpolation)
-
-        Parameters
-        ----------
-        h : int | float
-            Height value of interest
-        heights : list
-            List of available heights
-
-        Returns
-        -------
-        nearest_h : list
-            list of 1st and 2nd nearest height in heights
-        extrapolate : bool
-            Flag as to whether h is inside or outside heights range
-        """
-
-        heights_arr = np.array(heights, dtype='float32')
-        dist = np.abs(heights_arr - h)
-        pos = dist.argsort()[:2]
-        nearest_h = sorted([heights[p] for p in pos])
-        extrapolate = np.all(h < heights_arr) or np.all(h > heights_arr)
-
-        if extrapolate:
-            h_min, h_max = np.sort(heights)[[0, -1]]
-            msg = ('{} is outside the height range'.format(h),
-                   '({}, {}).'.format(h_min, h_max),
-                   'Extrapolation to be used.')
-            warnings.warn(' '.join(msg), ExtrapolationWarning)
-
-        return nearest_h, extrapolate
 
     @classmethod
     def monin_obukhov_extrapolation(cls, ts_1, h_1, z0, L, h):
@@ -666,42 +988,6 @@ class WindResource(BaseResource):
         return out
 
     @staticmethod
-    def linear_interp(ts_1, h_1, ts_2, h_2, h):
-        """
-        Linear interpolate/extrapolate time-series data to height h
-
-        Parameters
-        ----------
-        ts_1 : ndarray
-            Time-series array at height h_1
-        h_1 : int | float
-            Height corresponding to time-seris ts_1
-        ts_2 : ndarray
-            Time-series array at height h_2
-        h_2 : int | float
-            Height corresponding to time-seris ts_2
-        h : int | float
-            Height of desired time-series
-
-        Returns
-        -------
-        out : ndarray
-            Time-series array at height h
-        """
-        if h_1 > h_2:
-            h_1, h_2 = h_2, h_1
-            ts_1, ts_2 = ts_2, ts_1
-
-        # Calculate slope for every posiiton in variable arrays
-        m = (ts_2 - ts_1) / (h_2 - h_1)
-        # Calculate intercept for every position in variable arrays
-        b = ts_2 - m * h_2
-
-        out = m * h + b
-
-        return out
-
-    @staticmethod
     def shortest_angle(a0, a1):
         """
         Calculate the shortest angle distance between a0 and a1
@@ -753,57 +1039,6 @@ class WindResource(BaseResource):
 
         return out
 
-    def get_attrs(self, dset=None):
-        """
-        Get h5 attributes either from file or dataset
-
-        Parameters
-        ----------
-        dset : str
-            Dataset to get attributes for, if None get file (global) attributes
-
-        Returns
-        -------
-        attrs : dict
-            Dataset or file attributes
-        """
-        if dset is None:
-            attrs = dict(self.h5.attrs)
-        else:
-            var_name, h = self._parse_name(dset)
-            if h is not None and var_name in self.heights:
-                (h, _), _ = self.get_nearest_h(h, self.heights[var_name])
-                dset = '{}_{}m'.format(var_name, h)
-
-            attrs = super().get_attrs(dset=dset)
-
-        return attrs
-
-    def get_dset_properties(self, dset):
-        """
-        Get dataset properties (shape, dtype, chunks)
-
-        Parameters
-        ----------
-        dset : str
-            Dataset to get scale factor for
-
-        Returns
-        -------
-        shape : tuple
-            Dataset array shape
-        dtype : str
-            Dataset array dtype
-        chunks : tuple
-            Dataset chunk size
-        """
-        var_name, h = self._parse_name(dset)
-        if h is not None and var_name in self.heights:
-            (h, _), _ = self.get_nearest_h(h, self.heights[var_name])
-            dset = '{}_{}m'.format(var_name, h)
-
-        return super().get_dset_properties(dset)
-
     def _check_hub_height(self, h):
         """
         Check requested hub-height against available windspeed hub-heights
@@ -851,18 +1086,18 @@ class WindResource(BaseResource):
 
         return out
 
-    def _get_ds_height(self, ds_name, ds_slice):
-        """
-        Extract data from given dataset at desired height, interpolate or
-        extrapolate if needed.
+    def _get_ds_interpolated(self, ds_name, ds_slice):
+        """Extract data from given dataset at desired interpolation value.
+
+        Data is interpolated or extrapolated as needed.
 
         Parameters
         ----------
         ds_name : str
             Variable dataset to be extracted
         ds_slice : tuple
-            Tuple of (int, slice, list, ndarray) of what to extract from ds,
-            each arg is for a sequential axis
+            Tuple of (int, slice, list, ndarray) of what to extract
+            from ds, each arg is for a sequential axis
 
         Returns
         -------
@@ -870,7 +1105,7 @@ class WindResource(BaseResource):
             ndarray of variable timeseries data
             If unscale, returned in native units else in scaled units
         """
-        var_name, h = self._parse_name(ds_name)
+        var_name, __ = self._parse_name(ds_name)
         heights = self.heights[var_name]
 
         if not heights:
@@ -878,70 +1113,42 @@ class WindResource(BaseResource):
                    .format(var_name, self.h5_file))
             logger.error(msg)
             raise ResourceKeyError(msg)
-        elif h in heights:
-            ds_name = '{}_{}m'.format(var_name, int(h))
-            out = super()._get_ds(ds_name, ds_slice)
-        elif len(heights) == 1:
-            h = heights[0]
-            ds_name = '{}_{}m'.format(var_name, h)
-            warnings.warn('Only one hub-height available, returning {}'
-                          .format(ds_name), ResourceWarning)
-            out = super()._get_ds(ds_name, ds_slice)
-        else:
-            (h1, h2), extrapolate = self.get_nearest_h(h, heights)
-            if extrapolate:
-                msg = 'Extrapolating {}'.format(ds_name)
 
-            ts1 = super()._get_ds('{}_{}m'.format(var_name, h1), ds_slice)
-            ts2 = super()._get_ds('{}_{}m'.format(var_name, h2), ds_slice)
+        return super()._get_ds_interpolated(ds_name, ds_slice)
 
-            if (var_name == 'windspeed') and extrapolate:
-                if h < h1:
-                    try:
-                        out = self._try_monin_obukhov_extrapolation(ts1,
-                                                                    ds_slice,
-                                                                    h1, h)
-                        msg += ' using Monin Obukhov Extrapolation'
-                        warnings.warn(msg, ExtrapolationWarning)
-                    except MoninObukhovExtrapolationError:
-                        out = self.power_law_interp(ts1, h1, ts2, h2, h)
-                        msg += ' using Power Law Extrapolation'
-                        warnings.warn(msg, ExtrapolationWarning)
-                else:
-                    out = self.power_law_interp(ts1, h1, ts2, h2, h)
+    def _get_calculated_ds(self, val, ds_name, var_name, ds_slice):
+        """Get interpolated/extrapolated values for the dataset. """
+        heights = self._interpolation_variable[var_name]
+        (h1, h2), extrapolate = self._get_nearest_val(val, heights)
+
+        if extrapolate:
+            msg = 'Extrapolating {}'.format(ds_name)
+
+        dset_name_1 = '{}_{}{}'.format(var_name, h1, self.VARIABLE_UNIT)
+        ts1 = super()._get_ds(dset_name_1, ds_slice)
+        dset_name_2 = '{}_{}{}'.format(var_name, h2, self.VARIABLE_UNIT)
+        ts2 = super()._get_ds(dset_name_2, ds_slice)
+
+        if (var_name == 'windspeed') and extrapolate:
+            if val < h1:
+                try:
+                    out = self._try_monin_obukhov_extrapolation(ts1,
+                                                                ds_slice,
+                                                                h1, val)
+                    msg += ' using Monin Obukhov Extrapolation'
+                    warnings.warn(msg, ExtrapolationWarning)
+                except MoninObukhovExtrapolationError:
+                    out = self.power_law_interp(ts1, h1, ts2, h2, val)
                     msg += ' using Power Law Extrapolation'
                     warnings.warn(msg, ExtrapolationWarning)
-            elif var_name == 'winddirection':
-                out = self.circular_interp(ts1, h1, ts2, h2, h)
             else:
-                out = self.linear_interp(ts1, h1, ts2, h2, h)
-
-        return out
-
-    def _get_ds(self, ds_name, ds_slice):
-        """
-        Extract data from given dataset
-
-        Parameters
-        ----------
-        ds_name : str
-            Variable dataset to be extracted
-        ds_slice : tuple
-            Tuple of (int, slice, list, ndarray) of what to extract from ds,
-            each arg is for a sequential axis
-
-        Returns
-        -------
-        out : ndarray
-            ndarray of variable timeseries data
-            If unscale, returned in native units else in scaled units
-        """
-        var_name, h = self._parse_name(ds_name)
-        if h is not None and var_name in self.heights:
-            out = self._get_ds_height(ds_name, ds_slice)
+                out = self.power_law_interp(ts1, h1, ts2, h2, val)
+                msg += ' using Power Law Extrapolation'
+                warnings.warn(msg, ExtrapolationWarning)
+        elif var_name == 'winddirection':
+            out = self.circular_interp(ts1, h1, ts2, h2, val)
         else:
-            out = super()._get_ds(ds_name, ds_slice)
-
+            out = linear_interp(ts1, h1, ts2, h2, val)
         return out
 
     def get_SAM_df(self, site, height, require_wind_dir=False, icing=False,
@@ -1067,24 +1274,8 @@ class WindResource(BaseResource):
             var_list.remove('winddirection')
 
         h = self._check_hub_height(SAM_res.h)
-        if isinstance(h, (int, float)):
-            for var in var_list:
-                ds_name = "{}_{}m".format(var, h)
-                SAM_res[var] = self[ds_name, time_slice, sites]
-        else:
-            _, unq_idx = np.unique(h, return_inverse=True)
-            unq_h = sorted(list(set(h)))
-
-            site_list = np.array(SAM_res.sites)
-            height_slices = {}
-            for i, h_i in enumerate(unq_h):
-                pos = np.where(unq_idx == i)[0]
-                height_slices[h_i] = (site_list[pos], pos)
-
-            for var in var_list:
-                for h_i, (h_pos, sam_pos) in height_slices.items():
-                    ds_name = '{}_{}m'.format(var, h_i)
-                    SAM_res[var, :, sam_pos] = self[ds_name, time_slice, h_pos]
+        for dset in var_list:
+            self._set_sam_res(h, dset, SAM_res, time_slice, sites)
 
         if precip_rate:
             var = 'precipitationrate'
@@ -1163,57 +1354,49 @@ class WindResource(BaseResource):
         return SAM_res
 
 
-class WaveResource(BaseResource):
+class GeothermalResource(AbstractInterpolatedResource):
     """
-    Class to handle Wave BaseResource .h5 files
+    Class to handle Geothermal Resource .h5 files
 
     See Also
     --------
-    resource.BaseResource : Parent class
+    resource.AbstractInterpolatedResource : Parent class
+
+    Examples
+    --------
+    >>> file = '$TESTDATADIR/geo/template_geo_data.h5'
+    >>> with GeothermalResource(file) as res:
+    >>>     print(res.datasets)
+    ['meta', 'temperature_3500m', 'temperature_4500m']
+
+    GeothermalResource can linearly interpolate between available depths
+    (3.5km & 4.5km).
+
+    >>> with GeothermalResource(file) as res:
+    >>>     temp_4km = res['temperature_4000m']
+    >>>
+    >>> temp_4km
+    [450.5, 434. , 383.5, 422. , 387. , 316.5, 438. , 419. , 424. ,
+     438.5]
+
+    GeothermalResource can also linearly extrapolate beyond available depths
+
+    >>> with GeothermalResource(file) as res:
+    >>>     temp_5km = res['temperature_5000m']
+    >>>
+    >>> temp_5km
+    ExtrapolationWarning: 5000 is outside the depth range (3500, 4500).
+    Extrapolation to be used.
+    [501.5, 338. , 428.5, 548. , 405. , 301.5, 440. , 565. , 446. ,
+     341.5]
     """
 
-    def get_SAM_df(self, site):
-        """
-        Get SAM wave resource DataFrame for given site
+    INTERPOLABLE_DSETS = ["temperature", "potential_MW"]
+    VARIABLE_NAME = "depth"
+    VARIABLE_UNIT = "m"
 
-        Parameters
-        ----------
-        site : int
-            Site to extract SAM DataFrame for
-
-        Returns
-        -------
-        res_df : pandas.DataFrame
-            time-series DataFrame of resource variables needed to run SAM
-        """
-        if not self._unscale:
-            raise ResourceValueError("SAM requires unscaled values")
-
-        res_df = pd.DataFrame({'Year': self.time_index.year,
-                               'Month': self.time_index.month,
-                               'Day': self.time_index.day,
-                               'Hour': self.time_index.hour})
-        if len(self) > 8784:
-            res_df['Minute'] = self.time_index.minute
-
-        time_zone = self.meta.loc[site, 'timezone']
-        time_interval = len(self.time_index) // 8760
-
-        for var in ['significant_wave_height', 'energy_period']:
-            ds_slice = (slice(None), site)
-            var_array = self._get_ds(var, ds_slice)
-            var_array = SAMResource.roll_timeseries(var_array, time_zone,
-                                                    time_interval)
-            res_df[var] = var_array
-
-        col_map = {'significant_wave_height': 'wave_height',
-                   'energy_period': 'wave_period'}
-        res_df = res_df.rename(columns=col_map)
-        res_df.name = "SAM_-{}".format(site)
-
-        return res_df
-
-    def _preload_SAM(self, sites, means=False, time_index_step=None):
+    def _preload_SAM(self, sites, depths, time_index_step=None,
+                     means=False):
         """
         Pre-load project_points for SAM
 
@@ -1221,27 +1404,37 @@ class WaveResource(BaseResource):
         ----------
         sites : list
             List of sites to be provided to SAM
-        means : bool
-            Boolean flag to compute mean resource when res_array is set
+        depths :  int | float | list
+            Depths to extract for SAM
         time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
 
         Returns
         -------
         SAM_res : SAMResource
-            Instance of SAMResource pre-loaded with Wave resource for sites
+            Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-        SAM_res = super()._preload_SAM(sites, 'wave', means=means,
-                                       time_index_step=time_index_step)
+        time_slice = slice(None, None, time_index_step)
+        SAM_res = SAMResource(sites, "geothermal",
+                              self['time_index', time_slice],
+                              depths=depths, means=means)
+        sites = SAM_res.sites_slice
+        SAM_res['meta'] = self['meta', sites]
+
+        for dset in SAM_res.var_list:
+            self._set_sam_res(SAM_res.d, dset, SAM_res, time_slice, sites)
 
         return SAM_res
 
     @classmethod
-    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
-                    group=None, hsds=False, hsds_kwargs=None, means=False,
-                    time_index_step=None):
+    def preload_SAM(cls, h5_file, sites, depths, unscale=True, str_decode=True,
+                    group=None, hsds=False, hsds_kwargs=None,
+                    time_index_step=None, means=False):
         """
         Pre-load project_points for SAM
 
@@ -1251,6 +1444,8 @@ class WaveResource(BaseResource):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
+        depths :  int | float | list
+            Depths to extract for SAM
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -1264,22 +1459,62 @@ class WaveResource(BaseResource):
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
-        means : bool
-            Boolean flag to compute mean resource when res_array is set
+        tech : str, optional
+            SAM technology string, by default 'geothermal'
         time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
 
         Returns
         -------
         SAM_res : SAMResource
-            Instance of SAMResource pre-loaded with Wave resource for sites
+            Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
         kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(sites, means=means,
-                                       time_index_step=time_index_step)
+            SAM_res = res._preload_SAM(sites, depths,
+                                       time_index_step=time_index_step,
+                                       means=means)
 
         return SAM_res
+
+
+def linear_interp(ts_1, h_1, ts_2, h_2, h):
+    """
+    Linear interpolate/extrapolate time-series data to height h
+
+    Parameters
+    ----------
+    ts_1 : ndarray
+        Time-series array at height h_1
+    h_1 : int | float
+        Height corresponding to time-seris ts_1
+    ts_2 : ndarray
+        Time-series array at height h_2
+    h_2 : int | float
+        Height corresponding to time-seris ts_2
+    h : int | float
+        Height of desired time-series
+
+    Returns
+    -------
+    out : ndarray
+        Time-series array at height h
+    """
+    if h_1 > h_2:
+        h_1, h_2 = h_2, h_1
+        ts_1, ts_2 = ts_2, ts_1
+
+    # Calculate slope for every position in variable arrays
+    m = (ts_2 - ts_1) / (h_2 - h_1)
+    # Calculate intercept for every position in variable arrays
+    b = ts_2 - m * h_2
+
+    out = m * h + b
+
+    return out

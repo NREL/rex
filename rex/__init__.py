@@ -16,7 +16,8 @@ from rex.multi_year_resource import (MultiYearNSRDB, MultiYearResource,
                                      MultiYearWindResource)
 from rex.rechunk_h5 import (ArrayChunkSize, TimeseriesChunkSize, CombineH5,
                             RechunkH5, get_dataset_attributes)
-from rex.renewable_resource import NSRDB, WaveResource, WindResource
+from rex.renewable_resource import (NSRDB, WaveResource, WindResource,
+                                    GeothermalResource)
 from rex.resource_extraction import (ResourceX, MultiFileResourceX,
                                      MultiTimeResourceX, MultiYearResourceX,
                                      NSRDBX, MultiFileNSRDBX,

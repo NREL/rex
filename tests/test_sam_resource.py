@@ -8,7 +8,8 @@ import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
 
-from rex.renewable_resource import WindResource, NSRDB, WaveResource
+from rex.renewable_resource import (WindResource, NSRDB, WaveResource,
+                                    GeothermalResource)
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceRuntimeError
 from rex.utilities.utilities import roll_timeseries
@@ -184,6 +185,9 @@ def test_preload_sam_hh():
     hub_heights = 80
 
     SAM_res = WindResource.preload_SAM(h5, sites, hub_heights)
+
+    assert SAM_res.h == 80
+    assert SAM_res.d is None
 
     with WindResource(h5) as wind:
         p = wind['pressure_100m'] * 9.86923e-6

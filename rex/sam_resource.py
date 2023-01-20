@@ -50,7 +50,8 @@ class SAMResource:
                          'windspeed'),
                 'windpower': ('pressure', 'temperature', 'winddirection',
                               'windspeed'),
-                'wave': ('significant_wave_height', 'energy_period')}
+                'wave': ('significant_wave_height', 'energy_period'),
+                'geothermal': ('temperature', 'potential_MW')}
 
     # valid data ranges for PV solar resource:
     PV_DATA_RANGES = {'dni': (0.0, 1360.0),
@@ -93,6 +94,10 @@ class SAMResource:
     # valid data ranges for solar water heater
     SWH_DATA_RANGES = CSP_DATA_RANGES
 
+    # valid data ranges for solar water heater
+    GEOTHERMAL_DATA_RANGES = {'temperature': (-200, 1000),
+                              'potential_MW': (0, 1_000_000)}
+
     # Data range mapping by SAM tech string
     DATA_RANGES = {'windpower': WIND_DATA_RANGES,
                    'wind': WIND_DATA_RANGES,
@@ -105,9 +110,10 @@ class SAMResource:
                    'troughphysicalheat': TPPH_DATA_RANGES,
                    'lineardirectsteam': LF_DATA_RANGES,
                    'solarwaterheat': SWH_DATA_RANGES,
-                   'wave': WAVE_DATA_RANGES}
+                   'wave': WAVE_DATA_RANGES,
+                   'geothermal': GEOTHERMAL_DATA_RANGES}
 
-    def __init__(self, sites, tech, time_index, hub_heights=None,
+    def __init__(self, sites, tech, time_index, hub_heights=None, depths=None,
                  require_wind_dir=False, means=False):
         """
         Parameters
@@ -120,6 +126,8 @@ class SAMResource:
             Time-series datetime index
         hub_heights : int | float | list, optional
             Hub height(s) to extract wind data at, by default None
+        depths : int | float | list, optional
+            Depth(s) to extract wind data at, by default None
         require_wind_dir : bool, optional
             Boolean flag indicating that wind direction is required,
             by default False
@@ -137,12 +145,14 @@ class SAMResource:
         self._runnable = False
         self._res_arrays = {}
         self._h = hub_heights
+        self._d = depths
         self._sza = None
 
         self._mean_arrays = None
         if means:
             self._mean_arrays = {}
 
+        # pylint: disable=C0201
         if tech.lower() in self.DATA_RANGES.keys():
             self._tech = tech.lower()
         else:
@@ -357,9 +367,21 @@ class SAMResource:
         Returns
         -------
         self._h : int | float | list
-            Hub height or height(s) for wind resource, None for solar resource
+            Hub height or height(s) for wind resource, None for other resource
         """
         return self._h
+
+    @property
+    def d(self):
+        """
+        Get depths for geothermal sites
+
+        Returns
+        -------
+        self._d : int | float | list
+            Depth(s) for geothermal resource, None for other resource
+        """
+        return self._d
 
     @property
     def lat_lon(self):
@@ -457,7 +479,7 @@ class SAMResource:
                 # convert pressure from Pa to hPa
                 var_array /= 100
 
-        elif 'temperature' in var_name:
+        elif 'temperature' in var_name and "geothermal" not in tech.lower():
             # Check if tempearture is in K, if so convert to C
             if np.median(var_array) > 200.00:
                 var_array -= 273.15
@@ -661,6 +683,7 @@ class SAMResource:
             raise ResourceRuntimeError(msg)
         else:
             for var in self.var_list:
+                # pylint: disable=C0201
                 if var not in self._res_arrays.keys():
                     msg = '{} has not been set!'.format(var)
                     logger.error(msg)

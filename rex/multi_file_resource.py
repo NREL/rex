@@ -554,7 +554,8 @@ class MultiFileWTK(MultiFileResource, WindResource):
         """
         super().__init__(h5_source, unscale=unscale, str_decode=str_decode,
                          check_files=check_files)
-        self._heights = None
+        self._interp_var = None
+        self.heights = self._interpolation_variable
 
     @classmethod
     def preload_SAM(cls, h5_source, sites, hub_heights, unscale=True,
