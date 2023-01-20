@@ -1458,9 +1458,7 @@ class BaseResource(ABC):
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
 
-        for var in SAM_res.var_list:
-            if var in self.datasets:
-                SAM_res[var] = self[var, time_slice, sites]
+        SAM_res.load_rex_resource(self, time_slice, sites)
 
         return SAM_res
 

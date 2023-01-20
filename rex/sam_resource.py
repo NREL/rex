@@ -878,3 +878,34 @@ class SAMResource:
             msg = 'windspeed has not be loaded!'
             logger.error(msg)
             raise ResourceRuntimeError(msg)
+
+    def load_rex_resource(self, rex_res, var_list, time_slice, sites, hh=None,
+                          hh_unit='m'):
+        """Load data from a rex Resource handler into this SAMResource
+        container.
+
+        Parameters
+        ----------
+        rex_res : rex.Resource
+            rex Resource handler or similar (NSRDB, WindResource,
+            MultiFileResource, etc...)
+        var_list : list
+            List of variables to retrieve from rex_res. These names may be
+            manipulated with suffixes such as _100m (for a 100m hh input)
+        time_slice : slice
+            Slicing argument for the resource temporal dimension (axis=0)
+        sites : list
+            List of site indices (axis=1)
+        hh : None | int
+            Optional single hub height in meters that datasets are to be loaded
+            from rex_res at
+        hh_unit : str
+            Unit suffix for the hub height input.
+        """
+
+        for var in var_list:
+            if var in rex_res.datasets:
+                self._set_var_array(var, rex_res[var, time_slice, sites])
+            elif hh is not None:
+                var = "{}_{}{}".format(var, hh, hh_unit)
+                self._set_var_array(var, rex_res[var, time_slice, sites])

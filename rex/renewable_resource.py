@@ -246,10 +246,7 @@ class SolarResource(BaseResource):
             SAM_res._var_list.append('surface_albedo')
 
         SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
-        for var in SAM_res.var_list:
-            if var in self.datasets:
-                SAM_res[var] = self[var, time_slice, sites]
-
+        SAM_res.load_rex_resource(self, time_slice, sites)
         SAM_res.compute_irradiance(clearsky=clearsky)
 
         return SAM_res
@@ -371,10 +368,7 @@ class NSRDB(SolarResource):
 
         SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
         if not downscale:
-            for var in SAM_res.var_list:
-                if var in self.datasets:
-                    SAM_res[var] = self[var, time_slice, sites]
-
+            SAM_res.load_rex_resource(self, time_slice, sites)
             SAM_res.compute_irradiance(clearsky=clearsky)
         else:
             # contingent import to avoid dependencies
@@ -716,25 +710,25 @@ class AbstractInterpolatedResource(BaseResource):
         out = linear_interp(ts1, v1, ts2, v2, val)
         return out
 
-    def _set_sam_res(self, values, dset, SAM_res, time_slice, sites):
+    def _set_sam_res(self, values, dsets, SAM_res, time_slice, sites):
         """
         Set the resource for individual sites at various values
         (i.e. hub-heights, depths, etc).
         """
 
         if isinstance(values, (int, float)):
-            ds_name = "{}_{}{}".format(dset, values, self.VARIABLE_UNIT)
-            SAM_res[dset] = self[ds_name, time_slice, sites]
-            return
+            SAM_res.load_rex_resource(self, dsets, time_slice, sites,
+                                      hh=values, hh_unit=self.VARIABLE_UNIT)
 
-        _, unique_index = np.unique(values, return_inverse=True)
-        unique_values = sorted(list(set(values)))
-
-        for index, value in enumerate(unique_values):
-            pos = np.where(unique_index == index)[0]
-            res_sites = np.array(SAM_res.sites)[pos]
-            ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
-            SAM_res[dset, :, pos] = self[ds_name, time_slice, res_sites]
+        else:
+            _, unique_index = np.unique(values, return_inverse=True)
+            unique_values = sorted(list(set(values)))
+            for dset in dsets:
+                for index, value in enumerate(unique_values):
+                    pos = np.where(unique_index == index)[0]
+                    sites = np.array(SAM_res.sites)[pos]
+                    ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
+                    SAM_res[dset, :, pos] = self[ds_name, time_slice, sites]
 
     @property
     @abstractmethod
@@ -1274,8 +1268,7 @@ class WindResource(AbstractInterpolatedResource):
             var_list.remove('winddirection')
 
         h = self._check_hub_height(SAM_res.h)
-        for dset in var_list:
-            self._set_sam_res(h, dset, SAM_res, time_slice, sites)
+        self._set_sam_res(h, var_list, SAM_res, time_slice, sites)
 
         if precip_rate:
             var = 'precipitationrate'
@@ -1425,9 +1418,8 @@ class GeothermalResource(AbstractInterpolatedResource):
                               depths=depths, means=means)
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
-
-        for dset in SAM_res.var_list:
-            self._set_sam_res(SAM_res.d, dset, SAM_res, time_slice, sites)
+        self._set_sam_res(SAM_res.d, SAM_res.var_list, SAM_res, time_slice,
+                          sites)
 
         return SAM_res
 
