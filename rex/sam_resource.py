@@ -155,8 +155,7 @@ class SAMResource:
         if means:
             self._mean_arrays = {}
 
-        # pylint: disable=C0201
-        if tech.lower() in self.DATA_RANGES.keys():
+        if tech.lower() in self.DATA_RANGES:
             self._tech = tech.lower()
         else:
             msg = ('Selected tech {} is not valid. The following technology '
@@ -686,8 +685,7 @@ class SAMResource:
             raise ResourceRuntimeError(msg)
         else:
             for var in self.var_list:
-                # pylint: disable=C0201
-                if var not in self._res_arrays.keys():
+                if var not in self._res_arrays:
                     msg = '{} has not been set!'.format(var)
                     logger.error(msg)
                     raise ResourceRuntimeError(msg)
@@ -907,5 +905,5 @@ class SAMResource:
             if var in rex_res.datasets:
                 self._set_var_array(var, rex_res[var, time_slice, sites])
             elif hh is not None:
-                var = "{}_{}{}".format(var, hh, hh_unit)
-                self._set_var_array(var, rex_res[var, time_slice, sites])
+                var_hh = "{}_{}{}".format(var, hh, hh_unit)
+                self._set_var_array(var, rex_res[var_hh, time_slice, sites])
