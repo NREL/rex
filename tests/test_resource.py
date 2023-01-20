@@ -496,6 +496,40 @@ class TestNSRDB:
         check_dset_map(res_cls, ds_name)
         res_cls.close()
 
+    @staticmethod
+    def test_psm_scale_factors():
+        """Test NSRDB handler psm_scale_factor vs. scale_factor (normal
+        scale_factor should be prioritized but psm_scale_factor used if
+        found.)"""
+        with tempfile.TemporaryDirectory() as td:
+            og_path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+            res_fp = os.path.join(td, 'nsrdb_2012.h5')
+            shutil.copy(og_path, res_fp)
+
+            with NSRDB(res_fp) as f:
+                ws1 = f['wind_speed']
+
+            # test that handler uses scale_factor
+            with h5py.File(res_fp, 'a') as fh:
+                fh['wind_speed'].attrs['scale_factor'] = 10
+            with NSRDB(res_fp) as f:
+                ws10 = f['wind_speed']
+                assert np.allclose(ws1, ws10 * 10)
+
+            # test that handler prioritizes scale_factor over psm_scale_factor
+            with h5py.File(res_fp, 'a') as fh:
+                fh['wind_speed'].attrs['psm_scale_factor'] = 100
+            with NSRDB(res_fp) as f:
+                ws10 = f['wind_speed']
+                assert np.allclose(ws1, ws10 * 10)
+
+            # test that handler uses psm_scale_factor if scale_factor not found
+            with h5py.File(res_fp, 'a') as fh:
+                del fh['wind_speed'].attrs['scale_factor']
+            with NSRDB(res_fp) as f:
+                ws100 = f['wind_speed']
+                assert np.allclose(ws1, ws100 * 100)
+
 
 class TestWindResource:
     """
@@ -919,4 +953,6 @@ def execute_pytest(capture='all', flags='-rapP'):
 
 
 if __name__ == '__main__':
-    execute_pytest()
+#    execute_pytest()
+
+    raise

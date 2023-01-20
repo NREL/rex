@@ -195,7 +195,7 @@ class SolarResource(BaseResource):
             var_array = SAMResource.roll_timeseries(var_array, time_zone,
                                                     time_interval)
             res_df[var] = SAMResource.check_units(var, var_array,
-                                                  tech='pvwattsv7')
+                                                  tech='pvwattsv8')
 
         col_map = {'dni': 'DNI', 'dhi': 'DHI', 'wind_speed': 'Wind Speed',
                    'air_temperature': 'Temperature'}
@@ -205,7 +205,7 @@ class SolarResource(BaseResource):
 
         return res_df
 
-    def _preload_SAM(self, sites, tech='pvwattsv7', time_index_step=None,
+    def _preload_SAM(self, sites, tech='pvwattsv8', time_index_step=None,
                      means=False, clearsky=False, bifacial=False):
         """
         Pre-load project_points for SAM
@@ -215,7 +215,7 @@ class SolarResource(BaseResource):
         sites : list
             List of sites to be provided to SAM
         tech : str, optional
-            SAM technology string, by default 'pvwattsv7'
+            SAM technology string, by default 'pvwattsv8'
         time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
@@ -257,7 +257,7 @@ class SolarResource(BaseResource):
     @classmethod
     def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
                     group=None, hsds=False, hsds_kwargs=None,
-                    tech='pvwattsv7', time_index_step=None, means=False,
+                    tech='pvwattsv8', time_index_step=None, means=False,
                     clearsky=False, bifacial=False):
         """
         Pre-load project_points for SAM
@@ -282,7 +282,7 @@ class SolarResource(BaseResource):
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
         tech : str, optional
-            SAM technology string, by default 'pvwattsv7'
+            SAM technology string, by default 'pvwattsv8'
         time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
@@ -319,11 +319,11 @@ class NSRDB(SolarResource):
     --------
     resource.BaseResource : Parent class
     """
-    ADD_ATTR = 'psm_add_offset'
-    SCALE_ATTR = 'psm_scale_factor'
-    UNIT_ATTR = 'psm_units'
+    ADD_ATTR = ['add_offset', 'psm_add_offset']
+    SCALE_ATTR = ['scale_factor', 'psm_scale_factor']
+    UNIT_ATTR = ['units', 'psm_units']
 
-    def _preload_SAM(self, sites, tech='pvwattsv7', time_index_step=None,
+    def _preload_SAM(self, sites, tech='pvwattsv8', time_index_step=None,
                      means=False, clearsky=False, bifacial=False,
                      downscale=None):
         """
@@ -334,7 +334,7 @@ class NSRDB(SolarResource):
         sites : list
             List of sites to be provided to SAM
         tech : str, optional
-            SAM technology string, by default 'pvwattsv7'
+            SAM technology string, by default 'pvwattsv8'
         time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
@@ -389,7 +389,7 @@ class NSRDB(SolarResource):
     @classmethod
     def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
                     group=None, hsds=False, hsds_kwargs=None,
-                    tech='pvwattsv7', time_index_step=None, means=False,
+                    tech='pvwattsv8', time_index_step=None, means=False,
                     clearsky=False, bifacial=False, downscale=None):
         """
         Pre-load project_points for SAM
@@ -414,7 +414,7 @@ class NSRDB(SolarResource):
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
         tech : str, optional
-            SAM technology string, by default 'pvwattsv7'
+            SAM technology string, by default 'pvwattsv8'
        time_index_step: int, optional
             Step size for time_index, used to reduce temporal resolution,
             by default None
