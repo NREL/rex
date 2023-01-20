@@ -959,6 +959,17 @@ class BaseResource(ABC):
         return self._chunks
 
     @property
+    def adders(self):
+        """
+        Dictionary of all dataset add offset factors
+
+        Returns
+        -------
+        adders : dict
+        """
+        return self._parse_attr_names(self.ADD_ATTR, 0)
+
+    @property
     def scale_factors(self):
         """
         Dictionary of all dataset scale factors
@@ -967,10 +978,7 @@ class BaseResource(ABC):
         -------
         scale_factors : dict
         """
-        scale_factors = {k: v.get(self.SCALE_ATTR, 1)
-                         for k, v in self.attrs.items()}
-
-        return scale_factors
+        return self._parse_attr_names(self.SCALE_ATTR, 1)
 
     @property
     def units(self):
@@ -981,20 +989,39 @@ class BaseResource(ABC):
         -------
         units : dict
         """
+        return self._parse_attr_names(self.UNIT_ATTR, None)
 
-        unit_attr = self.UNIT_ATTR
-        if isinstance(self.UNIT_ATTR, str):
-            unit_attr = [self.UNIT_ATTR]
+    def _parse_attr_names(self, attr_names, default):
+        """Retrieve an attribute from all dataset attributes.
 
-        units = {}
+        Parameters
+        ----------
+        attr_names : str | list
+            Single or prioritized list of attribute names to retrieve, e.g.
+            "scale_factor" or ["scale_factor", "psm_scale_factor"]
+        default : None | int | float
+            Default value if attr_names not found in any given dataset.
+
+        Returns
+        -------
+        out : dict
+            Dictionary mapping datasets (keys) to attribute values (values),
+            e.g. if attr_names="scale_factor", out would be:
+            {"windspeed_10m": 10, "misc": 1}
+        """
+
+        if isinstance(attr_names, str):
+            attr_names = [attr_names]
+
+        out = {}
         for dset, attrs in self.attrs.items():
-            units[dset] = None
-            for ua in unit_attr:
-                if ua in attrs:
-                    units[dset] = attrs[ua]
+            out[dset] = default
+            for name in attr_names:
+                if name in attrs:
+                    out[dset] = attrs[name]
                     break
 
-        return units
+        return out
 
     @staticmethod
     def _check_chunks(chunks):
