@@ -439,7 +439,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     """
 
     def __init__(self, h5_source, unscale=True, str_decode=True,
-                 check_files=False):
+                 check_files=False, use_lapse_rate=True):
         """
         Parameters
         ----------
@@ -455,10 +455,16 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             strings. Setting this to False will speed up the meta data read.
         check_files : bool
             Check to ensure files have the same coordinates and time_index
+        use_lapse_rate : bool
+            Flag to use pressure / temperature linear lapse rate adjustment if
+            these variables are only available at a single elevation.
+            Alternative is to just use that single elevation for all hub
+            heights.
         """
         super().__init__(h5_source, unscale=unscale, str_decode=str_decode,
                          check_files=check_files)
         self._interp_var = None
+        self._use_lapse = use_lapse_rate
         self.heights = self._interpolation_variable
 
     @classmethod
@@ -559,7 +565,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
     """
 
     def __init__(self, h5_source, unscale=True, str_decode=True,
-                 check_files=False):
+                 check_files=False, use_lapse_rate=True):
         """
         Parameters
         ----------
@@ -575,10 +581,16 @@ class MultiFileWTK(MultiFileResource, WindResource):
             strings. Setting this to False will speed up the meta data read.
         check_files : bool
             Check to ensure files have the same coordinates and time_index
+        use_lapse_rate : bool
+            Flag to use pressure / temperature linear lapse rate adjustment if
+            these variables are only available at a single elevation.
+            Alternative is to just use that single elevation for all hub
+            heights.
         """
         super().__init__(h5_source, unscale=unscale, str_decode=str_decode,
                          check_files=check_files)
         self._interp_var = None
+        self._use_lapse = use_lapse_rate
         self.heights = self._interpolation_variable
 
     @classmethod
