@@ -157,14 +157,11 @@ class AbstractInterpolatedResource(BaseResource):
      phak/media/06_phak_ch4.pdf)
     """
 
-    P_LAPSE_RATE = 11110
-    """Pressure lapse rate in Pa/km"""
-
-    T_LAPSE_RATE = 6.56
-    """Temperature lapse rate in C/km"""
+    LAPSE_RATES = {'temperature': 6.56, 'pressure': 11_109}
+    """Air Temperature and Pressure lapse rate in C/km and Pa/km"""
 
     def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
-                 hsds=False, hsds_kwargs=None):
+                 use_lapse_rate=True, hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -177,6 +174,11 @@ class AbstractInterpolatedResource(BaseResource):
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        use_lapse_rate : bool
+            Flag to use pressure / temperature linear lapse rate adjustment if
+            these variables are only available at a single elevation.
+            Alternative is to just use that single elevation for all hub
+            heights.
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
@@ -185,6 +187,7 @@ class AbstractInterpolatedResource(BaseResource):
             password, by default None
         """
         self._interp_var = None
+        self._use_lapse = use_lapse_rate
         super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
                          group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
         prop_name = "{}s".format(self.VARIABLE_NAME)
@@ -233,12 +236,12 @@ class AbstractInterpolatedResource(BaseResource):
             Variable value.
         """
 
-        regex = "_[0-9]+(.[0-9]+)?{}$".format(cls.VARIABLE_UNIT)
+        regex = "_-?[0-9]+(.[0-9]+)?{}$".format(cls.VARIABLE_UNIT)
         regex = re.search(regex, ds_name)
         if regex:
-            *name, val = ds_name.split('_')
-            name = '_'.join(name)
-            val = val.strip(cls.VARIABLE_UNIT)
+            val = regex.group()
+            name = ds_name.rstrip(val)
+            val = val.lstrip('_').rstrip(cls.VARIABLE_UNIT)
 
             try:
                 val = int(val)
@@ -400,8 +403,8 @@ class AbstractInterpolatedResource(BaseResource):
             out = super()._get_ds(ds_name, ds_slice)
 
         elif (len(interpolation_values) == 1
-              and (ds_name.startswith('pressure')
-                   or ds_name.startswith('temperature'))):
+              and self._use_lapse
+              and var_name in self.LAPSE_RATES):
             out = self._get_ds_lapse(ds_name, ds_slice)
 
         elif len(interpolation_values) == 1:
@@ -417,7 +420,10 @@ class AbstractInterpolatedResource(BaseResource):
 
         return out
 
-    def _get_ds_lapse(self, ds_name, ds_slice):
+    def _get_ds_lapse(self, ds_name, ds_slice,
+                      valid_units=('pa', 'pascals',
+                                   'c', 'celsius',
+                                   'k', 'kelvin')):
         """Extract data from given dataset where there is only temperature or
         pressure data at a single elevation and a lapse rate must be used to
         adjust to a new elevation.
@@ -429,6 +435,10 @@ class AbstractInterpolatedResource(BaseResource):
         ds_slice : tuple
             Tuple of (int, slice, list, ndarray) of what to extract
             from ds, each arg is for a sequential axis
+        valid_units : tuple
+            Tuple of valid lower-case units that can be lapse-rate adjusted. If
+            the dataset doesnt have units in this list, a warning will be
+            raised.
 
         Returns
         -------
@@ -436,27 +446,37 @@ class AbstractInterpolatedResource(BaseResource):
             ndarray of variable timeseries data
             If unscale, returned in native units else in scaled units
         """
-        if ds_name.startswith('pressure'):
-            lapse_rate = self.P_LAPSE_RATE
-        elif ds_name.startswith('temperature'):
-            lapse_rate = self.T_LAPSE_RATE
-        else:
-            msg = ('Cannot use lapse rate on dataset: {}'.format(ds_name))
-            logger.error(msg)
-            raise KeyError(msg)
 
         var_name, val = self._parse_name(ds_name)
         interpolation_values = self._interpolation_variable[var_name]
         ds_name = '{}_{}{}'.format(var_name, int(interpolation_values[0]),
                                    self.VARIABLE_UNIT)
-        warnings.warn('Only one {} available for {} at {}, using '
-                      'lapse rate of {} to get to {}'
-                      .format(self.VARIABLE_NAME, var_name,
-                              interpolation_values[0], lapse_rate, val),
-                      ResourceWarning)
+        lapse_rate = self.LAPSE_RATES[var_name]
+
+        if self.VARIABLE_UNIT != 'm':
+            msg = ('Cannot use temperature/pressure lapse rate when vertical '
+                   'interpolation unit is not "m": {}'
+                   .format(self.VARIABLE_UNIT))
+            logger.error(msg)
+            raise RuntimeError(msg)
+
+        logger.info('Only one {} available for {} at {}, using '
+                    'lapse rate of {} to get to {}'
+                    .format(self.VARIABLE_NAME, var_name,
+                            interpolation_values[0], lapse_rate, val))
+
+        ds_units = str(self.units.get(ds_name, None))
+        if ds_units.lower() not in valid_units:
+            msg = ('Dataset "{}" is being adjusted to elevation {} via lapse '
+                   'rate but valid units not found: {} (must be Pa or C). '
+                   'Proceeding, but if this is not the desired behavior, set '
+                   'use_lapse_rate=False'.format(ds_name, val, ds_units))
+            logger.warning(msg)
+            warnings.warn(msg, ResourceWarning)
+
         out = super()._get_ds(ds_name, ds_slice)
-        diff = (interpolation_values[0] - val) / 1000
-        lapse = diff * lapse_rate
+        delta_h = (interpolation_values[0] - val) / 1000  # to kilometers
+        lapse = delta_h * lapse_rate
         return out + lapse
 
     def _get_calculated_ds(self, val, ds_name, var_name, ds_slice):
@@ -1431,6 +1451,7 @@ class GeothermalResource(AbstractInterpolatedResource):
      341.5]
     """
 
+    LAPSE_RATES = {}
     INTERPOLABLE_DSETS = ["temperature", "potential_MW"]
     VARIABLE_NAME = "depth"
     VARIABLE_UNIT = "m"

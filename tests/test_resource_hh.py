@@ -6,6 +6,7 @@ import numpy as np
 import os
 import pytest
 
+from rex.utilities.exceptions import ResourceWarning
 from rex.renewable_resource import WindResource
 from rex.sam_resource import SAMResource
 from rex import TESTDATADIR
@@ -13,12 +14,55 @@ from rex import TESTDATADIR
 
 def test_single_hh():
     """Test that resource with data at a single hub height will always return
-    the data at that hub height (and also return a warning)"""
+    the data at that hub height (and also return a warning)
+
+    ***Without lapse rate feature enabled (new as of 1/2023)
+
+    Only pressure_0m and temperature_80m are available from this file
+    """
     h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_1.h5')
-    with WindResource(h5) as wind:
-        # Existing datasets are P0m and T80m
-        assert np.array_equal(wind['pressure_80m'], wind['pressure_0m'])
-        assert np.array_equal(wind['temperature_10m'], wind['temperature_80m'])
+    with pytest.warns(ResourceWarning):
+        with WindResource(h5, use_lapse_rate=False) as wind:
+            # Existing datasets are P0m and T80m
+            assert np.array_equal(wind['pressure_80m'], wind['pressure_0m'])
+            assert np.array_equal(wind['temperature_10m'],
+                                  wind['temperature_80m'])
+
+
+def test_p_lapse_rate():
+    """Test pressure-based lapse rate when there's only a single pressure level
+    available.
+
+    Will throw warning because stupid test file doesn't have units.
+
+    Only pressure_0m and temperature_80m are available from this file
+    """
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_1.h5')
+    with pytest.warns(ResourceWarning):
+        with WindResource(h5, use_lapse_rate=True) as wind:
+            assert (wind['pressure_80m'] < wind['pressure_0m']).all()
+            assert (wind['pressure_1m'] < wind['pressure_0m']).all()
+            assert (wind['pressure_0.1m'] < wind['pressure_0m']).all()
+            assert (wind['pressure_0m'] == wind['pressure_0m']).all()
+            assert (wind['pressure_-10m'] > wind['pressure_0m']).all()
+
+
+def test_t_lapse_rate():
+    """Test temperature-based lapse rate when there's only a single
+    temperature level available.
+
+    Will throw warning because stupid test file doesn't have units.
+
+    Only pressure_0m and temperature_80m are available from this file
+    """
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_wtk_2012_incomplete_1.h5')
+    with pytest.warns(ResourceWarning):
+        with WindResource(h5, use_lapse_rate=True) as wind:
+            assert (wind['temperature_90m'] < wind['temperature_80m']).all()
+            assert (wind['temperature_80m'] == wind['temperature_80m']).all()
+            assert (wind['temperature_70m'] > wind['temperature_80m']).all()
+            assert (wind['temperature_0.1m'] > wind['temperature_80m']).all()
+            assert (wind['temperature_-10m'] > wind['temperature_80m']).all()
 
 
 def test_check_hh():
