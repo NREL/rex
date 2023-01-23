@@ -650,7 +650,8 @@ class SolarResource(AbstractInterpolatedResource):
             SAM_res._var_list.append('surface_albedo')
 
         SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
-        SAM_res.load_rex_resource(self, time_slice, sites, hh=2)
+        SAM_res.load_rex_resource(self, SAM_res.var_list, time_slice, sites,
+                                  hh=2)
         SAM_res.compute_irradiance(clearsky=clearsky)
 
         return SAM_res
