@@ -150,9 +150,9 @@ class AbstractInterpolatedResource(BaseResource):
 
     Default type of interpolation is linear.
 
-    Pressure and Temperature lapse rates are used if only p and t are only
-    given at a single hub height and the lapse rates are from the International
-    Standard Atmosphere (ISA) or ICAO Standard Atmosphere:
+    Pressure and Temperature lapse rates are used if p and t are only given at
+    a single hub height. The lapse rates are from the International Standard
+    Atmosphere (ISA) or ICAO Standard Atmosphere:
     (https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/
      phak/media/06_phak_ch4.pdf)
     """
@@ -175,10 +175,13 @@ class AbstractInterpolatedResource(BaseResource):
         group : str
             Group within .h5 resource file to open
         use_lapse_rate : bool
-            Flag to use pressure / temperature linear lapse rate adjustment if
-            these variables are only available at a single elevation.
-            Alternative is to just use that single elevation for all hub
-            heights.
+            If a dataset is only available at a single hub-height and this flag
+            value is set to `True`, pressure / temperature values will be
+            calculated using linear lapse rate adjustment from the available
+            hub height to the requested one. If the flag value is set to
+            `False`, the value of these variables at the single available
+            hub-height will be returned for *all* requested heights. This
+            option has no effect if data is available at multiple hub-heights.
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
