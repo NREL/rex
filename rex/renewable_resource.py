@@ -857,7 +857,9 @@ class WindResource(AbstractInterpolatedResource):
 
     Examples
     --------
-    >>> file = '$TESTDATADIR/wtk/ri_100_wtk_2012.h5'
+    >>> import os
+    >>> from rex import TESTDATADIR, WindResource
+    >>> file = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     >>> with WindResource(file) as res:
     >>>     print(res.datasets)
     ['meta', 'pressure_0m', 'pressure_100m', 'pressure_200m',

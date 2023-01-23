@@ -22,6 +22,63 @@ class SAMResource:
     Resource container for SAM. Resource handlers preload the datasets needed
     by SAM for the sites of interest. SAMResource handles all ETL needed before
     resource data is passed into SAM.
+
+    Examples
+    --------
+    >>> import os
+    >>> from rex import TESTDATADIR, WindResource
+    >>> file = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    Here we load a SAM Resource container for a windpower analysis for sites 7
+    and 8 at a hub height of 90m:
+
+    >>> sam = WindResource.preload_SAM(file, sites=[7, 8], hub_heights=90)
+    >>> sam
+    SAMResource with 2 windpower sites
+
+    You can then use the SAMResource object to easily retrieve the data that is
+    needed to run the SAM windpower module:
+
+    >>> sam[7]
+                               winddirection  pressure  temperature  windspeed
+    2012-01-01 00:00:00+00:00            0.0  0.965329        4.270   7.565000
+    2012-01-01 01:00:00+00:00            0.0  0.965921        3.870   8.040000
+    2012-01-01 02:00:00+00:00            0.0  0.966612        4.070  10.370000
+    2012-01-01 03:00:00+00:00            0.0  0.966721        4.060  11.174999
+    2012-01-01 04:00:00+00:00            0.0  0.967224        3.515   8.570000
+    ...                                  ...       ...          ...        ...
+    2012-12-31 19:00:00+00:00            0.0  0.967826       -1.965   6.515000
+    2012-12-31 20:00:00+00:00            0.0  0.967036       -2.095   6.750000
+    2012-12-31 21:00:00+00:00            0.0  0.966740       -2.495   9.215000
+    2012-12-31 22:00:00+00:00            0.0  0.966158       -2.735  10.680000
+    2012-12-31 23:00:00+00:00            0.0  0.965852       -2.460  10.805000
+
+    [8784 rows x 4 columns]
+
+    >>> sam['meta', 7]
+    latitude         41.975849
+    longitude       -71.762329
+    country      United States
+    state                   RI
+    county          Providence
+    timezone                -5
+    elevation              208
+    offshore                 0
+    Name: 7, dtype: object
+
+    >>> sam['meta', 8]
+    latitude         41.993584
+    longitude       -71.754852
+    country      United States
+    state                   RI
+    county          Providence
+    timezone                -5
+    elevation              180
+    offshore                 0
+    Name: 8, dtype: object
+
+    >>> sam['meta', 9]
+    KeyError: 9
     """
 
     # Resource variables to load for each SAM technology
