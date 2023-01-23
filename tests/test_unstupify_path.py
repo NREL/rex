@@ -10,6 +10,7 @@ from rex.utilities.utilities import unstupify_path
 
 HERE = os.path.realpath(__file__)
 DIR, FILE = os.path.split(HERE)
+os.chdir(DIR)  # rex assumes that all tests are run from /tests/
 
 
 def test_unstupify_home_path():
