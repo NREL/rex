@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 pytests for resource handlers
+
+This also includes tests of the MultiFile handlers
 """
 from datetime import datetime
 import h5py
@@ -12,8 +14,8 @@ import shutil
 import tempfile
 
 from rex import TESTDATADIR, Resource, Outputs
-from rex.multi_file_resource import (MultiH5, MultiH5Path, MultiFileNSRDB,
-                                     MultiFileWTK)
+from rex.multi_file_resource import (MultiH5, MultiH5Path, MultiFileResource,
+                                     MultiFileNSRDB, MultiFileWTK)
 from rex.renewable_resource import (NSRDB, WindResource)
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 
@@ -24,6 +26,14 @@ def NSRDB_res():
     """
     path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
     return NSRDB(path)
+
+
+def MultiFileHandler():
+    """
+    Init MultiFile resource handler
+    """
+    path = os.path.join(TESTDATADIR, 'nsrdb', 'nsrdb*2018.h5')
+    return MultiFileResource(path)
 
 
 def NSRDB_2018():
@@ -426,7 +436,9 @@ class TestNSRDB:
     @pytest.mark.parametrize('res_cls',
                              [NSRDB_res(),
                               NSRDB_2018(),
-                              NSRDB_2018_list()])
+                              NSRDB_2018_list(),
+                              MultiFileHandler(),
+                              ])
     def test_meta(res_cls):
         """
         test extraction of NSRDB meta data
@@ -495,6 +507,40 @@ class TestNSRDB:
         """
         check_dset_map(res_cls, ds_name)
         res_cls.close()
+
+    @staticmethod
+    def test_psm_scale_factors():
+        """Test NSRDB handler psm_scale_factor vs. scale_factor (normal
+        scale_factor should be prioritized but psm_scale_factor used if
+        found.)"""
+        with tempfile.TemporaryDirectory() as td:
+            og_path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+            res_fp = os.path.join(td, 'nsrdb_2012.h5')
+            shutil.copy(og_path, res_fp)
+
+            with NSRDB(res_fp) as f:
+                ws1 = f['wind_speed']
+
+            # test that handler uses scale_factor
+            with h5py.File(res_fp, 'a') as fh:
+                fh['wind_speed'].attrs['scale_factor'] = 10
+            with NSRDB(res_fp) as f:
+                ws10 = f['wind_speed']
+                assert np.allclose(ws1, ws10 * 10)
+
+            # test that handler prioritizes scale_factor over psm_scale_factor
+            with h5py.File(res_fp, 'a') as fh:
+                fh['wind_speed'].attrs['psm_scale_factor'] = 100
+            with NSRDB(res_fp) as f:
+                ws10 = f['wind_speed']
+                assert np.allclose(ws1, ws10 * 10)
+
+            # test that handler uses psm_scale_factor if scale_factor not found
+            with h5py.File(res_fp, 'a') as fh:
+                del fh['wind_speed'].attrs['scale_factor']
+            with NSRDB(res_fp) as f:
+                ws100 = f['wind_speed']
+                assert np.allclose(ws1, ws100 * 100)
 
 
 class TestWindResource:

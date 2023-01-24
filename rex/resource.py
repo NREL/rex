@@ -20,6 +20,7 @@ class ResourceDataset:
     """
     h5py.Dataset wrapper for Resource .h5 files
     """
+
     def __init__(self, ds, scale_attr='scale_factor', add_attr='add_offset',
                  unscale=True):
         """
@@ -27,16 +28,20 @@ class ResourceDataset:
         ----------
         ds : h5py.dataset
             Open .h5 dataset instance to extract data from
-        scale_attr : str, optional
-            Name of scale factor attribute, by default 'scale_factor'
-        add_attr : str, optional
-            Name of add offset attribute, by default 'add_offset'
+        scale_attr : str | list | optional
+            Name of scale factor attribute, by default 'scale_factor'. Can also
+            be a prioritized list of scale factor names.
+        add_attr : str | list | optional
+            Name of add offset attribute, by default 'add_offset'. Can also
+            be a prioritized list of add offset names.
         unscale : bool, optional
             Flag to unscale dataset data, by default True
         """
         self._ds = ds
-        self._scale_factor = self.ds.attrs.get(scale_attr, 1)
-        self._adder = self.ds.attrs.get(add_attr, 0)
+
+        self._scale_factor = self._parse_scale_add_attrs(scale_attr, 1)
+        self._adder = self._parse_scale_add_attrs(add_attr, 0)
+
         self._unscale = unscale
         if self._scale_factor == 1 and self._adder == 0:
             self._unscale = False
@@ -131,6 +136,37 @@ class ResourceDataset:
         float
         """
         return self._adder
+
+    def _parse_scale_add_attrs(self, attr, default):
+        """Get the scale and add offset factors using one or more prioritized
+        scale/add attribute names.
+
+        Parameters
+        ----------
+        attr : str | list | optional
+            Name of scale factor or adder attribute. Can also
+            be a prioritized list of attr names.
+        default : float
+            Default factor if attr is not found
+
+        Returns
+        -------
+        factor : float
+            Multiplicative or adder scale factor retrieved from dataset
+            attributes.
+        """
+
+        factor = default
+
+        if isinstance(attr, str):
+            attr = [attr]
+
+        for name in attr:
+            if name in self.ds.attrs:
+                factor = self.ds.attrs[name]
+                break
+
+        return factor
 
     @staticmethod
     def _check_slice(ds_slice):
@@ -923,6 +959,17 @@ class BaseResource(ABC):
         return self._chunks
 
     @property
+    def adders(self):
+        """
+        Dictionary of all dataset add offset factors
+
+        Returns
+        -------
+        adders : dict
+        """
+        return self._parse_attr_names(self.ADD_ATTR, 0)
+
+    @property
     def scale_factors(self):
         """
         Dictionary of all dataset scale factors
@@ -931,10 +978,7 @@ class BaseResource(ABC):
         -------
         scale_factors : dict
         """
-        scale_factors = {k: v.get(self.SCALE_ATTR, 1)
-                         for k, v in self.attrs.items()}
-
-        return scale_factors
+        return self._parse_attr_names(self.SCALE_ATTR, 1)
 
     @property
     def units(self):
@@ -945,10 +989,39 @@ class BaseResource(ABC):
         -------
         units : dict
         """
-        units = {k: v.get(self.UNIT_ATTR, None)
-                 for k, v in self.attrs.items()}
+        return self._parse_attr_names(self.UNIT_ATTR, None)
 
-        return units
+    def _parse_attr_names(self, attr_names, default):
+        """Retrieve an attribute from all dataset attributes.
+
+        Parameters
+        ----------
+        attr_names : str | list
+            Single or prioritized list of attribute names to retrieve, e.g.
+            "scale_factor" or ["scale_factor", "psm_scale_factor"]
+        default : None | int | float
+            Default value if attr_names not found in any given dataset.
+
+        Returns
+        -------
+        out : dict
+            Dictionary mapping datasets (keys) to attribute values (values),
+            e.g. if attr_names="scale_factor", out would be:
+            {"windspeed_10m": 10, "misc": 1}
+        """
+
+        if isinstance(attr_names, str):
+            attr_names = [attr_names]
+
+        out = {}
+        for dset, attrs in self.attrs.items():
+            out[dset] = default
+            for name in attr_names:
+                if name in attrs:
+                    out[dset] = attrs[name]
+                    break
+
+        return out
 
     @staticmethod
     def _check_chunks(chunks):
@@ -1412,9 +1485,7 @@ class BaseResource(ABC):
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
 
-        for var in SAM_res.var_list:
-            if var in self.datasets:
-                SAM_res[var] = self[var, time_slice, sites]
+        SAM_res.load_rex_resource(self, SAM_res.var_list, time_slice, sites)
 
         return SAM_res
 

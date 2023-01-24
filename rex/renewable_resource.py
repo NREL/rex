@@ -3,6 +3,7 @@
 """
 Classes to handle renewable resource data
 """
+import re
 from abc import abstractmethod
 import numpy as np
 import os
@@ -144,318 +145,23 @@ class WaveResource(BaseResource):
         return SAM_res
 
 
-class SolarResource(BaseResource):
-    """
-    Class to handle Solar BaseResource .h5 files
-
-    See Also
-    --------
-    resource.BaseResource : Parent class
-    """
-    def get_SAM_df(self, site, extra_cols=None):
-        """
-        Get SAM solar resource DataFrame for given site
-
-        Parameters
-        ----------
-        site : int
-            Site to extract SAM DataFrame for.
-        extra_cols : dict, optional
-            A dictionary where they keys are extra columns
-            to extract from the SAM solar resource DataFrame
-            and the values are the names the new columns should
-            have (e.g. extra_cols={'surface_albedo': 'Surface
-            Albedo'} will extract the 'surface_albedo' from the
-            resource file and call it 'Surface Albedo' in the output).
-
-        Returns
-        -------
-        res_df : pandas.DataFrame
-            time-series DataFrame of resource variables needed to run SAM
-        """
-        if not self._unscale:
-            raise ResourceValueError("SAM requires unscaled values")
-
-        res_df = pd.DataFrame({'Year': self.time_index.year,
-                               'Month': self.time_index.month,
-                               'Day': self.time_index.day,
-                               'Hour': self.time_index.hour})
-
-        if len(self) > 8784 or (self.time_index.minute != 0).any():
-            res_df['Minute'] = self.time_index.minute
-
-        time_zone = self.meta.loc[site, 'timezone']
-        time_interval = len(self.time_index) // 8760
-
-        main_cols = ['dni', 'dhi', 'wind_speed', 'air_temperature']
-        extra_cols = extra_cols or {}
-        for var in main_cols + list(extra_cols):
-            ds_slice = (slice(None), site)
-            var_array = self._get_ds(var, ds_slice)
-            var_array = SAMResource.roll_timeseries(var_array, time_zone,
-                                                    time_interval)
-            res_df[var] = SAMResource.check_units(var, var_array,
-                                                  tech='pvwattsv7')
-
-        col_map = {'dni': 'DNI', 'dhi': 'DHI', 'wind_speed': 'Wind Speed',
-                   'air_temperature': 'Temperature'}
-        col_map.update(extra_cols)
-        res_df = res_df.rename(columns=col_map)
-        res_df.name = "SAM_-{}".format(site)
-
-        return res_df
-
-    def _preload_SAM(self, sites, tech='pvwattsv7', time_index_step=None,
-                     means=False, clearsky=False, bifacial=False):
-        """
-        Pre-load project_points for SAM
-
-        Parameters
-        ----------
-        sites : list
-            List of sites to be provided to SAM
-        tech : str, optional
-            SAM technology string, by default 'pvwattsv7'
-        time_index_step: int, optional
-            Step size for time_index, used to reduce temporal resolution,
-            by default None
-        means : bool, optional
-            Boolean flag to compute mean resource when res_array is set,
-            by default False
-        clearsky : bool
-            Boolean flag to pull clearsky instead of real irradiance
-        bifacial : bool
-            Boolean flag to pull surface albedo for bifacial modeling.
-
-        Returns
-        -------
-        SAM_res : SAMResource
-            Instance of SAMResource pre-loaded with Solar resource for sites
-            in project_points
-        """
-        time_slice = slice(None, None, time_index_step)
-        SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
-                              means=means)
-        sites = SAM_res.sites_slice
-        SAM_res['meta'] = self['meta', sites]
-
-        if clearsky:
-            SAM_res.set_clearsky()
-
-        if bifacial and 'surface_albedo' not in SAM_res.var_list:
-            SAM_res._var_list.append('surface_albedo')
-
-        SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
-        for var in SAM_res.var_list:
-            if var in self.datasets:
-                SAM_res[var] = self[var, time_slice, sites]
-
-        SAM_res.compute_irradiance(clearsky=clearsky)
-
-        return SAM_res
-
-    @classmethod
-    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
-                    group=None, hsds=False, hsds_kwargs=None,
-                    tech='pvwattsv7', time_index_step=None, means=False,
-                    clearsky=False, bifacial=False):
-        """
-        Pre-load project_points for SAM
-
-        Parameters
-        ----------
-        h5_file : str
-            h5_file to extract resource from
-        sites : list
-            List of sites to be provided to SAM
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        tech : str, optional
-            SAM technology string, by default 'pvwattsv7'
-        time_index_step: int, optional
-            Step size for time_index, used to reduce temporal resolution,
-            by default None
-        means : bool, optional
-            Boolean flag to compute mean resource when res_array is set,
-            by default False
-        clearsky : bool
-            Boolean flag to pull clearsky instead of real irradiance
-        bifacial : bool
-            Boolean flag to pull surface albedo for bifacial modeling.
-
-        Returns
-        -------
-        SAM_res : SAMResource
-            Instance of SAMResource pre-loaded with Solar resource for sites
-            in project_points
-        """
-        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
-                  "str_decode": str_decode, "group": group}
-        with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(sites, tech=tech,
-                                       time_index_step=time_index_step,
-                                       means=means, clearsky=clearsky,
-                                       bifacial=bifacial)
-
-        return SAM_res
-
-
-class NSRDB(SolarResource):
-    """
-    Class to handle NSRDB .h5 files
-
-    See Also
-    --------
-    resource.BaseResource : Parent class
-    """
-    ADD_ATTR = 'psm_add_offset'
-    SCALE_ATTR = 'psm_scale_factor'
-    UNIT_ATTR = 'psm_units'
-
-    def _preload_SAM(self, sites, tech='pvwattsv7', time_index_step=None,
-                     means=False, clearsky=False, bifacial=False,
-                     downscale=None):
-        """
-        Pre-load project_points for SAM
-
-        Parameters
-        ----------
-        sites : list
-            List of sites to be provided to SAM
-        tech : str, optional
-            SAM technology string, by default 'pvwattsv7'
-        time_index_step: int, optional
-            Step size for time_index, used to reduce temporal resolution,
-            by default None
-        means : bool, optional
-            Boolean flag to compute mean resource when res_array is set,
-            by default False
-        clearsky : bool
-            Boolean flag to pull clearsky instead of real irradiance
-        bifacial : bool
-            Boolean flag to pull surface albedo for bifacial modeling.
-        downscale : NoneType | dict
-            Option for NSRDB resource downscaling to higher temporal
-            resolution. Expects a dict of downscaling kwargs with a minimum
-            requirement of the desired frequency e.g. 'frequency': '5min'
-            and an option to add "variability_kwargs".
-
-        Returns
-        -------
-        SAM_res : SAMResource
-            Instance of SAMResource pre-loaded with Solar resource for sites
-            in project_points
-        """
-        time_slice = slice(None, None, time_index_step)
-        SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
-                              means=means)
-        sites = SAM_res.sites_slice
-        SAM_res['meta'] = self['meta', sites]
-
-        if clearsky:
-            SAM_res.set_clearsky()
-
-        if bifacial and 'surface_albedo' not in SAM_res.var_list:
-            SAM_res._var_list.append('surface_albedo')
-
-        SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
-        if not downscale:
-            for var in SAM_res.var_list:
-                if var in self.datasets:
-                    SAM_res[var] = self[var, time_slice, sites]
-
-            SAM_res.compute_irradiance(clearsky=clearsky)
-        else:
-            # contingent import to avoid dependencies
-            from rex.utilities.downscale import downscale_nsrdb
-            frequency = downscale.pop('frequency')
-            SAM_res = downscale_nsrdb(SAM_res, self, sam_vars=SAM_res.var_list,
-                                      frequency=frequency,
-                                      variability_kwargs=downscale)
-
-        return SAM_res
-
-    @classmethod
-    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
-                    group=None, hsds=False, hsds_kwargs=None,
-                    tech='pvwattsv7', time_index_step=None, means=False,
-                    clearsky=False, bifacial=False, downscale=None):
-        """
-        Pre-load project_points for SAM
-
-        Parameters
-        ----------
-        h5_file : str
-            h5_file to extract resource from
-        sites : list
-            List of sites to be provided to SAM
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        tech : str, optional
-            SAM technology string, by default 'pvwattsv7'
-       time_index_step: int, optional
-            Step size for time_index, used to reduce temporal resolution,
-            by default None
-        means : bool, optional
-            Boolean flag to compute mean resource when res_array is set,
-            by default False
-        clearsky : bool
-            Boolean flag to pull clearsky instead of real irradiance
-        bifacial : bool
-            Boolean flag to pull surface albedo for bifacial modeling.
-        downscale : NoneType | dict
-            Option for NSRDB resource downscaling to higher temporal
-            resolution. Expects a dict of downscaling kwargs with a minimum
-            requirement of the desired frequency e.g. 'frequency': '5min'
-            and an option to add "variability_kwargs".
-
-        Returns
-        -------
-        SAM_res : SAMResource
-            Instance of SAMResource pre-loaded with Solar resource for sites
-            in project_points
-        """
-        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
-                  "str_decode": str_decode, "group": group}
-        with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(sites, tech=tech,
-                                       time_index_step=time_index_step,
-                                       means=means, clearsky=clearsky,
-                                       bifacial=bifacial, downscale=downscale)
-
-        return SAM_res
-
-
 class AbstractInterpolatedResource(BaseResource):
     """Class to handle resource dataset interpolation.
 
     Default type of interpolation is linear.
+
+    Pressure and Temperature lapse rates are used if p and t are only given at
+    a single hub height. The lapse rates are from the International Standard
+    Atmosphere (ISA) or ICAO Standard Atmosphere:
+    (https://www.faa.gov/regulations_policies/handbooks_manuals/aviation/
+     phak/media/06_phak_ch4.pdf)
     """
 
+    LAPSE_RATES = {'temperature': 6.56, 'pressure': 11_109}
+    """Air Temperature and Pressure lapse rate in C/km and Pa/km"""
+
     def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
-                 hsds=False, hsds_kwargs=None):
+                 use_lapse_rate=True, hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -468,6 +174,14 @@ class AbstractInterpolatedResource(BaseResource):
             strings. Setting this to False will speed up the meta data read.
         group : str
             Group within .h5 resource file to open
+        use_lapse_rate : bool
+            If a dataset is only available at a single hub-height and this flag
+            value is set to `True`, pressure / temperature values will be
+            calculated using linear lapse rate adjustment from the available
+            hub height to the requested one. If the flag value is set to
+            `False`, the value of these variables at the single available
+            hub-height will be returned for *all* requested heights. This
+            option has no effect if data is available at multiple hub-heights.
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
@@ -476,6 +190,7 @@ class AbstractInterpolatedResource(BaseResource):
             password, by default None
         """
         self._interp_var = None
+        self._use_lapse = use_lapse_rate
         super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
                          group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
         prop_name = "{}s".format(self.VARIABLE_NAME)
@@ -524,10 +239,12 @@ class AbstractInterpolatedResource(BaseResource):
             Variable value.
         """
 
-        if ds_name.endswith(cls.VARIABLE_UNIT):
-            *name, val = ds_name.split('_')
-            name = '_'.join(name)
-            val = val.strip(cls.VARIABLE_UNIT)
+        regex = "_-?[0-9]+(.[0-9]+)?{}$".format(cls.VARIABLE_UNIT)
+        regex = re.search(regex, ds_name)
+        if regex:
+            val = regex.group()
+            name = ds_name.rstrip(val)
+            val = val.lstrip('_').rstrip(cls.VARIABLE_UNIT)
 
             try:
                 val = int(val)
@@ -683,9 +400,16 @@ class AbstractInterpolatedResource(BaseResource):
                           .format(self.VARIABLE_NAME, ds_name, var_name, val,
                                   self.VARIABLE_UNIT), ResourceWarning)
             out = super()._get_ds(var_name, ds_slice)
+
         elif val in interpolation_values:
             ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
             out = super()._get_ds(ds_name, ds_slice)
+
+        elif (len(interpolation_values) == 1
+              and self._use_lapse
+              and var_name in self.LAPSE_RATES):
+            out = self._get_ds_lapse(ds_name, ds_slice)
+
         elif len(interpolation_values) == 1:
             val = interpolation_values[0]
             ds_name = '{}_{}{}'.format(var_name, int(val), self.VARIABLE_UNIT)
@@ -693,10 +417,70 @@ class AbstractInterpolatedResource(BaseResource):
                           .format(self.VARIABLE_NAME, ds_name),
                           ResourceWarning)
             out = super()._get_ds(ds_name, ds_slice)
+
         else:
             out = self._get_calculated_ds(val, ds_name, var_name, ds_slice)
 
         return out
+
+    def _get_ds_lapse(self, ds_name, ds_slice,
+                      valid_units=('pa', 'pascals',
+                                   'c', 'celsius',
+                                   'k', 'kelvin')):
+        """Extract data from given dataset where there is only temperature or
+        pressure data at a single elevation and a lapse rate must be used to
+        adjust to a new elevation.
+
+        Parameters
+        ----------
+        ds_name : str
+            Variable dataset to be extracted
+        ds_slice : tuple
+            Tuple of (int, slice, list, ndarray) of what to extract
+            from ds, each arg is for a sequential axis
+        valid_units : tuple
+            Tuple of valid lower-case units that can be lapse-rate adjusted. If
+            the dataset doesnt have units in this list, a warning will be
+            raised.
+
+        Returns
+        -------
+        out : ndarray
+            ndarray of variable timeseries data
+            If unscale, returned in native units else in scaled units
+        """
+
+        var_name, val = self._parse_name(ds_name)
+        interpolation_values = self._interpolation_variable[var_name]
+        ds_name = '{}_{}{}'.format(var_name, int(interpolation_values[0]),
+                                   self.VARIABLE_UNIT)
+        lapse_rate = self.LAPSE_RATES[var_name]
+
+        if self.VARIABLE_UNIT != 'm':
+            msg = ('Cannot use temperature/pressure lapse rate when vertical '
+                   'interpolation unit is not "m": {}'
+                   .format(self.VARIABLE_UNIT))
+            logger.error(msg)
+            raise RuntimeError(msg)
+
+        logger.info('Only one {} available for {} at {}, using '
+                    'lapse rate of {} to get to {}'
+                    .format(self.VARIABLE_NAME, var_name,
+                            interpolation_values[0], lapse_rate, val))
+
+        ds_units = str(self.units.get(ds_name, None))
+        if ds_units.lower() not in valid_units:
+            msg = ('Dataset "{}" is being adjusted to elevation {} via lapse '
+                   'rate but valid units not found: {} (must be Pa or C). '
+                   'Proceeding, but if this is not the desired behavior, set '
+                   'use_lapse_rate=False'.format(ds_name, val, ds_units))
+            logger.warning(msg)
+            warnings.warn(msg, ResourceWarning)
+
+        out = super()._get_ds(ds_name, ds_slice)
+        delta_h = (interpolation_values[0] - val) / 1000  # to kilometers
+        lapse = delta_h * lapse_rate
+        return out + lapse
 
     def _get_calculated_ds(self, val, ds_name, var_name, ds_slice):
         """Get interpolated/extrapolated values for the dataset. """
@@ -716,25 +500,25 @@ class AbstractInterpolatedResource(BaseResource):
         out = linear_interp(ts1, v1, ts2, v2, val)
         return out
 
-    def _set_sam_res(self, values, dset, SAM_res, time_slice, sites):
+    def _set_sam_res(self, values, dsets, SAM_res, time_slice, sites):
         """
         Set the resource for individual sites at various values
         (i.e. hub-heights, depths, etc).
         """
 
         if isinstance(values, (int, float)):
-            ds_name = "{}_{}{}".format(dset, values, self.VARIABLE_UNIT)
-            SAM_res[dset] = self[ds_name, time_slice, sites]
-            return
+            SAM_res.load_rex_resource(self, dsets, time_slice, sites,
+                                      hh=values, hh_unit=self.VARIABLE_UNIT)
 
-        _, unique_index = np.unique(values, return_inverse=True)
-        unique_values = sorted(list(set(values)))
-
-        for index, value in enumerate(unique_values):
-            pos = np.where(unique_index == index)[0]
-            res_sites = np.array(SAM_res.sites)[pos]
-            ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
-            SAM_res[dset, :, pos] = self[ds_name, time_slice, res_sites]
+        else:
+            _, unique_index = np.unique(values, return_inverse=True)
+            unique_values = sorted(list(set(values)))
+            for dset in dsets:
+                for index, value in enumerate(unique_values):
+                    pos = np.where(unique_index == index)[0]
+                    sites = np.array(SAM_res.sites)[pos]
+                    ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
+                    SAM_res[dset, :, pos] = self[ds_name, time_slice, sites]
 
     @property
     @abstractmethod
@@ -762,6 +546,311 @@ class AbstractInterpolatedResource(BaseResource):
         raise NotImplementedError
 
 
+class SolarResource(AbstractInterpolatedResource):
+    """
+    Class to handle Solar BaseResource .h5 files
+
+    See Also
+    --------
+    resource.BaseResource : Parent class
+    """
+
+    INTERPOLABLE_DSETS = ["temperature", "windspeed"]
+    VARIABLE_NAME = "height"
+    VARIABLE_UNIT = "m"
+
+    def get_SAM_df(self, site, extra_cols=None):
+        """
+        Get SAM solar resource DataFrame for given site
+
+        Parameters
+        ----------
+        site : int
+            Site to extract SAM DataFrame for.
+        extra_cols : dict, optional
+            A dictionary where they keys are extra columns
+            to extract from the SAM solar resource DataFrame
+            and the values are the names the new columns should
+            have (e.g. extra_cols={'surface_albedo': 'Surface
+            Albedo'} will extract the 'surface_albedo' from the
+            resource file and call it 'Surface Albedo' in the output).
+
+        Returns
+        -------
+        res_df : pandas.DataFrame
+            time-series DataFrame of resource variables needed to run SAM
+        """
+        if not self._unscale:
+            raise ResourceValueError("SAM requires unscaled values")
+
+        res_df = pd.DataFrame({'Year': self.time_index.year,
+                               'Month': self.time_index.month,
+                               'Day': self.time_index.day,
+                               'Hour': self.time_index.hour})
+
+        if len(self) > 8784 or (self.time_index.minute != 0).any():
+            res_df['Minute'] = self.time_index.minute
+
+        time_zone = self.meta.loc[site, 'timezone']
+        time_interval = len(self.time_index) // 8760
+
+        main_cols = ['dni', 'dhi', 'wind_speed', 'air_temperature']
+        extra_cols = extra_cols or {}
+        for var in main_cols + list(extra_cols):
+            ds_slice = (slice(None), site)
+            var_array = self._get_ds(var, ds_slice)
+            var_array = SAMResource.roll_timeseries(var_array, time_zone,
+                                                    time_interval)
+            res_df[var] = SAMResource.check_units(var, var_array,
+                                                  tech='pvwattsv8')
+
+        col_map = {'dni': 'DNI', 'dhi': 'DHI', 'wind_speed': 'Wind Speed',
+                   'air_temperature': 'Temperature'}
+        col_map.update(extra_cols)
+        res_df = res_df.rename(columns=col_map)
+        res_df.name = "SAM_-{}".format(site)
+
+        return res_df
+
+    def _preload_SAM(self, sites, tech='pvwattsv8', time_index_step=None,
+                     means=False, clearsky=False, bifacial=False):
+        """
+        Pre-load project_points for SAM
+
+        Parameters
+        ----------
+        sites : list
+            List of sites to be provided to SAM
+        tech : str, optional
+            SAM technology string, by default 'pvwattsv8'
+        time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
+        clearsky : bool
+            Boolean flag to pull clearsky instead of real irradiance
+        bifacial : bool
+            Boolean flag to pull surface albedo for bifacial modeling.
+
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with Solar resource for sites
+            in project_points
+        """
+        time_slice = slice(None, None, time_index_step)
+        SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
+                              means=means)
+        sites = SAM_res.sites_slice
+        SAM_res['meta'] = self['meta', sites]
+
+        if clearsky:
+            SAM_res.set_clearsky()
+
+        if bifacial and 'surface_albedo' not in SAM_res.var_list:
+            SAM_res._var_list.append('surface_albedo')
+
+        SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
+        SAM_res.load_rex_resource(self, SAM_res.var_list, time_slice, sites,
+                                  hh=2)
+        SAM_res.compute_irradiance(clearsky=clearsky)
+
+        return SAM_res
+
+    @classmethod
+    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
+                    group=None, hsds=False, hsds_kwargs=None,
+                    tech='pvwattsv8', time_index_step=None, means=False,
+                    clearsky=False, bifacial=False):
+        """
+        Pre-load project_points for SAM
+
+        Parameters
+        ----------
+        h5_file : str
+            h5_file to extract resource from
+        sites : list
+            List of sites to be provided to SAM
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
+        tech : str, optional
+            SAM technology string, by default 'pvwattsv8'
+        time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
+        clearsky : bool
+            Boolean flag to pull clearsky instead of real irradiance
+        bifacial : bool
+            Boolean flag to pull surface albedo for bifacial modeling.
+
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with Solar resource for sites
+            in project_points
+        """
+        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
+                  "str_decode": str_decode, "group": group}
+        with cls(h5_file, **kwargs) as res:
+            SAM_res = res._preload_SAM(sites, tech=tech,
+                                       time_index_step=time_index_step,
+                                       means=means, clearsky=clearsky,
+                                       bifacial=bifacial)
+
+        return SAM_res
+
+
+class NSRDB(SolarResource):
+    """
+    Class to handle NSRDB .h5 files
+
+    See Also
+    --------
+    resource.BaseResource : Parent class
+    """
+    ADD_ATTR = ['add_offset', 'psm_add_offset']
+    SCALE_ATTR = ['scale_factor', 'psm_scale_factor']
+    UNIT_ATTR = ['units', 'psm_units']
+
+    def _preload_SAM(self, sites, tech='pvwattsv8', time_index_step=None,
+                     means=False, clearsky=False, bifacial=False,
+                     downscale=None):
+        """
+        Pre-load project_points for SAM
+
+        Parameters
+        ----------
+        sites : list
+            List of sites to be provided to SAM
+        tech : str, optional
+            SAM technology string, by default 'pvwattsv8'
+        time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
+        clearsky : bool
+            Boolean flag to pull clearsky instead of real irradiance
+        bifacial : bool
+            Boolean flag to pull surface albedo for bifacial modeling.
+        downscale : NoneType | dict
+            Option for NSRDB resource downscaling to higher temporal
+            resolution. Expects a dict of downscaling kwargs with a minimum
+            requirement of the desired frequency e.g. 'frequency': '5min'
+            and an option to add "variability_kwargs".
+
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with Solar resource for sites
+            in project_points
+        """
+        time_slice = slice(None, None, time_index_step)
+        SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
+                              means=means)
+        sites = SAM_res.sites_slice
+        SAM_res['meta'] = self['meta', sites]
+
+        if clearsky:
+            SAM_res.set_clearsky()
+
+        if bifacial and 'surface_albedo' not in SAM_res.var_list:
+            SAM_res._var_list.append('surface_albedo')
+
+        SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
+        if not downscale:
+            SAM_res.load_rex_resource(self, SAM_res.var_list, time_slice,
+                                      sites, hh=2)
+            SAM_res.compute_irradiance(clearsky=clearsky)
+        else:
+            # contingent import to avoid dependencies
+            from rex.utilities.downscale import downscale_nsrdb
+            frequency = downscale.pop('frequency')
+            SAM_res = downscale_nsrdb(SAM_res, self, sam_vars=SAM_res.var_list,
+                                      frequency=frequency,
+                                      variability_kwargs=downscale)
+
+        return SAM_res
+
+    @classmethod
+    def preload_SAM(cls, h5_file, sites, unscale=True, str_decode=True,
+                    group=None, hsds=False, hsds_kwargs=None,
+                    tech='pvwattsv8', time_index_step=None, means=False,
+                    clearsky=False, bifacial=False, downscale=None):
+        """
+        Pre-load project_points for SAM
+
+        Parameters
+        ----------
+        h5_file : str
+            h5_file to extract resource from
+        sites : list
+            List of sites to be provided to SAM
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
+        tech : str, optional
+            SAM technology string, by default 'pvwattsv8'
+       time_index_step: int, optional
+            Step size for time_index, used to reduce temporal resolution,
+            by default None
+        means : bool, optional
+            Boolean flag to compute mean resource when res_array is set,
+            by default False
+        clearsky : bool
+            Boolean flag to pull clearsky instead of real irradiance
+        bifacial : bool
+            Boolean flag to pull surface albedo for bifacial modeling.
+        downscale : NoneType | dict
+            Option for NSRDB resource downscaling to higher temporal
+            resolution. Expects a dict of downscaling kwargs with a minimum
+            requirement of the desired frequency e.g. 'frequency': '5min'
+            and an option to add "variability_kwargs".
+
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with Solar resource for sites
+            in project_points
+        """
+        kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
+                  "str_decode": str_decode, "group": group}
+        with cls(h5_file, **kwargs) as res:
+            SAM_res = res._preload_SAM(sites, tech=tech,
+                                       time_index_step=time_index_step,
+                                       means=means, clearsky=clearsky,
+                                       bifacial=bifacial, downscale=downscale)
+
+        return SAM_res
+
+
 class WindResource(AbstractInterpolatedResource):
     """
     Class to handle Wind BaseResource .h5 files
@@ -772,7 +861,9 @@ class WindResource(AbstractInterpolatedResource):
 
     Examples
     --------
-    >>> file = '$TESTDATADIR/wtk/ri_100_wtk_2012.h5'
+    >>> import os
+    >>> from rex import TESTDATADIR, WindResource
+    >>> file = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     >>> with WindResource(file) as res:
     >>>     print(res.datasets)
     ['meta', 'pressure_0m', 'pressure_100m', 'pressure_200m',
@@ -814,30 +905,6 @@ class WindResource(AbstractInterpolatedResource):
                           "winddirection"]
     VARIABLE_NAME = "height"
     VARIABLE_UNIT = "m"
-
-    def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
-                 hsds=False, hsds_kwargs=None):
-        """
-        Parameters
-        ----------
-        h5_file : str
-            Path to .h5 resource file
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
-        """
-        super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
-                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
 
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)
@@ -1274,8 +1341,7 @@ class WindResource(AbstractInterpolatedResource):
             var_list.remove('winddirection')
 
         h = self._check_hub_height(SAM_res.h)
-        for dset in var_list:
-            self._set_sam_res(h, dset, SAM_res, time_slice, sites)
+        self._set_sam_res(h, var_list, SAM_res, time_slice, sites)
 
         if precip_rate:
             var = 'precipitationrate'
@@ -1391,6 +1457,7 @@ class GeothermalResource(AbstractInterpolatedResource):
      341.5]
     """
 
+    LAPSE_RATES = {}
     INTERPOLABLE_DSETS = ["temperature", "potential_MW"]
     VARIABLE_NAME = "depth"
     VARIABLE_UNIT = "m"
@@ -1425,9 +1492,8 @@ class GeothermalResource(AbstractInterpolatedResource):
                               depths=depths, means=means)
         sites = SAM_res.sites_slice
         SAM_res['meta'] = self['meta', sites]
-
-        for dset in SAM_res.var_list:
-            self._set_sam_res(SAM_res.d, dset, SAM_res, time_slice, sites)
+        self._set_sam_res(SAM_res.d, SAM_res.var_list, SAM_res, time_slice,
+                          sites)
 
         return SAM_res
 

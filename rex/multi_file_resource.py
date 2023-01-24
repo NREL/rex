@@ -7,7 +7,8 @@ from glob import glob
 import h5py
 import numpy as np
 
-from rex.renewable_resource import NSRDB, WindResource
+from rex.renewable_resource import (NSRDB, WindResource,
+                                    AbstractInterpolatedResource)
 from rex.resource import Resource
 from rex.utilities.exceptions import FileInputError, ResourceRuntimeError
 from rex.utilities.utilities import unstupify_path
@@ -245,6 +246,7 @@ class MultiH5Path(MultiH5):
     """
     Class to handle multiple h5 file Resources derived from a path
     """
+
     def __init__(self, h5_path, check_files=False):
         """
         Parameters
@@ -301,7 +303,7 @@ class MultiH5Path(MultiH5):
         return h5_path, file_paths
 
 
-class MultiFileResource(Resource):
+class MultiFileResource(AbstractInterpolatedResource):
     """
     Class to handle fine spatial resolution resource data stored in
     multiple .h5 files
@@ -357,8 +359,13 @@ class MultiFileResource(Resource):
      [12.16 12.44 13.09 ... 11.94 10.88 11.12]]
     """
 
+    INTERPOLABLE_DSETS = ["temperature", "pressure", "windspeed",
+                          "winddirection"]
+    VARIABLE_NAME = "height"
+    VARIABLE_UNIT = "m"
+
     def __init__(self, h5_source, unscale=True, str_decode=True,
-                 check_files=False):
+                 check_files=False, use_lapse_rate=True):
         """
         Parameters
         ----------
@@ -374,6 +381,14 @@ class MultiFileResource(Resource):
             strings. Setting this to False will speed up the meta data read.
         check_files : bool
             Check to ensure files have the same coordinates and time_index
+        use_lapse_rate : bool
+            If a dataset is only available at a single hub-height and this flag
+            value is set to `True`, pressure / temperature values will be
+            calculated using linear lapse rate adjustment from the available
+            hub height to the requested one. If the flag value is set to
+            `False`, the value of these variables at the single available
+            hub-height will be returned for *all* requested heights. This
+            option has no effect if data is available at multiple hub-heights.
         """
         self._unscale = unscale
         self._meta = None
@@ -390,6 +405,10 @@ class MultiFileResource(Resource):
         self._chunks = None
         self._dtypes = None
         self._i = 0
+
+        self._interp_var = None
+        self._use_lapse = use_lapse_rate
+        self.heights = self._interpolation_variable
 
     def __repr__(self):
         msg = "{}".format(self.__class__.__name__)
@@ -437,6 +456,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
     resource.MultiFileResource : Parent class
     resource.NSRDB : Parent class
     """
+
     @classmethod
     def preload_SAM(cls, h5_source, sites, unscale=True, str_decode=True,
                     tech='pvwattsv7', time_index_step=None, means=False,
@@ -533,29 +553,6 @@ class MultiFileWTK(MultiFileResource, WindResource):
      [11.66     11.91     12.535    ... 13.31     12.23     12.335   ]
      [12.785    13.295    14.014999 ... 12.205    11.360001 11.64    ]]
     """
-
-    def __init__(self, h5_source, unscale=True, str_decode=True,
-                 check_files=False):
-        """
-        Parameters
-        ----------
-        h5_source : str | list
-            Unix shell style pattern path with * wildcards to multi-file
-            resource file sets. Files must have the same time index and
-            coordinates but can have different datasets. Can also be an
-            explicit list of complete filepaths.
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        check_files : bool
-            Check to ensure files have the same coordinates and time_index
-        """
-        super().__init__(h5_source, unscale=unscale, str_decode=str_decode,
-                         check_files=check_files)
-        self._interp_var = None
-        self.heights = self._interpolation_variable
 
     @classmethod
     def preload_SAM(cls, h5_source, sites, hub_heights, unscale=True,

@@ -22,6 +22,63 @@ class SAMResource:
     Resource container for SAM. Resource handlers preload the datasets needed
     by SAM for the sites of interest. SAMResource handles all ETL needed before
     resource data is passed into SAM.
+
+    Examples
+    --------
+    >>> import os
+    >>> from rex import TESTDATADIR, WindResource
+    >>> file = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    Here we load a SAM Resource container for a windpower analysis for sites 7
+    and 8 at a hub height of 90m:
+
+    >>> sam = WindResource.preload_SAM(file, sites=[7, 8], hub_heights=90)
+    >>> sam
+    SAMResource with 2 windpower sites
+
+    You can then use the SAMResource object to easily retrieve the data that is
+    needed to run the SAM windpower module:
+
+    >>> sam[7]
+                               winddirection  pressure  temperature  windspeed
+    2012-01-01 00:00:00+00:00            0.0  0.965329        4.270   7.565000
+    2012-01-01 01:00:00+00:00            0.0  0.965921        3.870   8.040000
+    2012-01-01 02:00:00+00:00            0.0  0.966612        4.070  10.370000
+    2012-01-01 03:00:00+00:00            0.0  0.966721        4.060  11.174999
+    2012-01-01 04:00:00+00:00            0.0  0.967224        3.515   8.570000
+    ...                                  ...       ...          ...        ...
+    2012-12-31 19:00:00+00:00            0.0  0.967826       -1.965   6.515000
+    2012-12-31 20:00:00+00:00            0.0  0.967036       -2.095   6.750000
+    2012-12-31 21:00:00+00:00            0.0  0.966740       -2.495   9.215000
+    2012-12-31 22:00:00+00:00            0.0  0.966158       -2.735  10.680000
+    2012-12-31 23:00:00+00:00            0.0  0.965852       -2.460  10.805000
+
+    [8784 rows x 4 columns]
+
+    >>> sam['meta', 7]
+    latitude         41.975849
+    longitude       -71.762329
+    country      United States
+    state                   RI
+    county          Providence
+    timezone                -5
+    elevation              208
+    offshore                 0
+    Name: 7, dtype: object
+
+    >>> sam['meta', 8]
+    latitude         41.993584
+    longitude       -71.754852
+    country      United States
+    state                   RI
+    county          Providence
+    timezone                -5
+    elevation              180
+    offshore                 0
+    Name: 8, dtype: object
+
+    >>> sam['meta', 9]
+    KeyError: 9
     """
 
     # Resource variables to load for each SAM technology
@@ -29,6 +86,8 @@ class SAMResource:
                 'pvwattsv5': ('dni', 'dhi', 'ghi', 'wind_speed',
                               'air_temperature'),
                 'pvwattsv7': ('dni', 'dhi', 'ghi', 'wind_speed',
+                              'air_temperature'),
+                'pvwattsv8': ('dni', 'dhi', 'ghi', 'wind_speed',
                               'air_temperature'),
                 'pvsamv1': ('dni', 'dhi', 'ghi', 'wind_speed',
                             'air_temperature'),
@@ -104,6 +163,7 @@ class SAMResource:
                    'pv': PV_DATA_RANGES,
                    'pvwattsv5': PV_DATA_RANGES,
                    'pvwattsv7': PV_DATA_RANGES,
+                   'pvwattsv8': PV_DATA_RANGES,
                    'pvsamv1': PV_DATA_RANGES,
                    'csp': CSP_DATA_RANGES,
                    'tcsmoltensalt': CSP_DATA_RANGES,
@@ -112,6 +172,14 @@ class SAMResource:
                    'solarwaterheat': SWH_DATA_RANGES,
                    'wave': WAVE_DATA_RANGES,
                    'geothermal': GEOTHERMAL_DATA_RANGES}
+
+    # Dataset aliases for flexiblity between NSRDB and WTK naming conventions
+    ALIASES = {'wind_speed': 'windspeed',
+               'air_temperature': 'temperature'}
+
+    # Variables without a height component that should never be interpolated
+    FLAT_VARS = ('dni', 'dhi', 'ghi', 'sza', 'solar_zenith_angle', 'dew_point',
+                 'significant_wave_height', 'energy_period')
 
     def __init__(self, sites, tech, time_index, hub_heights=None, depths=None,
                  require_wind_dir=False, means=False):
@@ -152,8 +220,7 @@ class SAMResource:
         if means:
             self._mean_arrays = {}
 
-        # pylint: disable=C0201
-        if tech.lower() in self.DATA_RANGES.keys():
+        if tech.lower() in self.DATA_RANGES:
             self._tech = tech.lower()
         else:
             msg = ('Selected tech {} is not valid. The following technology '
@@ -683,8 +750,7 @@ class SAMResource:
             raise ResourceRuntimeError(msg)
         else:
             for var in self.var_list:
-                # pylint: disable=C0201
-                if var not in self._res_arrays.keys():
+                if var not in self._res_arrays:
                     msg = '{} has not been set!'.format(var)
                     logger.error(msg)
                     raise ResourceRuntimeError(msg)
@@ -875,3 +941,54 @@ class SAMResource:
             msg = 'windspeed has not be loaded!'
             logger.error(msg)
             raise ResourceRuntimeError(msg)
+
+    def load_rex_resource(self, rex_res, var_list, time_slice, sites, hh=None,
+                          hh_unit='m'):
+        """Load data from a rex Resource handler into this SAMResource
+        container.
+
+        Parameters
+        ----------
+        rex_res : rex.Resource
+            rex Resource handler or similar (NSRDB, WindResource,
+            MultiFileResource, etc...)
+        var_list : list
+            List of variables to retrieve from rex_res. These names may be
+            manipulated with suffixes such as _100m (for a 100m hh input)
+        time_slice : slice
+            Slicing argument for the resource temporal dimension (axis=0)
+        sites : list
+            List of site indices (axis=1)
+        hh : None | int
+            Optional single hub height in meters that datasets are to be loaded
+            from rex_res at
+        hh_unit : str
+            Unit suffix for the hub height input.
+        """
+
+        for sam_var in var_list:
+            alias = self.ALIASES.get(sam_var, None)
+            var_hh = "{}_{}{}".format(sam_var, hh, hh_unit)
+            alias_hh = "{}_{}{}".format(alias, hh, hh_unit)
+            use_hh = sam_var not in self.FLAT_VARS
+
+            res_var = sam_var
+            if res_var in rex_res.datasets:
+                pass
+            elif alias in rex_res.datasets:
+                res_var = alias
+            elif hh is not None and alias is None and use_hh:
+                res_var = var_hh
+            elif hh is not None and alias is not None and use_hh:
+                res_var = alias_hh
+
+            try:
+                arr = rex_res[res_var, time_slice, sites]
+                self._set_var_array(sam_var, arr)
+            except ResourceKeyError as e:
+                msg = ('Could not get SAM resource "{}" with retrieval '
+                       'dataset "{}" from rex Resource handler: {}, received '
+                       'error: {}'
+                       .format(sam_var, res_var, rex_res, e))
+                logger.warning(msg)
+                warn(msg)
