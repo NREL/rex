@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 pytests for resource handlers
+
+This also includes tests of the MultiFile handlers
 """
 from datetime import datetime
 import h5py
@@ -12,8 +14,8 @@ import shutil
 import tempfile
 
 from rex import TESTDATADIR, Resource, Outputs
-from rex.multi_file_resource import (MultiH5, MultiH5Path, MultiFileNSRDB,
-                                     MultiFileWTK)
+from rex.multi_file_resource import (MultiH5, MultiH5Path, MultiFileResource,
+                                     MultiFileNSRDB, MultiFileWTK)
 from rex.renewable_resource import (NSRDB, WindResource)
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 
@@ -24,6 +26,14 @@ def NSRDB_res():
     """
     path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
     return NSRDB(path)
+
+
+def MultiFileHandler():
+    """
+    Init MultiFile resource handler
+    """
+    path = os.path.join(TESTDATADIR, 'nsrdb', 'nsrdb*2018.h5')
+    return MultiFileResource(path)
 
 
 def NSRDB_2018():
@@ -426,7 +436,9 @@ class TestNSRDB:
     @pytest.mark.parametrize('res_cls',
                              [NSRDB_res(),
                               NSRDB_2018(),
-                              NSRDB_2018_list()])
+                              NSRDB_2018_list(),
+                              MultiFileHandler(),
+                              ])
     def test_meta(res_cls):
         """
         test extraction of NSRDB meta data

@@ -359,6 +359,11 @@ class MultiFileResource(AbstractInterpolatedResource):
      [12.16 12.44 13.09 ... 11.94 10.88 11.12]]
     """
 
+    INTERPOLABLE_DSETS = ["temperature", "pressure", "windspeed",
+                          "winddirection"]
+    VARIABLE_NAME = "height"
+    VARIABLE_UNIT = "m"
+
     def __init__(self, h5_source, unscale=True, str_decode=True,
                  check_files=False, use_lapse_rate=True):
         """
