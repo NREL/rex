@@ -652,12 +652,16 @@ class BaseResource(ABC):
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)
         _, ds_name = os.path.split(ds)
+
         if ds_name.startswith('time_index'):
             out = self._get_time_index(ds, ds_slice)
+
         elif ds_name.startswith('meta'):
             out = self._get_meta(ds, ds_slice)
+
         elif ds_name.startswith('coordinates'):
             out = self._get_coords(ds, ds_slice)
+
         elif 'SAM' in ds_name:
             site = ds_slice[0]
             if isinstance(site, (int, np.integer)):
@@ -665,6 +669,7 @@ class BaseResource(ABC):
             else:
                 msg = "Can only extract SAM DataFrame for a single site"
                 raise ResourceRuntimeError(msg)
+
         else:
             out = self._get_ds(ds, ds_slice)
 
