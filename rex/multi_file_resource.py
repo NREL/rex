@@ -507,7 +507,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
         with cls(h5_source, unscale=unscale, str_decode=str_decode,
                  check_files=check_files) as res:
             # pylint: disable=assignment-from-no-return
-            SAM_res = res._preload_SAM(sites, tech=tech,
+            SAM_res = res._preload_SAM(res, sites, tech=tech,
                                        time_index_step=time_index_step,
                                        means=means, clearsky=clearsky,
                                        bifacial=bifacial, downscale=downscale)
@@ -603,7 +603,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
         with cls(h5_source, unscale=unscale, str_decode=str_decode,
                  check_files=check_files) as res:
             # pylint: disable=assignment-from-no-return
-            SAM_res = res._preload_SAM(sites, hub_heights,
+            SAM_res = res._preload_SAM(res, sites, hub_heights,
                                        time_index_step=time_index_step,
                                        means=means,
                                        require_wind_dir=require_wind_dir,
