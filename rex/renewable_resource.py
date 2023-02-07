@@ -197,34 +197,39 @@ class AbstractInterpolatedResource(BaseResource):
         self._use_lapse = use_lapse_rate
         super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
                          group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
+
+        # this is where self.heights or self.depths gets set
+        self._interpolation_variable = self._parse_interp_var(self.datasets)
         prop_name = "{}s".format(self.VARIABLE_NAME)
         setattr(self, prop_name, self._interpolation_variable)
 
-    @property
-    def _interpolation_variable(self):
-        """
-        Extract available interpolation variable values for the
+    @classmethod
+    def _parse_interp_var(cls, datasets):
+        """Extract available interpolation variable values for the
         interpolable datasets. Used for interpolation/extrapolation.
+
+        Parameters
+        ----------
+        datasets : list
+            List of dataset names that will be parsed for interpolation value
+            suffixes like "windspeed_100m" -> windspeed at 100 meters
 
         Returns
         -------
-         dict
+        dict
             Dictionary of available interpolation variable values for
             the interpolable datasets. For example, this could be:
             {'windspeed': [10, 100, 200]}
         """
-        if self._interp_var is None:
-            interp_var = {dset: [] for dset in self.INTERPOLABLE_DSETS}
-            ignore = ['meta', 'time_index', 'coordinates']
-            for ds in self.datasets:
-                if ds not in ignore:
-                    ds_name, val = self._parse_name(ds)
-                    if ds_name in interp_var and val is not None:
-                        interp_var[ds_name].append(val)
+        interp_var = {dset: [] for dset in cls.INTERPOLABLE_DSETS}
+        ignore = ['meta', 'time_index', 'coordinates']
+        for ds in datasets:
+            if ds not in ignore:
+                ds_name, val = cls._parse_name(ds)
+                if ds_name in interp_var and val is not None:
+                    interp_var[ds_name].append(val)
 
-            self._interp_var = interp_var
-
-        return self._interp_var
+        return interp_var
 
     @classmethod
     def _parse_name(cls, ds_name):
@@ -505,15 +510,16 @@ class AbstractInterpolatedResource(BaseResource):
         out = linear_interp(ts1, v1, ts2, v2, val)
         return out
 
-    def _set_sam_res(self, values, dsets, SAM_res, time_slice, sites):
+    @staticmethod
+    def _set_sam_res(res, values, dsets, SAM_res, time_slice, sites):
         """
         Set the resource for individual sites at various values
         (i.e. hub-heights, depths, etc).
         """
 
         if isinstance(values, (int, float)):
-            SAM_res.load_rex_resource(self, dsets, time_slice, sites,
-                                      hh=values, hh_unit=self.VARIABLE_UNIT)
+            SAM_res.load_rex_resource(res, dsets, time_slice, sites,
+                                      hh=values, hh_unit=res.VARIABLE_UNIT)
 
         else:
             _, unique_index = np.unique(values, return_inverse=True)
@@ -522,8 +528,8 @@ class AbstractInterpolatedResource(BaseResource):
                 for index, value in enumerate(unique_values):
                     pos = np.where(unique_index == index)[0]
                     sites = np.array(SAM_res.sites)[pos]
-                    ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
-                    SAM_res[dset, :, pos] = self[ds_name, time_slice, sites]
+                    ds_name = '{}_{}{}'.format(dset, value, res.VARIABLE_UNIT)
+                    SAM_res[dset, :, pos] = res[ds_name, time_slice, sites]
 
     @property
     @abstractmethod
@@ -1128,11 +1134,10 @@ class WindResource(AbstractInterpolatedResource):
 
         Parameters
         ----------
-         heights : dict
+        heights : dict
             Dictionary of available interpolation variable values for
             the interpolable datasets. For example, this could be:
             {'windspeed': [10, 100, 200]}
-        heights :
         h : int | float
             Requested hub-height
 
@@ -1366,7 +1371,7 @@ class WindResource(AbstractInterpolatedResource):
             var_list.remove('winddirection')
 
         h = res._check_hub_height(res.heights, SAM_res.h)
-        res._set_sam_res(h, var_list, SAM_res, time_slice, sites)
+        res._set_sam_res(res, h, var_list, SAM_res, time_slice, sites)
 
         if precip_rate:
             var = 'precipitationrate'
@@ -1521,7 +1526,7 @@ class GeothermalResource(AbstractInterpolatedResource):
                               depths=depths, means=means)
         sites = SAM_res.sites_slice
         SAM_res['meta'] = res['meta', sites]
-        res._set_sam_res(SAM_res.d, SAM_res.var_list, SAM_res, time_slice,
+        res._set_sam_res(res, SAM_res.d, SAM_res.var_list, SAM_res, time_slice,
                          sites)
 
         return SAM_res

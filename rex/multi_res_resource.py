@@ -8,8 +8,8 @@ import os
 import copy
 import logging
 from scipy.spatial import KDTree
-import warnings
 
+from rex.resource import Resource
 from rex.utilities.parse_keys import parse_keys
 from rex.utilities.exceptions import ResourceRuntimeError
 
@@ -22,8 +22,13 @@ class MultiResolutionResource:
     lower resolution data to the higher resolution data on the fly.
     """
 
+    INTERPOLABLE_DSETS = ["temperature", "pressure", "windspeed",
+                          "winddirection"]
+    VARIABLE_NAME = "height"
+    VARIABLE_UNIT = "m"
+
     HR_ATTRS = ('meta', 'time_index', 'coordinates', 'lat_lon', 'data_version',
-                'global_attrs', 'get_meta_arr')
+                'global_attrs', 'get_meta_arr', 'shape')
     """Attributes that are always taken only from the high-res data handler"""
 
     def __init__(self, hr_res, lr_res, nn_map=None, nn_d=None):
@@ -63,6 +68,13 @@ class MultiResolutionResource:
 
         if self._nn_map is None:
             self._nn_d, self._nn_map = self.make_nn_map(hr_res, lr_res)
+
+        self._interpolation_variable = self._hr_res._parse_interp_var(
+            self.datasets)
+        self._interpolation_variable.update(self._hr_res._parse_interp_var(
+            self.datasets))
+        prop_name = "{}s".format(self.VARIABLE_NAME)
+        setattr(self, prop_name, self._interpolation_variable)
 
     @staticmethod
     def make_nn_map(hr_res, lr_res):
@@ -146,10 +158,13 @@ class MultiResolutionResource:
             2D array with shape (time, sites) where the time axis has been
             linearly interpolated to the high-resolution time index.
         """
+        ndim = len(arr.shape)
         arr = pd.DataFrame(arr, index=self._lr_res.time_index)
         arr = arr.reindex(self._hr_res.time_index)
-        arr = arr.interpolate('linear').ffill().bfill()
-        return arr.values
+        arr = arr.interpolate('linear').ffill().bfill().values
+        if ndim == 1 and len(arr.shape) == 2:
+            arr = arr.flatten()
+        return arr
 
     def __repr__(self):
         msg = "{} for {}".format(self.__class__.__name__, self.h5_file)
@@ -224,7 +239,9 @@ class MultiResolutionResource:
             try:
                 hr_attr = getattr(self._hr_res, attr)
                 lr_attr = getattr(self._lr_res, attr)
-                if isinstance(hr_attr, list) and isinstance(lr_attr, list):
+                if hasattr(hr_attr, '__call__'):
+                    return hr_attr
+                elif isinstance(hr_attr, list) and isinstance(lr_attr, list):
                     return list(set(hr_attr + lr_attr))
                 elif isinstance(hr_attr, tuple) and isinstance(lr_attr, tuple):
                     return hr_attr + lr_attr
@@ -240,16 +257,73 @@ class MultiResolutionResource:
                 logger.error(msg)
                 raise RuntimeError(msg) from e
 
-    def _preload_SAM(self, *args, **kwargs):
-        """
-        """
+    @classmethod
+    def preload_SAM(cls, h5_hr, h5_lr, sites,
+                    handler_class=Resource,
+                    nn_map=None, nn_d=None,
+                    unscale=True, str_decode=True,
+                    group=None, hsds=False, hsds_kwargs=None,
+                    **kwargs):
+        """Pre-load resource data in a SAM resource handler for PySAM / reV run
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            hr_sam = self._hr_res._preload_SAM(*args, **kwargs)
-            hr_sites = args[0]
-            lr_sites = [self._nn_map[i] for i in hr_sites]
-            args = (lr_sites,) + args[1:]
-            lr_sam = self._lr_res._preload_SAM(*args, **kwargs)
+        Parameters
+        ----------
+        h5_hr : str
+            Filepath to high-resolution h5 resource file.
+        h5_lr : str
+            Filepath to low-resolution h5 resource file.
+        sites : list
+            List of sites to be provided to SAM
+        handler_class : str
+            rex Resource handler class (not initialized) to open both the high
+            and low resolution h5 files (both files must be of the same
+            resource handler class).
+        nn_map : np.ndarray
+            Optional 1D array of nearest neighbor mappings. This will be
+            created if not provided. This is created by making a kdtree of the
+            lr_res coords and then querying with the hr_res coords. As an
+            example, nn_map[10] will return the lr_res index corresponding to
+            gid 10 from the hr_res data
+        nn_d : np.ndarray
+            Optional 1D array of nearest neighbor distances. This will be
+            created if not provided. This is created by making a kdtree of the
+            lr_res coords and then querying with the hr_res coords. As an
+            example, nn_map[10] will return the distance between hr_res gid=10
+            and the corresponding lr_res site
+        unscale : bool
+            Boolean flag to automatically unscale variables on extraction
+        str_decode : bool
+            Boolean flag to decode the bytestring meta data into normal
+            strings. Setting this to False will speed up the meta data read.
+        group : str
+            Group within .h5 resource file to open
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
+        kwargs : dict
+            Additional arguments required by the resource-specific data handler
+            preload_SAM() method (e.g. "hub_heights" is required by
+            WindResource handlers and can be provided here in addition to
+            optional args like "icing" or "precip_rate").
 
-        return hr_sam
+        Returns
+        -------
+        SAM_res : SAMResource
+            Instance of SAMResource pre-loaded with high-resolution resource
+            for sites in project_points
+        """
+        handle_kwargs = {"unscale": unscale,
+                         "hsds": hsds,
+                         "hsds_kwargs": hsds_kwargs,
+                         "str_decode": str_decode,
+                         "group": group}
+
+        with handler_class(h5_hr, **handle_kwargs) as hr_res:
+            with handler_class(h5_lr, **handle_kwargs) as lr_res:
+                mrr = cls(hr_res, lr_res, nn_map=nn_map, nn_d=nn_d)
+                SAM_res = hr_res._preload_SAM(mrr, sites, **kwargs)
+
+        return SAM_res

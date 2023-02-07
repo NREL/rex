@@ -52,7 +52,6 @@ def make_multi_res_files(td):
     lr_res = WindResource(fp_lr)
     hr_res = WindResource(fp_hr)
     mrr = MultiResolutionResource(hr_res, lr_res)
-
     assert len(mrr._nn_map) == len(hr_res.meta)
     assert all(np.isin(mrr._nn_map, np.arange(len(lr_res.meta))))
 
@@ -62,17 +61,21 @@ def make_multi_res_files(td):
     assert all(d in mrr.attrs for d in all_dsets)
     assert all(d in mrr.attrs for d in all_dsets)
 
-    return mrr, hr_res, lr_res
+    return fp_hr, fp_lr
 
 
 def test_mrr_indexing():
     """Test data indexing with the multi resolution resource handler."""
     with tempfile.TemporaryDirectory() as td:
-        mrr, hr_res, lr_res = make_multi_res_files(td)
+        fp_hr, fp_lr = make_multi_res_files(td)
+
+        lr_res = WindResource(fp_lr)
+        hr_res = WindResource(fp_hr)
+        mrr = MultiResolutionResource(hr_res, lr_res)
         tree = KDTree(lr_res.coordinates)
 
         dsets = ('pressure_100m', 'temperature_100m')
-        gids_hr = ([0, 3, 4], slice(None), slice(3, 15, 3))
+        gids_hr = (0, 9, [1], [0, 3, 4], slice(None), slice(3, 15, 3))
         for dset in dsets:
             lr_gids = tree.query(hr_res.coordinates)[1]
             lr_data = lr_res[dset, :, lr_gids]
@@ -83,4 +86,30 @@ def test_mrr_indexing():
                 lr_gids = tree.query(hr_res.coordinates[gid])[1]
                 lr_data = lr_res[dset, :, lr_gids]
                 hr_data = mrr[dset, :, gid]
+                assert len(lr_data.shape) == len(hr_data.shape)
                 assert np.allclose(lr_data, hr_data[::12])
+
+
+def test_preload_sam():
+    """Test preload of the SAM data object using the multi resolution resource
+    handler."""
+    sites = [0, 3, 5, 9]
+    hh = 100
+    with tempfile.TemporaryDirectory() as td:
+        fp_hr, fp_lr = make_multi_res_files(td)
+        lr_res = WindResource(fp_lr)
+        hr_res = WindResource(fp_hr)
+        mrr = MultiResolutionResource(hr_res, lr_res)
+        sam = MultiResolutionResource.preload_SAM(fp_hr, fp_lr, sites,
+                                                  hub_heights=hh,
+                                                  handler_class=WindResource)
+
+        for gid in sites:
+            sam_df = sam[gid]
+            for k in ('windspeed', 'temperature', 'pressure'):
+                dset = f'{k}_{hh}m'
+                true = mrr[dset, :, gid]
+                test = sam_df[k].values
+                if k == 'pressure':
+                    true *= 9.86923e-6
+                assert np.allclose(true, test)

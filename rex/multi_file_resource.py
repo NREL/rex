@@ -408,7 +408,11 @@ class MultiFileResource(AbstractInterpolatedResource):
 
         self._interp_var = None
         self._use_lapse = use_lapse_rate
-        self.heights = self._interpolation_variable
+
+        # this is where self.heights or self.depths gets set
+        self._interpolation_variable = self._parse_interp_var(self.datasets)
+        prop_name = "{}s".format(self.VARIABLE_NAME)
+        setattr(self, prop_name, self._interpolation_variable)
 
     def __repr__(self):
         msg = "{}".format(self.__class__.__name__)
