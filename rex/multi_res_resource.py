@@ -173,6 +173,11 @@ class MultiResolutionResource:
             arr = arr.flatten()
         return arr
 
+    def close(self):
+        """Close active file handlers."""
+        self._hr_res.close()
+        self._lr_res.close()
+
     def __repr__(self):
         msg = "{} for {}".format(self.__class__.__name__, self.h5_file)
 
@@ -182,8 +187,7 @@ class MultiResolutionResource:
         return self
 
     def __exit__(self, type, value, traceback):
-        self._hr_res.close()
-        self._lr_res.close()
+        self.close()
         if type is not None:
             raise
 

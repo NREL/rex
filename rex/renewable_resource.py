@@ -515,6 +515,22 @@ class AbstractInterpolatedResource(BaseResource):
         """
         Set the resource for individual sites at various values
         (i.e. hub-heights, depths, etc).
+
+        Parameters
+        ----------
+        res : rex.Resource
+            rex Resource handler or similar (NSRDB, WindResource,
+            MultiFileResource, etc...)
+        values : list | int
+            List of interpolation values e.g. hub heights or geothermal depths
+        dsets : list
+            List of dataset names to set
+        SAM_res : SAMResource
+            SAMResource object to load resource data into
+        time_slice : slice
+            Slice object representing any temporal subsampling
+        sites : list | slice
+            Spatial indices to load.
         """
 
         if isinstance(values, (int, float)):

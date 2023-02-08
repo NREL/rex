@@ -16,6 +16,10 @@ from rex.outputs import Outputs
 from rex.renewable_resource import WindResource
 
 
+# temporal step size (goes from 5min to hourly)
+T_STEP = 12
+
+
 def make_multi_res_files(td, interp_hh=False):
     """Make multi-resolution files and handlers in a temporary directory from
     the full high-resolution files in the TESTDATADIR"""
@@ -34,7 +38,7 @@ def make_multi_res_files(td, interp_hh=False):
         lr_chunks = hr_res.chunks
         lr_dtypes = hr_res.dtypes
 
-    t_slice = slice(None, None, 12)
+    t_slice = slice(None, None, T_STEP)
     s_slice = slice(None, None, 10)
     lr_ti = ti[t_slice]
     lr_meta = meta.iloc[s_slice]
@@ -76,6 +80,10 @@ def make_multi_res_files(td, interp_hh=False):
     assert all(d in mrr.attrs for d in all_dsets)
     assert all(d in mrr.attrs for d in all_dsets)
 
+    lr_res.close()
+    hr_res.close()
+    mrr.close()
+
     return fp_hr, fp_lr
 
 
@@ -95,14 +103,18 @@ def test_mrr_indexing():
             lr_gids = tree.query(hr_res.coordinates)[1]
             lr_data = lr_res[dset, :, lr_gids]
             hr_data = mrr[dset]
-            assert np.allclose(lr_data, hr_data[::12])
+            assert np.allclose(lr_data, hr_data[::T_STEP])
 
             for gid in gids_hr:
                 lr_gids = tree.query(hr_res.coordinates[gid])[1]
                 lr_data = lr_res[dset, :, lr_gids]
                 hr_data = mrr[dset, :, gid]
                 assert len(lr_data.shape) == len(hr_data.shape)
-                assert np.allclose(lr_data, hr_data[::12])
+                assert np.allclose(lr_data, hr_data[::T_STEP])
+
+        lr_res.close()
+        hr_res.close()
+        mrr.close()
 
 
 @pytest.mark.parametrize(['hh', 'interp_hh'], [[90, False], [50, True]])
@@ -123,12 +135,16 @@ def test_mrr_interp(hh, interp_hh):
 
             if dset.startswith(('press', 'temp')):
                 truth = lr_res[dset, :, lr_gids]
-                test = mrr[dset][::12]
+                test = mrr[dset][::T_STEP]
             elif dset.startswith('wind'):
                 truth = hr_res[dset]
                 test = mrr[dset]
 
             assert np.allclose(truth, test)
+
+        lr_res.close()
+        hr_res.close()
+        mrr.close()
 
 
 def test_preload_sam():
@@ -152,3 +168,5 @@ def test_preload_sam():
                 if k == 'pressure':
                     true *= 9.86923e-6
                 assert np.allclose(true, test)
+
+        mrr.close()
