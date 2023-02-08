@@ -2,7 +2,6 @@
 """
 Classes to handle resource data at multiple spatiotemporal resolutions
 """
-import numpy as np
 import pandas as pd
 import os
 import copy
@@ -193,6 +192,12 @@ class MultiResolutionResource:
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)
         _, ds_name = os.path.split(ds)
+        base_name, _ = self._parse_name(ds_name)
+
+        hr_heights = getattr(self._hr_res, '_interpolation_variable', {})
+        lr_heights = getattr(self._lr_res, '_interpolation_variable', {})
+        hr_heights = hr_heights.get(base_name, [])
+        lr_heights = lr_heights.get(base_name, [])
 
         if ds_name.startswith('time_index'):
             out = self._hr_res._get_time_index(ds, ds_slice)
@@ -204,17 +209,16 @@ class MultiResolutionResource:
             out = self._hr_res._get_coords(ds, ds_slice)
 
         elif 'SAM' in ds_name:
-            site = ds_slice[0]
-            if isinstance(site, (int, np.integer)):
-                out = self.get_SAM_df(site)  # pylint: disable=E1111
-            else:
-                msg = "Can only extract SAM DataFrame for a single site"
-                raise ResourceRuntimeError(msg)
+            msg = ('SAM dataframe retrieval not implemented for '
+                   'MultiResolutionResource, use '
+                   'MultiResolutionResource.preload_SAM() instead.')
+            logger.error(msg)
+            raise NotImplementedError(msg)
 
-        elif ds_name in self._hr_res.resource_datasets:
+        elif ds_name in self._hr_res.dsets or any(hr_heights):
             out = self._hr_res._get_ds(ds, ds_slice)
 
-        elif ds_name in self._lr_res.resource_datasets:
+        elif ds_name in self._lr_res.dsets or any(lr_heights):
             ds_slice = self.map_ds_slice(ds_slice)
             out = self._lr_res._get_ds(ds, ds_slice)
             out = self.time_interp(out)
