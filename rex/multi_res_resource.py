@@ -6,6 +6,7 @@ import pandas as pd
 import os
 import copy
 import logging
+from inspect import signature
 from scipy.spatial import KDTree
 
 from rex.resource import Resource
@@ -269,10 +270,10 @@ class MultiResolutionResource:
                 raise RuntimeError(msg) from e
 
     @classmethod
-    def preload_SAM(cls, h5_hr, h5_lr, sites,
+    def preload_SAM(cls, h5_hr, h5_lr, sites, *args,
                     handler_class=Resource,
                     nn_map=None, nn_d=None,
-                    handle_kwargs=None, **kwargs):
+                    **kwargs):
         """Pre-load resource data in a SAM resource handler for PySAM / reV run
 
         Parameters
@@ -283,6 +284,10 @@ class MultiResolutionResource:
             Filepath to low-resolution h5 resource file.
         sites : list
             List of sites to be provided to SAM
+        *args : list
+            Additional arguments required by the resource-specific data handler
+            preload_SAM() method (e.g. "hub_heights" is required by
+            WindResource handlers and can be provided here).
         handler_class : str
             rex Resource handler class (not initialized) to open both the high
             and low resolution h5 files (both files must be of the same
@@ -299,14 +304,12 @@ class MultiResolutionResource:
             lr_res coords and then querying with the hr_res coords. As an
             example, nn_map[10] will return the distance between hr_res gid=10
             and the corresponding lr_res site
-        handle_kwargs : dict, optional
-            Dictionary of optional keyword arguments to initialize the
-            handler_class for the h5_hr and h5_lr
-        kwargs : dict
-            Additional arguments required by the resource-specific data handler
+        **kwargs : dict
+            Additional arguments required to either initialize the
+            resource-specific data handler or call the resource-specific
             preload_SAM() method (e.g. "hub_heights" is required by
-            WindResource handlers and can be provided here in addition to
-            optional args like "icing" or "precip_rate").
+            WindResource.preload_SAM() method and can be provided here in
+            addition to optional args like "icing" or "precip_rate").
 
         Returns
         -------
@@ -315,11 +318,19 @@ class MultiResolutionResource:
             for sites in project_points
         """
 
+        sig = signature(handler_class)
+        handle_kwargs = {k: v for k, v in kwargs.items()
+                         if k in sig.parameters}
+
         cls_kwargs = dict(nn_map=nn_map, nn_d=nn_d,
                           handler_class=handler_class,
                           handle_kwargs=handle_kwargs)
 
         with cls(h5_hr, h5_lr, **cls_kwargs) as mrr:
-            SAM_res = mrr._hr_res._preload_SAM(mrr, sites, **kwargs)
+            sig = signature(mrr._hr_res._preload_SAM)
+            preload_kwargs = {k: v for k, v in kwargs.items()
+                              if k in sig.parameters}
+            SAM_res = mrr._hr_res._preload_SAM(mrr, sites, *args,
+                                               **preload_kwargs)
 
         return SAM_res
