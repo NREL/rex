@@ -31,17 +31,22 @@ class MultiResolutionResource:
                 'global_attrs', 'get_meta_arr', 'shape')
     """Attributes that are always taken only from the high-res data handler"""
 
-    def __init__(self, hr_res, lr_res, nn_map=None, nn_d=None):
+    def __init__(self, h5_hr, h5_lr, handler_class=Resource,
+                 handle_kwargs=None, nn_map=None, nn_d=None):
         """
         Parameters
         ----------
-        hr_res : Resource | MultiFileResource | MultiYearResource
-            rex resource handler for the high-resolution data. All retrieval
-            gid's are based on this dataset, and the lr_res data is mapped to
-            this.
-        lr_res : Resource | MultiFileResource | MultiYearResource
-            rex resource handler for the low-resolution data. The data from
-            this handler is mapped to the hr_res data.
+        h5_hr : str
+            Filepath to high-resolution h5 resource file.
+        h5_lr : str
+            Filepath to low-resolution h5 resource file.
+        handler_class : str
+            rex Resource handler class (not initialized) to open both the high
+            and low resolution h5 files (both files must be of the same
+            resource handler class).
+        handle_kwargs : dict, optional
+            Dictionary of optional keyword arguments to initialize the
+            handler_class for the h5_hr and h5_lr
         nn_map : np.ndarray
             Optional 1D array of nearest neighbor mappings. This will be
             created if not provided. This is created by making a kdtree of the
@@ -56,18 +61,20 @@ class MultiResolutionResource:
             and the corresponding lr_res site
         """
 
-        msg = ('The hr_res and lr_res classes need to be the same but '
-               'received: {} and {}'
-               .format(hr_res.__class__, lr_res.__class__))
-        assert hr_res.__class__ == lr_res.__class__, msg
+        if handle_kwargs is None:
+            handle_kwargs = {}
 
-        self._hr_res = hr_res
-        self._lr_res = lr_res
+        self._h5_hr = h5_hr
+        self._h5_lr = h5_lr
+        self._hr_res = handler_class(h5_hr, **handle_kwargs)
+        self._lr_res = handler_class(h5_lr, **handle_kwargs)
         self._nn_map = nn_map
         self._nn_d = nn_d
+        self._i = 0
 
         if self._nn_map is None:
-            self._nn_d, self._nn_map = self.make_nn_map(hr_res, lr_res)
+            self._nn_d, self._nn_map = self.make_nn_map(self._hr_res,
+                                                        self._lr_res)
 
         self._interpolation_variable = self._hr_res._parse_interp_var(
             self.datasets)
@@ -261,9 +268,7 @@ class MultiResolutionResource:
     def preload_SAM(cls, h5_hr, h5_lr, sites,
                     handler_class=Resource,
                     nn_map=None, nn_d=None,
-                    unscale=True, str_decode=True,
-                    group=None, hsds=False, hsds_kwargs=None,
-                    **kwargs):
+                    handle_kwargs=None, **kwargs):
         """Pre-load resource data in a SAM resource handler for PySAM / reV run
 
         Parameters
@@ -290,19 +295,9 @@ class MultiResolutionResource:
             lr_res coords and then querying with the hr_res coords. As an
             example, nn_map[10] will return the distance between hr_res gid=10
             and the corresponding lr_res site
-        unscale : bool
-            Boolean flag to automatically unscale variables on extraction
-        str_decode : bool
-            Boolean flag to decode the bytestring meta data into normal
-            strings. Setting this to False will speed up the meta data read.
-        group : str
-            Group within .h5 resource file to open
-        hsds : bool, optional
-            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
-        hsds_kwargs : dict, optional
-            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
-            password, by default None
+        handle_kwargs : dict, optional
+            Dictionary of optional keyword arguments to initialize the
+            handler_class for the h5_hr and h5_lr
         kwargs : dict
             Additional arguments required by the resource-specific data handler
             preload_SAM() method (e.g. "hub_heights" is required by
@@ -315,15 +310,12 @@ class MultiResolutionResource:
             Instance of SAMResource pre-loaded with high-resolution resource
             for sites in project_points
         """
-        handle_kwargs = {"unscale": unscale,
-                         "hsds": hsds,
-                         "hsds_kwargs": hsds_kwargs,
-                         "str_decode": str_decode,
-                         "group": group}
 
-        with handler_class(h5_hr, **handle_kwargs) as hr_res:
-            with handler_class(h5_lr, **handle_kwargs) as lr_res:
-                mrr = cls(hr_res, lr_res, nn_map=nn_map, nn_d=nn_d)
-                SAM_res = hr_res._preload_SAM(mrr, sites, **kwargs)
+        cls_kwargs = dict(nn_map=nn_map, nn_d=nn_d,
+                          handler_class=handler_class,
+                          handle_kwargs=handle_kwargs)
+
+        with cls(h5_hr, h5_lr, **cls_kwargs) as mrr:
+            SAM_res = mrr._hr_res._preload_SAM(mrr, sites, **kwargs)
 
         return SAM_res

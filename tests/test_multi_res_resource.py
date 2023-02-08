@@ -51,7 +51,7 @@ def make_multi_res_files(td):
 
     lr_res = WindResource(fp_lr)
     hr_res = WindResource(fp_hr)
-    mrr = MultiResolutionResource(hr_res, lr_res)
+    mrr = MultiResolutionResource(fp_hr, fp_lr, handler_class=WindResource)
     assert len(mrr._nn_map) == len(hr_res.meta)
     assert all(np.isin(mrr._nn_map, np.arange(len(lr_res.meta))))
 
@@ -71,7 +71,7 @@ def test_mrr_indexing():
 
         lr_res = WindResource(fp_lr)
         hr_res = WindResource(fp_hr)
-        mrr = MultiResolutionResource(hr_res, lr_res)
+        mrr = MultiResolutionResource(fp_hr, fp_lr, handler_class=WindResource)
         tree = KDTree(lr_res.coordinates)
 
         dsets = ('pressure_100m', 'temperature_100m')
@@ -97,9 +97,7 @@ def test_preload_sam():
     hh = 100
     with tempfile.TemporaryDirectory() as td:
         fp_hr, fp_lr = make_multi_res_files(td)
-        lr_res = WindResource(fp_lr)
-        hr_res = WindResource(fp_hr)
-        mrr = MultiResolutionResource(hr_res, lr_res)
+        mrr = MultiResolutionResource(fp_hr, fp_lr, handler_class=WindResource)
         sam = MultiResolutionResource.preload_SAM(fp_hr, fp_lr, sites,
                                                   hub_heights=hh,
                                                   handler_class=WindResource)
