@@ -100,17 +100,15 @@ class MultiResolutionResource:
         Returns
         -------
         nn_d : np.ndarray
-            Optional 1D array of nearest neighbor distances. This will be
-            created if not provided. This is created by making a kdtree of the
-            lr_res coords and then querying with the hr_res coords. As an
-            example, nn_map[10] will return the distance between hr_res gid=10
-            and the corresponding lr_res site
+            1D array of nearest neighbor distances. This is created by making a
+            kdtree of the lr_res coords and then querying with the hr_res
+            coords. As an example, nn_map[10] will return the distance between
+            hr_res gid=10 and the corresponding lr_res site
         nn_map : np.ndarray
-            Optional 1D array of nearest neighbor mappings. This will be
-            created if not provided. This is created by making a kdtree of the
-            lr_res coords and then querying with the hr_res coords. As an
-            example, nn_map[10] will return the lr_res index corresponding to
-            gid 10 from the hr_res data
+            1D array of nearest neighbor mappings. This is created by making a
+            kdtree of the lr_res coords and then querying with the hr_res
+            coords. As an example, nn_map[10] will return the lr_res index
+            corresponding to gid 10 from the hr_res data
         """
         tree = KDTree(lr_res.coordinates)
         nn_d, nn_map = tree.query(hr_res.coordinates)
@@ -260,7 +258,7 @@ class MultiResolutionResource:
                 elif isinstance(hr_attr, list) and isinstance(lr_attr, list):
                     return list(set(hr_attr + lr_attr))
                 elif isinstance(hr_attr, tuple) and isinstance(lr_attr, tuple):
-                    return hr_attr + lr_attr
+                    return tuple(set(hr_attr + lr_attr))
                 elif isinstance(hr_attr, dict) and isinstance(lr_attr, dict):
                     out = copy.deepcopy(lr_attr)
                     out.update(hr_attr)
@@ -271,7 +269,7 @@ class MultiResolutionResource:
                        'handler attributes could not be combined: {} {}'
                        .format(attr, hr_attr, lr_attr))
                 logger.error(msg)
-                raise RuntimeError(msg) from e
+                raise AttributeError(msg) from e
 
     @classmethod
     def preload_SAM(cls, h5_hr, h5_lr, sites, *args,
