@@ -942,6 +942,29 @@ class SAMResource:
             logger.error(msg)
             raise ResourceRuntimeError(msg)
 
+    @staticmethod
+    def _check_site_request(rex_res, sites):
+        """
+        Parameters
+        ----------
+        rex_res : rex.Resource
+            rex Resource handler or similar (NSRDB, WindResource,
+            MultiFileResource, etc...)
+        sites : list | slice | int
+            List of site indices (axis=1)
+        """
+        if isinstance(sites, slice):
+            last = np.arange(sites.stop)[sites][-1]
+        elif isinstance(sites, (list, tuple)):
+            last = sorted(sites)[-1]
+
+        if last > rex_res.shape[1] - 1:
+            msg = ('Cannot retrieve site index {} from rex resource of '
+                   'shape {}: {}'
+                   .format(last, rex_res.shape, rex_res))
+            logger.error(msg)
+            raise ResourceKeyError(msg)
+
     def load_rex_resource(self, rex_res, var_list, time_slice, sites, hh=None,
                           hh_unit='m'):
         """Load data from a rex Resource handler into this SAMResource
@@ -957,7 +980,7 @@ class SAMResource:
             manipulated with suffixes such as _100m (for a 100m hh input)
         time_slice : slice
             Slicing argument for the resource temporal dimension (axis=0)
-        sites : list
+        sites : list | slice | int
             List of site indices (axis=1)
         hh : None | int
             Optional single hub height in meters that datasets are to be loaded
@@ -965,6 +988,8 @@ class SAMResource:
         hh_unit : str
             Unit suffix for the hub height input.
         """
+
+        self._check_site_request(rex_res, sites)
 
         for sam_var in var_list:
             alias = self.ALIASES.get(sam_var, None)

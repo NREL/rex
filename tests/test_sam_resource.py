@@ -11,7 +11,6 @@ import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
 
-from rex.utilities.exceptions import ResourceRuntimeError
 from rex.renewable_resource import WindResource, NSRDB, WaveResource
 from rex.multi_file_resource import MultiFileNSRDB
 from rex.sam_resource import SAMResource
@@ -246,6 +245,16 @@ def test_preload_sam_sites(sites):
     assert np.allclose(truth, test)
 
 
+def test_bad_site_req():
+    """Test that the preload_SAM method raises an error on a bad site request
+    """
+    sites = [0, 10, 500]  # 500 is out of the valid site indices
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    hub_heights = 100
+    with pytest.raises(IndexError):
+        WindResource.preload_SAM(h5, sites, hub_heights)
+
+
 @pytest.mark.parametrize('time_index_step',
                          [None, 1, 2, 10])
 def test_preload_sam_time_index_step(time_index_step):
@@ -378,7 +387,7 @@ def test_nsrdb_and_wtk():
 
         with pytest.raises(ResourceRuntimeError):
             res = NSRDB.preload_SAM(fp_nsrdb, sites, bifacial=False)
-            df, meta = res._get_res_df(0)
+            _ = res._get_res_df(0)
 
         res = MultiFileNSRDB.preload_SAM([fp_nsrdb, fp_wtk], sites,
                                          bifacial=False)

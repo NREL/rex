@@ -72,7 +72,7 @@ def test_check_hh():
     msg = ('Wind resource method _check_hub_height() failed! Should have '
            'returned 100 because theres only windspeed at 100m')
     with WindResource(h5) as wind:
-        assert (wind._check_hub_height(120) == 100), msg
+        assert (wind._check_hub_height(wind.heights, 120) == 100), msg
 
 
 def test_sam_df_hh():

@@ -652,12 +652,16 @@ class BaseResource(ABC):
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)
         _, ds_name = os.path.split(ds)
+
         if ds_name.startswith('time_index'):
             out = self._get_time_index(ds, ds_slice)
+
         elif ds_name.startswith('meta'):
             out = self._get_meta(ds, ds_slice)
+
         elif ds_name.startswith('coordinates'):
             out = self._get_coords(ds, ds_slice)
+
         elif 'SAM' in ds_name:
             site = ds_slice[0]
             if isinstance(site, (int, np.integer)):
@@ -665,6 +669,7 @@ class BaseResource(ABC):
             else:
                 msg = "Can only extract SAM DataFrame for a single site"
                 raise ResourceRuntimeError(msg)
+
         else:
             out = self._get_ds(ds, ds_slice)
 
@@ -1462,12 +1467,16 @@ class BaseResource(ABC):
         """
         self._h5.close()
 
-    def _preload_SAM(self, sites, tech, time_index_step=None, means=False):
+    @staticmethod
+    def _preload_SAM(res, sites, tech, time_index_step=None, means=False):
         """
         Placeholder method to pre-load project_points for SAM
 
         Parameters
         ----------
+        res : rex.Resource
+            rex Resource handler or similar (NSRDB, WindResource,
+            MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
         tech : str
@@ -1480,12 +1489,12 @@ class BaseResource(ABC):
             by default False
         """
         time_slice = slice(None, None, time_index_step)
-        SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
+        SAM_res = SAMResource(sites, tech, res['time_index', time_slice],
                               means=means)
         sites = SAM_res.sites_slice
-        SAM_res['meta'] = self['meta', sites]
+        SAM_res['meta'] = res['meta', sites]
 
-        SAM_res.load_rex_resource(self, SAM_res.var_list, time_slice, sites)
+        SAM_res.load_rex_resource(res, SAM_res.var_list, time_slice, sites)
 
         return SAM_res
 
@@ -1533,7 +1542,7 @@ class BaseResource(ABC):
         kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(sites, tech,
+            SAM_res = res._preload_SAM(res, sites, tech,
                                        time_index_step=time_index_step,
                                        means=means)
 

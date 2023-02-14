@@ -408,7 +408,11 @@ class MultiFileResource(AbstractInterpolatedResource):
 
         self._interp_var = None
         self._use_lapse = use_lapse_rate
-        self.heights = self._interpolation_variable
+
+        # this is where self.heights or self.depths gets set
+        self._interpolation_variable = self._parse_interp_var(self.datasets)
+        prop_name = "{}s".format(self.VARIABLE_NAME)
+        setattr(self, prop_name, self._interpolation_variable)
 
     def __repr__(self):
         msg = "{}".format(self.__class__.__name__)
@@ -507,7 +511,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
         with cls(h5_source, unscale=unscale, str_decode=str_decode,
                  check_files=check_files) as res:
             # pylint: disable=assignment-from-no-return
-            SAM_res = res._preload_SAM(sites, tech=tech,
+            SAM_res = res._preload_SAM(res, sites, tech=tech,
                                        time_index_step=time_index_step,
                                        means=means, clearsky=clearsky,
                                        bifacial=bifacial, downscale=downscale)
@@ -603,7 +607,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
         with cls(h5_source, unscale=unscale, str_decode=str_decode,
                  check_files=check_files) as res:
             # pylint: disable=assignment-from-no-return
-            SAM_res = res._preload_SAM(sites, hub_heights,
+            SAM_res = res._preload_SAM(res, sites, hub_heights,
                                        time_index_step=time_index_step,
                                        means=means,
                                        require_wind_dir=require_wind_dir,
