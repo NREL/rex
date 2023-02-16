@@ -164,13 +164,16 @@ class AbstractInterpolatedResource(BaseResource):
     LAPSE_RATES = {'temperature': 6.56, 'pressure': 11_109}
     """Air Temperature and Pressure lapse rate in C/km and Pa/km"""
 
-    def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
-                 use_lapse_rate=True, hsds=False, hsds_kwargs=None):
+    def __init__(self, h5_file, mode='r', unscale=True, str_decode=True,
+                 group=None, use_lapse_rate=True, hsds=False,
+                 hsds_kwargs=None):
         """
         Parameters
         ----------
         h5_file : str
             Path to .h5 resource file
+        mode : str, optional
+            Mode to instantiate h5py.File instance, by default 'r'
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -196,7 +199,8 @@ class AbstractInterpolatedResource(BaseResource):
         self._interp_var = None
         self._use_lapse = use_lapse_rate
         super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
-                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
+                         group=group, hsds=hsds, mode=mode,
+                         hsds_kwargs=hsds_kwargs)
 
         # this is where self.heights or self.depths gets set
         self._interpolation_variable = self._parse_interp_var(self.datasets)
