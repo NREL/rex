@@ -576,13 +576,15 @@ class BaseResource(ABC):
     ADD_ATTR = 'add_offset'
     UNIT_ATTR = 'units'
 
-    def __init__(self, h5_file, unscale=True, str_decode=True,
-                 group=None, mode='r', hsds=False, hsds_kwargs=None):
+    def __init__(self, h5_file, mode='r', unscale=True, str_decode=True,
+                 group=None, hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
         h5_file : str
             Path to .h5 resource file
+        mode : str, optional
+            Mode to instantiate h5py.File instance, by default 'r'
         unscale : bool, optional
             Boolean flag to automatically unscale variables on extraction,
             by default True
@@ -592,8 +594,6 @@ class BaseResource(ABC):
             by default True
         group : str, optional
             Group within .h5 resource file to open, by default None
-        mode : str, optional
-            Mode to instantiate h5py.File instance, by default 'r'
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
