@@ -165,7 +165,7 @@ class AbstractInterpolatedResource(BaseResource):
     """Air Temperature and Pressure lapse rate in C/km and Pa/km"""
 
     def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
-                 use_lapse_rate=True, hsds=False, hsds_kwargs=None):
+                 use_lapse_rate=True, mode='r', hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -186,6 +186,8 @@ class AbstractInterpolatedResource(BaseResource):
             `False`, the value of these variables at the single available
             hub-height will be returned for *all* requested heights. This
             option has no effect if data is available at multiple hub-heights.
+        mode : str, optional
+            Mode to instantiate h5py.File instance, by default 'r'
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
@@ -196,7 +198,8 @@ class AbstractInterpolatedResource(BaseResource):
         self._interp_var = None
         self._use_lapse = use_lapse_rate
         super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
-                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
+                         group=group, hsds=hsds, mode=mode,
+                         hsds_kwargs=hsds_kwargs)
 
         # this is where self.heights or self.depths gets set
         self._interpolation_variable = self._parse_interp_var(self.datasets)
