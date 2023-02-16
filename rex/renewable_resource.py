@@ -73,16 +73,12 @@ class WaveResource(BaseResource):
 
         return res_df
 
-    @staticmethod
-    def _preload_SAM(res, sites, means=False, time_index_step=None):
+    def _preload_SAM(self, sites, means=False, time_index_step=None):
         """
         Pre-load project_points for SAM
 
         Parameters
         ----------
-        res : rex.Resource
-            rex Resource handler or similar (NSRDB, WindResource,
-            MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
         means : bool
@@ -97,7 +93,7 @@ class WaveResource(BaseResource):
             Instance of SAMResource pre-loaded with Wave resource for sites
             in project_points
         """
-        SAM_res = super()._preload_SAM(res, sites, 'wave', means=means,
+        SAM_res = super()._preload_SAM(sites, 'wave', means=means,
                                        time_index_step=time_index_step)
 
         return SAM_res
@@ -143,7 +139,7 @@ class WaveResource(BaseResource):
         kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(res, sites, means=means,
+            SAM_res = res._preload_SAM(sites, means=means,
                                        time_index_step=time_index_step)
 
         return SAM_res
@@ -165,7 +161,7 @@ class AbstractInterpolatedResource(BaseResource):
     """Air Temperature and Pressure lapse rate in C/km and Pa/km"""
 
     def __init__(self, h5_file, unscale=True, str_decode=True, group=None,
-                 use_lapse_rate=True, hsds=False, hsds_kwargs=None):
+                 use_lapse_rate=True, mode='r', hsds=False, hsds_kwargs=None):
         """
         Parameters
         ----------
@@ -186,6 +182,8 @@ class AbstractInterpolatedResource(BaseResource):
             `False`, the value of these variables at the single available
             hub-height will be returned for *all* requested heights. This
             option has no effect if data is available at multiple hub-heights.
+        mode : str, optional
+            Mode to instantiate h5py.File instance, by default 'r'
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS, by default False
@@ -196,40 +194,35 @@ class AbstractInterpolatedResource(BaseResource):
         self._interp_var = None
         self._use_lapse = use_lapse_rate
         super().__init__(h5_file, unscale=unscale, str_decode=str_decode,
-                         group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
-
-        # this is where self.heights or self.depths gets set
-        self._interpolation_variable = self._parse_interp_var(self.datasets)
+                         group=group, hsds=hsds, mode=mode,
+                         hsds_kwargs=hsds_kwargs)
         prop_name = "{}s".format(self.VARIABLE_NAME)
         setattr(self, prop_name, self._interpolation_variable)
 
-    @classmethod
-    def _parse_interp_var(cls, datasets):
-        """Extract available interpolation variable values for the
+    @property
+    def _interpolation_variable(self):
+        """
+        Extract available interpolation variable values for the
         interpolable datasets. Used for interpolation/extrapolation.
-
-        Parameters
-        ----------
-        datasets : list
-            List of dataset names that will be parsed for interpolation value
-            suffixes like "windspeed_100m" -> windspeed at 100 meters
 
         Returns
         -------
-        dict
+         dict
             Dictionary of available interpolation variable values for
-            the interpolable datasets. For example, this could be:
-            {'windspeed': [10, 100, 200]}
+            the interpolable datasets.
         """
-        interp_var = {dset: [] for dset in cls.INTERPOLABLE_DSETS}
-        ignore = ['meta', 'time_index', 'coordinates']
-        for ds in datasets:
-            if ds not in ignore:
-                ds_name, val = cls._parse_name(ds)
-                if ds_name in interp_var and val is not None:
-                    interp_var[ds_name].append(val)
+        if self._interp_var is None:
+            interp_var = {dset: [] for dset in self.INTERPOLABLE_DSETS}
+            ignore = ['meta', 'time_index', 'coordinates']
+            for ds in self.datasets:
+                if ds not in ignore:
+                    ds_name, val = self._parse_name(ds)
+                    if ds_name in interp_var and val is not None:
+                        interp_var[ds_name].append(val)
 
-        return interp_var
+            self._interp_var = interp_var
+
+        return self._interp_var
 
     @classmethod
     def _parse_name(cls, ds_name):
@@ -510,32 +503,15 @@ class AbstractInterpolatedResource(BaseResource):
         out = linear_interp(ts1, v1, ts2, v2, val)
         return out
 
-    @staticmethod
-    def _set_sam_res(res, values, dsets, SAM_res, time_slice, sites):
+    def _set_sam_res(self, values, dsets, SAM_res, time_slice, sites):
         """
         Set the resource for individual sites at various values
         (i.e. hub-heights, depths, etc).
-
-        Parameters
-        ----------
-        res : rex.Resource
-            rex Resource handler or similar (NSRDB, WindResource,
-            MultiFileResource, etc...)
-        values : list | int
-            List of interpolation values e.g. hub heights or geothermal depths
-        dsets : list
-            List of dataset names to set
-        SAM_res : SAMResource
-            SAMResource object to load resource data into
-        time_slice : slice
-            Slice object representing any temporal subsampling
-        sites : list | slice
-            Spatial indices to load.
         """
 
         if isinstance(values, (int, float)):
-            SAM_res.load_rex_resource(res, dsets, time_slice, sites,
-                                      hh=values, hh_unit=res.VARIABLE_UNIT)
+            SAM_res.load_rex_resource(self, dsets, time_slice, sites,
+                                      hh=values, hh_unit=self.VARIABLE_UNIT)
 
         else:
             _, unique_index = np.unique(values, return_inverse=True)
@@ -544,8 +520,8 @@ class AbstractInterpolatedResource(BaseResource):
                 for index, value in enumerate(unique_values):
                     pos = np.where(unique_index == index)[0]
                     sites = np.array(SAM_res.sites)[pos]
-                    ds_name = '{}_{}{}'.format(dset, value, res.VARIABLE_UNIT)
-                    SAM_res[dset, :, pos] = res[ds_name, time_slice, sites]
+                    ds_name = '{}_{}{}'.format(dset, value, self.VARIABLE_UNIT)
+                    SAM_res[dset, :, pos] = self[ds_name, time_slice, sites]
 
     @property
     @abstractmethod
@@ -639,17 +615,13 @@ class SolarResource(AbstractInterpolatedResource):
 
         return res_df
 
-    @staticmethod
-    def _preload_SAM(res, sites, tech='pvwattsv8', time_index_step=None,
+    def _preload_SAM(self, sites, tech='pvwattsv8', time_index_step=None,
                      means=False, clearsky=False, bifacial=False):
         """
         Pre-load project_points for SAM
 
         Parameters
         ----------
-        res : rex.Resource
-            rex Resource handler or similar (NSRDB, WindResource,
-            MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
         tech : str, optional
@@ -672,10 +644,10 @@ class SolarResource(AbstractInterpolatedResource):
             in project_points
         """
         time_slice = slice(None, None, time_index_step)
-        SAM_res = SAMResource(sites, tech, res['time_index', time_slice],
+        SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
                               means=means)
         sites = SAM_res.sites_slice
-        SAM_res['meta'] = res['meta', sites]
+        SAM_res['meta'] = self['meta', sites]
 
         if clearsky:
             SAM_res.set_clearsky()
@@ -683,8 +655,8 @@ class SolarResource(AbstractInterpolatedResource):
         if bifacial and 'surface_albedo' not in SAM_res.var_list:
             SAM_res._var_list.append('surface_albedo')
 
-        SAM_res.check_irradiance_datasets(res.datasets, clearsky=clearsky)
-        SAM_res.load_rex_resource(res, SAM_res.var_list, time_slice, sites,
+        SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
+        SAM_res.load_rex_resource(self, SAM_res.var_list, time_slice, sites,
                                   hh=2)
         SAM_res.compute_irradiance(clearsky=clearsky)
 
@@ -739,7 +711,7 @@ class SolarResource(AbstractInterpolatedResource):
         kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(res, sites, tech=tech,
+            SAM_res = res._preload_SAM(sites, tech=tech,
                                        time_index_step=time_index_step,
                                        means=means, clearsky=clearsky,
                                        bifacial=bifacial)
@@ -759,8 +731,7 @@ class NSRDB(SolarResource):
     SCALE_ATTR = ['scale_factor', 'psm_scale_factor']
     UNIT_ATTR = ['units', 'psm_units']
 
-    @staticmethod
-    def _preload_SAM(res, sites, tech='pvwattsv8', time_index_step=None,
+    def _preload_SAM(self, sites, tech='pvwattsv8', time_index_step=None,
                      means=False, clearsky=False, bifacial=False,
                      downscale=None):
         """
@@ -768,9 +739,6 @@ class NSRDB(SolarResource):
 
         Parameters
         ----------
-        res : rex.Resource
-            rex Resource handler or similar (NSRDB, WindResource,
-            MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
         tech : str, optional
@@ -798,10 +766,10 @@ class NSRDB(SolarResource):
             in project_points
         """
         time_slice = slice(None, None, time_index_step)
-        SAM_res = SAMResource(sites, tech, res['time_index', time_slice],
+        SAM_res = SAMResource(sites, tech, self['time_index', time_slice],
                               means=means)
         sites = SAM_res.sites_slice
-        SAM_res['meta'] = res['meta', sites]
+        SAM_res['meta'] = self['meta', sites]
 
         if clearsky:
             SAM_res.set_clearsky()
@@ -809,16 +777,16 @@ class NSRDB(SolarResource):
         if bifacial and 'surface_albedo' not in SAM_res.var_list:
             SAM_res._var_list.append('surface_albedo')
 
-        SAM_res.check_irradiance_datasets(res.datasets, clearsky=clearsky)
+        SAM_res.check_irradiance_datasets(self.datasets, clearsky=clearsky)
         if not downscale:
-            SAM_res.load_rex_resource(res, SAM_res.var_list, time_slice,
+            SAM_res.load_rex_resource(self, SAM_res.var_list, time_slice,
                                       sites, hh=2)
             SAM_res.compute_irradiance(clearsky=clearsky)
         else:
             # contingent import to avoid dependencies
             from rex.utilities.downscale import downscale_nsrdb
             frequency = downscale.pop('frequency')
-            SAM_res = downscale_nsrdb(SAM_res, res, sam_vars=SAM_res.var_list,
+            SAM_res = downscale_nsrdb(SAM_res, self, sam_vars=SAM_res.var_list,
                                       frequency=frequency,
                                       variability_kwargs=downscale)
 
@@ -878,7 +846,7 @@ class NSRDB(SolarResource):
         kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(res, sites, tech=tech,
+            SAM_res = res._preload_SAM(sites, tech=tech,
                                        time_index_step=time_index_step,
                                        means=means, clearsky=clearsky,
                                        bifacial=bifacial, downscale=downscale)
@@ -1141,8 +1109,7 @@ class WindResource(AbstractInterpolatedResource):
 
         return out
 
-    @staticmethod
-    def _check_hub_height(heights, h):
+    def _check_hub_height(self, h):
         """
         Check requested hub-height against available windspeed hub-heights
         If only one hub-height is available change request to match available
@@ -1150,10 +1117,6 @@ class WindResource(AbstractInterpolatedResource):
 
         Parameters
         ----------
-        heights : dict
-            Dictionary of available interpolation variable values for
-            the interpolable datasets. For example, this could be:
-            {'windspeed': [10, 100, 200]}
         h : int | float
             Requested hub-height
 
@@ -1162,7 +1125,7 @@ class WindResource(AbstractInterpolatedResource):
         h : int | float
             Hub-height to extract
         """
-        heights = heights['windspeed']
+        heights = self.heights['windspeed']
         if len(heights) == 1:
             h = heights[0]
             warnings.warn('Wind speed is only available at {h}m, '
@@ -1287,7 +1250,7 @@ class WindResource(AbstractInterpolatedResource):
         if not self._unscale:
             raise ResourceValueError("SAM requires unscaled values")
 
-        height = self._check_hub_height(self.heights, height)
+        height = self._check_hub_height(height)
         units = ['year', 'month', 'day', 'hour']
         res_df = pd.DataFrame({'Year': self.time_index.year,
                                'Month': self.time_index.month,
@@ -1334,8 +1297,7 @@ class WindResource(AbstractInterpolatedResource):
 
         return res_df
 
-    @staticmethod
-    def _preload_SAM(res, sites, hub_heights, time_index_step=None,
+    def _preload_SAM(self, sites, hub_heights, time_index_step=None,
                      means=False, require_wind_dir=False,
                      precip_rate=False, icing=False):
         """
@@ -1343,9 +1305,6 @@ class WindResource(AbstractInterpolatedResource):
 
         Parameters
         ----------
-        res : rex.Resource
-            rex Resource handler or similar (NSRDB, WindResource,
-            MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
         hub_heights : int | float | list
@@ -1372,34 +1331,32 @@ class WindResource(AbstractInterpolatedResource):
             Instance of SAMResource pre-loaded with Solar resource for sites
             in project_points
         """
-
         time_slice = slice(None, None, time_index_step)
         SAM_res = SAMResource(sites, 'windpower',
-                              res['time_index', time_slice],
+                              self['time_index', time_slice],
                               hub_heights=hub_heights,
                               require_wind_dir=require_wind_dir,
                               means=means)
-
         sites = SAM_res.sites_slice
-        SAM_res['meta'] = res['meta', sites]
+        SAM_res['meta'] = self['meta', sites]
         var_list = SAM_res.var_list
         if not require_wind_dir:
             var_list.remove('winddirection')
 
-        h = res._check_hub_height(res.heights, SAM_res.h)
-        res._set_sam_res(res, h, var_list, SAM_res, time_slice, sites)
+        h = self._check_hub_height(SAM_res.h)
+        self._set_sam_res(h, var_list, SAM_res, time_slice, sites)
 
         if precip_rate:
             var = 'precipitationrate'
             ds_name = '{}_0m'.format(var)
             SAM_res.append_var_list(var)
-            SAM_res[var] = res[ds_name, time_slice, sites]
+            SAM_res[var] = self[ds_name, time_slice, sites]
 
         if icing:
             var = 'rh'
             ds_name = 'relativehumidity_2m'
             SAM_res.append_var_list(var)
-            SAM_res[var] = res[ds_name, time_slice, sites]
+            SAM_res[var] = self[ds_name, time_slice, sites]
 
         return SAM_res
 
@@ -1457,7 +1414,7 @@ class WindResource(AbstractInterpolatedResource):
         kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(res, sites, hub_heights,
+            SAM_res = res._preload_SAM(sites, hub_heights,
                                        require_wind_dir=require_wind_dir,
                                        precip_rate=precip_rate, icing=icing,
                                        means=means,
@@ -1508,17 +1465,13 @@ class GeothermalResource(AbstractInterpolatedResource):
     VARIABLE_NAME = "depth"
     VARIABLE_UNIT = "m"
 
-    @staticmethod
-    def _preload_SAM(res, sites, depths, time_index_step=None,
+    def _preload_SAM(self, sites, depths, time_index_step=None,
                      means=False):
         """
         Pre-load project_points for SAM
 
         Parameters
         ----------
-        res : rex.Resource
-            rex Resource handler or similar (NSRDB, WindResource,
-            MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
         depths :  int | float | list
@@ -1538,12 +1491,12 @@ class GeothermalResource(AbstractInterpolatedResource):
         """
         time_slice = slice(None, None, time_index_step)
         SAM_res = SAMResource(sites, "geothermal",
-                              res['time_index', time_slice],
+                              self['time_index', time_slice],
                               depths=depths, means=means)
         sites = SAM_res.sites_slice
-        SAM_res['meta'] = res['meta', sites]
-        res._set_sam_res(res, SAM_res.d, SAM_res.var_list, SAM_res, time_slice,
-                         sites)
+        SAM_res['meta'] = self['meta', sites]
+        self._set_sam_res(SAM_res.d, SAM_res.var_list, SAM_res, time_slice,
+                          sites)
 
         return SAM_res
 
@@ -1593,7 +1546,7 @@ class GeothermalResource(AbstractInterpolatedResource):
         kwargs = {"unscale": unscale, "hsds": hsds, 'hsds_kwargs': hsds_kwargs,
                   "str_decode": str_decode, "group": group}
         with cls(h5_file, **kwargs) as res:
-            SAM_res = res._preload_SAM(res, sites, depths,
+            SAM_res = res._preload_SAM(sites, depths,
                                        time_index_step=time_index_step,
                                        means=means)
 
