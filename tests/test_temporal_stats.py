@@ -12,7 +12,7 @@ import tempfile
 import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
-from rex.renewable_resource import WindResource
+from rex.renewable_resource import WindResource, NSRDB
 from rex.temporal_stats.temporal_stats import TemporalStats, circular_mean
 from rex.temporal_stats.temporal_stats_cli import main
 from rex.utilities.loggers import LOGGERS
@@ -279,6 +279,24 @@ def test_weighted_circular_means(weights):
     name = 'Jan_{}'.format(name)
     msg = 'January circular means do not match!'
     assert np.allclose(truth, test_stats[name].values, rtol=0, atol=0.01), msg
+
+
+def test_mask_zeros():
+    """Test the irradiance stats functionality with zeros masked out"""
+    res_h5 = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+    dataset = 'ghi'
+    sites = slice(0, 10)
+    stats1 = TemporalStats.run(res_h5, dataset, sites=sites,
+                               statistics='mean',
+                               res_cls=NSRDB,
+                               max_workers=1,
+                               mask_zeros=True)
+    stats0 = TemporalStats.run(res_h5, dataset, sites=sites,
+                               statistics='mean',
+                               res_cls=NSRDB,
+                               max_workers=1,
+                               mask_zeros=False)
+    assert np.allclose(stats0['mean'] * 2, stats1['mean'], atol=10)
 
 
 def test_cli(runner):

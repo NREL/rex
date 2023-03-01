@@ -222,7 +222,7 @@ class TemporalStats:
                      6: 'Jun', 7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct',
                      11: 'Nov', 12: 'Dec'}
 
-        # pylint: disable=unnecessary-lambda
+        # pylint: disable=unnecessary-lambda-assignment, unnecessary-lambda
         year = lambda s: "{}".format(s)
         month = lambda s: "{}".format(month_map[s])
         hour = lambda s: "{:02d}:00UTC".format(s)
@@ -440,7 +440,8 @@ class TemporalStats:
     @classmethod
     def _extract_stats(cls, res_h5, statistics, dataset, res_cls=Resource,
                        hsds=False, time_index=None, sites_slice=None,
-                       diurnal=False, month=False, combinations=False):
+                       diurnal=False, month=False, combinations=False,
+                       mask_zeros=False):
         """
         Extract stats for given dataset, sites, and temporal extent
 
@@ -469,6 +470,9 @@ class TemporalStats:
             Extract monthly stats, by default False
         combinations : bool, optional
             Extract all combinations of temporal stats, by default False
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
 
         Returns
         -------
@@ -484,6 +488,10 @@ class TemporalStats:
 
             res_data = pd.DataFrame(f[dataset, :, sites_slice],
                                     index=time_index)
+
+            if mask_zeros:
+                mask = (res_data > 0).all(axis=1)
+                res_data = res_data[mask]
 
             for s, s_dict in statistics.items():
                 weights = s_dict.get('kwargs', {}).get('weights')
@@ -580,7 +588,8 @@ class TemporalStats:
 
     def compute_statistics(self, dataset, sites=None, diurnal=False,
                            month=False, combinations=False, max_workers=None,
-                           chunks_per_worker=5, lat_lon_only=True):
+                           chunks_per_worker=5, lat_lon_only=True,
+                           mask_zeros=False):
         """
         Compute statistics
 
@@ -603,6 +612,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
 
         Returns
         -------
@@ -635,7 +647,8 @@ class TemporalStats:
                                         sites_slice=sites_slice,
                                         diurnal=diurnal,
                                         month=month,
-                                        combinations=combinations)
+                                        combinations=combinations,
+                                        mask_zeros=mask_zeros)
                     futures.append(future)
 
                 res_stats = []
@@ -654,7 +667,8 @@ class TemporalStats:
                     res_cls=self.res_cls, hsds=self._hsds,
                     time_index=self.time_index, sites_slice=sites_slice,
                     diurnal=diurnal, month=month,
-                    combinations=combinations))
+                    combinations=combinations,
+                    mask_zeros=mask_zeros))
                 logger.debug('Completed {} out of {} sets of sites'
                              .format((i + 1), len(slices)))
 
@@ -672,7 +686,7 @@ class TemporalStats:
         return res_stats
 
     def full_stats(self, dataset, sites=None, max_workers=None,
-                   chunks_per_worker=5, lat_lon_only=True):
+                   chunks_per_worker=5, lat_lon_only=True, mask_zeros=False):
         """
         Compute stats for entire temporal extent of file
 
@@ -689,6 +703,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
 
         Returns
         -------
@@ -699,12 +716,14 @@ class TemporalStats:
             dataset, sites=sites,
             max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
+            lat_lon_only=lat_lon_only,
+            mask_zeros=mask_zeros)
 
         return full_stats
 
     def monthly_stats(self, dataset, sites=None, max_workers=None,
-                      chunks_per_worker=5, lat_lon_only=True):
+                      chunks_per_worker=5, lat_lon_only=True,
+                      mask_zeros=False):
         """
         Compute monthly stats
 
@@ -721,6 +740,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
 
         Returns
         -------
@@ -731,12 +753,14 @@ class TemporalStats:
             dataset, sites=sites, month=True,
             max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
+            lat_lon_only=lat_lon_only,
+            mask_zeros=mask_zeros)
 
         return monthly_stats
 
     def diurnal_stats(self, dataset, sites=None, max_workers=None,
-                      chunks_per_worker=5, lat_lon_only=True):
+                      chunks_per_worker=5, lat_lon_only=True,
+                      mask_zeros=False):
         """
         Compute diurnal stats
 
@@ -753,6 +777,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
 
         Returns
         -------
@@ -763,13 +790,14 @@ class TemporalStats:
             dataset, sites=sites, diurnal=True,
             max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
+            lat_lon_only=lat_lon_only,
+            mask_zeros=mask_zeros)
 
         return diurnal_stats
 
     def monthly_diurnal_stats(self, dataset, sites=None,
                               max_workers=None, chunks_per_worker=5,
-                              lat_lon_only=True):
+                              lat_lon_only=True, mask_zeros=False):
         """
         Compute monthly-diurnal stats
 
@@ -786,6 +814,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
 
         Returns
         -------
@@ -796,12 +827,13 @@ class TemporalStats:
             dataset, sites=sites, month=True, diurnal=True,
             max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
+            lat_lon_only=lat_lon_only,
+            mask_zeros=mask_zeros)
 
         return diurnal_stats
 
     def all_stats(self, dataset, sites=None, max_workers=None,
-                  chunks_per_worker=5, lat_lon_only=True):
+                  chunks_per_worker=5, lat_lon_only=True, mask_zeros=False):
         """
         Compute annual, monthly, monthly-diurnal, and diurnal stats
 
@@ -818,6 +850,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
 
         Returns
         -------
@@ -828,7 +863,8 @@ class TemporalStats:
             dataset, sites=sites, month=True, diurnal=True, combinations=True,
             max_workers=max_workers,
             chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
+            lat_lon_only=lat_lon_only,
+            mask_zeros=mask_zeros)
 
         return all_stats
 
@@ -870,7 +906,8 @@ class TemporalStats:
     def run(cls, res_h5, dataset, sites=None, statistics='mean',
             diurnal=False, month=False, combinations=False,
             res_cls=Resource, hsds=False, max_workers=None,
-            chunks_per_worker=5, lat_lon_only=True, out_path=None):
+            chunks_per_worker=5, lat_lon_only=True, mask_zeros=False,
+            out_path=None):
         """
         Compute temporal stats, by default full temporal extent stats
 
@@ -905,6 +942,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
@@ -931,7 +971,7 @@ class TemporalStats:
             dataset, sites=sites,
             diurnal=diurnal, month=month, combinations=combinations,
             max_workers=max_workers, chunks_per_worker=chunks_per_worker,
-            lat_lon_only=lat_lon_only)
+            lat_lon_only=lat_lon_only, mask_zeros=mask_zeros)
         if out_path is not None:
             res_stats.save_stats(out_stats, out_path)
 
@@ -940,7 +980,8 @@ class TemporalStats:
     @classmethod
     def monthly(cls, res_h5, dataset, sites=None, statistics='mean',
                 res_cls=Resource, hsds=False, max_workers=None,
-                chunks_per_worker=5, lat_lon_only=True, out_path=None):
+                chunks_per_worker=5, lat_lon_only=True, mask_zeros=False,
+                out_path=None):
         """
         Compute monthly stats
 
@@ -972,6 +1013,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
@@ -987,14 +1031,17 @@ class TemporalStats:
                                 res_cls=res_cls, hsds=hsds,
                                 max_workers=max_workers,
                                 chunks_per_worker=chunks_per_worker,
-                                lat_lon_only=lat_lon_only, out_path=out_path)
+                                lat_lon_only=lat_lon_only,
+                                mask_zeros=mask_zeros,
+                                out_path=out_path)
 
         return monthly_stats
 
     @classmethod
     def diurnal(cls, res_h5, dataset, sites=None, statistics='mean',
                 res_cls=Resource, hsds=False, max_workers=None,
-                chunks_per_worker=5, lat_lon_only=True, out_path=None):
+                chunks_per_worker=5, lat_lon_only=True, mask_zeros=False,
+                out_path=None):
         """
         Compute diurnal stats
 
@@ -1026,6 +1073,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
@@ -1041,7 +1091,9 @@ class TemporalStats:
                                 res_cls=res_cls, hsds=hsds,
                                 max_workers=max_workers,
                                 chunks_per_worker=chunks_per_worker,
-                                lat_lon_only=lat_lon_only, out_path=out_path)
+                                lat_lon_only=lat_lon_only,
+                                mask_zeros=mask_zeros,
+                                out_path=out_path)
 
         return diurnal_stats
 
@@ -1049,7 +1101,7 @@ class TemporalStats:
     def monthly_diurnal(cls, res_h5, dataset, sites=None,
                         statistics='mean', res_cls=Resource, hsds=False,
                         max_workers=None, chunks_per_worker=5,
-                        lat_lon_only=True, out_path=None):
+                        lat_lon_only=True, mask_zeros=False, out_path=None):
         """
         Compute monthly-diurnal stats
 
@@ -1081,6 +1133,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
@@ -1097,6 +1152,7 @@ class TemporalStats:
                                         max_workers=max_workers,
                                         chunks_per_worker=chunks_per_worker,
                                         lat_lon_only=lat_lon_only,
+                                        mask_zeros=mask_zeros,
                                         out_path=out_path)
 
         return monthly_diurnal_stats
@@ -1104,7 +1160,8 @@ class TemporalStats:
     @classmethod
     def all(cls, res_h5, dataset, sites=None, statistics='mean',
             res_cls=Resource, hsds=False, max_workers=None,
-            chunks_per_worker=5, lat_lon_only=True, out_path=None):
+            chunks_per_worker=5, lat_lon_only=True, mask_zeros=False,
+            out_path=None):
         """
         Compute annual, monthly, monthly-diurnal, and diurnal stats
 
@@ -1136,6 +1193,9 @@ class TemporalStats:
             Number of chunks to extract on each worker, by default 5
         lat_lon_only : bool, optional
             Only append lat, lon coordinates to stats, by default True
+        mask_zeros : bool
+            Flag to only calculate stats when all data is > 0 (useful for
+            global horizontal irradiance)
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
@@ -1151,6 +1211,7 @@ class TemporalStats:
                             res_cls=res_cls, hsds=hsds,
                             max_workers=max_workers,
                             chunks_per_worker=chunks_per_worker,
-                            lat_lon_only=lat_lon_only, out_path=out_path)
+                            lat_lon_only=lat_lon_only, out_path=out_path,
+                            mask_zeros=mask_zeros)
 
         return all_stats
