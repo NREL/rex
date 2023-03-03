@@ -777,6 +777,10 @@ class SAMResource:
             self._res_arrays['dni'] = dni
             self._res_arrays['dhi'] = dhi
 
+        if self._mean_arrays is not None:
+            for var in self._mean_arrays.keys():
+                self._mean_arrays[var] = self._res_arrays[var].mean(axis=0)
+
     def _check_physical_ranges(self, var, arr, var_slice):
         """Check physical range of array and enforce usable SAM data.
 
