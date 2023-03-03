@@ -410,5 +410,83 @@ def execute_pytest(capture='all', flags='-rapP'):
     pytest.main(['-q', '--show-capture={}'.format(capture), fname, flags])
 
 
+def test_bias_correct_wind():
+    """Test linear bias correction functionality on windspeed"""
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    sites = slice(0, 20)
+    hub_heights = 80
+    base_res = WindResource.preload_SAM(h5, sites, hub_heights)
+
+    n = 10
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'adder': np.random.uniform(-1, 1, n),
+                       'scalar': np.random.uniform(0.9, 1.1, n)})
+
+    with pytest.warns() as record:
+        res = WindResource.preload_SAM(h5, sites, hub_heights)
+        res.bias_correct(bc)
+
+        assert len(record) == 1
+        assert 'missing from the bias correction' in str(record[0].message)
+        assert np.allclose(res._res_arrays['windspeed'][:, 10:],
+                           base_res._res_arrays['windspeed'][:, 10:])
+        assert not (res._res_arrays['windspeed'][:, :10] ==
+                    base_res._res_arrays['windspeed'][:, :10]).any()
+        assert (res._res_arrays['windspeed'] >= 0).all()
+
+    n = 200
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'adder': np.random.uniform(-1, 1, n),
+                       'scalar': np.random.uniform(0.9, 1.1, n)})
+
+    with pytest.warns(None) as record:
+        res = WindResource.preload_SAM(h5, sites, hub_heights)
+        res.bias_correct(bc)
+
+        assert not any(record)
+        assert not (res._res_arrays['windspeed'] ==
+                    base_res._res_arrays['windspeed']).any()
+        assert (res._res_arrays['windspeed'] >= 0).all()
+
+
+def test_bias_correct_solar():
+    """Test adder bias correction functionality on irradiance"""
+    h5 = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+    sites = slice(0, 10)
+    base_res = NSRDB.preload_SAM(h5, sites)
+
+    n = 10
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'adder': np.random.uniform(-100, 100, n),
+                       'scalar': np.random.uniform(1, 1, n)})
+
+    res = NSRDB.preload_SAM(h5, sites)
+    res.bias_correct(bc)
+
+    for gid in res.sites:
+        adder = bc.at[gid, 'adder']
+        base_ghi = base_res._res_arrays['ghi'][:, gid]
+        base_dni = base_res._res_arrays['dni'][:, gid]
+        base_dhi = base_res._res_arrays['dhi'][:, gid]
+        ghi = res._res_arrays['ghi'][:, gid]
+        dni = res._res_arrays['dni'][:, gid]
+        dhi = res._res_arrays['dhi'][:, gid]
+        assert (ghi >= 0).all()
+        assert (dni >= 0).all()
+        assert (dhi >= 0).all()
+        ghi_mask = (ghi > np.abs(adder)) & (base_ghi > np.abs(adder))
+        dni_mask = (dni > np.abs(adder)) & (base_dni > np.abs(adder))
+        assert np.allclose(ghi[ghi_mask], base_ghi[ghi_mask] + adder)
+        assert np.allclose(dni[dni_mask], base_dni[dni_mask] + adder)
+
+        ghi_mask = (ghi > np.abs(adder)) & (base_ghi > np.abs(adder))
+        dni_mask = (dni > np.abs(adder)) & (base_dni > np.abs(adder))
+        dhi_mask = (dhi > np.abs(adder)) & (base_dhi > np.abs(adder))
+        mask = ghi_mask & dni_mask & dhi_mask
+        cos_sza = (ghi[mask] - dhi[mask]) / (dni[mask])
+        base_cos_sza = (base_ghi[mask] - base_dhi[mask]) / (base_dni[mask])
+        assert np.allclose(cos_sza, base_cos_sza, atol=0.005)
+
+
 if __name__ == '__main__':
     execute_pytest()
