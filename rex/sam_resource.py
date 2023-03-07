@@ -707,12 +707,12 @@ class SAMResource:
 
         Parameters
         ----------
-        bc_df : None | pd.DataFrame
-            None if not provided or extracted DataFrame with wind or solar
-            resource bias correction table. This has columns: gid, adder,
-            scalar. If either adder or scalar is not present, scalar defaults
-            to 1 and adder to 0. Only windspeed, GHI, and DNI are corrected.
-            GHI and DNI are corrected with the same correction factors.
+        bc_df : pd.DataFrame
+            DataFrame with wind or solar resource bias correction table. This
+            has columns: gid, adder, scalar. If either adder or scalar is not
+            present, scalar defaults to 1 and adder to 0. Only windspeed or
+            GHI+DNI are corrected depending on the technology. GHI and DNI are
+            corrected with the same correction factors.
         """
 
         if 'adder' not in bc_df:
@@ -743,14 +743,7 @@ class SAMResource:
         scalar = np.expand_dims(bc_df.loc[site_arr[isin], 'scalar'].values, 0)
         adder = np.expand_dims(bc_df.loc[site_arr[isin], 'adder'].values, 0)
 
-        if 'windspeed' in self._res_arrays:
-            logger.debug('Bias correcting windspeeds.')
-            arr = self._res_arrays['windspeed']
-            arr[:, isin] = arr[:, isin] * scalar + adder
-            arr = np.maximum(arr, 0)
-            self._res_arrays['windspeed'] = arr
-
-        elif 'ghi' in self._res_arrays:
+        if 'ghi' in self._res_arrays and 'dni' in self._res_arrays:
             ghi = self._res_arrays['ghi']
             dni = self._res_arrays['dni']
             dhi = self._res_arrays['dhi']
@@ -777,7 +770,15 @@ class SAMResource:
             self._res_arrays['dni'] = dni
             self._res_arrays['dhi'] = dhi
 
+        elif 'windspeed' in self._res_arrays:
+            logger.debug('Bias correcting windspeeds.')
+            arr = self._res_arrays['windspeed']
+            arr[:, isin] = arr[:, isin] * scalar + adder
+            arr = np.maximum(arr, 0)
+            self._res_arrays['windspeed'] = arr
+
         if self._mean_arrays is not None:
+            # pylint: disable=consider-iterating-dictionary
             for var in self._mean_arrays.keys():
                 self._mean_arrays[var] = self._res_arrays[var].mean(axis=0)
 
