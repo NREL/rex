@@ -5,3 +5,4 @@ Examples
    examples.nsrdb
    examples.wind
    examples.us_wave
+   examples.hsds
