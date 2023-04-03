@@ -10,7 +10,7 @@ import pandas as pd
 import logging
 
 from rex.utilities.solar_position import SolarPosition
-from rex.utilities.utilities import get_lat_lon_cols
+from rex.utilities.utilities import get_lat_lon_cols, pd_date_range
 
 from nsrdb.all_sky import CLEAR_TYPES
 from nsrdb.all_sky.all_sky import all_sky
@@ -38,7 +38,7 @@ def make_time_index(year, frequency, set_timezone=True):
     ti : pd.DatetimeIndex
         Pandas datetime index for a full year at the requested resolution.
     """
-    ti = pd.date_range('1-1-{y}'.format(y=year), '1-1-{y}'.format(y=year + 1),
+    ti = pd_date_range('1-1-{y}'.format(y=year), '1-1-{y}'.format(y=year + 1),
                        freq=frequency)[:-1]
 
     if set_timezone:

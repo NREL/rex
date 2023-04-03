@@ -10,7 +10,8 @@ from warnings import warn
 
 from rex.rechunk_h5.chunk_size import TimeseriesChunkSize, ArrayChunkSize
 from rex.utilities.loggers import log_versions
-from rex.utilities.utilities import get_chunk_ranges, to_records_array
+from rex.utilities.utilities import (get_chunk_ranges, to_records_array,
+                                     pd_date_range)
 
 logger = logging.getLogger(__name__)
 
@@ -559,11 +560,10 @@ class RechunkH5:
         if name is not None:
             if name is not str:
                 msg = ("dataset attribute `name` (value: {}, type: {}) must "
-                    "be a string. "
-                    "Check the attributes of the dataset ({}). If using an external "
-                    "json file for variable attributes, it might be using"
-                    " `null` for the name."
-                    .format(name, type(name), dset_name))
+                       "be a string. Check the attributes of the dataset "
+                       "({}). If using an external json file for variable "
+                       "attributes, it might be using `null` for the name."
+                       .format(name, type(name), dset_name))
                 logger.error(msg)
                 raise RuntimeError(msg)
             dset_name = name
@@ -606,7 +606,7 @@ class RechunkH5:
                     time_index = time_index.tz_localize(timezone)
 
             if resolution is not None:
-                resample = pd.date_range(time_index.min(), time_index.max(),
+                resample = pd_date_range(time_index.min(), time_index.max(),
                                          freq=resolution)
                 if len(resample) > len(time_index):
                     msg = ("Resolution ({}) must be > time_index resolution "

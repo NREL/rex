@@ -18,6 +18,7 @@ from rex.multi_file_resource import (MultiH5, MultiH5Path, MultiFileResource,
                                      MultiFileNSRDB, MultiFileWTK)
 from rex.renewable_resource import (NSRDB, WindResource)
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
+from rex.utilities.utilities import pd_date_range
 
 
 def NSRDB_res():
@@ -766,7 +767,7 @@ def test_5D_dataset_slicing():
     """Test that slices into 5D datasets work as expected. """
     meta = pd.DataFrame({'latitude': np.ones(100),
                          'longitude': np.zeros(100)})
-    time_index = pd.date_range('20210101', '20220101', freq='1D',
+    time_index = pd_date_range('20210101', '20220101', freq='1D',
                                closed='right')
     with tempfile.TemporaryDirectory() as td:
         fp = os.path.join(td, 'outputs.h5')
@@ -809,7 +810,7 @@ def test_bad_1D_dataset_slicing():
     """Test that 2D slices into 1D datasets raise errors as expected. """
     meta = pd.DataFrame({'latitude': np.ones(100),
                          'longitude': np.zeros(100)})
-    time_index = pd.date_range('20210101', '20220101', freq='1h',
+    time_index = pd_date_range('20210101', '20220101', freq='1h',
                                closed='right')
 
     with tempfile.TemporaryDirectory() as td:
@@ -848,7 +849,7 @@ def test_1D_dataset_slicing_temporal_repeat():
     """Test that 2D slices into 1D datasets work as expected. """
     meta = pd.DataFrame({'latitude': np.ones(100),
                          'longitude': np.zeros(100)})
-    time_index = pd.date_range('20210101', '20220101', freq='1D',
+    time_index = pd_date_range('20210101', '20220101', freq='1D',
                                closed='right')
     with tempfile.TemporaryDirectory() as td:
         fp = os.path.join(td, 'outputs.h5')
@@ -900,7 +901,7 @@ def test_1D_dataset_slicing_spatial_repeat():
     """Test that 2D slices into 1D datasets work as expected. """
     meta = pd.DataFrame({'latitude': np.ones(100),
                          'longitude': np.zeros(100)})
-    time_index = pd.date_range('20210101', '20220101', freq='1D',
+    time_index = pd_date_range('20210101', '20220101', freq='1D',
                                closed='right')
     with tempfile.TemporaryDirectory() as td:
         fp = os.path.join(td, 'outputs.h5')

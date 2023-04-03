@@ -3,7 +3,6 @@
 """
 pytests for Geothermal resource handlers
 """
-import pandas as pd
 import numpy as np
 import os
 import pytest
@@ -12,6 +11,7 @@ import tempfile
 from rex import TESTDATADIR, Resource, Outputs
 from rex.renewable_resource import GeothermalResource
 from rex.utilities.exceptions import ExtrapolationWarning, ResourceWarning
+from rex.utilities.utilities import pd_date_range
 
 
 SAMPLE_ATTRS = {'units': 'Celsius'}
@@ -116,7 +116,7 @@ def test_single_depth(sample_meta):
 def test_interpolation_extrapolation_and_preload(sample_meta):
     """Test interpolation, extrapolation, and SAM preload of data. """
 
-    time_index = pd.date_range(start='1/1/2011', end='1/1/2012', freq='H')
+    time_index = pd_date_range(start='1/1/2011', end='1/1/2012', freq='H')
     dsets = ["temperature_3500m", "temperature_4500m", "potential_MW"]
     with tempfile.TemporaryDirectory() as td:
         fp = os.path.join(td, 'outputs.h5')

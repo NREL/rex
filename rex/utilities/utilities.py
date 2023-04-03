@@ -15,6 +15,8 @@ import re
 from scipy.spatial import cKDTree
 import time
 from warnings import warn
+from packaging import version
+
 
 from rex.utilities.exceptions import (FileInputError, JSONError, RetryError,
                                       RetryWarning)
@@ -1034,3 +1036,18 @@ def write_json(path, data):
     assert path.endswith('.json'), "path should be to a .json file"
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
+
+
+def pd_date_range(*args, **kwargs):
+    """A simple wrapper on the pd.date_range() method that handles the closed
+    vs. inclusive kwarg change in pd 1.4.0"""
+    incl = version.parse(pd.__version__) >= version.parse('1.4.0')
+
+    if incl and 'closed' in kwargs:
+        kwargs['inclusive'] = kwargs.pop('closed')
+    elif not incl and 'inclusive' in kwargs:
+        kwargs['closed'] = kwargs.pop('inclusive')
+        if kwargs['closed'] == 'both':
+            kwargs['closed'] = None
+
+    return pd.date_range(*args, **kwargs)
