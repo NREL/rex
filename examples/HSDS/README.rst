@@ -58,7 +58,7 @@ environment. Once you have that setup, follow these instructions:
 #. Clone the HSDS repo: ``$ git clone https://github.com/HDFGroup/hsds``
 #. Go to the hsds directory: ``$ cd hsds``
 #. Run install: ``$ python setup.py install`` (this does some extra magic over a plain ``pip`` install)
-#. Setup password file: ``$ cp admin/config/passwd.default admin/config/passwd.txt``
+#. Setup password file: ``$ cp ./admin/config/passwd.default ./admin/config/passwd.txt``
 #. Create a directory the server will use to store data: ``$ mkdir hsds_data``
 #. Create an HSDS test bucket: ``$ mkdir hsds_data/hsdstest``
 #. Set your environment variables (make sure to update the ``ROOT_DIR``, ``AWS_SECRET_ACCESS_KEY``, and ``AWS_ACCESS_KEY_ID`` entries):
@@ -75,6 +75,7 @@ environment. Once you have that setup, follow these instructions:
         export AWS_SECRET_ACCESS_KEY=your_secret_access_key_goes_here
         export AWS_ACCESS_KEY_ID=your_access_key_id_goes_here
 
+#. Optional: copy the config override file: ``cp ./admin/config/config.yml ./admin/config/override.yml``, update any config lines in the ``override.yml`` file that you wish to change, and remove all other lines (you can increase ``max_task_count``, ``dn_ram``, and ``sn_ram`` to increase the number of parallel HSDS workers and their memory allocation).
 #. Start the HSDS server: ``$ ./runall.sh --no-docker``
 #. Open a new shell, activate the python environment you've been using, and run ``hsinfo``. You should see something similar to the following if your local HSDS server is running correctly:
 
