@@ -11,15 +11,16 @@ import tempfile
 
 from rex.version import __version__
 from rex import Outputs, Resource
-from rex.utilities.exceptions import (HandlerRuntimeError, HandlerValueError,
-                                      ResourceKeyError)
+from rex.utilities.exceptions import HandlerRuntimeError, HandlerValueError
+from rex.utilities.utilities import pd_date_range
+
 
 arr1 = np.ones(100)
 arr2 = np.ones((8760, 100))
 arr3 = np.ones((8760, 100), dtype=float) * 42.42
 meta = pd.DataFrame({'latitude': np.ones(100),
                      'longitude': np.zeros(100)})
-time_index = pd.date_range('20210101', '20220101', freq='1h', closed='right')
+time_index = pd_date_range('20210101', '20220101', freq='1h', closed='right')
 
 
 def test_create():
@@ -192,6 +193,7 @@ def test_1d_datasets_not_added_before_meta_ti():
             Outputs.add_dataset(
                 fp, 'dset3', np.ones(10), float, attrs=None
             )
+
 
 def test_1D_dataset_shape():
     """Tests for storing 1D spatiotemporal data shapes"""

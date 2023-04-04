@@ -296,7 +296,7 @@ class TemporalStats:
             s_data = {}
             for c_name, (grp_name, res_grp) in zip(column_names, res_data):
                 if weights is not None:
-                    grp_w = weights.get_group(grp_name)
+                    grp_w = weights.get_group(grp_name[0])
                 else:
                     grp_w = None
 

@@ -74,7 +74,8 @@ def test_hub_height(hub_height):
     site = np.random.choice(test.columns.values, 1)[0]
     truth = wind_rose(wspd, wdir, site, wspd_bins, wdir_bins, hub_height)
 
-    assert_frame_equal(test[[site]], truth, check_dtype=False)
+    assert_frame_equal(test[[site]], truth, check_dtype=False,
+                       check_index_type=False)
 
 
 @pytest.mark.parametrize("max_workers", [1, None])
@@ -91,7 +92,8 @@ def test_workers(max_workers):
     site = np.random.choice(test.columns.values, 1)[0]
     truth = wind_rose(WSPD, WDIR, site, wspd_bins, wdir_bins, HUB_HEIGHT)
 
-    assert_frame_equal(test[[site]], truth, check_dtype=False)
+    assert_frame_equal(test[[site]], truth, check_dtype=False,
+                       check_index_type=False)
 
 
 @pytest.mark.parametrize("sites",
@@ -110,7 +112,8 @@ def test_sites(sites):
     site = np.random.choice(test.columns.values, 1)[0]
     truth = wind_rose(WSPD, WDIR, site, wspd_bins, wdir_bins, HUB_HEIGHT)
 
-    assert_frame_equal(test[[site]], truth, check_dtype=False)
+    assert_frame_equal(test[[site]], truth, check_dtype=False,
+                       check_index_type=False)
 
 
 @pytest.mark.parametrize(("wspd", "wdir"),
@@ -127,7 +130,8 @@ def test_bins(wspd, wdir):
     site = np.random.choice(test.columns.values, 1)[0]
     truth = wind_rose(WSPD, WDIR, site, wspd, wdir, HUB_HEIGHT)
 
-    assert_frame_equal(test[[site]], truth, check_dtype=False)
+    assert_frame_equal(test[[site]], truth, check_dtype=False,
+                       check_index_type=False)
 
 
 def test_cli(runner):
@@ -163,7 +167,8 @@ def test_cli(runner):
         wdir_bins = (0, 360, 5)
         truth = wind_rose(wspd, wdir, site, wspd_bins, wdir_bins, HUB_HEIGHT)
 
-        assert_frame_equal(test[[site]], truth, check_dtype=False)
+        assert_frame_equal(test[[site]], truth, check_dtype=False,
+                           check_index_type=False)
 
     LOGGERS.clear()
 

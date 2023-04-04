@@ -4,7 +4,9 @@ Wind Integration National Dataset (WIND) Toolkit
 Model
 -----
 
-Wind resource data for North America was produced using the `Weather Research and Forecasting Model (WRF) <https://www.mmm.ucar.edu/weather-research-and-forecasting-model>`_.
+Wind resource data for North America was produced using the `Weather Research
+and Forecasting Model (WRF)
+<https://www.mmm.ucar.edu/weather-research-and-forecasting-model>`_.
 The WRF model was initialized with the European Centre for Medium Range Weather
 Forecasts Interim Reanalysis (ERA-Interm) data set with an initial grid spacing
 of 54 km.  Three internal nested domains were used to refine the spatial
@@ -40,12 +42,14 @@ Data Format
 -----------
 
 The data is provided in high density data file (.h5) separated by year. The
-variables mentioned above are provided in 2 dimensional time-series arrays with
-dimensions (time x location). The temporal axis is defined by the
-``time_index`` dataset, while the positional axis is defined by the ``meta``
-dataset. For storage efficiency each variable has been scaled and stored as an
-integer. The scale-factor is provided in the ``scale-factor`` attribute.  The
-units for the variable data is also provided as an attribute (``units``).
+variables mentioned above are provided in 2 dimensional time-series arrays
+(called "datasets" in h5 files) with dimensions (time x location). The temporal
+axis is defined by the ``time_index`` dataset, while the positional axis is
+defined by the ``meta`` dataset. We typically refer to a single site in the
+data with a ``gid``, which is just the index of the site in the meta data
+(zero-indexed). For storage efficiency each variable has been scaled and stored
+as an integer. The scale_factor is provided in the ``scale_factor`` attribute.
+The units for the variable data is also provided as an attribute (``units``).
 
 Data Access Examples
 --------------------
@@ -62,16 +66,17 @@ change the filepath to the appropriate WTK or NSRDB file location on
 examples <https://nrel.github.io/rex/_autosummary/rex.resource.Resource.html#rex-resource-resource>`_
 for similar use examples.
 
-You can use ``rex`` to access WTK and NSRDB data on Amazon S3 using `HSDS
-<https://www.hdfgroup.org/solutions/highly-scalable-data-service-hsds/>`_ you
-will need to install ``h5pyd`` with ``pip install h5pyd`` and then run
-``hsconfigure`` as described in the `NREL HSDS Examples
-<https://github.com/NREL/hsds-examples>`_.
+You can use ``rex`` to access WTK and NSRDB data from your local computer using
+`HSDS
+<https://www.hdfgroup.org/solutions/highly-scalable-data-service-hsds/>`_. In
+order to do so, you need to setup HSDS and h5pyd. See `the rex-HSDS
+instructions <https://nrel.github.io/rex/misc/examples.hsds.html>`_ for more
+details on how to do this.
 
-*Please note that our HSDS service is for demonstration purposes only, if you
-would like to use HSDS for production runs of reV please setup your own
-service: https://github.com/HDFGroup/hsds and point it to our public HSDS
-bucket: s3://nrel-pds-hsds**
+*Please note that the NREL-hosted HSDS API is for demonstration purposes only,
+if you would like to use HSDS for production runs of reV please setup your own
+service with the instructions here:
+https://nrel.github.io/rex/misc/examples.hsds.html*
 
 WINDX CLI
 +++++++++
@@ -122,7 +127,7 @@ Note: `WindX` will automatically interpolate to the desired hub-height:
       print(f.datasets)  # not 90m is not a valid dataset
       wspd_90m = f['windspeed_90m', :, ::1000]
 
-`WindX` also allows easy extraction of the nearest site to a desired (lat, lon)
+``WindX`` also allows easy extraction of the nearest site to a desired (lat, lon)
 location:
 
 .. code-block:: python
@@ -148,7 +153,7 @@ or to extract all sites in a given region:
       wspd_map = f.get_timestep_map('windspeed_100m', date, region=region,
                                     region_col='state')
 
-Lastly, `WindX` can be used to extract all variables needed to run SAM at a
+Lastly, ``WindX`` can be used to extract all variables needed to run SAM at a
 given location:
 
 .. code-block:: python

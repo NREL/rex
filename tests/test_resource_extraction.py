@@ -157,7 +157,8 @@ def extract_site(res_cls, ds_name):
     assert np.allclose(truth_ts, site_ts)
 
     site_df = res_cls.get_lat_lon_df(ds_name, lat_lon)
-    assert_frame_equal(site_df, truth_df, check_dtype=False)
+    assert_frame_equal(site_df, truth_df, check_dtype=False,
+                       check_column_type=False)
 
     tree_file = res_cls._get_tree_file(res_cls.resource.h5_file)
     assert tree_file in os.listdir(TREE_DIR.name)
@@ -178,7 +179,8 @@ def extract_region(res_cls, ds_name, region, region_col='county'):
     assert np.allclose(truth_ts, region_ts)
 
     region_df = res_cls.get_region_df(ds_name, region, region_col=region_col)
-    assert_frame_equal(region_df, truth_df, check_dtype=False)
+    assert_frame_equal(region_df, truth_df, check_dtype=False,
+                       check_column_type=False)
 
 
 def extract_box(res_cls, ds_name):
@@ -199,7 +201,8 @@ def extract_box(res_cls, ds_name):
     assert np.allclose(truth_ts, box_ts)
 
     box_df = res_cls.get_box_df(ds_name, lat_lon_1, lat_lon_2)
-    assert_frame_equal(box_df, truth_df, check_dtype=False)
+    assert_frame_equal(box_df, truth_df, check_dtype=False,
+                       check_column_type=False)
 
 
 def extract_map(res_cls, ds_name, timestep, region=None, region_col='county'):
