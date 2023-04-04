@@ -746,7 +746,7 @@ def test_time_index_out_of_bounds():
     """
     with tempfile.TemporaryDirectory() as td:
         out_fp = os.path.join(td, "temp.h5")
-        time = np.arange(1000001, 1001001)
+        time = np.arange(1000, 2000)
         shapes = {"data": (len(time), 1)}
         attrs = {"data": None}
         chunks = {"data": None}
