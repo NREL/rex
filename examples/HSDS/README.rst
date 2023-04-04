@@ -17,8 +17,6 @@ entries (make sure you update the ``hs_api_key`` entry):
 
   # NREL dev api
   hs_endpoint = https://developer.nrel.gov/api/hsds
-  hs_username =
-  hs_password =
   hs_api_key = your_api_key_goes_here
 
 You should then be able to access NREL hsds data using ``rex`` and ``h5pyd`` as
