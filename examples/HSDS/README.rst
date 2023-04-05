@@ -34,22 +34,14 @@ data with ``h5pyd`` like this:
     data = f['ghi'][0, 0]
     print(data)
 
-If this simple query succeeds while larger data slices fail, it is almost
-definitely a limitation of the public API. You'll need to stand up your own
-HSDS server to retrieve more data. Read on below to find out how.
+If this simple query succeeds while larger data slices fail, it is almost definitely a limitation of the public API. You'll need to stand up your own HSDS server to retrieve more data. Read on below to find out how.
 
 Setting up a Local HSDS Server
 ------------------------------
 
-Setting up an HSDS server on an EC2 instance or your local laptop isn't too
-hard. Most of the instructions are copied from the `HSDS Repository
-<https://github.com/HDFGroup/hsds>`_ and the `h5pyd repository
-<https://github.com/HDFGroup/h5pyd>`_.
+Setting up an HSDS server on an EC2 instance or your local laptop isn't too hard. Most of the instructions are copied from the `HSDS Repository <https://github.com/HDFGroup/hsds>`_ and the `h5pyd repository <https://github.com/HDFGroup/h5pyd>`_. Note that these install instructions are for a unix machine. For Windows machines, you can likely follow these instructions and use Windows-specific modifications from the HSDS and h5pyd repo instructions.
 
-Make sure you have python 3.x, pip, and git installed. We find it easiest to
-manage your HSDS environment by installing `miniconda
-<https://docs.conda.io/en/latest/miniconda.html>`_ and creating a clean HSDS
-environment. Once you have that setup, follow these instructions:
+Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We find it easiest to manage your HSDS environment by installing `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ and creating a clean HSDS environment. Once you have that setup, follow these instructions:
 
 #. Clone the HSDS repo: ``$ git clone https://github.com/HDFGroup/hsds``
 #. Go to the HSDS directory: ``$ cd hsds``
