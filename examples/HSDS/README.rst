@@ -47,52 +47,42 @@ Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We fi
 #. Go to the HSDS directory: ``$ cd hsds``
 #. Run install: ``$ python setup.py install`` (this does some extra magic over a plain ``pip`` install)
 #. Install h5pyd (no need to clone the repo on this one): ``$ pip install h5pyd``
-#. Setup password file: ``$ cp ./admin/config/passwd.default ./admin/config/passwd.txt``
 #. Create a directory the server will use to store data: ``$ mkdir hsds_data``
-#. Create an HSDS test bucket: ``$ mkdir hsds_data/hsdstest``
-#. Set your environment variables (make sure to update the ``ROOT_DIR``, ``AWS_SECRET_ACCESS_KEY``, and ``AWS_ACCESS_KEY_ID`` entries):
+#. Copy the config override file: ``$ cp ./admin/config/config.yml ./admin/config/override.yml`` and update these lines in the ``override.yml`` file (make sure you update the ``root_dir`` with the path to your cloned HSDS repo):
 
     .. code-block:: bash
 
-        export ROOT_DIR=/your_hsds_repo_directory/hsds_data/
-        export HSDS_ENDPOINT=local
-        export ADMIN_USERNAME=admin
-        export ADMIN_PASSWORD=admin
-        export BUCKET_NAME=nrel-pds-hsds
-        export AWS_REGION=us-west-2
-        export AWS_S3_GATEWAY=http://s3.us-west-2.amazonaws.com/
-        export AWS_SECRET_ACCESS_KEY=your_secret_access_key_goes_here
-        export AWS_ACCESS_KEY_ID=your_access_key_id_goes_here
+        aws_region: us-west-2
+        aws_s3_gateway: http://s3.us-west-2.amazonaws.com/
+        aws_s3_no_sign_request: True
+        hsds_endpoint: local
+        root_dir: /<your_hsds_repo_directory>/hsds_data/
+        bucket_name: nrel-pds-hsds
 
-#. Optional: copy the config override file: ``$ cp ./admin/config/config.yml ./admin/config/override.yml``, update any config lines in the ``override.yml`` file that you wish to change, and remove all other lines (you can increase ``max_task_count``, ``dn_ram``, and ``sn_ram`` to increase the number of parallel HSDS workers and their memory allocation).
-#. Start the HSDS server: ``$ sh ./runall.sh --no-docker``
-#. Open a new shell, activate the python environment you've been using, and run ``$ hsinfo``. You should see something similar to the following if your local HSDS server is running correctly:
+#. Optional: update performance options in the ``override.yml file`` like ``max_task_count``, ``dn_ram``, and ``sn_ram`` to increase the number of parallel HSDS workers and their memory allocation.
+#. Start the HSDS server: ``$ sh ./runall.sh --no-docker`` and take note of the endpoint that is printed out (e.g. ``http+unix://%2Ftmp%2Fhs%2Fsn_1.sock``)
+#. Open a new shell, activate the HSDS python environment you've been using, and run ``$ hsinfo``. You should see something similar to the following if your local HSDS server is running correctly:
 
     .. code-block:: bash
 
-        server name: Highly Scalable Data Service (HSDS)
-        server state: READY
-        endpoint: local
-        username: admin (admin)
-        password: *****
-        server version: 0.7.3
-        node count: 5
-        up: 3 sec
-        h5pyd version: 0.13.1
+      server name: Highly Scalable Data Service (HSDS)
+      server state: READY
+      endpoint: http+unix://%2Ftmp%2Fhs%2Fsn_1.sock
+      username: anonymous
+      password:
+      server version: 0.7.3
+      node count: 4
+      up: 1 min 51 sec
+      h5pyd version: 0.13.1
 
-#. If you see this successful message, you can move on to setting up h5pyd
-#. Create a config file at ``~/.hscfg`` with the following:
+#. If you see this successful message, you can move on. If ``hsinfo`` fails, something went wrong in the previous steps. 
+#. Create a config file at ``~/.hscfg`` with the following (make sure the ``hs_endpoint`` matches the endpoint that the HSDS server printed out):
 
     .. code-block:: bash
 
       # Local HSDS server
-      hs_endpoint = local
-      hs_username = admin
-      hs_password = admin
-      hs_api_key = None
-      hs_bucket = nrel-pds-hsds
+      hs_endpoint = http+unix://%2Ftmp%2Fhs%2Fsn_1.sock
 
-#. You should be in a new shell, so you'll need to set the same environment variables as in the HSDS server setup instructions above (``export ...``)
 #. Test that h5pyd is configured correctly by running the following python script:
 
     .. code-block:: python
