@@ -472,8 +472,7 @@ class TemporalStats:
             Extract all combinations of temporal stats, by default False
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
 
         Returns
         -------
@@ -491,8 +490,7 @@ class TemporalStats:
                                     index=time_index)
 
             if mask_zeros:
-                mask = (res_data > 0).all(axis=1)
-                res_data = res_data[mask]
+                res_data[(res_data == 0)] = np.nan
 
             for s, s_dict in statistics.items():
                 weights = s_dict.get('kwargs', {}).get('weights')
@@ -524,8 +522,7 @@ class TemporalStats:
 
         return res_stats
 
-    def _get_slices(self, dataset, sites=None, chunks_per_slice=5,
-                    mask_zeros=False):
+    def _get_slices(self, dataset, sites=None, chunks_per_slice=5):
         """
         Get slices to extract
 
@@ -537,10 +534,6 @@ class TemporalStats:
             Subset of sites to extract, by default None or all sites
         chunks_per_slice : int, optional
             Number of chunks to extract in each slice, by default 5
-        mask_zeros : bool
-            Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
 
         Returns
         -------
@@ -556,16 +549,8 @@ class TemporalStats:
             logger.error(msg)
             raise RuntimeError(msg)
 
-        if mask_zeros:
-            if sites is None:
-                sites = np.arange(shape[1])
-            elif isinstance(sites, slice):
-                sites = np.arange(shape[1])[sites]
-            slices = [slice(i, i + 1) for i in sites]
-
-        else:
-            slices = slice_sites(shape, chunks, sites=sites,
-                                 chunks_per_slice=chunks_per_slice)
+        slices = slice_sites(shape, chunks, sites=sites,
+                             chunks_per_slice=chunks_per_slice)
 
         return slices
 
@@ -628,8 +613,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
 
         Returns
         -------
@@ -640,8 +624,7 @@ class TemporalStats:
             max_workers = os.cpu_count()
 
         slices = self._get_slices(dataset, sites,
-                                  chunks_per_slice=chunks_per_worker,
-                                  mask_zeros=mask_zeros)
+                                  chunks_per_slice=chunks_per_worker)
 
         if len(slices) == 1:
             max_workers = 1
@@ -722,8 +705,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
 
         Returns
         -------
@@ -760,8 +742,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
 
         Returns
         -------
@@ -798,8 +779,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
 
         Returns
         -------
@@ -836,8 +816,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
 
         Returns
         -------
@@ -873,8 +852,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
 
         Returns
         -------
@@ -966,8 +944,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
@@ -1038,8 +1015,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
@@ -1099,8 +1075,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
@@ -1160,8 +1135,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
@@ -1221,8 +1195,7 @@ class TemporalStats:
             Only append lat, lon coordinates to stats, by default True
         mask_zeros : bool
             Flag to only calculate stats when all data is > 0 (useful for
-            global horizontal irradiance). This also causes each site to be
-            processed individually.
+            global horizontal irradiance).
         out_path : str, optional
             Directory, .csv, or .json path to save statistics too,
             by default None
