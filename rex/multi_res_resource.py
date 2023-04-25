@@ -226,6 +226,14 @@ class MultiResolutionResource:
             out = self._lr_res._get_ds(ds, ds_slice)
             out = self.time_interp(out)
 
+        else:
+            msg = ('Could not find data for ds_name = {}. Available dsets in '
+                   'hr_file ({}): {}. Available dsets in lr_file ({}): {}.'
+                   .format(ds_name, self._h5_hr, self._hr_res.dsets,
+                           self._h5_lr, self._lr_res.dsets))
+            logger.error(msg)
+            raise RuntimeError(msg)
+
         return out
 
     def __iter__(self):
