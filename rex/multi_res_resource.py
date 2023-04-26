@@ -218,10 +218,10 @@ class MultiResolutionResource:
             logger.error(msg)
             raise NotImplementedError(msg)
 
-        elif ds_name in self._hr_res.dsets or any(hr_heights):
+        elif ds_name in self._hr_res.dsets or len(hr_heights) > 0:
             out = self._hr_res._get_ds(ds, ds_slice)
 
-        elif ds_name in self._lr_res.dsets or any(lr_heights):
+        elif ds_name in self._lr_res.dsets or len(lr_heights) > 0:
             ds_slice = self.map_ds_slice(ds_slice)
             out = self._lr_res._get_ds(ds, ds_slice)
             out = self.time_interp(out)
