@@ -325,7 +325,11 @@ class MultiYearH5(MultiTimeH5):
 class MultiYearResource(MultiTimeResource):
     """
     Class to handle multiple years of resource data stored accross multiple
-    .h5 files
+    .h5 files. This also works if each year is split into multiple files each
+    containing different datasets (e.g. for Sup3rCC and hi-res WTK+NSRDB).
+
+    Note that files across years must have the same meta data, and files within
+    the same year must have the same meta and time_index.
 
     Examples
     --------

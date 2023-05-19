@@ -7,9 +7,11 @@ import numpy as np
 import os
 from pandas.testing import assert_frame_equal
 import pytest
+import h5py
+import shutil
+import tempfile
 
 from rex import TESTDATADIR
-from rex.multi_file_resource import MultiH5Path
 from rex.multi_year_resource import (MultiYearH5, MultiYearNSRDB,
                                      MultiYearWindResource)
 from rex.resource import Resource
@@ -312,6 +314,50 @@ def test_map_hsds_files():
     wrong = [f for f in my_files if f not in files]
     assert not any(missing), 'Missed files: {}'.format(missing)
     assert not any(wrong), 'Wrong files: {}'.format(wrong)
+
+
+def test_multi_file_year():
+    """Test that the file handler can work with multi-years with each year
+    having multiple files for all the datasets (the case for sup3rcc and hi-res
+    wtk+nsrdb)"""
+    with tempfile.TemporaryDirectory() as td:
+        for year in (2012, 2013):
+            source_fp = os.path.join(TESTDATADIR, f'wtk/ri_100_wtk_{year}.h5')
+            fp_ws = os.path.join(td, f'wtk_{year}_ws.h5')
+            fp_wd = os.path.join(td, f'wtk_{year}_wd.h5')
+            shutil.copy(source_fp, fp_ws)
+            shutil.copy(source_fp, fp_wd)
+
+            ignore = ('meta', 'time_index')
+            with h5py.File(fp_ws, 'a') as f:
+                for dset in list(f):
+                    if 'speed' not in dset and dset not in ignore:
+                        del f[dset]
+
+            with h5py.File(fp_wd, 'a') as f:
+                for dset in list(f):
+                    if 'direct' not in dset and dset not in ignore:
+                        del f[dset]
+
+        fp_pattern_ws = os.path.join(td, 'wtk*ws.h5')
+        fp_pattern_wd = os.path.join(td, 'wtk*wd.h5')
+        fp_pattern = os.path.join(td, 'wtk*.h5')
+
+        with MultiYearWindResource(fp_pattern) as f:
+            test_ti = f.time_index
+            test_meta = f.meta
+            test_data_ws = f['windspeed_90m']
+            test_data_wd = f['winddirection_90m']
+
+        with MultiYearWindResource(fp_pattern_ws) as f:
+            assert np.allclose(test_data_ws, f['windspeed_90m'])
+            assert (test_ti == f.time_index).all()
+            assert test_meta.equals(f.meta)
+
+        with MultiYearWindResource(fp_pattern_wd) as f:
+            assert np.allclose(test_data_wd, f['winddirection_90m'])
+            assert (test_ti == f.time_index).all()
+            assert test_meta.equals(f.meta)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
