@@ -160,7 +160,7 @@ class MultiYearH5(MultiTimeH5):
 
         if len(h5_map['year'].unique()) < len(h5_map):
             del res_cls_kwargs['hsds']  # no multi file res on hsds
-            for year, subdf in h5_map.groupby('year'):
+            for _, subdf in h5_map.groupby('year'):
                 fps = subdf['fp'].values.tolist()
                 handle = MULTI_FILE_CLASS_MAP.get(res_cls, MultiFileResource)
                 h5 = handle(fps, **res_cls_kwargs)
