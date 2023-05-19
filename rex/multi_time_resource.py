@@ -2,6 +2,7 @@
 """
 Classes to handle resource data stored over multiple files
 """
+import pandas as pd
 from glob import glob
 from fnmatch import fnmatch
 import numpy as np
@@ -47,6 +48,7 @@ class MultiTimeH5:
         self._h5_map = self._map_file_instances(self._file_paths,
                                                 res_cls=res_cls,
                                                 **res_cls_kwargs)
+
         self._datasets = None
         self._shape = None
         self._time_index = None
@@ -60,10 +62,12 @@ class MultiTimeH5:
 
     def __getitem__(self, file):
         fn_fp_map = {os.path.basename(fp): fp for fp in self._file_paths}
-        if file in self._h5_map:
-            h5 = self._h5_map[file]
+        if file in self._h5_map['fp']:
+            iloc = np.where(self._h5_map['fp'] == file)[0][0]
+            h5 = self._h5_map.at[iloc, 'h5']
         elif file in fn_fp_map:
-            h5 = self._h5_map[fn_fp_map[file]]
+            iloc = np.where(self._h5_map['fp'] == fn_fp_map[file])[0][0]
+            h5 = self._h5_map.at[iloc, 'h5']
         else:
             raise ValueError('{} is invalid, must be one of: {}'
                              .format(file, self._file_paths))
@@ -103,7 +107,7 @@ class MultiTimeH5:
         -------
         list
         """
-        return sorted(self._h5_map)
+        return sorted(self._h5_map['fp'])
 
     @property
     def h5(self):
@@ -114,7 +118,7 @@ class MultiTimeH5:
         -------
         h5py.File
         """
-        return self._h5_map[self.h5_files[0]]
+        return self._h5_map['h5'].values[0]
 
     @property
     def datasets(self):
@@ -126,7 +130,9 @@ class MultiTimeH5:
         list
         """
         if self._datasets is None:
-            self._datasets = self.h5.datasets
+            all_dsets = self._h5_map['dsets'].values.tolist()
+            dsets = [d for sub in all_dsets for d in sub]
+            self._datasets = list(set(dsets))
 
         return self._datasets
 
@@ -169,8 +175,9 @@ class MultiTimeH5:
         """
         if self._time_index is None:
             time_slice_map = []
-            for fp in self.files:
-                h5 = self._h5_map[fp]
+            for _, row in self._h5_map.iterrows():
+                h5 = row['h5']
+                fp = row['fp']
                 ti = h5.time_index
                 time_slice_map.append(np.full(len(ti), os.path.basename(fp)))
                 if self._time_index is None:
@@ -299,12 +306,19 @@ class MultiTimeH5:
 
         Returns
         -------
-        h5_map : dict
-            Dictionary mapping file paths to open resource instances
+        h5_map : pd.DataFrame
+            DataFrame mapping file paths to open resource instances and
+            datasets per file (columns: fp, h5, and dsets)
         """
-        h5_map = {}
-        for f_path in file_paths:
-            h5_map[f_path] = res_cls(f_path, **res_cls_kwargs)
+        h5_map = pd.DataFrame({'fp': file_paths, 'h5': None,
+                               't0': None, 't1': None})
+        for i, f_path in enumerate(file_paths):
+            h5_map.at[i, 'h5'] = res_cls(f_path, **res_cls_kwargs)
+            h5_map.at[i, 't0'] = h5_map.at[i, 'h5'].time_index.values[0]
+            h5_map.at[i, 't1'] = h5_map.at[i, 'h5'].time_index.values[1]
+
+        h5_map['dsets'] = [h5.dsets for h5 in h5_map['h5'].values]
+        h5_map = h5_map.sort_values('t0').reset_index(drop=True)
 
         return h5_map
 
@@ -396,7 +410,7 @@ class MultiTimeH5:
         """
         Close all h5py.File instances
         """
-        for f in self._h5_map.values():
+        for f in self._h5_map['h5']:
             f.close()
 
 

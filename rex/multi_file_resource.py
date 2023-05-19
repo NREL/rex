@@ -614,3 +614,9 @@ class MultiFileWTK(MultiFileResource, WindResource):
                                        precip_rate=precip_rate, icing=icing)
 
         return SAM_res
+
+
+MULTI_FILE_CLASS_MAP = {Resource: MultiFileResource,
+                        NSRDB: MultiFileNSRDB,
+                        WindResource: MultiFileWTK,
+                        }

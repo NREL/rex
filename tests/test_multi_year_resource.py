@@ -131,6 +131,8 @@ def check_time_index(res_cls):
 
     test = res_cls.time_index
 
+    print(test)
+    print(truth)
     assert np.all(test == truth)
 
 
@@ -139,8 +141,9 @@ def check_dset(res_cls, ds_name):
     Run tests on dataset ds_name
     """
     truth = []
-    for file in res_cls.h5_files:
-        truth.append(res_cls.h5._h5_map[file][ds_name])
+
+    for h5 in res_cls.h5._h5_map['h5'].unique():
+        truth.append(h5[ds_name])
 
     truth = np.concatenate(truth, axis=0)
 
