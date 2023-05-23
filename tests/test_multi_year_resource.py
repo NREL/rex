@@ -133,8 +133,6 @@ def check_time_index(res_cls):
 
     test = res_cls.time_index
 
-    print(test)
-    print(truth)
     assert np.all(test == truth)
 
 
