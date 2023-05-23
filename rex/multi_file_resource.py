@@ -7,7 +7,8 @@ from glob import glob
 import h5py
 import numpy as np
 
-from rex.renewable_resource import (NSRDB, WindResource,
+from rex.renewable_resource import (NSRDB, SolarResource, GeothermalResource,
+                                    WindResource, WaveResource,
                                     AbstractInterpolatedResource)
 from rex.resource import Resource
 from rex.utilities.exceptions import FileInputError, ResourceRuntimeError
@@ -614,3 +615,12 @@ class MultiFileWTK(MultiFileResource, WindResource):
                                        precip_rate=precip_rate, icing=icing)
 
         return SAM_res
+
+
+MULTI_FILE_CLASS_MAP = {Resource: MultiFileResource,
+                        NSRDB: MultiFileNSRDB,
+                        SolarResource: MultiFileResource,
+                        WindResource: MultiFileWTK,
+                        WaveResource: MultiFileResource,
+                        GeothermalResource: MultiFileResource,
+                        }

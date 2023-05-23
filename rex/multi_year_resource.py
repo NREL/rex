@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 Classes to handle multiple years of resource data
+
+Data split by time in chunks of less than a year can be opened by the
+MultiTimeResource class, but not by these classes.
 """
+import pandas as pd
 import numpy as np
 import os
 
+from rex.multi_file_resource import MULTI_FILE_CLASS_MAP, MultiFileResource
 from rex.multi_time_resource import MultiTimeH5, MultiTimeResource
 from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
                                     WaveResource)
@@ -45,32 +50,34 @@ class MultiYearH5(MultiTimeH5):
                                                         years)
         res_cls_kwargs.update({'hsds': hsds})
         self._h5_map = self._map_file_instances(self._file_paths,
+                                                self._years,
                                                 res_cls=res_cls,
                                                 **res_cls_kwargs)
+        self._years = self._h5_map['year'].values.tolist()
+
         self._datasets = None
         self._shape = None
         self._time_index = None
         self._i = 0
 
     def __repr__(self):
-        msg = ("{} for {}:\n Contains data for {} year"
+        msg = ("{} for {}:\n Contains data for {} years"
                .format(self.__class__.__name__, self.h5_path, len(self)))
         return msg
 
     def __len__(self):
-        return len(self.years)
+        return len(set(self.years))
 
     def __getitem__(self, year):
         if isinstance(year, str):
             year = int(year)
 
-        if year in self.years:
-            ifp = self.years.index(year)
-            path = self._file_paths[ifp]
-            h5 = self._h5_map[path]
-        else:
+        if year not in self._h5_map['year'].values:
             raise ValueError('{} is invalid, must be one of: {}'
                              .format(year, self.years))
+
+        idx = np.where(self._h5_map['year'] == year)[0][0]
+        h5 = self._h5_map.at[idx, 'h5']
 
         return h5
 
@@ -123,14 +130,53 @@ class MultiYearH5(MultiTimeH5):
         pandas.DatatimeIndex
         """
         if self._time_index is None:
-            for year in self.years:
-                h5 = self[year]
+            for h5 in self._h5_map['h5'].unique():
                 if self._time_index is None:
                     self._time_index = h5.time_index
                 else:
-                    self._time_index = self._time_index.append(h5.time_index)
+                    ti = self._time_index.append(h5.time_index)
+                    self._time_index = ti
 
         return self._time_index
+
+    @staticmethod
+    def _map_file_instances(file_paths, years, res_cls=Resource,
+                            **res_cls_kwargs):
+        """
+        Open all .h5 files and map the open h5py instances to the
+        associated file paths
+
+        Parameters
+        ----------
+        file_paths : list
+            List of filepaths for this handler to handle.
+
+        Returns
+        -------
+        h5_map : pd.DataFrame
+            DataFrame mapping file paths to open resource instances and
+            datasets per file (columns: fp, h5, and dsets)
+        """
+
+        h5_map = pd.DataFrame({'fp': file_paths, 'year': years, 'h5': None})
+        h5_map = h5_map.sort_values('year').reset_index(drop=True)
+
+        if len(h5_map['year'].unique()) < len(h5_map):
+            del res_cls_kwargs['hsds']  # no multi file res on hsds
+            for _, subdf in h5_map.groupby('year'):
+                fps = subdf['fp'].values.tolist()
+                handle = MULTI_FILE_CLASS_MAP.get(res_cls, MultiFileResource)
+                h5 = handle(fps, **res_cls_kwargs)
+                for i in subdf.index:
+                    h5_map.at[i, 'h5'] = h5
+
+        else:
+            for i, f_path in enumerate(h5_map['fp']):
+                h5_map.at[i, 'h5'] = res_cls(f_path, **res_cls_kwargs)
+
+        h5_map['dsets'] = [h5.dsets for h5 in h5_map['h5'].values]
+
+        return h5_map
 
     @staticmethod
     def _get_years(file_paths, years):
@@ -153,30 +199,24 @@ class MultiYearH5(MultiTimeH5):
             List of integer years corresponding to the file_paths list
         """
 
+        fp_years = [int(parse_year(os.path.basename(fp), option='raise'))
+                    for fp in file_paths]
+
         if years is None:
-            years = [parse_year(os.path.basename(fp), option='raise')
-                     for fp in file_paths]
-
-        new_list = []
-        years = sorted([int(y) for y in years])
-        for year in years:
-            for fp in file_paths:
-                if str(year) in os.path.basename(fp):
-                    new_list.append(fp)
-                    break
-
-        if not new_list:
-            msg = ('No files were found for the given years:\n{}'
-                   .format(years))
-            raise RuntimeError(msg)
-
-        if len(new_list) != len(years):
-            msg = ('Found a bad file listing for requested years. '
-                   'Years requested: {}, files found: {}'
-                   .format(years, new_list))
-            raise RuntimeError(msg)
-
-        file_paths = new_list
+            years = fp_years
+        elif any(int(y) not in fp_years for y in years):
+            years = sorted([int(y) for y in years])
+            raise RuntimeError('Requested years "{}" not all found in '
+                               'file years "{}"'.format(years, fp_years))
+        else:
+            filtered_fps = []
+            years = sorted([int(y) for y in years])
+            for target_year in years:
+                for fp_year, fp in zip(fp_years, file_paths):
+                    if int(target_year) == int(fp_year):
+                        filtered_fps.append(fp)
+                        break
+            file_paths = filtered_fps
 
         return file_paths, years
 
@@ -253,6 +293,7 @@ class MultiYearH5(MultiTimeH5):
                 out.append(self[year]._get_ds(ds_name, year_slice))
 
             out = np.concatenate(out, axis=0)
+
         elif isinstance(time_slice, (int, np.integer)):
             time_step = self.time_index[time_slice]
             year = time_step.year
@@ -260,6 +301,7 @@ class MultiYearH5(MultiTimeH5):
             year_slice = np.where(time_step == year_index)[0][0]
             year_slice = (year_slice, ) + ds_slice[1:]
             out = self[year]._get_ds(ds_name, year_slice)
+
         else:
             time_index = self.time_index[time_slice]
             year_map = time_index.year
@@ -279,14 +321,20 @@ class MultiYearH5(MultiTimeH5):
         """
         Close all h5py.File instances
         """
-        for f in self._h5_map.values():
+        for f in self._h5_map['h5']:
             f.close()
 
 
 class MultiYearResource(MultiTimeResource):
     """
     Class to handle multiple years of resource data stored accross multiple
-    .h5 files
+    .h5 files. This also works if each year is split into multiple files each
+    containing different datasets (e.g. for Sup3rCC and hi-res WTK+NSRDB). Data
+    split by time in chunks of less than a year can be opened by the
+    MultiTimeResource class, but not by this class.
+
+    Note that files across years must have the same meta data, and files within
+    the same year must have the same meta and time_index.
 
     Examples
     --------
