@@ -734,7 +734,7 @@ class SAMResource:
         site_arr = np.array(self.sites)
         isin = np.isin(self.sites, bc_df.index.values)
         if not isin.all():
-            missing = site_arr[isin]
+            missing = site_arr[~isin]
             msg = ('{} sites were missing from the bias correction table, '
                    'not bias correcting: {}'.format(len(missing), missing))
             logger.warning(msg)
