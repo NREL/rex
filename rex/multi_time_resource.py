@@ -2,17 +2,22 @@
 """
 Classes to handle resource data stored over multiple files
 """
-import pandas as pd
-from glob import glob
-from fnmatch import fnmatch
-import numpy as np
 import os
+from fnmatch import fnmatch
+from glob import glob
 
+import numpy as np
+import pandas as pd
+
+from rex.renewable_resource import (
+    NSRDB,
+    SolarResource,
+    WaveResource,
+    WindResource,
+)
 from rex.resource import Resource
-from rex.renewable_resource import (NSRDB, SolarResource, WindResource,
-                                    WaveResource)
-from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.exceptions import FileInputError
+from rex.utilities.parse_keys import parse_keys, parse_slice
 
 
 class MultiTimeH5:
@@ -62,7 +67,7 @@ class MultiTimeH5:
 
     def __getitem__(self, file):
         fn_fp_map = {os.path.basename(fp): fp for fp in self._file_paths}
-        if file in self._h5_map['fp']:
+        if file in self._h5_map['fp'].values:
             iloc = np.where(self._h5_map['fp'] == file)[0][0]
             h5 = self._h5_map.at[iloc, 'h5']
         elif file in fn_fp_map:
@@ -421,7 +426,6 @@ class MultiTimeResource:
 
     Examples
     --------
-
     Extracting the resource's Datetime Index
 
     >>> path = '$TESTDATADIR/nsrdb/ri_100_nsrdb_*.h5'
@@ -885,6 +889,7 @@ class MultiTimeNSRDB(MultiTimeResource):
     Class to handle NSRDB data stored temporaly accross multiple .h5
     files
     """
+
     PREFIX = 'nsrdb'
 
     def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False,
@@ -919,6 +924,7 @@ class MultiTimeWindResource(MultiTimeResource):
     Class to handle wind resource data stored temporaly accross multiple .h5
     files
     """
+
     PREFIX = 'wtk'
 
     def __init__(self, h5_path, unscale=True, str_decode=True, hsds=False,
