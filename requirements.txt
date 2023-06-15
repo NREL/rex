@@ -1,5 +1,4 @@
 click>=7.0
-google-auth-oauthlib<=0.5.3
 h5py>=2.10.0,!=3.0.0
 h5pyd>=0.7.0
 numpy>=1.16
