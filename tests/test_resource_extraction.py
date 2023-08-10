@@ -147,7 +147,7 @@ def extract_site(res_cls, ds_name):
     time_index = res_cls.time_index
     meta = res_cls.meta
     site = np.random.choice(len(meta), 1)[0]
-    lat_lon = meta.loc[site, ['latitude', 'longitude']].values
+    lat_lon = meta.loc[site, ['latitude', 'longitude']].values.astype(float)
 
     truth_ts = res_cls[ds_name, :, site]
     truth_df = pd.DataFrame(truth_ts, columns=[site],
