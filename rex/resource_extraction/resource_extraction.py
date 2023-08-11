@@ -597,7 +597,7 @@ class ResourceX:
             Nearest gid(s) to given (lat, lon) pair(s)
         """
         if not isinstance(lat_lon, np.ndarray):
-            lat_lon = np.array(lat_lon)
+            lat_lon = np.array(lat_lon, dtype=np.float32)
 
         if len(lat_lon.shape) == 1:
             lat_lon = np.expand_dims(lat_lon, axis=0)

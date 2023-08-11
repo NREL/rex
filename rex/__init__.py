@@ -3,6 +3,9 @@
 The REsource eXtraction tool (rex)
 """
 from __future__ import print_function, division, absolute_import
+import logging
+if not logging.getLogger().handlers:
+    logging.getLogger().addHandler(logging.NullHandler())
 import os
 
 from rex.joint_pd import JointPD

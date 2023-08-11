@@ -39,7 +39,7 @@ def mode_func(arr, axis=0):
     """
     custom mode stats
     """
-    return mode(arr, axis=axis).mode[0]
+    return mode(arr, axis=axis, keepdims=True).mode[0]
 
 
 @pytest.mark.parametrize(("max_workers", "sites"),
@@ -185,7 +185,7 @@ def test_custom_stats(max_workers):
     msg = 'Mins do not match!'
     assert np.allclose(truth, test_stats['min'].values), msg
 
-    truth = mode(res_data, axis=0).mode[0]
+    truth = mode(res_data, axis=0, keepdims=True).mode[0]
     msg = 'Modes do not match!'
     assert np.allclose(truth, test_stats['mode'].values), msg
 
@@ -194,7 +194,7 @@ def test_custom_stats(max_workers):
     msg = 'January mins do not match!'
     assert np.allclose(truth, test_stats['Jan_min'].values), msg
 
-    truth = mode(res_data[mask], axis=0).mode[0]
+    truth = mode(res_data[mask], axis=0, keepdims=True).mode[0]
     msg = 'January modes do not match!'
     assert np.allclose(truth, test_stats['Jan_mode'].values), msg
 
