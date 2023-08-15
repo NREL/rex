@@ -39,13 +39,13 @@ If this simple query succeeds while larger data slices fail, it is almost defini
 Setting up a Local HSDS Server
 ------------------------------
 
-Setting up an HSDS server on an EC2 instance or your local laptop isn't too hard. Most of the instructions are copied from the `HSDS Repository <https://github.com/HDFGroup/hsds>`_ and the `h5pyd repository <https://github.com/HDFGroup/h5pyd>`_. Note that these install instructions are for a unix machine. For Windows machines, you can likely follow these instructions and use Windows-specific modifications from the HSDS and h5pyd repo instructions.
+Setting up an HSDS server on an EC2 instance or your local laptop isn't too hard. The instruction set here is intended to be comprehensive and followed *exactly*. Most of these instructions are adapted from the `HSDS Repository <https://github.com/HDFGroup/hsds>`_ and the `h5pyd repository <https://github.com/HDFGroup/h5pyd>`_, but this tutorial has been found to be the best comprehensive set of instructions. Please note the minor differences in the Unix- and Windows-specific instructions below and be sure to follow these subtleties exactly!
 
 Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We find it easiest to manage your HSDS environment by installing `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ and creating a clean HSDS environment. Once you have that setup, follow these instructions:
 
 #. Clone the HSDS repo: ``$ git clone https://github.com/HDFGroup/hsds``
 #. Go to the HSDS directory: ``$ cd hsds``
-#. Run install: ``$ python setup.py install`` (this does some extra magic over a plain ``pip`` install)
+#. Run install: ``$ python setup.py install`` (do NOT do the standard ``pip install hsds``)
 #. Install h5pyd (no need to clone the repo on this one): ``$ pip install h5pyd``
 #. Create a directory the server will use to store data: ``$ mkdir hsds_data``
 #. Copy the config override file: ``$ cp ./admin/config/config.yml ./admin/config/override.yml`` and update these lines in the ``override.yml`` file (make sure you update the ``root_dir`` with the path to your cloned HSDS repo):
@@ -62,8 +62,9 @@ Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We fi
 #. If you are on Windows, you may need to set your ``ROOT_DIR`` variable via the command line: ``set ROOT_DIR=C:\Users\...\hsds_data``
 #. Optional: update performance options in the ``override.yml file`` like ``max_task_count``, ``dn_ram``, and ``sn_ram`` to increase the number of parallel HSDS workers and their memory allocation.
 #. For Unix systems: 
-  #. start the HSDS server with the .sh file: ``$ sh ./runall.sh --no-docker`` and take note of the endpoint that is printed out (e.g. ``http+unix://%2Ftmp%2Fhs%2Fsn_1.sock``)
-  #. Create a config file at ``~/.hscfg`` (you can also use the ``hsconfigure`` CLI utility) with ONLY the following entries (make sure the ``hs_endpoint`` matches the endpoint that the HSDS server printed out):
+
+    a. Start the HSDS server with the .sh file: ``$ sh ./runall.sh --no-docker`` and take note of the endpoint that is printed out (e.g. ``http+unix://%2Ftmp%2Fhs%2Fsn_1.sock``)
+    b. Create a config file at ``~/.hscfg`` (you can also use the ``hsconfigure`` CLI utility) with ONLY the following entries (make sure the ``hs_endpoint`` matches the endpoint that the HSDS server printed out):
 
     .. code-block:: bash
 
@@ -71,8 +72,9 @@ Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We fi
       hs_endpoint = http+unix://%2Ftmp%2Fhs%2Fsn_1.sock
 
 #. For Windows systems: 
-  #. start the HSDS server with the .bat file: ``$ runall.bat``
-  #. Create a config file at ``~/.hscfg`` (you can also use the ``hsconfigure`` CLI utility) with ONLY the following entries (make sure the ``hs_username`` and ``hs_password`` match the ``passwd.txt`` file):
+
+    a. Start the HSDS server with the .bat file: ``$ runall.bat``
+    b. Create a config file at ``~/.hscfg`` (you can also use the ``hsconfigure`` CLI utility) with ONLY the following entries (make sure the ``hs_username`` and ``hs_password`` match the ``passwd.txt`` file):
 
     .. code-block:: bash
 
@@ -143,7 +145,7 @@ read the data:
             dni = f.get_lat_lon_df('dni', nrel_coord)
             ghi = f['ghi', :, gid]
 
-Note that you can add more kwargs for the ``h5pyd`` file handler in the ``hsds_kwargs`` option. For example, on Windows you might want to set ``hsds_kwargs={'endpoint': 'http://localhost:5101', 'hs_username': 'test_user1', 'hs_password': 'test'}``
+Note that you can add more kwargs for the ``h5pyd`` file handler in the ``hsds_kwargs`` option. For example, you can set endpoints and username/passwords here: ``hsds_kwargs={'endpoint': 'http://localhost:5101', 'hs_username': 'test_user1', 'hs_password': 'test'}``. However, these kwargs should also be taken automatically from your ``~/.hscfg`` file
 
 More details on the handler classes like ``NSRDBX`` can be found in the `rex
 API reference <https://nrel.github.io/rex/_autosummary/rex.html>`_.
