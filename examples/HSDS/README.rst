@@ -59,8 +59,29 @@ Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We fi
         root_dir: /<your_hsds_repo_directory>/hsds_data/
         bucket_name: nrel-pds-hsds
 
+#. If you are on Windows, you may need to set your ``ROOT_DIR`` variable via the command line: ``set ROOT_DIR=C:\Users\...\hsds_data``
 #. Optional: update performance options in the ``override.yml file`` like ``max_task_count``, ``dn_ram``, and ``sn_ram`` to increase the number of parallel HSDS workers and their memory allocation.
-#. Start the HSDS server: ``$ sh ./runall.sh --no-docker`` and take note of the endpoint that is printed out (e.g. ``http+unix://%2Ftmp%2Fhs%2Fsn_1.sock``)
+#. For Unix systems: 
+  #. start the HSDS server with the .sh file: ``$ sh ./runall.sh --no-docker`` and take note of the endpoint that is printed out (e.g. ``http+unix://%2Ftmp%2Fhs%2Fsn_1.sock``)
+  #. Create a config file at ``~/.hscfg`` (you can also use the ``hsconfigure`` CLI utility) with ONLY the following entries (make sure the ``hs_endpoint`` matches the endpoint that the HSDS server printed out):
+
+    .. code-block:: bash
+
+      # Local HSDS server
+      hs_endpoint = http+unix://%2Ftmp%2Fhs%2Fsn_1.sock
+
+#. For Windows systems: 
+  #. start the HSDS server with the .bat file: ``$ runall.bat``
+  #. Create a config file at ``~/.hscfg`` (you can also use the ``hsconfigure`` CLI utility) with ONLY the following entries (make sure the ``hs_username`` and ``hs_password`` match the ``passwd.txt`` file):
+
+    .. code-block:: bash
+
+      # Local HSDS server
+      hs_endpoint = http://localhost:5101
+      hs_username = test_user1
+      hs_password = test
+      hs_api_key =
+
 #. Open a new shell, activate the HSDS python environment you've been using, and run ``$ hsinfo``. You should see something similar to the following if your local HSDS server is running correctly:
 
     .. code-block:: bash
@@ -76,13 +97,6 @@ Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We fi
       h5pyd version: 0.13.1
 
 #. If you see this successful message, you can move on. If ``hsinfo`` fails, something went wrong in the previous steps. 
-#. Create a config file at ``~/.hscfg`` with the following (make sure the ``hs_endpoint`` matches the endpoint that the HSDS server printed out):
-
-    .. code-block:: bash
-
-      # Local HSDS server
-      hs_endpoint = http+unix://%2Ftmp%2Fhs%2Fsn_1.sock
-
 #. Test that h5pyd is configured correctly by running the following python script:
 
     .. code-block:: python
@@ -121,13 +135,15 @@ read the data:
 
         nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
         nrel_coord = (39.741931, -105.169891)
-        with NSRDBX(nsrdb_file, hsds=True) as f:
+        with NSRDBX(nsrdb_file, hsds=True, hsds_kwargs=None) as f:
             meta = f.meta
             time_index = f.time_index
             datasets = f.datasets
             gid = f.lat_lon_gid(nrel_coord)
             dni = f.get_lat_lon_df('dni', nrel_coord)
             ghi = f['ghi', :, gid]
+
+Note that you can add more kwargs for the ``h5pyd`` file handler in the ``hsds_kwargs`` option. For example, on Windows you might want to set ``hsds_kwargs={'endpoint': 'http://localhost:5101', 'hs_username': 'test_user1', 'hs_password': 'test'}``
 
 More details on the handler classes like ``NSRDBX`` can be found in the `rex
 API reference <https://nrel.github.io/rex/_autosummary/rex.html>`_.
