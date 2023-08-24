@@ -163,7 +163,7 @@ or to extract all sites in a given region:
   state='Colorado'
   with NSRDBX(nsrdb_file, hsds=True) as f:
       date = '2018-07-04 18:00:00'
-      dni_map = f.get_timestep_map('dni', date, region=region,
+      dni_map = f.get_timestep_map('dni', date, region=state,
                                    region_col='state')
 
 Lastly, ``NSRDBX`` can be used to extract all variables needed to run SAM at a
