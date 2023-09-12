@@ -483,7 +483,7 @@ class ResourceDataset:
         try:
             out = self.ds[slices]
         except Exception as e:
-            msg = (f'Error retrieving h5pyd data from "{self.ds}" for '
+            msg = (f'Error retrieving data from "{self.ds}" for '
                    f'slice: "{slices}".')
             not_h5_ds = not isinstance(self.ds, h5py.Dataset)
             is_hsds_ds = 'h5pyd' in str(type(self.ds))
