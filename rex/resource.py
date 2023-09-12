@@ -480,7 +480,22 @@ class ResourceDataset:
             if ax_idx is not None:
                 idx_slice += (ax_idx,)
 
-        out = self.ds[slices]
+        try:
+            out = self.ds[slices]
+        except Exception as e:
+            msg = (f'Error retrieving data from "{self.ds}" for '
+                   f'slice: "{slices}".')
+            not_h5_ds = not isinstance(self.ds, h5py.Dataset)
+            is_hsds_ds = 'h5pyd' in str(type(self.ds))
+            error_type = isinstance(e, (OSError, IOError))
+            if not_h5_ds and is_hsds_ds and error_type:
+                msg += (' Detected OSError/IOError from h5pyd. '
+                        'This is not a rex error and please do not submit '
+                        'a bug report. this is likely due to HSDS server '
+                        'limits, especially if you are using an NREL '
+                        'developer API key. For more details, see: '
+                        'https://nrel.github.io/rex/misc/examples.hsds.html')
+            raise ResourceRuntimeError(msg) from e
 
         # check to see if idx_slice needs to be applied
         if any(s != slice(None) if isinstance(s, slice) else True
