@@ -63,13 +63,13 @@ Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We fi
 #. Optional: update performance options in the ``override.yml file`` like ``max_task_count``, ``dn_ram``, and ``sn_ram`` to increase the number of parallel HSDS workers and their memory allocation.
 #. For Unix systems: 
 
-    a. Start the HSDS server with the .sh file: ``$ sh ./runall.sh --no-docker`` and take note of the endpoint that is printed out (e.g. ``http+unix://%2Ftmp%2Fhs%2Fsn_1.sock``)
+    a. Start the HSDS server with the .sh file: ``$ sh ./runall.sh --no-docker-tcp`` and take note of the endpoint that is printed out (e.g. ``http+unix://%2Ftmp%2Fhs%2Fsn_1.sock`` or ``http://localhost:5101``)
     b. Create a config file at ``~/.hscfg`` (you can also use the ``hsconfigure`` CLI utility) with ONLY the following entries (make sure the ``hs_endpoint`` matches the endpoint that the HSDS server printed out):
 
     .. code-block:: bash
 
       # Local HSDS server
-      hs_endpoint = http+unix://%2Ftmp%2Fhs%2Fsn_1.sock
+      hs_endpoint = http://localhost:5101
 
 #. For Windows systems: 
 
@@ -90,7 +90,7 @@ Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We fi
 
       server name: Highly Scalable Data Service (HSDS)
       server state: READY
-      endpoint: http+unix://%2Ftmp%2Fhs%2Fsn_1.sock
+      endpoint: http://localhost:5101
       username: anonymous
       password:
       server version: 0.7.3
