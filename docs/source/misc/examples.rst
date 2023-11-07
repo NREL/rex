@@ -6,3 +6,4 @@ Examples
    examples.wind
    examples.us_wave
    examples.hsds
+   examples.zarr
