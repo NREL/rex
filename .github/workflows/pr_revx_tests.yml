@@ -6,10 +6,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout rex
+      - name: checkout rex
         uses: actions/checkout@v3
+        with:
+          path: rex
       - name: checkout reVX
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
         with:
           repository: nrel/reVX
           fetch-depth: 1

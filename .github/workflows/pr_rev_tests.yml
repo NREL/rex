@@ -6,8 +6,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout rex
+      - name: checkout rex
         uses: actions/checkout@v3
+        with:
+          path: rex
       - name: checkout reV
         uses: actions/checkout@v3
         with:
