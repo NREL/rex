@@ -65,8 +65,7 @@ setup(
             "US-wave=rex.resource_extraction.US_wave_cli:main",
             "rechunk=rex.rechunk_h5.rechunk_cli:main",
             "combine-h5=rex.rechunk_h5.combine_h5_cli:main",
-            "temporal-stats=rex.temporal_stats.temporal_stats_cli:main",
-            "wind-rose=rex.jpd.wind_rose_cli:main"
+            "temporal-stats=rex.temporal_stats.temporal_stats_cli:main"
         ],
     },
     include_package_data=True,
