@@ -6,40 +6,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: checkout rex
-      uses: actions/checkout@v2
-      with:
-        ref: ${{ github.event.pull_request.head.ref }}
-        fetch-depth: 1
-        path: rex
-    - name: checkout reVX
-      uses: actions/checkout@v2
-      with:
-        repository: nrel/reVX
-        fetch-depth: 1
-        path: reVX
-    - name: Set up Python
-      uses: conda-incubator/setup-miniconda@v2
-      with:
-        auto-update-conda: true
-        python-version: 3.9
-    - name: Install rex dependencies
-      working-directory: ./rex
-      shell: bash -l {0}
-      run: |
-        conda install pip pandas
-        pip install -e .
-    - name: Install reVX dependencies
-      working-directory: ./reVX
-      shell: bash -l {0}
-      run: |
-        conda install rtree pytest
-        pip install geopandas
-        pip install --upgrade --force-reinstall shapely~=1.8
-        pip install -e .
-        pip install HOPP
-    - name: Run reVX pytest
-      working-directory: ./reVX
-      shell: bash -l {0}
-      run: |
-        pytest -v --disable-warnings
+      - name: checkout rex
+        uses: actions/checkout@v3
+        with:
+          path: rex
+      - name: checkout reVX
+        uses: actions/checkout@v2
+        with:
+          repository: nrel/reVX
+          fetch-depth: 1
+          path: reVX
+      - name: Set up Python
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: 3.9
+      - name: Install rex dependencies
+        working-directory: ./rex
+        shell: bash -l {0}
+        run: |
+          conda install pip pandas
+          pip install -e .
+      - name: Install reVX dependencies
+        working-directory: ./reVX
+        shell: bash -l {0}
+        run: |
+          conda install rtree pytest
+          pip install geopandas
+          pip install --upgrade --force-reinstall shapely~=1.8
+          pip install -e .
+          pip install HOPP
+      - name: Run reVX pytest
+        working-directory: ./reVX
+        shell: bash -l {0}
+        run: |
+          pytest -v --disable-warnings
