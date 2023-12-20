@@ -1,7 +1,7 @@
 Zarr
 ====
 
-You can use `Zarr <https://zarr.dev/>`_ to open NREL h5 resource files hosted on AWS S3. In our internal tests, this has comparable performance to reading data with an HSDS local server. The benefit of this approach is that you don't need to run an HSDS server, the drawback is that you need to handle a large meta data file for every h5 file you access on S3.
+You can use `Zarr <https://zarr.dev/>`_ to open NREL h5 resource files hosted on AWS S3 on your local computer. In our internal tests, this has comparable performance to reading data with an `HSDS <https://nrel.github.io/rex/misc/examples.hsds.html>`_ local server. The benefit of this approach is that you don't need to run an HSDS server, the drawback is that you need to handle a large meta data file for every .h5 file you access on S3.
 
 We currently do not have this integrated into the ``rex`` resource handler classes and are evaluating whether or not this is worthwhile.
 
