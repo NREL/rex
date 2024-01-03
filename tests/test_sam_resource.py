@@ -394,22 +394,6 @@ def test_nsrdb_and_wtk():
         _ = res._get_res_df(0)
 
 
-def execute_pytest(capture='all', flags='-rapP'):
-    """Execute module as pytest with detailed summary report.
-
-    Parameters
-    ----------
-    capture : str
-        Log or stdout/stderr capture option. ex: log (only logger),
-        all (includes stdout/stderr)
-    flags : str
-        Which tests to show logs and results for.
-    """
-
-    fname = os.path.basename(__file__)
-    pytest.main(['-q', '--show-capture={}'.format(capture), fname, flags])
-
-
 def test_bias_correct_wind():
     """Test linear bias correction functionality on windspeed"""
     h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
@@ -420,7 +404,8 @@ def test_bias_correct_wind():
     n = 10
     bc = pd.DataFrame({'gid': np.arange(n),
                        'adder': np.random.uniform(-1, 1, n),
-                       'scalar': np.random.uniform(0.9, 1.1, n)})
+                       'scalar': np.random.uniform(0.9, 1.1, n),
+                       'method': 'lin_ws'})
 
     with pytest.warns() as record:
         res = WindResource.preload_SAM(h5, sites, hub_heights)
@@ -437,7 +422,8 @@ def test_bias_correct_wind():
     n = 200
     bc = pd.DataFrame({'gid': np.arange(n),
                        'adder': np.random.uniform(-1, 1, n),
-                       'scalar': np.random.uniform(0.9, 1.1, n)})
+                       'scalar': np.random.uniform(0.9, 1.1, n),
+                       'method': 'lin_ws'})
 
     with pytest.warns(None) as record:
         res = WindResource.preload_SAM(h5, sites, hub_heights)
@@ -458,7 +444,8 @@ def test_bias_correct_solar():
     n = 10
     bc = pd.DataFrame({'gid': np.arange(n),
                        'adder': np.random.uniform(-100, 100, n),
-                       'scalar': np.random.uniform(1, 1, n)})
+                       'scalar': np.random.uniform(1, 1, n),
+                       'method': 'lin_irrad'})
 
     res = NSRDB.preload_SAM(h5, sites)
     res.bias_correct(bc)
@@ -486,6 +473,22 @@ def test_bias_correct_solar():
         cos_sza = (ghi[mask] - dhi[mask]) / (dni[mask])
         base_cos_sza = (base_ghi[mask] - base_dhi[mask]) / (base_dni[mask])
         assert np.allclose(cos_sza, base_cos_sza, atol=0.005)
+
+
+def execute_pytest(capture='all', flags='-rapP'):
+    """Execute module as pytest with detailed summary report.
+
+    Parameters
+    ----------
+    capture : str
+        Log or stdout/stderr capture option. ex: log (only logger),
+        all (includes stdout/stderr)
+    flags : str
+        Which tests to show logs and results for.
+    """
+
+    fname = os.path.basename(__file__)
+    pytest.main(['-q', '--show-capture={}'.format(capture), fname, flags])
 
 
 if __name__ == '__main__':

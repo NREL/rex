@@ -3,11 +3,13 @@
 Module to handle SAM Resource iterator to create site by site resource
 DataFrames
 """
+from inspect import signature
 import numpy as np
 import pandas as pd
 from warnings import warn
 import logging
 
+import rex.bias_correction
 from rex.utilities.exceptions import (ResourceKeyError, ResourceRuntimeError,
                                       ResourceValueError, SAMInputWarning)
 from rex.utilities.parse_keys import parse_keys
@@ -709,21 +711,19 @@ class SAMResource:
         ----------
         bc_df : pd.DataFrame
             DataFrame with wind or solar resource bias correction table. This
-            has columns: gid, adder, scalar. If either adder or scalar is not
-            present, scalar defaults to 1 and adder to 0. Only windspeed or
-            GHI+DNI are corrected depending on the technology. GHI and DNI are
-            corrected with the same correction factors.
+            must have columns "gid" and "method", where "gid" is the resource
+            file indices, and "method" is a function name from the
+            `rex.bias_correction` module. Only windspeed or GHI+DNI are
+            corrected depending on the technology. GHI and DNI are corrected
+            with the same correction factors.
         """
 
-        if 'adder' not in bc_df:
-            logger.info('Bias correction table provided, but "adder" not '
-                        'found, defaulting to 0.')
-            bc_df['adder'] = 0
-
-        if 'scalar' not in bc_df:
-            logger.info('Bias correction table provided, but "scalar" not '
-                        'found, defaulting to 1.')
-            bc_df['scalar'] = 1
+        if 'method' not in bc_df:
+            msg = ('Bias correction table provided, but "method" not '
+                   'found! Need to specify "method" as a function name '
+                   'from `rex.bias_correction`')
+            logger.error(msg)
+            raise KeyError(msg)
 
         if bc_df.index.name != 'gid':
             msg = ('Bias correction table must have "gid" column but only '
@@ -740,42 +740,52 @@ class SAMResource:
             logger.warning(msg)
             warn(msg)
 
-        scalar = np.expand_dims(bc_df.loc[site_arr[isin], 'scalar'].values, 0)
-        adder = np.expand_dims(bc_df.loc[site_arr[isin], 'adder'].values, 0)
+        fun_name = bc_df['method'].unique()
+        msg = ('rex bias correction currently only supports a single unique '
+               'bias correction method per chunk of sites but received: {}'
+               .format(fun_name))
+        assert len(fun_name) == 1, msg
+        bc_fun = getattr(rex.bias_correction, fun_name[0])
+
+        bc_fun_kwargs = {}
+        for col in bc_df.columns:
+            arr = bc_df.loc[site_arr[isin], col].values
+            bc_fun_kwargs[col] = np.expand_dims(arr, 0)
 
         if 'ghi' in self._res_arrays and 'dni' in self._res_arrays:
+            logger.debug('Bias correcting irradiance with function {} '
+                         'for sites {}'.format(bc_fun, self.sites))
             ghi = self._res_arrays['ghi']
             dni = self._res_arrays['dni']
             dhi = self._res_arrays['dhi']
-            ghi_zeros = ghi == 0
-            dni_zeros = dni == 0
-            dhi_zeros = dhi == 0
-            with np.errstate(divide='ignore', invalid='ignore'):
-                cos_sza = (ghi - dhi) / dni
 
-            ghi[:, isin] = ghi[:, isin] * scalar + adder
-            dni[:, isin] = dni[:, isin] * scalar + adder
-            ghi = np.maximum(0, ghi)
-            dni = np.maximum(0, dni)
-            ghi[ghi_zeros] = 0
-            dni[dni_zeros] = 0
-            with np.errstate(divide='ignore', invalid='ignore'):
-                dhi[:, isin] = ghi[:, isin] - (dni[:, isin] * cos_sza[:, isin])
+            bc_fun_kwargs['ghi'] = ghi[:, isin]
+            bc_fun_kwargs['dni'] = dni[:, isin]
+            bc_fun_kwargs['dhi'] = dhi[:, isin]
 
-            dhi[dni_zeros] = ghi[dni_zeros]
-            dhi = np.maximum(0, dhi)
-            dhi[dhi_zeros] = 0
-            assert not np.isnan(dhi).any()
+            sig = signature(bc_fun)
+            bc_fun_kwargs = {k: v for k, v in bc_fun_kwargs.items()
+                             if k in sig.parameters}
+            out = bc_fun(**bc_fun_kwargs)
+
+            ghi[:, isin] = out[0][:, isin]
+            dni[:, isin] = out[1][:, isin]
+            dhi[:, isin] = out[2][:, isin]
+
             self._res_arrays['ghi'] = ghi
             self._res_arrays['dni'] = dni
             self._res_arrays['dhi'] = dhi
 
         elif 'windspeed' in self._res_arrays:
-            logger.debug('Bias correcting windspeeds.')
-            arr = self._res_arrays['windspeed']
-            arr[:, isin] = arr[:, isin] * scalar + adder
-            arr = np.maximum(arr, 0)
-            self._res_arrays['windspeed'] = arr
+            logger.debug('Bias correcting windspeed with function {} '
+                         'for sites {}'.format(bc_fun, self.sites))
+            ws = self._res_arrays['windspeed']
+            bc_fun_kwargs['ws'] = ws[:, isin]
+            sig = signature(bc_fun)
+            bc_fun_kwargs = {k: v for k, v in bc_fun_kwargs.items()
+                             if k in sig.parameters}
+            ws[:, isin] = bc_fun(**bc_fun_kwargs)
+            self._res_arrays['windspeed'] = ws
 
         if self._mean_arrays is not None:
             # pylint: disable=consider-iterating-dictionary
