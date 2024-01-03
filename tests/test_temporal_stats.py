@@ -7,7 +7,7 @@ import numpy as np
 import os
 import pandas as pd
 import pytest
-from scipy.stats import mode
+import scipy
 import tempfile
 import traceback
 
@@ -39,7 +39,7 @@ def mode_func(arr, axis=0):
     """
     custom mode stats
     """
-    return mode(arr, axis=axis, keepdims=True).mode[0]
+    return scipy.stats.mode(arr, axis=axis, keepdims=True).mode[0]
 
 
 @pytest.mark.parametrize(("max_workers", "sites"),
@@ -185,7 +185,7 @@ def test_custom_stats(max_workers):
     msg = 'Mins do not match!'
     assert np.allclose(truth, test_stats['min'].values), msg
 
-    truth = mode(res_data, axis=0, keepdims=True).mode[0]
+    truth = scipy.stats.mode(res_data, axis=0, keepdims=True).mode[0]
     msg = 'Modes do not match!'
     assert np.allclose(truth, test_stats['mode'].values), msg
 
@@ -194,7 +194,7 @@ def test_custom_stats(max_workers):
     msg = 'January mins do not match!'
     assert np.allclose(truth, test_stats['Jan_min'].values), msg
 
-    truth = mode(res_data[mask], axis=0, keepdims=True).mode[0]
+    truth = scipy.stats.mode(res_data[mask], axis=0, keepdims=True).mode[0]
     msg = 'January modes do not match!'
     assert np.allclose(truth, test_stats['Jan_mode'].values), msg
 
@@ -342,6 +342,34 @@ def test_cli(runner):
         assert np.allclose(truth, test_stats['Jan-00:00UTC_mean'].values), msg
 
     LOGGERS.clear()
+
+
+def test_scipy_dist_fit():
+    """Test rex temporal stats with a scipy distribution fit function"""
+    scipy_stats = {'weibull': {'func': scipy.stats.weibull_min.fit}}
+
+    res_h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+    dataset = 'windspeed_100m'
+    sites = slice(0, 10)
+    stats1 = TemporalStats.run(res_h5, dataset, sites=sites,
+                               statistics=scipy_stats,
+                               res_cls=MultiYearWindResource,
+                               max_workers=1)
+    assert isinstance(stats1.loc[0, 'weibull'], list)
+    assert len(stats1.loc[0, 'weibull']) == 3
+
+    scipy_stats = {'weibull': {'func': scipy.stats.weibull_min.fit,
+                               'kwargs': {'floc': 0}}}
+    stats2 = TemporalStats.run(res_h5, dataset, sites=sites,
+                               statistics=scipy_stats,
+                               res_cls=MultiYearWindResource,
+                               max_workers=1)
+    assert isinstance(stats2.loc[0, 'weibull'], list)
+    assert len(stats2.loc[0, 'weibull']) == 3
+    for gid in range(10):
+        assert np.allclose(stats2.loc[gid, 'weibull'][0], 2.3, atol=1)
+        assert np.allclose(stats2.loc[gid, 'weibull'][2], 7.9, atol=1)
+        assert stats2.loc[gid, 'weibull'][1] == 0
 
 
 def execute_pytest(capture='all', flags='-rapP'):

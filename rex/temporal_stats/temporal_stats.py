@@ -372,8 +372,13 @@ class TemporalStats:
                     columns = column_names[name]
                     s_data = s_data.T
                     s_data.columns = columns
-                else:
+                elif not isinstance(s_data, pd.DataFrame):
                     s_data = s_data.to_frame(name=name)
+                elif isinstance(s_data, pd.DataFrame) and len(s_data) > 1:
+                    # e.g., if func is scipy.stats.beta.fit(), this collapses
+                    # multiple output parameters into list
+                    s_data['name'] = name
+                    s_data = s_data.groupby('name').agg(list).T
 
             res_stats.append(s_data)
 
