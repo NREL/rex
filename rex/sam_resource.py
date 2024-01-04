@@ -9,7 +9,7 @@ import pandas as pd
 from warnings import warn
 import logging
 
-import rex.bias_correction
+from rex.utilities.bc_utils import _parse_bc_table
 from rex.utilities.exceptions import (ResourceKeyError, ResourceRuntimeError,
                                       ResourceValueError, SAMInputWarning)
 from rex.utilities.parse_keys import parse_keys
@@ -713,44 +713,13 @@ class SAMResource:
             DataFrame with wind or solar resource bias correction table. This
             must have columns "gid" and "method", where "gid" is the resource
             file indices, and "method" is a function name from the
-            `rex.bias_correction` module. Only windspeed or GHI+DNI are
-            corrected depending on the technology. GHI and DNI are corrected
-            with the same correction factors.
+            ``rex.bias_correction`` module. Only windspeed or GHI+DNI+DHI are
+            corrected, depending on the technology. See the
+            ``rex.bias_correction`` module for more details on available
+            bias correction methods.
         """
 
-        if 'method' not in bc_df:
-            msg = ('Bias correction table provided, but "method" not '
-                   'found! Need to specify "method" as a function name '
-                   'from `rex.bias_correction`')
-            logger.error(msg)
-            raise KeyError(msg)
-
-        if bc_df.index.name != 'gid':
-            msg = ('Bias correction table must have "gid" column but only '
-                   'found: {}'.format(list(bc_df.columns)))
-            assert 'gid' in bc_df, msg
-            bc_df = bc_df.set_index('gid')
-
-        site_arr = np.array(self.sites)
-        isin = np.isin(self.sites, bc_df.index.values)
-        if not isin.all():
-            missing = site_arr[~isin]
-            msg = ('{} sites were missing from the bias correction table, '
-                   'not bias correcting: {}'.format(len(missing), missing))
-            logger.warning(msg)
-            warn(msg)
-
-        fun_name = bc_df['method'].unique()
-        msg = ('rex bias correction currently only supports a single unique '
-               'bias correction method per chunk of sites but received: {}'
-               .format(fun_name))
-        assert len(fun_name) == 1, msg
-        bc_fun = getattr(rex.bias_correction, fun_name[0])
-
-        bc_fun_kwargs = {}
-        for col in bc_df.columns:
-            arr = bc_df.loc[site_arr[isin], col].values
-            bc_fun_kwargs[col] = np.expand_dims(arr, 0)
+        bc_fun, bc_fun_kwargs, bool_bc = _parse_bc_table(bc_df, self.sites)
 
         if 'ghi' in self._res_arrays and 'dni' in self._res_arrays:
             logger.debug('Bias correcting irradiance with function {} '
@@ -759,18 +728,18 @@ class SAMResource:
             dni = self._res_arrays['dni']
             dhi = self._res_arrays['dhi']
 
-            bc_fun_kwargs['ghi'] = ghi[:, isin]
-            bc_fun_kwargs['dni'] = dni[:, isin]
-            bc_fun_kwargs['dhi'] = dhi[:, isin]
+            bc_fun_kwargs['ghi'] = ghi[:, bool_bc]
+            bc_fun_kwargs['dni'] = dni[:, bool_bc]
+            bc_fun_kwargs['dhi'] = dhi[:, bool_bc]
 
             sig = signature(bc_fun)
             bc_fun_kwargs = {k: v for k, v in bc_fun_kwargs.items()
                              if k in sig.parameters}
             out = bc_fun(**bc_fun_kwargs)
 
-            ghi[:, isin] = out[0][:, isin]
-            dni[:, isin] = out[1][:, isin]
-            dhi[:, isin] = out[2][:, isin]
+            ghi[:, bool_bc] = out[0][:, bool_bc]
+            dni[:, bool_bc] = out[1][:, bool_bc]
+            dhi[:, bool_bc] = out[2][:, bool_bc]
 
             self._res_arrays['ghi'] = ghi
             self._res_arrays['dni'] = dni
@@ -780,11 +749,11 @@ class SAMResource:
             logger.debug('Bias correcting windspeed with function {} '
                          'for sites {}'.format(bc_fun, self.sites))
             ws = self._res_arrays['windspeed']
-            bc_fun_kwargs['ws'] = ws[:, isin]
+            bc_fun_kwargs['ws'] = ws[:, bool_bc]
             sig = signature(bc_fun)
             bc_fun_kwargs = {k: v for k, v in bc_fun_kwargs.items()
                              if k in sig.parameters}
-            ws[:, isin] = bc_fun(**bc_fun_kwargs)
+            ws[:, bool_bc] = bc_fun(**bc_fun_kwargs)
             self._res_arrays['windspeed'] = ws
 
         if self._mean_arrays is not None:

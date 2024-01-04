@@ -9,11 +9,12 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def lin_irrad(ghi, dni, dhi, scalar, adder):
+def lin_irrad(ghi, dni, dhi, scalar=1, adder=0):
     """Correct GHI and DNI using linear correction factors. Both irradiance
-    variables are corrected as `(irradiance*scalar)+adder`. DHI is preserved
-    based on the relationship `dhi = ghi - (dni * cos(sza))`. Times when GHI
-    and DNI are zero are preserved and negative values are protected against.
+    variables are corrected as ``irradiance * scalar + adder``. DHI is
+    preserved based on the relationship ``dhi = ghi - (dni * cos(sza))``. Times
+    when GHI and DNI are zero are preserved and negative values are protected
+    against.
 
     Parameters
     ----------
@@ -65,9 +66,9 @@ def lin_irrad(ghi, dni, dhi, scalar, adder):
     return ghi, dni, dhi
 
 
-def lin_ws(ws, scalar, adder):
+def lin_ws(ws, scalar=1, adder=0):
     """Correct windspeed using linear correction factors. Windspeed is
-    corrected as `(windspeed*scalar)+adder` with a minimum of zero.
+    corrected as ``windspeed * scalar + adder`` with a minimum of zero.
 
     Parameters
     ----------
