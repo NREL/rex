@@ -91,8 +91,11 @@ def lin_ws(ws, scalar=1, adder=0):
 
 
 class PQDM:
-    """Correct windspeed using parametric quantile delta mapping based on a
-    parametric implementation of the method from Cannon et al., 2015
+    """Class for parametric quantile delta mapping based on a parametric
+    implementation of the method from Cannon et al., 2015
+
+    Note that this is a utility class for implementing PQDM and should not be
+    requested directly as a method in the reV/rex bias correction table input
 
     Cannon, A. J., Sobie, S. R. & Murdock, T. Q. Bias Correction of GCM
     Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in
@@ -105,16 +108,16 @@ class PQDM:
         ----------
         ws : np.ndarray
             2D array of windspeed values in shape (time, space)
-        params_oh : np.ndarray | list
+        params_oh : np.ndarray
             2D array of probability distribution parameters created using a
             function like ``scipy.stats.weibull_min.fit()`` where the shape is
             (space, N) with N being the number of parameters required by the
-            specified distribution. This input arg is for the **observed
-            historical distribution**.
-        params_mh : np.ndarray | list
+            specified distribution e.g., (shape, loc, scale) for weibull_min.
+            This input arg is for the **observed historical distribution**.
+        params_mh : np.ndarray
             Same requirements as params_oh. This input arg is for the **modeled
             historical distribution**.
-        params_mf : np.ndarray | list | None
+        params_mf : np.ndarray | None
             Same requirements as params_oh. This input arg is for the **modeled
             future distribution**. If this is None, this defaults to params_mh
             (no future data).
@@ -134,22 +137,25 @@ class PQDM:
         """
         self.params_oh = params_oh
         self.params_mh = params_mh
-        self.params_mf = params_mf
-        self.dist = self._clean_kwarg(dist)
+        self.params_mf = params_mf if params_mf is not None else params_mh
+        self.dist_name = self._clean_kwarg(dist)
         self.relative = self._clean_kwarg(relative)
 
-        self.dist_obj = getattr(scipy.stats, self.dist, None)
-        if self.dist_obj is None:
+        self.scipy_dist = getattr(scipy.stats, self.dist_name, None)
+        if self.scipy_dist is None:
             msg = ('Could not get requested distribution "{}" from '
                    '``scipy.stats``. Please double check your spelling and '
                    'select one of the options from here: '
                    'https://docs.scipy.org/doc/scipy/reference/stats.html'
-                   .format(self.dist))
+                   .format(self.dist_name))
             logger.error(msg)
             raise KeyError(msg)
 
     @staticmethod
     def _clean_kwarg(inp):
+        """Clean any kwargs inputs (e.g., dist, relative) that might be
+        provided as an array and must be collapsed into a single string or
+        boolean value"""
         unique = np.unique(inp)
         msg = ('PQDM kwargs must have only one unique input even if being '
                'called with arrays as part of reV but found: {}'
@@ -163,27 +169,60 @@ class PQDM:
 
     @staticmethod
     def _clean_params(params, arr_shape):
-        """Params shape should be (space, N) where N is the number of
-        parameters for the distribution. Array shape should be
-        (time, space)."""
+        """Re-organize 2D parameter arrays for passing into scipy distribution
+        functions.
+
+        Parameters
+        ----------
+        params : np.ndarray
+            Input params shape should be (space, N) where N is the number of
+            parameters for the distribution.
+        arr_shape : tuple
+            Array shape should be (time, space).
+
+        Returns
+        -------
+        params : np.ndarray | list
+            If the two inputs are of the expected shape, this output will be
+            params unpacked along axis=1 into a list so that the list entries
+            represent the scipy distribution parameters (e.g., shape, scale,
+            loc) and each list entry is of shape (space,)
+        """
         if arr_shape[1] == params.shape[0]:
             params = [params[:, i] for i in range(params.shape[1])]
         return params
 
     def __call__(self, arr):
+        """Run the PQDM function to bias correct an array
+
+        Parameters
+        ----------
+        arr : np.ndarray
+            2D array of values in shape (time, space)
+
+        Returns
+        -------
+        arr : np.ndarray
+            Bias corrected copy of the input array with same shape.
+        """
+
         params_oh = self._clean_params(self.params_oh, arr.shape)
         params_mh = self._clean_params(self.params_mh, arr.shape)
         params_mf = self._clean_params(self.params_mf, arr.shape)
 
-        p_mf = self.dist_obj.cdf(arr, *params_mf)
-        x_oh = self.dist_obj.ppf(p_mf, *params_oh)
+        p_mf = self.scipy_dist.cdf(arr, *params_mf)
+        x_oh = self.scipy_dist.ppf(p_mf, *params_oh)
 
         if self.relative:
-            delta = arr / self.dist_obj.ppf(p_mf, *params_mh)
+            delta = arr / self.scipy_dist.ppf(p_mf, *params_mh)
             arr_bc = x_oh * delta
         else:
-            delta = arr - self.dist_obj.ppf(p_mf, *params_mh)
+            delta = arr - self.scipy_dist.ppf(p_mf, *params_mh)
             arr_bc = x_oh + delta
+
+        msg = ('Input shape {} does not match PQDM bias corrected output '
+               'shape {}!'.format(arr.shape, arr_bc.shape))
+        assert arr.shape == arr_bc.shape, msg
 
         return arr_bc
 
@@ -205,8 +244,8 @@ def pqdm_ws(ws, params_oh, params_mh, params_mf=None, dist='weibull_min',
         2D array of probability distribution parameters created using a
         function like ``scipy.stats.weibull_min.fit()`` where the shape is
         (space, N) with N being the number of parameters required by the
-        specified distribution. This input arg is for the **observed historical
-        distribution**.
+        specified distribution e.g., (shape, loc, scale) for weibull_min. This
+        input arg is for the **observed historical distribution**.
     params_mh : np.ndarray | list
         Same requirements as params_oh. This input arg is for the **modeled
         historical distribution**.

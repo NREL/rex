@@ -10,6 +10,7 @@ import os
 import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
+from scipy.stats import weibull_min
 
 from rex.renewable_resource import WindResource, NSRDB, WaveResource
 from rex.multi_file_resource import MultiFileNSRDB
@@ -512,23 +513,50 @@ def test_bias_correct_solar_lin():
 def test_bias_correct_wind_pqdm():
     """Test parametric QDM bias correction function on windspeed"""
     h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
-    sites = slice(0, 20)
+    n = 20
+    sites = slice(0, n)
     hub_heights = 80
     base_res = WindResource.preload_SAM(h5, sites, hub_heights)
+    base_ws = base_res._res_arrays['windspeed']
+    shape, loc, scale = weibull_min.fit(base_ws.mean(axis=1))
 
-    n = 10
     bc = pd.DataFrame({'gid': np.arange(n),
                        'method': 'pqdm_ws',
-                       'params_oh': '[2.6, -0.8, 8.9]',
-                       'params_mh': '[2.6, -0.8, 8.9]',
-                       'params_mf': '[2.6, -0.8, 8.9]',
+                       'params_oh': f'[{shape}, {loc}, {scale}]',
+                       'params_mh': f'[{shape}, {loc}, {scale}]',
+                       'params_mf': f'[{shape}, {loc}, {scale}]',
                        'dist': 'weibull_min',
                        'relative': True,
                        })
 
     res = WindResource.preload_SAM(h5, sites, hub_heights)
     res.bias_correct(bc)
+    bc_ws = res._res_arrays['windspeed']
+    assert np.allclose(bc_ws, base_ws)
 
+    scale_mod = 0.9
+    bc['params_mh'] = f'[{shape}, {loc}, {scale * scale_mod}]'
+    bc = bc.drop('params_mf', axis=1)
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+    res.bias_correct(bc)
+    bc_ws = res._res_arrays['windspeed']
+
+    # spot check using manual calc
+    idys = np.random.choice(base_ws.shape[0], size=10)
+    idxs = np.random.choice(base_ws.shape[1], size=10)
+    for idy, idx in zip(idys, idxs):
+        p_mf = weibull_min.cdf(base_ws[idy, idx], shape, loc,
+                               scale * scale_mod)
+        x_oh = weibull_min.ppf(p_mf, shape, loc, scale)
+        delta = base_ws[idy, idx] / weibull_min.ppf(p_mf, shape, loc,
+                                                    scale * scale_mod)
+        single_ws_bc = x_oh * delta
+        assert np.allclose(single_ws_bc, bc_ws[idy, idx])
+
+    # almost none of the values should be the same as the input, and none
+    # should be negative
+    assert ((bc_ws == base_ws).sum() / bc_ws.size) < 0.001
+    assert not (bc_ws < 0).any()
 
 
 def execute_pytest(capture='all', flags='-rapP'):
