@@ -427,8 +427,8 @@ def test_bias_correct_errors():
     assert 'Could not find method name "test' in str(record.value)
 
 
-def test_bias_correct_wind():
-    """Test linear bias correction functionality on windspeed"""
+def test_bias_correct_wind_lin():
+    """Test linear bias correction function on windspeed"""
     h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     sites = slice(0, 20)
     hub_heights = 80
@@ -469,8 +469,8 @@ def test_bias_correct_wind():
         assert (res._res_arrays['windspeed'] >= 0).all()
 
 
-def test_bias_correct_solar():
-    """Test adder bias correction functionality on irradiance"""
+def test_bias_correct_solar_lin():
+    """Test adder bias correction function on irradiance"""
     h5 = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
     sites = slice(0, 10)
     base_res = NSRDB.preload_SAM(h5, sites)
@@ -507,6 +507,28 @@ def test_bias_correct_solar():
         cos_sza = (ghi[mask] - dhi[mask]) / (dni[mask])
         base_cos_sza = (base_ghi[mask] - base_dhi[mask]) / (base_dni[mask])
         assert np.allclose(cos_sza, base_cos_sza, atol=0.005)
+
+
+def test_bias_correct_wind_pqdm():
+    """Test parametric QDM bias correction function on windspeed"""
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    sites = slice(0, 20)
+    hub_heights = 80
+    base_res = WindResource.preload_SAM(h5, sites, hub_heights)
+
+    n = 10
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'method': 'pqdm_ws',
+                       'params_oh': '[2.6, -0.8, 8.9]',
+                       'params_mh': '[2.6, -0.8, 8.9]',
+                       'params_mf': '[2.6, -0.8, 8.9]',
+                       'dist': 'weibull_min',
+                       'relative': True,
+                       })
+
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+    res.bias_correct(bc)
+
 
 
 def execute_pytest(capture='all', flags='-rapP'):

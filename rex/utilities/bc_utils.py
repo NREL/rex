@@ -2,6 +2,7 @@
 """
 rex bias correction utilities.
 """
+import json
 import numpy as np
 import logging
 from warnings import warn
@@ -83,7 +84,18 @@ def _parse_bc_table(bc_df, gids):
 
     bc_fun_kwargs = {}
     for col in bc_df.columns:
+
+        # load serialized lists from string columns in bc_df into nested lists
+        sample = bc_df[col].values[0]
+        if isinstance(sample, str) and '[' in sample and ']' in sample:
+            bc_df[col] = bc_df[col].apply(json.loads)
+
         arr = bc_df.loc[gid_arr[bool_bc], col].values
-        bc_fun_kwargs[col] = np.expand_dims(arr, 0)
+
+        # nested lists in bc_df converted to arr of shape (space, N)
+        if isinstance(arr[0], (list, tuple)):
+            arr = np.array(arr.tolist())
+
+        bc_fun_kwargs[col] = arr
 
     return bc_fun, bc_fun_kwargs, bool_bc
