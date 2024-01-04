@@ -394,6 +394,39 @@ def test_nsrdb_and_wtk():
         _ = res._get_res_df(0)
 
 
+def test_bias_correct_errors():
+    """Negative tests for bad bias correction inputs"""
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    sites = slice(0, 20)
+    hub_heights = 80
+
+    n = 10
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'adder': np.random.uniform(-1, 1, n),
+                       'scalar': np.random.uniform(0.9, 1.1, n)})
+    with pytest.raises(KeyError) as record:
+        res.bias_correct(bc)
+    assert '"method" column not found!' in str(record.value)
+
+    bc = pd.DataFrame({'gidasdfasf': np.arange(n),
+                       'adder': np.random.uniform(-1, 1, n),
+                       'scalar': np.random.uniform(0.9, 1.1, n),
+                       'method': 'lin_ws'})
+    with pytest.raises(KeyError) as record:
+        res.bias_correct(bc)
+    assert 'must have "gid" column' in str(record.value)
+
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'adder': np.random.uniform(-1, 1, n),
+                       'scalar': np.random.uniform(0.9, 1.1, n),
+                       'method': 'testfasdfasdf'})
+    with pytest.raises(KeyError) as record:
+        res.bias_correct(bc)
+    assert 'Could not find method name "test' in str(record.value)
+
+
 def test_bias_correct_wind():
     """Test linear bias correction functionality on windspeed"""
     h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
@@ -407,16 +440,17 @@ def test_bias_correct_wind():
                        'scalar': np.random.uniform(0.9, 1.1, n),
                        'method': 'lin_ws'})
 
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+
     with pytest.warns() as record:
-        res = WindResource.preload_SAM(h5, sites, hub_heights)
         res.bias_correct(bc)
 
         assert len(record) == 1
         assert 'missing from the bias correction' in str(record[0].message)
         assert np.allclose(res._res_arrays['windspeed'][:, 10:],
                            base_res._res_arrays['windspeed'][:, 10:])
-        assert not (res._res_arrays['windspeed'][:, :10] ==
-                    base_res._res_arrays['windspeed'][:, :10]).any()
+        assert not (res._res_arrays['windspeed'][:, :10]
+                    == base_res._res_arrays['windspeed'][:, :10]).any()
         assert (res._res_arrays['windspeed'] >= 0).all()
 
     n = 200
@@ -430,8 +464,8 @@ def test_bias_correct_wind():
         res.bias_correct(bc)
 
         assert not any(record)
-        assert not (res._res_arrays['windspeed'] ==
-                    base_res._res_arrays['windspeed']).any()
+        assert not (res._res_arrays['windspeed']
+                    == base_res._res_arrays['windspeed']).any()
         assert (res._res_arrays['windspeed'] >= 0).all()
 
 

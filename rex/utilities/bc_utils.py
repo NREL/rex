@@ -44,16 +44,18 @@ def _parse_bc_table(bc_df, gids):
     """
 
     if 'method' not in bc_df:
-        msg = ('Bias correction table provided, but "method" not '
-               'found! Need to specify "method" as a function name '
-               'from `rex.bias_correction`')
-        logger.error(msg)
+        msg = ('Bias correction table provided, but "method" column not '
+               'found! Only see columns: {}. Need to specify "method" which '
+               'is a function name from `rex.bias_correction`'
+               .format(list(bc_df.columns)))
         raise KeyError(msg)
 
     if bc_df.index.name != 'gid':
-        msg = ('Bias correction table must have "gid" column but only '
-               'found: {}'.format(list(bc_df.columns)))
-        assert 'gid' in bc_df, msg
+        if 'gid' not in bc_df:
+            msg = ('Bias correction table must have "gid" column but only '
+                   'found: {}'.format(list(bc_df.columns)))
+            logger.error(msg)
+            raise KeyError(msg)
         bc_df = bc_df.set_index('gid')
 
     gid_arr = np.array(gids)
