@@ -10,6 +10,89 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _irrad_pre_proc(ghi, dni, dhi):
+    """Irradiance data pre processing to get ancillary variables
+    (run before bias correction).
+
+    Parameters
+    ----------
+    ghi : np.ndarray
+        2D array of global horizontal irradiance values in shape (time, space)
+    dni : np.ndarray
+        2D array of direct normal irradiance values in shape (time, space)
+    dhi : np.ndarray
+        2D array of diffuse horizontal irradiance values in shape (time, space)
+
+    Returns
+    -------
+    ghi_zeros : np.ndarray
+        2D boolean array, True where ghi==0, same shape as ghi input
+    dni_zeros : np.ndarray
+        2D boolean array, True where dni==0, same shape as dni input
+    dhi_zeros : np.ndarray
+        2D boolean array, True where dhi==0, same shape as dhi input
+    cos_sza : np.ndarray
+        2D array for cos(solar_zenith_angle) calculated from the basic
+        relationship ``cos_sza = (ghi - dhi) / dni``
+    """
+
+    ghi_zeros = ghi == 0
+    dni_zeros = dni == 0
+    dhi_zeros = dhi == 0
+    with np.errstate(divide='ignore', invalid='ignore'):
+        cos_sza = (ghi - dhi) / dni
+
+    return ghi_zeros, dni_zeros, dhi_zeros, cos_sza
+
+
+def _irrad_post_proc(ghi, dni, ghi_zeros, dni_zeros, dhi_zeros, cos_sza):
+    """Irradiance data post processing to calculate DHI and set limits on
+    irradiance variables (run after bias correction).
+
+    Parameters
+    ----------
+    ghi : np.ndarray
+        2D array of global horizontal irradiance values in shape (time, space)
+    dni : np.ndarray
+        2D array of direct normal irradiance values in shape (time, space)
+    ghi_zeros : np.ndarray
+        2D boolean array, True where ghi==0, same shape as ghi input
+    dni_zeros : np.ndarray
+        2D boolean array, True where dni==0, same shape as dni input
+    dhi_zeros : np.ndarray
+        2D boolean array, True where dhi==0, same shape as dhi input
+    cos_sza : np.ndarray
+        2D array for cos(solar_zenith_angle) calculated from the basic
+        relationship ``cos_sza = (ghi - dhi) / dni``
+
+    Returns
+    -------
+    ghi : np.ndarray
+        2D array of global horizontal irradiance values in shape (time, space)
+    dni : np.ndarray
+        2D array of direct normal irradiance values in shape (time, space)
+    dhi : np.ndarray
+        2D array of diffuse horizontal irradiance values in shape (time, space)
+    """
+
+    ghi = np.maximum(0, ghi)
+    dni = np.maximum(0, dni)
+
+    ghi[ghi_zeros] = 0
+    dni[dni_zeros] = 0
+
+    with np.errstate(divide='ignore', invalid='ignore'):
+        dhi = ghi - (dni * cos_sza)
+
+    dhi[dni_zeros] = ghi[dni_zeros]
+    dhi = np.maximum(0, dhi)
+    dhi[dhi_zeros] = 0
+
+    assert not np.isnan(dhi).any()
+
+    return ghi, dni, dhi
+
+
 def lin_irrad(ghi, dni, dhi, scalar=1, adder=0):
     """Correct GHI and DNI using linear correction factors. Both irradiance
     variables are corrected as ``irradiance * scalar + adder``. DHI is
@@ -40,29 +123,13 @@ def lin_irrad(ghi, dni, dhi, scalar=1, adder=0):
         2D array of diffuse horizontal irradiance values in shape (time, space)
     """
 
-    ghi_zeros = ghi == 0
-    dni_zeros = dni == 0
-    dhi_zeros = dhi == 0
-    with np.errstate(divide='ignore', invalid='ignore'):
-        cos_sza = (ghi - dhi) / dni
+    ghi_zeros, dni_zeros, dhi_zeros, cos_sza = _irrad_pre_proc(ghi, dni, dhi)
 
     ghi = ghi * scalar + adder
     dni = dni * scalar + adder
 
-    ghi = np.maximum(0, ghi)
-    dni = np.maximum(0, dni)
-
-    ghi[ghi_zeros] = 0
-    dni[dni_zeros] = 0
-
-    with np.errstate(divide='ignore', invalid='ignore'):
-        dhi = ghi - (dni * cos_sza)
-
-    dhi[dni_zeros] = ghi[dni_zeros]
-    dhi = np.maximum(0, dhi)
-    dhi[dhi_zeros] = 0
-
-    assert not np.isnan(dhi).any()
+    ghi, dni, dhi = _irrad_post_proc(ghi, dni, ghi_zeros, dni_zeros, dhi_zeros,
+                                     cos_sza)
 
     return ghi, dni, dhi
 
@@ -90,7 +157,7 @@ def lin_ws(ws, scalar=1, adder=0):
     return ws
 
 
-class PQDM:
+class _PQDM:
     """Class for parametric quantile delta mapping based on a parametric
     implementation of the method from Cannon et al., 2015
 
@@ -157,7 +224,7 @@ class PQDM:
         provided as an array and must be collapsed into a single string or
         boolean value"""
         unique = np.unique(inp)
-        msg = ('PQDM kwargs must have only one unique input even if being '
+        msg = ('_PQDM kwargs must have only one unique input even if being '
                'called with arrays as part of reV but found: {}'
                .format(unique))
         assert len(unique) == 1, msg
@@ -227,6 +294,87 @@ class PQDM:
         return arr_bc
 
 
+def pqdm_irrad(ghi, dni, dhi,
+               ghi_params_oh, dni_params_oh,
+               ghi_params_mh, dni_params_mh,
+               ghi_params_mf=None, dni_params_mf=None,
+               dist='weibull_min', relative=True):
+    """Correct irradiance using parametric quantile delta mapping based on a
+    parametric implementation of the method from Cannon et al., 2015
+
+    Cannon, A. J., Sobie, S. R. & Murdock, T. Q. Bias Correction of GCM
+    Precipitation by Quantile Mapping: How Well Do Methods Preserve Changes in
+    Quantiles and Extremes? Journal of Climate 28, 6938–6959 (2015).
+
+    Parameters
+    ----------
+    ghi : np.ndarray
+        2D array of global horizontal irradiance values in shape (time, space)
+    dni : np.ndarray
+        2D array of direct normal irradiance values in shape (time, space)
+    dhi : np.ndarray
+        2D array of diffuse horizontal irradiance values in shape (time, space)
+    ghi_params_oh : np.ndarray | list
+        2D array of probability distribution parameters for GHI created using a
+        function like ``scipy.stats.weibull_min.fit()`` where the shape is
+        (space, N) with N being the number of parameters required by the
+        specified distribution e.g., (shape, loc, scale) for weibull_min. This
+        input arg is for the **observed historical distribution**.
+    dni_params_oh : np.ndarray | list
+        Same requirements as ghi_params_oh. This input arg is for the
+        **observed historical distribution** for DNI.
+    ghi_params_mh : np.ndarray | list
+        Same requirements as ghi_params_oh. This input arg is for the **modeled
+        historical distribution**.
+    dni_params_mh : np.ndarray | list
+        Same requirements as ghi_params_oh. This input arg is for the **modeled
+        historical distribution** for DNI.
+    ghi_params_mf : np.ndarray | list | None
+        Same requirements as ghi_params_oh. This input arg is for the **modeled
+        future distribution**. If this is None, this defaults to ghi_params_mh
+        (no future data).
+    dni_params_mf : np.ndarray | list | None
+        Same requirements as ghi_params_oh. This input arg is for the **modeled
+        future distribution** for DNI. If this is None, this defaults to
+        dni_params_mh (no future data).
+    dist : str | np.ndarray
+        Parametric probability distribution name to use to model the windspeed.
+        This can be any distribution name from ``scipy.stats``. Can also
+        be an array of dist inputs if being used from reV, but they must all be
+        the same option.
+    relative : bool | np.ndarray
+        Flag to preserve relative rather than absolute changes in quantiles.
+        relative=False (default) will multiply by the change in quantiles while
+        relative=True will add. See Equations 4-6 from Cannon et al., 2015 for
+        more details. Can also be an array of dist inputs if being used from
+        reV, but they must all be the same option.
+
+    Returns
+    -------
+    ghi : np.ndarray
+        2D array of global horizontal irradiance values in shape (time, space)
+    dni : np.ndarray
+        2D array of direct normal irradiance values in shape (time, space)
+    dhi : np.ndarray
+        2D array of diffuse horizontal irradiance values in shape (time, space)
+    """
+
+    ghi_zeros, dni_zeros, dhi_zeros, cos_sza = _irrad_pre_proc(ghi, dni, dhi)
+
+    ghi_pqdm = _PQDM(ghi_params_oh, ghi_params_mh, ghi_params_mf,
+                     dist, relative)
+    dni_pqdm = _PQDM(dni_params_oh, dni_params_mh, dni_params_mf,
+                     dist, relative)
+
+    ghi = ghi_pqdm(ghi)
+    dni = dni_pqdm(dni)
+
+    ghi, dni, dhi = _irrad_post_proc(ghi, dni, ghi_zeros, dni_zeros, dhi_zeros,
+                                     cos_sza)
+
+    return ghi, dni, dhi
+
+
 def pqdm_ws(ws, params_oh, params_mh, params_mf=None, dist='weibull_min',
             relative=True):
     """Correct windspeed using parametric quantile delta mapping based on a
@@ -272,7 +420,7 @@ def pqdm_ws(ws, params_oh, params_mh, params_mf=None, dist='weibull_min',
         2D array of windspeed values in shape (time, space)
     """
 
-    pqdm = PQDM(params_oh, params_mh, params_mf, dist, relative)
+    pqdm = _PQDM(params_oh, params_mh, params_mf, dist, relative)
     ws = pqdm(ws)
     ws = np.maximum(ws, 0)
     return ws
