@@ -421,8 +421,8 @@ def qdm_irrad(ghi, dni, dhi,
     # This will prevent inverse CDF functions from returning zero resulting in
     # a divide by zero error in the calculation of the QDM delta. These zeros
     # get fixed later in _irrad_post_proc
-    ghi[ghi_zeros] = 1500
-    dni[dni_zeros] = 1500
+    ghi[ghi_zeros] = 1
+    dni[dni_zeros] = 1
 
     ghi = ghi_qdm(ghi)
     dni = dni_qdm(dni)

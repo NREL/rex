@@ -105,11 +105,19 @@ def cdf(data, n=50, decimals=None):
         evenly spaced in quantile space on the y-axis of the CDF.
     """
 
-    p = np.linspace(0, 1, n)
-    x = np.interp(p, np.linspace(0, 1, len(data)), sorted(data))
+    nan_mask = np.isnan(data)
+    if nan_mask.all():
+        return np.zeros(n)
 
-    assert x[0] == data.min()
-    assert x[-1] == data.max()
+    p = np.linspace(0, 1, n)
+    x = np.interp(p, np.linspace(0, 1, len(data[~nan_mask])),
+                  sorted(data[~nan_mask]))
+
+    msg = (f'First and last points defining the CDF ({x[0]}, {x[-1]}) '
+           f'were not the min and max data values '
+           f'({np.nanmin(data)}, {np.nanmin(data)}).')
+    assert x[0] == np.nanmin(data), msg
+    assert x[-1] == np.nanmax(data), msg
 
     if decimals is not None:
         x = np.round(x, decimals=decimals)
