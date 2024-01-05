@@ -83,7 +83,7 @@ def circular_mean(data, weights=None, degrees=True, axis=0,
     return mean
 
 
-def cdf(data, n=50, decimals=None):
+def cdf(data, n=10, decimals=None):
     """Get a number of x-values that define a CDF for the input data.
 
     Parameters
