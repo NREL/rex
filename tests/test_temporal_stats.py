@@ -13,7 +13,7 @@ import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource, NSRDB
-from rex.temporal_stats.temporal_stats import TemporalStats, circular_mean
+from rex.temporal_stats.temporal_stats import TemporalStats, circular_mean, cdf
 from rex.temporal_stats.temporal_stats_cli import main
 from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
@@ -279,6 +279,20 @@ def test_weighted_circular_means(weights):
     name = 'Jan_{}'.format(name)
     msg = 'January circular means do not match!'
     assert np.allclose(truth, test_stats[name].values, rtol=0, atol=0.01), msg
+
+
+def test_cdf(n=21):
+    """Test the CDF function which gets evenly spaced values (in quantile
+    space) defining the empirical CDF of a dataset"""
+    data = np.random.normal(0, 1, (1000,))
+    x = cdf(data, n=n, decimals=None)
+
+    quantiles = np.linspace(0, 1, n)
+    assert quantiles[0] == 0
+    assert quantiles[-1] == 1
+
+    for i, q in enumerate(quantiles):
+        assert np.allclose(np.percentile(data, 100 * q), x[i])
 
 
 def test_mask_zeros():

@@ -83,6 +83,40 @@ def circular_mean(data, weights=None, degrees=True, axis=0,
     return mean
 
 
+def cdf(data, n=50, decimals=None):
+    """Get a number of x-values that define a CDF for the input data.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        1D array of data to make a CDF for
+    n : int
+        Number of points to fit the CDF
+    decimals : int | None
+        Precision to round output to (see docstring for np.round). None will
+        not round outputs (default).
+
+    Returns
+    -------
+    x : np.ndarray
+        1D array of values with shape (n,). Each value is in the same units as
+        the input data argument. The x[0] is the minimum value of data (0th
+        percentile) and x[-1] is the maximum (100th percentile). The values are
+        evenly spaced in quantile space on the y-axis of the CDF.
+    """
+
+    p = np.linspace(0, 1, n)
+    x = np.interp(p, np.linspace(0, 1, len(data)), sorted(data))
+
+    assert x[0] == data.min()
+    assert x[-1] == data.max()
+
+    if decimals is not None:
+        x = np.round(x, decimals=decimals)
+
+    return x
+
+
 class TemporalStats:
     """
     Temporal Statistics from Resource Data
