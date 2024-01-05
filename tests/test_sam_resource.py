@@ -2,6 +2,7 @@
 """
 pytests for sam_resource
 """
+import json
 import tempfile
 import numpy as np
 import shutil
@@ -521,7 +522,7 @@ def test_bias_correct_wind_pqdm():
     shape, loc, scale = weibull_min.fit(base_ws.mean(axis=1))
 
     bc = pd.DataFrame({'gid': np.arange(n),
-                       'method': 'pqdm_ws',
+                       'method': 'qdm_ws',
                        'params_oh': f'[{shape}, {loc}, {scale}]',
                        'params_mh': f'[{shape}, {loc}, {scale}]',
                        'params_mf': f'[{shape}, {loc}, {scale}]',
@@ -557,6 +558,88 @@ def test_bias_correct_wind_pqdm():
     # should be negative
     assert ((bc_ws == base_ws).sum() / bc_ws.size) < 0.001
     assert not (bc_ws < 0).any()
+
+
+def test_bias_correct_wind_qdm():
+    """Test empirical QDM bias correction function on windspeed"""
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    n = 20
+    sites = slice(0, n)
+    hub_heights = 80
+    base_res = WindResource.preload_SAM(h5, sites, hub_heights)
+    base_ws = base_res._res_arrays['windspeed']
+
+    base_params = list(np.linspace(0, 100, 10))
+
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'method': 'qdm_ws',
+                       'params_oh': json.dumps(base_params),
+                       'params_mh': json.dumps(base_params),
+                       'params_mf': json.dumps(base_params),
+                       'dist': 'empirical',
+                       'relative': True,
+                       })
+
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+    res.bias_correct(bc)
+    bc_ws = res._res_arrays['windspeed']
+    assert np.allclose(bc_ws, base_ws)
+
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+    params = list(0.1*np.ones(10))
+    bc['params_oh'] = json.dumps(params)
+    bc.loc[0, 'params_oh'] = json.dumps(base_params)
+    res.bias_correct(bc)
+    bc_ws = res._res_arrays['windspeed']
+    assert np.allclose(bc_ws[:, 0], base_ws[:, 0])
+    assert ((bc_ws[:, 1:] > base_ws[:, 1:]).sum() / bc_ws[:, 1:].size) < 1e-4
+
+
+def test_bias_correct_irrad_qdm():
+    """Test empirical QDM bias correction function on irradiance"""
+    h5 = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+    n = 10
+    sites = slice(0, n)
+    base_res = NSRDB.preload_SAM(h5, sites)
+    base_ghi = base_res._res_arrays['ghi']
+    base_dni = base_res._res_arrays['dni']
+
+    base_params = list(np.linspace(0, 1300, 10))
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'ghi_params_oh': json.dumps(base_params),
+                       'dni_params_oh': json.dumps(base_params),
+                       'ghi_params_mh': json.dumps(base_params),
+                       'dni_params_mh': json.dumps(base_params),
+                       'method': 'qdm_irrad'},
+                      )
+
+    res = NSRDB.preload_SAM(h5, sites)
+    res.bias_correct(bc)
+    assert np.allclose(base_res._res_arrays['ghi'], base_ghi)
+    assert np.allclose(base_res._res_arrays['dni'], base_dni)
+
+    res = NSRDB.preload_SAM(h5, sites)
+    params = list(0.1*np.ones(10))
+    bc['ghi_params_oh'] = json.dumps(params)
+    res.bias_correct(bc)
+    bc_ghi = res._res_arrays['ghi']
+    bc_dni = res._res_arrays['dni']
+    bc_dhi = res._res_arrays['dhi']
+    assert (bc_ghi >= 0).all() & (bc_dni >= 0).all() & (bc_dhi >= 0).all()
+    assert (bc_ghi.mean(axis=0) < base_ghi.mean(axis=0)).all()
+    assert np.allclose(bc_dni, base_dni)
+
+    res = NSRDB.preload_SAM(h5, sites)
+    params = list(0.1*np.ones(10))
+    bc['ghi_params_oh'] = json.dumps(base_params)
+    bc['dni_params_oh'] = json.dumps(params)
+    res.bias_correct(bc)
+    bc_ghi = res._res_arrays['ghi']
+    bc_dni = res._res_arrays['dni']
+    bc_dhi = res._res_arrays['dhi']
+    assert (bc_ghi >= 0).all() & (bc_dni >= 0).all() & (bc_dhi >= 0).all()
+    assert (bc_dni.mean(axis=0) < base_dni.mean(axis=0)).all()
+    assert np.allclose(bc_ghi, base_ghi)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
