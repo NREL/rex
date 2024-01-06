@@ -83,46 +83,71 @@ def circular_mean(data, weights=None, degrees=True, axis=0,
     return mean
 
 
-def cdf(data, n=10, decimals=None):
+def cdf(data, n_samples=50, sampling='linear', log_base=10, decimals=None):
     """Get a number of x-values that define a CDF for the input data.
 
     Parameters
     ----------
     data : np.ndarray
         1D array of data to make a CDF for
-    n : int
+    n_samples : int
         Number of points to fit the CDF
+    sampling : str
+        Option for quantile sampling, e.g., how to sample the y-axis of the
+        distribution. "linear" will do even spacing, "log" will concentrate
+        samples near quantile=0, and "invlog" will concentrate samples near
+        quantile=1
+    log_base : int | float
+        Log base value if sampling is "log" or "invlog". A higher value will
+        concentrate more samples at the extreme sides of the distribution.
     decimals : int | None
         Precision to round output to (see docstring for np.round). None will
         not round outputs (default).
 
     Returns
     -------
-    x : np.ndarray
-        1D array of values with shape (n,). Each value is in the same units as
-        the input data argument. The x[0] is the minimum value of data (0th
-        percentile) and x[-1] is the maximum (100th percentile). The values are
-        evenly spaced in quantile space on the y-axis of the CDF.
+    x_values : np.ndarray
+        1D array of values with shape (n_samples,). Each value is in the same
+        units as the input data argument. The x_values[0] is the minimum value
+        of data (0th percentile) and x_values[-1] is the maximum
+        (100th percentile). The values are spaced in quantile space (y-axis of
+        the CDF) according to the sampling option (e.g., evenly spaced if
+        sampling='linear').
     """
 
     nan_mask = np.isnan(data)
     if nan_mask.all():
-        return np.zeros(n)
+        return np.zeros(n_samples)
 
-    p = np.linspace(0, 1, n)
-    x = np.interp(p, np.linspace(0, 1, len(data[~nan_mask])),
-                  sorted(data[~nan_mask]))
+    if sampling == 'linear':
+        quantiles = np.linspace(0, 1, n_samples)
+    elif sampling == 'log':
+        quantiles = np.logspace(0, 1, n_samples, base=log_base)
+        quantiles = (quantiles - 1) / (log_base - 1)
+    elif sampling == 'invlog':
+        quantiles = np.logspace(0, 1, n_samples, base=log_base)
+        quantiles = (quantiles - 1) / (log_base - 1)
+        quantiles = np.array(sorted(1 - quantiles))
+    else:
+        msg = ('sampling option must be linear, log, or invlog, but received: '
+               '{}'.format(sampling))
+        logger.error(msg)
+        raise KeyError(msg)
 
-    msg = (f'First and last points defining the CDF ({x[0]}, {x[-1]}) '
+    x_values = np.interp(quantiles, np.linspace(0, 1, len(data[~nan_mask])),
+                         sorted(data[~nan_mask]))
+
+    msg = (f'First and last x-value points defining the CDF '
+           '({x_values[0]}, {x_values[-1]}) '
            f'were not the min and max data values '
            f'({np.nanmin(data)}, {np.nanmin(data)}).')
-    assert x[0] == np.nanmin(data), msg
-    assert x[-1] == np.nanmax(data), msg
+    assert x_values[0] == np.nanmin(data), msg
+    assert x_values[-1] == np.nanmax(data), msg
 
     if decimals is not None:
-        x = np.round(x, decimals=decimals)
+        x_values = np.round(x_values, decimals=decimals)
 
-    return x
+    return x_values
 
 
 class TemporalStats:
