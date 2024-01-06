@@ -169,7 +169,8 @@ class _QuantileDeltaMapping:
     Quantiles and Extremes? Journal of Climate 28, 6938–6959 (2015).
     """
 
-    def __init__(self, params_oh, params_mh, params_mf, dist, relative):
+    def __init__(self, params_oh, params_mh, params_mf, dist='empirical',
+                 relative=True, sampling='linear', log_base=10):
         """
         Parameters
         ----------
@@ -203,13 +204,28 @@ class _QuantileDeltaMapping:
             Cannon et al., 2015 for more details. Can also be a 1D array of
             dist inputs if being used from reV, but they must all be the same
             option.
+        sampling : str | np.ndarray
+            If dist="empirical", this is an option for how the quantiles were
+            sampled to produce the params inputs, e.g., how to sample the
+            y-axis of the distribution. "linear" will do even spacing, "log"
+            will concentrate samples near quantile=0, and "invlog" will
+            concentrate samples near quantile=1. Can also be a 1D array of dist
+            inputs if being used from reV, but they must all be the same
+            option.
+        log_base : int | float | np.ndarray
+            Log base value if sampling is "log" or "invlog". A higher value
+            will concentrate more samples at the extreme sides of the
+            distribution. Can also be a 1D array of dist inputs if being used
+            from reV, but they must all be the same option.
         """
 
         self.params_oh = params_oh
         self.params_mh = params_mh
         self.params_mf = params_mf if params_mf is not None else params_mh
-        self.relative = self._clean_kwarg(relative)
-        self.dist_name = self._clean_kwarg(dist)
+        self.relative = bool(self._clean_kwarg(relative))
+        self.dist_name = str(self._clean_kwarg(dist))
+        self.sampling = str(self._clean_kwarg(sampling))
+        self.log_base = float(self._clean_kwarg(log_base))
         self.scipy_dist = None
 
         if self.dist_name != 'empirical':
@@ -273,6 +289,30 @@ class _QuantileDeltaMapping:
 
         return params
 
+    def _get_quantiles(self, n_samples):
+        """If dist='empirical', this will get the quantile values for the CDF
+        x-values specified in the input params"""
+
+        if self.sampling == 'linear':
+            quantiles = np.linspace(0, 1, n_samples)
+
+        elif self.sampling == 'log':
+            quantiles = np.logspace(0, 1, n_samples, base=self.log_base)
+            quantiles = (quantiles - 1) / (self.log_base - 1)
+
+        elif self.sampling == 'invlog':
+            quantiles = np.logspace(0, 1, n_samples, base=self.log_base)
+            quantiles = (quantiles - 1) / (self.log_base - 1)
+            quantiles = np.array(sorted(1 - quantiles))
+
+        else:
+            msg = ('sampling option must be linear, log, or invlog, but '
+                   'received: {}'.format(self.sampling))
+            logger.error(msg)
+            raise KeyError(msg)
+
+        return quantiles
+
     def cdf(self, x, params):
         """Run the CDF function e.g., convert physical variable to quantile"""
 
@@ -280,9 +320,8 @@ class _QuantileDeltaMapping:
             p = np.zeros_like(x)
             for idx in range(x.shape[1]):
                 xp = params[idx, :]
-                fp = np.linspace(0, 1, len(xp))
+                fp = self._get_quantiles(len(xp))
                 p[:, idx] = np.interp(x[:, idx], xp, fp)
-
         else:
             p = self.scipy_dist.cdf(x, *params)
 
@@ -296,7 +335,7 @@ class _QuantileDeltaMapping:
             x = np.zeros_like(p)
             for idx in range(p.shape[1]):
                 fp = params[idx, :]
-                xp = np.linspace(0, 1, len(fp))
+                xp = self._get_quantiles(len(fp))
                 x[:, idx] = np.interp(p[:, idx], xp, fp)
         else:
             x = self.scipy_dist.ppf(p, *params)
@@ -342,7 +381,8 @@ def qdm_irrad(ghi, dni, dhi,
               ghi_params_oh, dni_params_oh,
               ghi_params_mh, dni_params_mh,
               ghi_params_mf=None, dni_params_mf=None,
-              dist='empirical', relative=True):
+              dist='empirical', relative=True,
+              sampling='linear', log_base=10):
     """Correct irradiance using the quantile delta mapping based on the method
     from Cannon et al., 2015
 
@@ -400,6 +440,18 @@ def qdm_irrad(ghi, dni, dhi,
         Cannon et al., 2015 for more details. Can also be a 1D array of
         dist inputs if being used from reV, but they must all be the same
         option.
+    sampling : str | np.ndarray
+        If dist="empirical", this is an option for how the quantiles were
+        sampled to produce the params inputs, e.g., how to sample the
+        y-axis of the distribution. "linear" will do even spacing, "log"
+        will concentrate samples near quantile=0, and "invlog" will
+        concentrate samples near quantile=1. Can also be a 1D array of dist
+        inputs if being used from reV, but they must all be the same option.
+    log_base : int | float | np.ndarray
+        Log base value if sampling is "log" or "invlog". A higher value
+        will concentrate more samples at the extreme sides of the
+        distribution. Can also be a 1D array of dist inputs if being used from
+        reV, but they must all be the same option.
 
     Returns
     -------
@@ -414,9 +466,13 @@ def qdm_irrad(ghi, dni, dhi,
     ghi_zeros, dni_zeros, dhi_zeros, cos_sza = _irrad_pre_proc(ghi, dni, dhi)
 
     ghi_qdm = _QuantileDeltaMapping(ghi_params_oh, ghi_params_mh,
-                                    ghi_params_mf, dist, relative)
+                                    ghi_params_mf, dist=dist,
+                                    relative=relative, sampling=sampling,
+                                    log_base=log_base)
     dni_qdm = _QuantileDeltaMapping(dni_params_oh, dni_params_mh,
-                                    dni_params_mf, dist, relative)
+                                    dni_params_mf, dist=dist,
+                                    relative=relative, sampling=sampling,
+                                    log_base=log_base)
 
     # This will prevent inverse CDF functions from returning zero resulting in
     # a divide by zero error in the calculation of the QDM delta. These zeros
@@ -434,7 +490,7 @@ def qdm_irrad(ghi, dni, dhi,
 
 
 def qdm_ws(ws, params_oh, params_mh, params_mf=None, dist='empirical',
-           relative=True):
+           relative=True, sampling='linear', log_base=10):
     """Correct windspeed using quantile delta mapping based on the method from
     Cannon et al., 2015
 
@@ -476,6 +532,18 @@ def qdm_ws(ws, params_oh, params_mh, params_mf=None, dist='empirical',
         Cannon et al., 2015 for more details. Can also be a 1D array of
         dist inputs if being used from reV, but they must all be the same
         option.
+    sampling : str | np.ndarray
+        If dist="empirical", this is an option for how the quantiles were
+        sampled to produce the params inputs, e.g., how to sample the
+        y-axis of the distribution. "linear" will do even spacing, "log"
+        will concentrate samples near quantile=0, and "invlog" will
+        concentrate samples near quantile=1. Can also be a 1D array of dist
+        inputs if being used from reV, but they must all be the same option.
+    log_base : int | float | np.ndarray
+        Log base value if sampling is "log" or "invlog". A higher value
+        will concentrate more samples at the extreme sides of the
+        distribution. Can also be a 1D array of dist inputs if being used from
+        reV, but they must all be the same option.
 
     Returns
     -------
@@ -483,8 +551,9 @@ def qdm_ws(ws, params_oh, params_mh, params_mf=None, dist='empirical',
         2D array of windspeed values in shape (time, space)
     """
 
-    qdm = _QuantileDeltaMapping(params_oh, params_mh, params_mf, dist,
-                                relative)
+    qdm = _QuantileDeltaMapping(params_oh, params_mh, params_mf, dist=dist,
+                                relative=relative, sampling=sampling,
+                                log_base=log_base)
     ws = qdm(ws)
     ws = np.maximum(ws, 0)
     return ws
