@@ -281,13 +281,38 @@ def test_weighted_circular_means(weights):
     assert np.allclose(truth, test_stats[name].values, rtol=0, atol=0.01), msg
 
 
-def test_cdf(n=21):
+@pytest.mark.parametrize("n_samples", [21, 50])
+def test_cdf_linear(n_samples):
     """Test the CDF function which gets evenly spaced values (in quantile
     space) defining the empirical CDF of a dataset"""
     data = np.random.normal(0, 1, (1000,))
-    x = cdf(data, n=n, decimals=None)
+    x = cdf(data, n_samples=n_samples, decimals=None)
 
-    quantiles = np.linspace(0, 1, n)
+    assert x[0] == data.min()
+    assert x[-1] == data.max()
+
+    quantiles = np.linspace(0, 1, n_samples)
+    assert quantiles[0] == 0
+    assert quantiles[-1] == 1
+
+    for i, q in enumerate(quantiles):
+        assert np.allclose(np.percentile(data, 100 * q), x[i])
+
+
+@pytest.mark.parametrize(("n_samples", "log_base"), [(21, 10), (50, 2)])
+def test_cdf_invlog(n_samples, log_base):
+    """Test the CDF function which gets inverse-log-spaced spaced values
+    (in quantile space) defining the empirical CDF of a dataset"""
+    data = np.random.normal(0, 1, (10000,))
+    x = cdf(data, n_samples=n_samples, decimals=None, sampling='invlog',
+            log_base=log_base)
+
+    assert x[0] == data.min()
+    assert x[-1] == data.max()
+
+    quantiles = np.logspace(0, 1, n_samples, base=log_base)
+    quantiles = (quantiles - 1) / (log_base - 1)
+    quantiles = np.array(sorted(1 - quantiles))
     assert quantiles[0] == 0
     assert quantiles[-1] == 1
 

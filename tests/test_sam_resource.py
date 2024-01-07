@@ -586,13 +586,13 @@ def test_bias_correct_wind_qdm():
     assert np.allclose(bc_ws, base_ws)
 
     res = WindResource.preload_SAM(h5, sites, hub_heights)
-    params = list(0.1*np.ones(10))
+    params = sorted(np.random.uniform(10, 20, 10))
     bc['params_oh'] = json.dumps(params)
     bc.loc[0, 'params_oh'] = json.dumps(base_params)
     res.bias_correct(bc)
     bc_ws = res._res_arrays['windspeed']
     assert np.allclose(bc_ws[:, 0], base_ws[:, 0])
-    assert ((bc_ws[:, 1:] > base_ws[:, 1:]).sum() / bc_ws[:, 1:].size) < 1e-4
+    assert ((bc_ws[:, 1:] != base_ws[:, 1:]).sum() / bc_ws[:, 1:].size) > 0.99
 
 
 def test_bias_correct_irrad_qdm():
