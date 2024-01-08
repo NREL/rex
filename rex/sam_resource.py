@@ -721,6 +721,9 @@ class SAMResource:
 
         bc_fun, bc_fun_kwargs, bool_bc = _parse_bc_table(bc_df, self.sites)
 
+        if not bool_bc.any():
+            return
+
         if 'ghi' in self._res_arrays and 'dni' in self._res_arrays:
             logger.debug('Bias correcting irradiance with function {} '
                          'for sites {}'.format(bc_fun, self.sites))

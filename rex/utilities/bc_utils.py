@@ -61,7 +61,11 @@ def _parse_bc_table(bc_df, gids):
 
     gid_arr = np.array(gids)
     bool_bc = np.isin(gid_arr, bc_df.index.values)
-    if not bool_bc.all():
+
+    if not bool_bc.any():
+        return None, {}, bool_bc
+
+    elif not bool_bc.all():
         missing = gid_arr[~bool_bc]
         msg = ('{} sites were missing from the bias correction table, '
                'not bias correcting: {}'.format(len(missing), missing))
@@ -88,7 +92,7 @@ def _parse_bc_table(bc_df, gids):
         # load serialized lists from string columns in bc_df into nested lists
         sample = bc_df[col].values[0]
         if isinstance(sample, str) and '[' in sample and ']' in sample:
-            bc_df[col] = bc_df[col].apply(json.loads)
+            bc_df.loc[:, col] = bc_df[col].apply(json.loads)
 
         arr = bc_df.loc[gid_arr[bool_bc], col].values
 

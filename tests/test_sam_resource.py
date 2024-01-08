@@ -619,7 +619,7 @@ def test_bias_correct_irrad_qdm():
     assert np.allclose(base_res._res_arrays['dni'], base_dni)
 
     res = NSRDB.preload_SAM(h5, sites)
-    params = list(0.1*np.ones(10))
+    params = list(0.1 * np.ones(10))
     bc['ghi_params_oh'] = json.dumps(params)
     res.bias_correct(bc)
     bc_ghi = res._res_arrays['ghi']
@@ -630,7 +630,7 @@ def test_bias_correct_irrad_qdm():
     assert np.allclose(bc_dni, base_dni)
 
     res = NSRDB.preload_SAM(h5, sites)
-    params = list(0.1*np.ones(10))
+    params = list(0.1 * np.ones(10))
     bc['ghi_params_oh'] = json.dumps(base_params)
     bc['dni_params_oh'] = json.dumps(params)
     res.bias_correct(bc)
