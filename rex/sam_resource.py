@@ -9,7 +9,7 @@ import pandas as pd
 from warnings import warn
 import logging
 
-from rex.utilities.bc_utils import _parse_bc_table
+from rex.utilities.bc_parse_table import parse_bc_table
 from rex.utilities.exceptions import (ResourceKeyError, ResourceRuntimeError,
                                       ResourceValueError, SAMInputWarning)
 from rex.utilities.parse_keys import parse_keys
@@ -719,7 +719,7 @@ class SAMResource:
             bias correction methods.
         """
 
-        bc_fun, bc_fun_kwargs, bool_bc = _parse_bc_table(bc_df, self.sites)
+        bc_fun, bc_fun_kwargs, bool_bc = parse_bc_table(bc_df, self.sites)
 
         if not bool_bc.any():
             return

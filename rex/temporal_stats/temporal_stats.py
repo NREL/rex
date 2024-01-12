@@ -10,6 +10,8 @@ import os
 import pandas as pd
 
 from rex.resource import Resource
+from rex.utilities.bc_utils import (sample_q_linear, sample_q_log,
+                                    sample_q_invlog)
 from rex.utilities.execution import SpawnProcessPool
 from rex.utilities.loggers import log_mem, log_versions, create_dirs
 from rex.utilities.utilities import get_lat_lon_cols, slice_sites
@@ -93,7 +95,8 @@ def cdf(data, n_samples=50, sampling='linear', log_base=10, decimals=None):
     n_samples : int
         Number of points to fit the CDF
     sampling : str
-        Option for quantile sampling, e.g., how to sample the y-axis of the
+        Option for quantile sampling (see sampling functions in
+        ``rex.utilities.bc_utils``), e.g., how to sample the y-axis of the
         distribution. "linear" will do even spacing, "log" will concentrate
         samples near quantile=0, and "invlog" will concentrate samples near
         quantile=1
@@ -119,15 +122,13 @@ def cdf(data, n_samples=50, sampling='linear', log_base=10, decimals=None):
     if nan_mask.all():
         return np.zeros(n_samples)
 
+    sampling = sampling.casefold()
     if sampling == 'linear':
-        quantiles = np.linspace(0, 1, n_samples)
+        quantiles = sample_q_linear(n_samples)
     elif sampling == 'log':
-        quantiles = np.logspace(0, 1, n_samples, base=log_base)
-        quantiles = (quantiles - 1) / (log_base - 1)
+        quantiles = sample_q_log(n_samples, log_base)
     elif sampling == 'invlog':
-        quantiles = np.logspace(0, 1, n_samples, base=log_base)
-        quantiles = (quantiles - 1) / (log_base - 1)
-        quantiles = np.array(sorted(1 - quantiles))
+        quantiles = sample_q_invlog(n_samples, log_base)
     else:
         msg = ('sampling option must be linear, log, or invlog, but received: '
                '{}'.format(sampling))
