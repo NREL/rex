@@ -275,17 +275,23 @@ class QuantileDeltaMapping:
         params_mh = self._clean_params(self.params_mh, arr.shape)
         params_mf = self._clean_params(self.params_mf, arr.shape)
 
-        q_mf = self.cdf(arr, params_mf)  # Tau_m_p
-        x_oh = self.ppf(q_mf, params_oh)  # x^_o:m_h:p
-        x_mh_mf = self.ppf(q_mf, params_mh)  # F-1_mh[Tau_m_p]
+        # Equation references are from Section 3 of Cannon et al 2015:
+        # Cannon, A. J., Sobie, S. R. & Murdock, T. Q. Bias Correction of GCM
+        # Precipitation by Quantile Mapping: How Well Do Methods Preserve
+        # Changes in Quantiles and Extremes? Journal of Climate 28, 6938–6959
+        # (2015).
+
+        q_mf = self.cdf(arr, params_mf)  # Eq.3: Tau_m_p = F_m_p(x_m_p)
+        x_oh = self.ppf(q_mf, params_oh)  # Eq.5: x^_o:m_h:p = F-1_o_h(Tau_m_p)
+        x_mh_mf = self.ppf(q_mf, params_mh)  # Eq.4 denom: F-1_m_h(Tau_m_p)
 
         if self.relative:
             x_mh_mf[x_mh_mf == 0] = 0.001  # arbitrary limit to prevent div 0
-            delta = arr / x_mh_mf
-            arr_bc = x_oh * delta
+            delta = arr / x_mh_mf  # Eq.4: x_m_p / F-1_m_h(Tau_m_p)
+            arr_bc = x_oh * delta  # Eq.6: x^_m_p = x^_o:m_h:p * delta
         else:
-            delta = arr - x_mh_mf
-            arr_bc = x_oh + delta
+            delta = arr - x_mh_mf  # Eq.4: x_m_p - F-1_m_h(Tau_m_p)
+            arr_bc = x_oh + delta  # Eq.6: x^_m_p = x^_o:m_h:p + delta
 
         msg = ('Input shape {} does not match QDM bias corrected output '
                'shape {}!'.format(arr.shape, arr_bc.shape))
