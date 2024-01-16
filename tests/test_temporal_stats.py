@@ -7,13 +7,13 @@ import numpy as np
 import os
 import pandas as pd
 import pytest
-from scipy.stats import mode
+import scipy
 import tempfile
 import traceback
 
 from rex.multi_year_resource import MultiYearWindResource
 from rex.renewable_resource import WindResource, NSRDB
-from rex.temporal_stats.temporal_stats import TemporalStats, circular_mean
+from rex.temporal_stats.temporal_stats import TemporalStats, circular_mean, cdf
 from rex.temporal_stats.temporal_stats_cli import main
 from rex.utilities.loggers import LOGGERS
 from rex import TESTDATADIR
@@ -39,7 +39,7 @@ def mode_func(arr, axis=0):
     """
     custom mode stats
     """
-    return mode(arr, axis=axis, keepdims=True).mode[0]
+    return scipy.stats.mode(arr, axis=axis, keepdims=True).mode[0]
 
 
 @pytest.mark.parametrize(("max_workers", "sites"),
@@ -185,7 +185,7 @@ def test_custom_stats(max_workers):
     msg = 'Mins do not match!'
     assert np.allclose(truth, test_stats['min'].values), msg
 
-    truth = mode(res_data, axis=0, keepdims=True).mode[0]
+    truth = scipy.stats.mode(res_data, axis=0, keepdims=True).mode[0]
     msg = 'Modes do not match!'
     assert np.allclose(truth, test_stats['mode'].values), msg
 
@@ -194,7 +194,7 @@ def test_custom_stats(max_workers):
     msg = 'January mins do not match!'
     assert np.allclose(truth, test_stats['Jan_min'].values), msg
 
-    truth = mode(res_data[mask], axis=0, keepdims=True).mode[0]
+    truth = scipy.stats.mode(res_data[mask], axis=0, keepdims=True).mode[0]
     msg = 'January modes do not match!'
     assert np.allclose(truth, test_stats['Jan_mode'].values), msg
 
@@ -281,6 +281,45 @@ def test_weighted_circular_means(weights):
     assert np.allclose(truth, test_stats[name].values, rtol=0, atol=0.01), msg
 
 
+@pytest.mark.parametrize("n_samples", [21, 50])
+def test_cdf_linear(n_samples):
+    """Test the CDF function which gets evenly spaced values (in quantile
+    space) defining the empirical CDF of a dataset"""
+    data = np.random.normal(0, 1, (1000,))
+    x = cdf(data, n_samples=n_samples, decimals=None)
+
+    assert x[0] == data.min()
+    assert x[-1] == data.max()
+
+    quantiles = np.linspace(0, 1, n_samples)
+    assert quantiles[0] == 0
+    assert quantiles[-1] == 1
+
+    for i, q in enumerate(quantiles):
+        assert np.allclose(np.percentile(data, 100 * q), x[i])
+
+
+@pytest.mark.parametrize(("n_samples", "log_base"), [(21, 10), (50, 2)])
+def test_cdf_invlog(n_samples, log_base):
+    """Test the CDF function which gets inverse-log-spaced spaced values
+    (in quantile space) defining the empirical CDF of a dataset"""
+    data = np.random.normal(0, 1, (10000,))
+    x = cdf(data, n_samples=n_samples, decimals=None, sampling='invlog',
+            log_base=log_base)
+
+    assert x[0] == data.min()
+    assert x[-1] == data.max()
+
+    quantiles = np.logspace(0, 1, n_samples, base=log_base)
+    quantiles = (quantiles - 1) / (log_base - 1)
+    quantiles = np.array(sorted(1 - quantiles))
+    assert quantiles[0] == 0
+    assert quantiles[-1] == 1
+
+    for i, q in enumerate(quantiles):
+        assert np.allclose(np.percentile(data, 100 * q), x[i])
+
+
 def test_mask_zeros():
     """Test the irradiance stats functionality with zeros masked out"""
     res_h5 = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
@@ -342,6 +381,34 @@ def test_cli(runner):
         assert np.allclose(truth, test_stats['Jan-00:00UTC_mean'].values), msg
 
     LOGGERS.clear()
+
+
+def test_scipy_dist_fit():
+    """Test rex temporal stats with a scipy distribution fit function"""
+    scipy_stats = {'weibull': {'func': scipy.stats.weibull_min.fit}}
+
+    res_h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+    dataset = 'windspeed_100m'
+    sites = slice(0, 10)
+    stats1 = TemporalStats.run(res_h5, dataset, sites=sites,
+                               statistics=scipy_stats,
+                               res_cls=MultiYearWindResource,
+                               max_workers=1)
+    assert isinstance(stats1.loc[0, 'weibull'], list)
+    assert len(stats1.loc[0, 'weibull']) == 3
+
+    scipy_stats = {'weibull': {'func': scipy.stats.weibull_min.fit,
+                               'kwargs': {'floc': 0}}}
+    stats2 = TemporalStats.run(res_h5, dataset, sites=sites,
+                               statistics=scipy_stats,
+                               res_cls=MultiYearWindResource,
+                               max_workers=1)
+    assert isinstance(stats2.loc[0, 'weibull'], list)
+    assert len(stats2.loc[0, 'weibull']) == 3
+    for gid in range(10):
+        assert np.allclose(stats2.loc[gid, 'weibull'][0], 2.3, atol=1)
+        assert np.allclose(stats2.loc[gid, 'weibull'][2], 7.9, atol=1)
+        assert stats2.loc[gid, 'weibull'][1] == 0
 
 
 def execute_pytest(capture='all', flags='-rapP'):

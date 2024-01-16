@@ -2,6 +2,7 @@
 """
 pytests for sam_resource
 """
+import json
 import tempfile
 import numpy as np
 import shutil
@@ -10,6 +11,7 @@ import os
 import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
+from scipy.stats import weibull_min
 
 from rex.renewable_resource import WindResource, NSRDB, WaveResource
 from rex.multi_file_resource import MultiFileNSRDB
@@ -394,24 +396,41 @@ def test_nsrdb_and_wtk():
         _ = res._get_res_df(0)
 
 
-def execute_pytest(capture='all', flags='-rapP'):
-    """Execute module as pytest with detailed summary report.
+def test_bias_correct_errors():
+    """Negative tests for bad bias correction inputs"""
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    sites = slice(0, 20)
+    hub_heights = 80
 
-    Parameters
-    ----------
-    capture : str
-        Log or stdout/stderr capture option. ex: log (only logger),
-        all (includes stdout/stderr)
-    flags : str
-        Which tests to show logs and results for.
-    """
+    n = 10
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
 
-    fname = os.path.basename(__file__)
-    pytest.main(['-q', '--show-capture={}'.format(capture), fname, flags])
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'adder': np.random.uniform(-1, 1, n),
+                       'scalar': np.random.uniform(0.9, 1.1, n)})
+    with pytest.raises(KeyError) as record:
+        res.bias_correct(bc)
+    assert '"method" column not found!' in str(record.value)
+
+    bc = pd.DataFrame({'gidasdfasf': np.arange(n),
+                       'adder': np.random.uniform(-1, 1, n),
+                       'scalar': np.random.uniform(0.9, 1.1, n),
+                       'method': 'lin_ws'})
+    with pytest.raises(KeyError) as record:
+        res.bias_correct(bc)
+    assert 'must have "gid" column' in str(record.value)
+
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'adder': np.random.uniform(-1, 1, n),
+                       'scalar': np.random.uniform(0.9, 1.1, n),
+                       'method': 'testfasdfasdf'})
+    with pytest.raises(KeyError) as record:
+        res.bias_correct(bc)
+    assert 'Could not find method name "test' in str(record.value)
 
 
-def test_bias_correct_wind():
-    """Test linear bias correction functionality on windspeed"""
+def test_bias_correct_wind_lin():
+    """Test linear bias correction function on windspeed"""
     h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     sites = slice(0, 20)
     hub_heights = 80
@@ -420,37 +439,40 @@ def test_bias_correct_wind():
     n = 10
     bc = pd.DataFrame({'gid': np.arange(n),
                        'adder': np.random.uniform(-1, 1, n),
-                       'scalar': np.random.uniform(0.9, 1.1, n)})
+                       'scalar': np.random.uniform(0.9, 1.1, n),
+                       'method': 'lin_ws'})
+
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
 
     with pytest.warns() as record:
-        res = WindResource.preload_SAM(h5, sites, hub_heights)
         res.bias_correct(bc)
 
         assert len(record) == 1
         assert 'missing from the bias correction' in str(record[0].message)
         assert np.allclose(res._res_arrays['windspeed'][:, 10:],
                            base_res._res_arrays['windspeed'][:, 10:])
-        assert not (res._res_arrays['windspeed'][:, :10] ==
-                    base_res._res_arrays['windspeed'][:, :10]).any()
+        assert not (res._res_arrays['windspeed'][:, :10]
+                    == base_res._res_arrays['windspeed'][:, :10]).any()
         assert (res._res_arrays['windspeed'] >= 0).all()
 
     n = 200
     bc = pd.DataFrame({'gid': np.arange(n),
                        'adder': np.random.uniform(-1, 1, n),
-                       'scalar': np.random.uniform(0.9, 1.1, n)})
+                       'scalar': np.random.uniform(0.9, 1.1, n),
+                       'method': 'lin_ws'})
 
     with pytest.warns(None) as record:
         res = WindResource.preload_SAM(h5, sites, hub_heights)
         res.bias_correct(bc)
 
         assert not any(record)
-        assert not (res._res_arrays['windspeed'] ==
-                    base_res._res_arrays['windspeed']).any()
+        assert not (res._res_arrays['windspeed']
+                    == base_res._res_arrays['windspeed']).any()
         assert (res._res_arrays['windspeed'] >= 0).all()
 
 
-def test_bias_correct_solar():
-    """Test adder bias correction functionality on irradiance"""
+def test_bias_correct_solar_lin():
+    """Test adder bias correction function on irradiance"""
     h5 = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
     sites = slice(0, 10)
     base_res = NSRDB.preload_SAM(h5, sites)
@@ -458,7 +480,8 @@ def test_bias_correct_solar():
     n = 10
     bc = pd.DataFrame({'gid': np.arange(n),
                        'adder': np.random.uniform(-100, 100, n),
-                       'scalar': np.random.uniform(1, 1, n)})
+                       'scalar': np.random.uniform(1, 1, n),
+                       'method': 'lin_irrad'})
 
     res = NSRDB.preload_SAM(h5, sites)
     res.bias_correct(bc)
@@ -486,6 +509,153 @@ def test_bias_correct_solar():
         cos_sza = (ghi[mask] - dhi[mask]) / (dni[mask])
         base_cos_sza = (base_ghi[mask] - base_dhi[mask]) / (base_dni[mask])
         assert np.allclose(cos_sza, base_cos_sza, atol=0.005)
+
+
+def test_bias_correct_wind_pqdm():
+    """Test parametric QDM bias correction function on windspeed"""
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    n = 20
+    sites = slice(0, n)
+    hub_heights = 80
+    base_res = WindResource.preload_SAM(h5, sites, hub_heights)
+    base_ws = base_res._res_arrays['windspeed']
+    shape, loc, scale = weibull_min.fit(base_ws.mean(axis=1))
+
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'method': 'qdm_ws',
+                       'params_oh': f'[{shape}, {loc}, {scale}]',
+                       'params_mh': f'[{shape}, {loc}, {scale}]',
+                       'params_mf': f'[{shape}, {loc}, {scale}]',
+                       'dist': 'weibull_min',
+                       'relative': True,
+                       })
+
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+    res.bias_correct(bc)
+    bc_ws = res._res_arrays['windspeed']
+    assert np.allclose(bc_ws, base_ws)
+
+    scale_mod = 0.9
+    bc['params_mh'] = f'[{shape}, {loc}, {scale * scale_mod}]'
+    bc = bc.drop('params_mf', axis=1)
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+    res.bias_correct(bc)
+    bc_ws = res._res_arrays['windspeed']
+
+    # spot check using manual calc
+    idys = np.random.choice(base_ws.shape[0], size=10)
+    idxs = np.random.choice(base_ws.shape[1], size=10)
+    for idy, idx in zip(idys, idxs):
+        p_mf = weibull_min.cdf(base_ws[idy, idx], shape, loc,
+                               scale * scale_mod)
+        x_oh = weibull_min.ppf(p_mf, shape, loc, scale)
+        delta = base_ws[idy, idx] / weibull_min.ppf(p_mf, shape, loc,
+                                                    scale * scale_mod)
+        single_ws_bc = x_oh * delta
+        assert np.allclose(single_ws_bc, bc_ws[idy, idx])
+
+    # almost none of the values should be the same as the input, and none
+    # should be negative
+    assert ((bc_ws == base_ws).sum() / bc_ws.size) < 0.001
+    assert not (bc_ws < 0).any()
+
+
+def test_bias_correct_wind_qdm():
+    """Test empirical QDM bias correction function on windspeed"""
+    h5 = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    n = 20
+    sites = slice(0, n)
+    hub_heights = 80
+    base_res = WindResource.preload_SAM(h5, sites, hub_heights)
+    base_ws = base_res._res_arrays['windspeed']
+
+    base_params = list(np.linspace(0, 100, 10))
+
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'method': 'qdm_ws',
+                       'params_oh': json.dumps(base_params),
+                       'params_mh': json.dumps(base_params),
+                       'params_mf': json.dumps(base_params),
+                       'dist': 'empirical',
+                       'relative': True,
+                       })
+
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+    res.bias_correct(bc)
+    bc_ws = res._res_arrays['windspeed']
+    assert np.allclose(bc_ws, base_ws)
+
+    res = WindResource.preload_SAM(h5, sites, hub_heights)
+    params = sorted(np.random.uniform(10, 20, 10))
+    bc['params_oh'] = json.dumps(params)
+    bc.loc[0, 'params_oh'] = json.dumps(base_params)
+    res.bias_correct(bc)
+    bc_ws = res._res_arrays['windspeed']
+    assert np.allclose(bc_ws[:, 0], base_ws[:, 0])
+    assert ((bc_ws[:, 1:] != base_ws[:, 1:]).sum() / bc_ws[:, 1:].size) > 0.99
+
+
+def test_bias_correct_irrad_qdm():
+    """Test empirical QDM bias correction function on irradiance"""
+    h5 = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+    n = 10
+    sites = slice(0, n)
+    base_res = NSRDB.preload_SAM(h5, sites)
+    base_ghi = base_res._res_arrays['ghi']
+    base_dni = base_res._res_arrays['dni']
+
+    base_params = list(np.linspace(0, 1300, 10))
+    bc = pd.DataFrame({'gid': np.arange(n),
+                       'ghi_params_oh': json.dumps(base_params),
+                       'dni_params_oh': json.dumps(base_params),
+                       'ghi_params_mh': json.dumps(base_params),
+                       'dni_params_mh': json.dumps(base_params),
+                       'method': 'qdm_irrad'},
+                      )
+
+    res = NSRDB.preload_SAM(h5, sites)
+    res.bias_correct(bc)
+    assert np.allclose(base_res._res_arrays['ghi'], base_ghi)
+    assert np.allclose(base_res._res_arrays['dni'], base_dni)
+
+    res = NSRDB.preload_SAM(h5, sites)
+    params = list(0.1 * np.ones(10))
+    bc['ghi_params_oh'] = json.dumps(params)
+    res.bias_correct(bc)
+    bc_ghi = res._res_arrays['ghi']
+    bc_dni = res._res_arrays['dni']
+    bc_dhi = res._res_arrays['dhi']
+    assert (bc_ghi >= 0).all() & (bc_dni >= 0).all() & (bc_dhi >= 0).all()
+    assert (bc_ghi.mean(axis=0) < base_ghi.mean(axis=0)).all()
+    assert np.allclose(bc_dni, base_dni)
+
+    res = NSRDB.preload_SAM(h5, sites)
+    params = list(0.1 * np.ones(10))
+    bc['ghi_params_oh'] = json.dumps(base_params)
+    bc['dni_params_oh'] = json.dumps(params)
+    res.bias_correct(bc)
+    bc_ghi = res._res_arrays['ghi']
+    bc_dni = res._res_arrays['dni']
+    bc_dhi = res._res_arrays['dhi']
+    assert (bc_ghi >= 0).all() & (bc_dni >= 0).all() & (bc_dhi >= 0).all()
+    assert (bc_dni.mean(axis=0) < base_dni.mean(axis=0)).all()
+    assert np.allclose(bc_ghi, base_ghi)
+
+
+def execute_pytest(capture='all', flags='-rapP'):
+    """Execute module as pytest with detailed summary report.
+
+    Parameters
+    ----------
+    capture : str
+        Log or stdout/stderr capture option. ex: log (only logger),
+        all (includes stdout/stderr)
+    flags : str
+        Which tests to show logs and results for.
+    """
+
+    fname = os.path.basename(__file__)
+    pytest.main(['-q', '--show-capture={}'.format(capture), fname, flags])
 
 
 if __name__ == '__main__':
