@@ -27,6 +27,10 @@ the the Modern Era-Retrospective Analysis (MERRA-2) dataset. Temperature and
 wind speed data are also derived from MERRA-2 and provided for use in SAM to
 compute PV generation.
 
+Note that this guidance applies to the original NSRDB data in the western
+hemisphere and also all of the new international data derived from the Meteosat
+and Himawari satellites.
+
 The following variables are provided by the NSRDB:
 
 - Irradiance:
