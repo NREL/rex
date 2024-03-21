@@ -12,6 +12,7 @@ import pandas as pd
 from pandas.testing import assert_series_equal
 import pytest
 from scipy.stats import weibull_min
+import warnings
 
 from rex.renewable_resource import WindResource, NSRDB, WaveResource
 from rex.multi_file_resource import MultiFileNSRDB
@@ -461,11 +462,12 @@ def test_bias_correct_wind_lin():
                        'scalar': np.random.uniform(0.9, 1.1, n),
                        'method': 'lin_ws'})
 
-    with pytest.warns(None) as record:
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+
         res = WindResource.preload_SAM(h5, sites, hub_heights)
         res.bias_correct(bc)
 
-        assert not any(record)
         assert not (res._res_arrays['windspeed']
                     == base_res._res_arrays['windspeed']).any()
         assert (res._res_arrays['windspeed'] >= 0).all()

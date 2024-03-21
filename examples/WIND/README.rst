@@ -16,6 +16,10 @@ storage limitations instantaneous hourly time-step are provided for all
 variables while full 5 min resolution data is provided for wind speed and wind
 direction only.
 
+Note that this guidance applies to all NREL wind data hosted in the WIND
+Toolkit data bucket including international (e.g., Southeast Asia Wind) and
+offshore (NOW-23) wind datasets.
+
 The following variables were extracted from the WRF model data:
 
 - Wind Speed at 10, 40, 60, 80, 100, 120, 140, 160, 200 m
