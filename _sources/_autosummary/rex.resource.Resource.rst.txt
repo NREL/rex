@@ -1,0 +1,61 @@
+rex.resource.Resource
+=====================
+
+.. currentmodule:: rex.resource
+
+.. autoclass:: Resource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~Resource.close
+      ~Resource.df_str_decode
+      ~Resource.get_SAM_df
+      ~Resource.get_attrs
+      ~Resource.get_dset_properties
+      ~Resource.get_meta_arr
+      ~Resource.get_scale_factor
+      ~Resource.get_units
+      ~Resource.open_dataset
+      ~Resource.preload_SAM
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Resource.ADD_ATTR
+      ~Resource.SCALE_ATTR
+      ~Resource.UNIT_ATTR
+      ~Resource.adders
+      ~Resource.attrs
+      ~Resource.chunks
+      ~Resource.coordinates
+      ~Resource.data_version
+      ~Resource.datasets
+      ~Resource.dsets
+      ~Resource.dtypes
+      ~Resource.global_attrs
+      ~Resource.groups
+      ~Resource.h5
+      ~Resource.lat_lon
+      ~Resource.meta
+      ~Resource.res_dsets
+      ~Resource.resource_datasets
+      ~Resource.scale_factors
+      ~Resource.shape
+      ~Resource.shapes
+      ~Resource.time_index
+      ~Resource.units
+   
+   

@@ -1,0 +1,31 @@
+rex.temporal\_stats
+===================
+
+.. automodule:: rex.temporal_stats
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   rex.temporal_stats.temporal_stats
+   rex.temporal_stats.temporal_stats_cli
+

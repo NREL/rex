@@ -1,0 +1,31 @@
+rex.joint\_pd
+=============
+
+.. automodule:: rex.joint_pd
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   rex.joint_pd.joint_pd
+   rex.joint_pd.wind_rose_cli
+

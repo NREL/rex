@@ -1,0 +1,65 @@
+rex.renewable\_resource.SolarResource
+=====================================
+
+.. currentmodule:: rex.renewable_resource
+
+.. autoclass:: SolarResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SolarResource.close
+      ~SolarResource.df_str_decode
+      ~SolarResource.get_SAM_df
+      ~SolarResource.get_attrs
+      ~SolarResource.get_dset_properties
+      ~SolarResource.get_meta_arr
+      ~SolarResource.get_scale_factor
+      ~SolarResource.get_units
+      ~SolarResource.open_dataset
+      ~SolarResource.preload_SAM
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SolarResource.ADD_ATTR
+      ~SolarResource.INTERPOLABLE_DSETS
+      ~SolarResource.LAPSE_RATES
+      ~SolarResource.SCALE_ATTR
+      ~SolarResource.UNIT_ATTR
+      ~SolarResource.VARIABLE_NAME
+      ~SolarResource.VARIABLE_UNIT
+      ~SolarResource.adders
+      ~SolarResource.attrs
+      ~SolarResource.chunks
+      ~SolarResource.coordinates
+      ~SolarResource.data_version
+      ~SolarResource.datasets
+      ~SolarResource.dsets
+      ~SolarResource.dtypes
+      ~SolarResource.global_attrs
+      ~SolarResource.groups
+      ~SolarResource.h5
+      ~SolarResource.lat_lon
+      ~SolarResource.meta
+      ~SolarResource.res_dsets
+      ~SolarResource.resource_datasets
+      ~SolarResource.scale_factors
+      ~SolarResource.shape
+      ~SolarResource.shapes
+      ~SolarResource.time_index
+      ~SolarResource.units
+   
+   

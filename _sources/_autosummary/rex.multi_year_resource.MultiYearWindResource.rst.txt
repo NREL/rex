@@ -1,0 +1,52 @@
+rex.multi\_year\_resource.MultiYearWindResource
+===============================================
+
+.. currentmodule:: rex.multi_year_resource
+
+.. autoclass:: MultiYearWindResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiYearWindResource.close
+      ~MultiYearWindResource.get_attrs
+      ~MultiYearWindResource.get_dset_properties
+      ~MultiYearWindResource.get_meta_arr
+      ~MultiYearWindResource.get_scale_factor
+      ~MultiYearWindResource.get_units
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiYearWindResource.attrs
+      ~MultiYearWindResource.chunks
+      ~MultiYearWindResource.coordinates
+      ~MultiYearWindResource.datasets
+      ~MultiYearWindResource.dsets
+      ~MultiYearWindResource.dtypes
+      ~MultiYearWindResource.global_attrs
+      ~MultiYearWindResource.h5
+      ~MultiYearWindResource.lat_lon
+      ~MultiYearWindResource.meta
+      ~MultiYearWindResource.res_dsets
+      ~MultiYearWindResource.resource_datasets
+      ~MultiYearWindResource.scale_factors
+      ~MultiYearWindResource.shape
+      ~MultiYearWindResource.shapes
+      ~MultiYearWindResource.time_index
+      ~MultiYearWindResource.units
+      ~MultiYearWindResource.years
+   
+   

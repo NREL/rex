@@ -1,0 +1,32 @@
+rex.multi\_file\_resource.MultiH5Path
+=====================================
+
+.. currentmodule:: rex.multi_file_resource
+
+.. autoclass:: MultiH5Path
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiH5Path.close
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiH5Path.attrs
+      ~MultiH5Path.datasets
+      ~MultiH5Path.h5_files
+   
+   

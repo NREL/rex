@@ -1,0 +1,6 @@
+rex.utilities.utilities.check\_tz
+=================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: check_tz

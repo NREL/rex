@@ -1,0 +1,44 @@
+﻿rex
+===
+
+.. automodule:: rex
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   rex.bias_correction
+   rex.joint_pd
+   rex.multi_file_resource
+   rex.multi_res_resource
+   rex.multi_time_resource
+   rex.multi_year_resource
+   rex.outputs
+   rex.rechunk_h5
+   rex.renewable_resource
+   rex.resource
+   rex.resource_extraction
+   rex.sam_resource
+   rex.temporal_stats
+   rex.utilities
+   rex.version
+

@@ -1,0 +1,46 @@
+rex.utilities.hpc.HpcJobManager
+===============================
+
+.. currentmodule:: rex.utilities.hpc
+
+.. autoclass:: HpcJobManager
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~HpcJobManager.check_status
+      ~HpcJobManager.format_walltime
+      ~HpcJobManager.make_path
+      ~HpcJobManager.make_sh
+      ~HpcJobManager.parse_queue_str
+      ~HpcJobManager.query_queue
+      ~HpcJobManager.rm
+      ~HpcJobManager.s
+      ~HpcJobManager.submit
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~HpcJobManager.MAX_NAME_LEN
+      ~HpcJobManager.QCOL_ID
+      ~HpcJobManager.QCOL_NAME
+      ~HpcJobManager.QCOL_STATUS
+      ~HpcJobManager.QSKIP
+      ~HpcJobManager.USER
+      ~HpcJobManager.queue
+      ~HpcJobManager.queue_job_ids
+      ~HpcJobManager.queue_job_names
+   
+   

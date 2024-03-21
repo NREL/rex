@@ -1,0 +1,33 @@
+rex.utilities.hpc
+=================
+
+.. automodule:: rex.utilities.hpc
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      HpcJobManager
+      PBS
+      SLURM
+   
+   
+
+   
+   
+   
+
+
+
