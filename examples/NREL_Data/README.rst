@@ -17,40 +17,30 @@ list!):
 Definitions
 -----------
 
-``attributes`` - Meta data associated with an NREL h5 file or a dataset within that h5 file. This can be information about how the file was created, the software versions used to create the data, physical units of datasets, scale factors for compressed integer storage, or something else. This is not typically spatial meta data and is not related to the ``meta`` dataset. For more information, see the `h5py attributes docs <https://docs.h5py.org/en/stable/high/attr.html>`_.
-
-``chunks`` - Data arrays in an h5 dataset are stored in ``chunks`` which are subsets of the data array stored sequentially on disk. When reading an h5 file, you only have to read one chunk of data at a time, so if a file has a 1TB dataset with shape (8760, N) but the chunk shape is (8760, 100), you don't have to read the full 1TB of data to access a single ``gid``, you only have to read the single chunk of data (in this case 8760x100 datum). For more details, see the `h5py chunks docs <https://docs.h5py.org/en/stable/high/dataset.html?#chunked-storage>`_.
-
-``CLI`` - Command Line Interface (CLI). A program you can run from a simple command line call e.g., ``hsds``, ``hsls``, etc...
-
-``datasets`` - Named arrays (e.g., "windspeed_100m", "ghi", "temperature_2m", etc...) stored in an h5 file. These are frequently 2D arrays with dimensions (shape, time) and can be sliced with a ``[idy, idx]`` syntax. See the `h5py dataset docs <https://docs.h5py.org/en/stable/high/dataset.html>`_ for details.
-
-``gid`` - We commonly refer to locations in a spatiotemporal NREL dataset by the location's ``gid`` which is the spatial index of the location of interest (zero-indexed).
-
-``h5`` - File extension for the heirarchical data format (e.g., "HDF5") that is widely used for spatiotemporal data at NREL. See the `h5py <https://docs.h5py.org/en/stable/>`_ library for more details.
-
-``h5pyd`` - The python library that provides the HDF REST interface to NREL data hosted on HSDS. See the `h5pyd <https://github.com/HDFGroup/h5pyd>`_ library for more details.
-
-``hsds`` - The highly scalable data service (HSDS) that we recommend to access small chunks of very large cloud-hosted NREL datasets. See the `hsds <https://github.com/HDFGroup/hsds>`_ library for more details.
-
-``meta`` - The dataset in an NREL h5 file that contains information about the spatial axis. This is typically a `pandas DataFrame <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_ with columns such as "latitude", "longitude", "state", etc..., that has been converted to a records array. The length of this dataset should match the length of axis 1 of spatiotemporal datasets.
-
-``scale_factor`` - We frequently scale data by a multiplicative factor, round the data to integer precision, and store the data in integer arrays. The ``scale_factor`` is an attribute associated with the relevant h5 dataset that defines the multiplicative factor required to unscale the data from integer storage to the original physical units.
-
-``time_index`` - The dataset in an NREL h5 file that contains information about the temporal axis. This is typically a `pandas DatetimeIndex <https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html>`_ that has been converted to a string array. The length of this dataset should match the length of axis 0 of spatiotemporal datasets.
+ - ``attributes`` - Meta data associated with an NREL h5 file or a dataset within that h5 file. This can be information about how the file was created, the software versions used to create the data, physical units of datasets, scale factors for compressed integer storage, or something else. ``attributes`` are stored in namespaces similar to python dictionaries for every h5 file and every dataset in every h5 file. This is not typically spatial meta data and is not related to the ``meta`` dataset. For more information, see the `h5py attributes docs <https://docs.h5py.org/en/stable/high/attr.html>`_.
+ - ``chunks`` - Data arrays in an h5 dataset are stored in ``chunks`` which are subsets of the data array stored sequentially on disk. When reading an h5 file, you only have to read one chunk of data at a time, so if a file has a 1TB dataset with shape (8760, N) but the chunk shape is (8760, 100), you don't have to read the full 1TB of data to access a single ``gid``, you only have to read the single chunk of data (in this case a 8760x100 array). For more details, see the `h5py chunks docs <https://docs.h5py.org/en/stable/high/dataset.html?#chunked-storage>`_.
+ - ``CLI`` - Command Line Interface (CLI). A program you can run from a command line call in a shell e.g., ``hsds``, ``hsls``, etc...
+ - ``datasets`` - Named arrays (e.g., "windspeed_100m", "ghi", "temperature_2m", etc...) stored in an h5 file. These are frequently 2D arrays with dimensions (time, space) and can be sliced with a ``[idy, idx]`` syntax. See the `h5py dataset docs <https://docs.h5py.org/en/stable/high/dataset.html>`_ for details. We also refer to all our NREL data products as "datasets" so sorry for the confusion!
+ - ``gid`` - We commonly refer to locations in a spatiotemporal NREL dataset by the location's ``gid`` which is the spatial index of the location of interest (zero-indexed). For example, in a 2D dataset with shape (time, space), ``gid=99`` (zero-indexed) would be the 100th column (1-indexed) in the 2D array.
+ - ``h5`` - File extension for the heirarchical data format (e.g., "HDF5") that is widely used for spatiotemporal data at NREL. See the `h5py <https://docs.h5py.org/en/stable/>`_ library for more details.
+ - ``h5pyd`` - The python library that provides the HDF REST interface to NREL data hosted on the cloud. This allows for the public to access small parts of large cloud-hosted datasets. See the `h5pyd <https://github.com/HDFGroup/h5pyd>`_ library for more details.
+ - ``hsds`` - The highly scalable data service (HSDS) that we recommend to access small chunks of very large cloud-hosted NREL datasets. See the `hsds <https://github.com/HDFGroup/hsds>`_ library for more details.
+ - ``meta`` - The ``dataset`` in an NREL h5 file that contains information about the spatial axis. This is typically a `pandas DataFrame <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_ with columns such as "latitude", "longitude", "state", etc... The DataFrame is typically converted to a records array for storage in an h5 ``dataset``. The length of the meta data should match the length of axis 1 of a 2D spatiotemporal ``dataset``.
+ - ``scale_factor`` - We frequently scale data by a multiplicative factor, round the data to integer precision, and store the data in integer arrays. The ``scale_factor`` is an attribute associated with the relevant h5 ``dataset`` that defines the multiplicative factor required to unscale the data from integer storage to the original physical units.
+ - ``time_index`` - The ``dataset`` in an NREL h5 file that contains information about the temporal axis. This is typically a `pandas DatetimeIndex <https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html>`_ that has been converted to a string array for storage in an h5 ``dataset``. The length of this ``dataset`` should match the length of axis 0 of a 2D spatiotemporal ``dataset``.
 
 Data Format
 -----------
 
 NREL data is frequently provided in heirarchical data format (HDF5 or .h5).
-Each file contains many datasets, with each dataset representing a physical
+Each file contains many datasets, with each ``dataset`` representing a physical
 variable or meta data. Datasets are commonly 2 dimensional time-series arrays
-with dimensions (time, space). The temporal axis is defined by the
-``time_index`` dataset, while the spatial axis is defined by the ``meta``
-dataset. For storage efficiency, we commonly scale each dataset by a
-multiplicative factor and store as an integer. The scale_factor is provided in
-the ``scale_factor`` attribute. The units for each variable are also commonly
-provided as an attribute (``units``).
+with dimensions (time, space). The temporal axis is defined by ``time_index``,
+while the spatial axis is defined by ``meta``. For storage efficiency, we
+commonly scale each ``dataset`` by a multiplicative factor and store as an
+integer. The scale_factor is provided in the ``scale_factor`` attribute. The
+units for each variable are also commonly provided as an attribute called
+``units``.
 
 Data Location - NREL Users
 --------------------------
@@ -59,11 +49,13 @@ If you are at NREL, the easiest way to access this data is on the NREL
 high-performance computing system (HPC). Go to the `NREL HPC website
 <https://www.nrel.gov/hpc/>`_ and request access via an NREL project with an
 HPC allocation. Once you are on the HPC, you can find that datasets in the
-``/datasets/`` directory (e.g., ``ls /datasets/``). Go through the directory
-tree until you find the .h5 files you are looking for.
+``/datasets/`` directory (e.g., run the linux command ``$ ls /datasets/``). Go
+through the directory tree until you find the .h5 files you are looking for.
+This datasets directory should not be confused with a ``dataset`` from an h5
+file.
 
-When using the ``rex`` examples below, use the NREL HPC file paths and set
-``hsds=False``.
+When using the ``rex`` examples below, update the file paths with the relevant
+NREL HPC file paths in ``/datasets/`` and set ``hsds=False``.
 
 Data Location - External Users
 ------------------------------
@@ -88,6 +80,8 @@ The `Open Energy Data Initiative (OEDI) <https://openei.org/wiki/Main_Page>`_
 is also invaluable in finding energy-relevant public datasets that are not
 necessarily spatiotemporal h5 data.
 
+We have also experimented with external data access using `fsspec <https://nrel.github.io/rex/misc/examples.fsspec.html>`_ and `zarr <https://nrel.github.io/rex/misc/examples.zarr.html>`_, but the examples below may not work with these utilities.
+
 Data Access Examples
 --------------------
 
@@ -103,7 +97,7 @@ The rex Resource Class
 
 Data access in rex is built on the ``Resource`` class. The class can be used to
 open and explore NREL h5 files, extract and automatically unscale data, and
-retrieve ``time_index`` and ``meta`` datasets in their intended format.
+retrieve ``time_index`` and ``meta`` datasets in their native pandas datatypes.
 
 .. code-block:: python
 
@@ -129,7 +123,7 @@ documentation, see the docs page `here
 example, the ``WindResource`` class can be used to open files in the WIND
 Toolkit bucket (including datasets like NOW-23 and Sup3rWind) and will
 interpolate windspeeds to the desired hub height, even if the requested
-windspeed is not available as a dataset:
+windspeed is not available as a ``dataset``:
 
 .. code-block:: python
 
@@ -139,7 +133,7 @@ windspeed is not available as a dataset:
         print(res.dsets)
         print(ws88)
 
-Here, notice that ``windspeed_88m`` is not a dataset available in the WIND
+Here, notice that ``windspeed_88m`` is not a ``dataset`` available in the WIND
 Toolkit file, but it can be requested by the ``WindResource`` class, which
 interpolates the windspeeds between the available 80 and 100 meter hub heights.
 
@@ -163,8 +157,8 @@ of time for a single coordinate query. If you are querying multiple
 coordinates, take a look at other methods like `ResourceX.lat_lon_gid
 <https://nrel.github.io/rex/_autosummary/rex.resource_extraction.resource_extraction.ResourceX.html#rex.resource_extraction.resource_extraction.ResourceX.lat_lon_gid>`_
 that get the ``gid`` for multiple coordinates at once. Also consider saving the
-``gids`` you are interested in and reusing them instead of querying these
-methods repeatedly.
+``gid`` indices you are interested in and reusing them instead of querying
+these methods repeatedly.
 
 You can also use a ``ResourceX`` class specific to a given resource type (e.g.,
 wind or solar) to retrieve a DataFrame with all variables you will need to run
@@ -177,6 +171,6 @@ the System Advisor Model (SAM). For example, try:
         df = res.get_SAM_lat_lon((39.7407, -105.1686))
         print(df)
 
-For a full list of ``ResourceX`` classes with features specific to various
-renewable energy resource types, see the docs `here
+For a full list of ``ResourceX`` classes with additional features specific to
+various renewable energy resource types, see the docs `here
 <https://nrel.github.io/rex/_autosummary/rex.resource_extraction.resource_extraction.html>`_.

@@ -34,22 +34,22 @@ data with ``h5pyd`` like this:
     data = f['ghi'][0, 0]
     print(data)
 
-If this simple query succeeds while larger data slices fail, it is almost definitely a limitation of the public API. You'll need to stand up your own HSDS server to retrieve more data. Read on below to find out how.
+If this simple query succeeds while larger data slices fail, it is almost definitely a limitation of the public API. You'll need to stand up your own HSDS server to retrieve more data. Read the section on "Setting up a Local HSDS Server" below to find out how.
 
 Setting up a Local HSDS Server
 ------------------------------
 
-Setting up an HSDS server on an EC2 instance or your local laptop isn't too hard. The instruction set here is intended to be comprehensive and followed *exactly*. Most of these instructions are adapted from the `HSDS Repository <https://github.com/HDFGroup/hsds>`_ and the `h5pyd repository <https://github.com/HDFGroup/h5pyd>`_, but this tutorial is intended to be comprehensive and regularly maintained. Please note the minor differences in the Unix- and Windows-specific instructions below and be sure to follow these subtleties exactly!
+Setting up an HSDS server on an EC2 instance or your local machine isn't too hard. The instruction set here is intended to be comprehensive and followed *exactly*. Most of these instructions are adapted from the `HSDS Repository <https://github.com/HDFGroup/hsds>`_ and the `h5pyd repository <https://github.com/HDFGroup/h5pyd>`_, but this tutorial is intended to be comprehensive and regularly maintained for NREL use. Please note the minor differences in the Unix- and Windows-specific instructions below and be sure to follow these subtleties exactly!
 
 Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We find it easiest to manage your HSDS environment by installing `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ and creating a clean HSDS environment. Once you have that setup, follow these instructions:
 
-#. In your shell, install rex using pip (HSDS >= 0.8.4 and h5pyd >= 0.18.0 are dependencies).
+#. In your shell, install nrel-rex >= v0.2.86 using pip (this should also install HSDS and h5pyd).
 
     .. code-block:: bash
 
-      pip install nrel-rex
+      pip install "nrel-rex>=0.2.86"
 
-#. Set your environment variables (if using windows, use ``set`` instead of ``export``):
+#. Set your environment variables (if using windows, use ``set`` instead of ``export``) (this has to be done every time you login to a shell unless you set these in your ``.bashrc``):
 
     .. code-block:: bash
 
@@ -65,7 +65,7 @@ Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We fi
       hs_bucket = nrel-pds-hsds
 
 #. Start your HSDS local server in the active shell by running the command ``$ hsds``
-# If you are on windows and see a "Windows Security Alert" pop up, check the box for "Private networks" and click "Allow access"
+#. If you are on windows and see a "Windows Security Alert" pop up, check the box for "Private networks" and click "Allow access"
 #. After a few seconds, you should see the HSDS local server print the successful status ``READY! use endpoint: http://localhost:5101``
 #. Open a new shell instance, activate the HSDS python environment you've been using, and run ``$ hsinfo``. You should see something similar to the following if your local HSDS server is running correctly:
 
@@ -112,24 +112,7 @@ browsing the NREL HSDS data offerings by exploring the HSDS folder structure:
             print(list(f))
 
 These commands can also be run by using the HSDS CLI utility: ``$ hsls /nrel/``.
+
 Once you find a file you want to access, you can use the ``rex`` utilities to
-read the data:
-
-    .. code-block:: python
-
-        from rex import NSRDBX
-
-        nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
-        nrel_coord = (39.741931, -105.169891)
-        with NSRDBX(nsrdb_file, hsds=True, hsds_kwargs=None) as f:
-            meta = f.meta
-            time_index = f.time_index
-            datasets = f.datasets
-            gid = f.lat_lon_gid(nrel_coord)
-            dni = f.get_lat_lon_df('dni', nrel_coord)
-            ghi = f['ghi', :, gid]
-
-Note that you can add more kwargs for the ``h5pyd`` file handler in the ``hsds_kwargs`` option. For example, you can set endpoints and username/passwords here: ``hsds_kwargs={'endpoint': 'http://localhost:5101', 'hs_username': 'test_user1', 'hs_password': 'test'}``. However, these kwargs should also be taken automatically from your ``~/.hscfg`` file
-
-More details on the handler classes like ``NSRDBX`` can be found in the `rex
-API reference <https://nrel.github.io/rex/_autosummary/rex.html>`_.
+read the data. See the docs page `here
+<https://nrel.github.io/rex/misc/examples.nrel_data.html>`_ for more details.
