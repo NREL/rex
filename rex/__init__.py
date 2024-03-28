@@ -24,7 +24,7 @@ from rex.renewable_resource import (NSRDB, WaveResource, WindResource,
                                     GeothermalResource)
 from rex.resource_extraction import (ResourceX, MultiFileResourceX,
                                      MultiTimeResourceX, MultiYearResourceX,
-                                     NSRDBX, MultiFileNSRDBX,
+                                     SolarX, NSRDBX, MultiFileNSRDBX,
                                      MultiTimeNSRDBX, MultiYearNSRDBX,
                                      WindX, MultiFileWindX,
                                      MultiTimeWindX, MultiYearWindX,

@@ -2,6 +2,7 @@ Examples
 ========
 .. toctree::
 
+   examples.nrel_data
    examples.nsrdb
    examples.wind
    examples.us_wave
