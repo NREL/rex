@@ -6,7 +6,7 @@ env:
   AWS_S3_NO_SIGN_REQUEST: 1
   AWS_S3_GATEWAY: http://s3.us-west-2.amazonaws.com
   BUCKET_NAME: nrel-pds-hsds
-  HSDS_ENDPOINT: http://localhost:5101
+  HS_ENDPOINT: http://localhost:5101
 
 jobs:
   build:
@@ -38,9 +38,9 @@ jobs:
           pip install pytest-cov
           pip install -e .
 
-      - name: Run tests
+      - name: Start HSDS and run tests
         shell: bash
         run: |
           hsds & # run hsds local server in background
           sleep 11 # let the nodes get ready
-          pytest -v tests/h5pyd_test.py
+          pytest -v tests/h5pyd_tests.py
