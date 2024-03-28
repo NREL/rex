@@ -1,6 +1,10 @@
 High Resolution Ocean Surface Wave Hindcast
 ===========================================
 
+This page describes some of the unique attributes of the NREL Wave Data. For
+instructions on how to access the data, see the docs page `here
+<https://nrel.github.io/rex/misc/examples.nrel_data.html>`_.
+
 Description
 -----------
 
@@ -78,66 +82,18 @@ Directory structure
 -------------------
 
 High Resolution Ocean Surface Wave Hindcast data is made available as a series
-of hourly .h5 and can be found at:
+of hourly .h5 and can be found on HSDS at:
 ``/nrel/US_wave/``
 
 Currently 2 domains of data are available:
 - West Coast: ``/nrel/US_wave/West_Coast/West_Coast_wave_${year}.h5``
 - Hawaii: ``/nrel/US_wave/Hawaii/Hawaii_wave_${year}.h5``
 
-Data Format
------------
-
-The data is provided in high density data file (.h5) separated by year. The
-variables mentioned above are provided in 2 dimensional time-series arrays with
-dimensions (time x location). The temporal axis is defined by the ``time_index``
-dataset, while the positional axis is defined by the ``coordinate`` dataset. The
-units for the variable data is also provided as an attribute (``units``). The
-SWAN and IEC valiable names are also provide under the attributes
+The SWAN and IEC valiable names are also provide under the attributes
 (``SWAWN_name``) and (``IEC_name``) respectively.
 
-Data Access Examples
---------------------
-
-Example scripts to extract wave resource data using the command line or python
-are provided below:
-
-The easiest way to access and extract data is by using the Resource eXtraction
-tool `rex <https://nrel.github.io/rex/>`_
-
-To use `rex` with `HSDS <https://github.com/NREL/hsds-examples>`_ you will need
-to install `h5pyd`:
-
-.. code-block:: bash
-
-  pip install h5pyd
-
-Next you'll need to configure HSDS:
-
-.. code-block:: bash
-
-  hsconfigure
-
-and enter at the prompt:
-
-.. code-block:: bash
-
-  hs_endpoint = https://developer.nrel.gov/api/hsds
-  hs_username =
-  hs_password =
-  hs_api_key = 3K3JQbjZmWctY0xmIfSYvYgtIcM3CN0cb1Y2w9bf
-
-**The example API key here is for demonstation and is rate-limited per IP. To
-get your own API key, visit https://developer.nrel.gov/signup/**
-**Please note that our HSDS service is for demonstration purposes only, if you
-would like to use HSDS for production runs of reV please setup your own
-service: https://github.com/HDFGroup/hsds and point it to our public HSDS
-bucket: s3://nrel-pds-hsds**
-
-You can also add the above contents to a configuration file at `~/.hscfg`
-
 WaveX CLI
-+++++++++
+---------
 
 The `WaveX <https://nrel.github.io/rex/rex/rex.resource_extraction.wave_cli.html#wavex>`_
 command line utility provides the following options and commands:
@@ -162,48 +118,12 @@ command line utility provides the following options and commands:
     sam-file    Extract all datasets needed for SAM for the nearest pixel to...
 
 
-WaveX python class
-++++++++++++++++++
+Direct Access via h5pyd
+-----------------------
 
-.. code-block:: python
-
-    from rex import WaveX
-
-    wave_file = '/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5'
-    with WaveX(wave_file, hsds=True) as f:
-        meta = f.meta
-        time_index = f.time_index
-        swh = f['significant_wave_height']
-
-
-``rex`` also allows easy extraction of the nearest site to a desired (lat, lon)
-location:
-
-.. code-block:: python
-
-    from rex import WaveX
-
-    wave_file = '/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5'
-    lat_lon = (34.399408, -119.841181)
-    with WaveX(wave_file, hsds=True) as f:
-        lat_lon_swh = f.get_lat_lon_df('significant_wave_height', lat_lon)
-
-
-or to extract all sites in a given region:
-
-.. code-block:: python
-
-    from rex import WaveX
-
-    wave_file = '/nrel/US_wave/West_Coast/West_Coast_wave_2010.h5'
-    jurisdication='California'
-    with WaveX(wave_file, hsds=True) as f:
-        date = '2010-07-04 18:00:00'
-        swh_map = f.get_timestep_map('significant_wave_height', date
-                                     region=jurisdiction,
-                                     region_col='jurisdiction')
-
-If you would rather access the US Wave data directly using h5pyd:
+Here is an example for if you would rather access the US Wave data directly
+using h5pyd. However, we recommend using the ``rex`` utilities described in the
+docs page `here <https://nrel.github.io/rex/misc/examples.nrel_data.html>`_.
 
 .. code-block:: python
 

@@ -1,6 +1,13 @@
 National Solar Radiation Database (NSRDB)
 =========================================
 
+This page describes some of the unique attributes of the NSRDB. For
+instructions on how to access the data, see the docs page `here
+<https://nrel.github.io/rex/misc/examples.nrel_data.html>`_.
+
+Description
+-----------
+
 The National Solar Radiation Database (NSRDB) is a serially complete
 collection of meteorological and solar irradiance data sets for the
 United States and a growing list of international locations for 1998-2017. The
@@ -61,54 +68,8 @@ The following variables are provided by the NSRDB:
 - Aerosol single-scatter albedo (ssa)
 
 
-Data Format
------------
-
-The data is provided in high density data file (.h5) separated by year. The
-variables mentioned above are provided in 2 dimensional time-series arrays
-(called "datasets" in h5 files) with dimensions (time x location). The temporal
-axis is defined by the ``time_index`` dataset, while the positional axis is
-defined by the ``meta`` dataset. We typically refer to a single site in the
-data with a ``gid``, which is just the index of the site in the meta data
-(zero-indexed). For storage efficiency each variable has been scaled and stored
-as an integer. The scale_factor is provided in the ``psm_scale_factor``
-attribute. The units for the variable data is also provided as an attribute
-(``psm_units``).
-
-*More recent years of NSRDB data have added "scale_factor" and "units" in
-addition to "psm_scale_factor" and "psm_units" in order to be consistent
-with the other NREL datasets.*
-
-
-Data Access Examples
---------------------
-
-The easiest way to access and extract WTK and NSRDB data is by using the
-Resource eXtraction tool `rex <https://nrel.github.io/rex/>`_.
-
-Example scripts to extract wave resource data using the command line or python
-are provided below.
-
-If you are on the NREL Eagle supercomputer, you can use the example below, but
-change the filepath to the appropriate WTK or NSRDB file location on
-``/datasets/`` and set ``hsds=False``. See the basic `rex Resource handler
-examples <https://nrel.github.io/rex/_autosummary/rex.resource.Resource.html#rex-resource-resource>`_
-for similar use examples.
-
-You can use ``rex`` to access WTK and NSRDB data from your local computer using
-`HSDS
-<https://www.hdfgroup.org/solutions/highly-scalable-data-service-hsds/>`_. In
-order to do so, you need to setup HSDS and h5pyd. See `the rex-HSDS
-instructions <https://nrel.github.io/rex/misc/examples.hsds.html>`_ for more
-details on how to do this.
-
-*Please note that the NREL-hosted HSDS API is for demonstration purposes only,
-if you would like to use HSDS for production runs of reV please setup your own
-service with the instructions here:
-https://nrel.github.io/rex/misc/examples.hsds.html*
-
 NSRDB CLI
-+++++++++
+---------
 
 The `NSRDBX <https://nrel.github.io/rex/rex/rex.resource_extaction.nsrdb_cli.html#nsrdbx>`_
 command line utility provides the following options and commands:
@@ -132,55 +93,6 @@ command line utility provides the following options and commands:
     multi-site  Extract multiple sites given in '--sites' .csv or .json as...
     sam-file    Extract all datasets needed for SAM for the nearest pixel to...
 
-NSRDBX python class
-+++++++++++++++++++
-
-.. code-block:: python
-
-  from rex import NSRDBX
-
-  nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
-  with NSRDBX(nsrdb_file, hsds=True) as f:
-      meta = f.meta
-      time_index = f.time_index
-      dni = f['dni', :, ::1000]
-
-``NSRDBX`` also allows easy extraction of the nearest site to a desired
-(lat, lon) location:
-
-.. code-block:: python
-
-  from rex import NSRDBX
-
-  nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
-  nrel = (39.741931, -105.169891)
-  with NSRDBX(nsrdb_file, hsds=True) as f:
-      nrel_dni = f.get_lat_lon_df('dni', nrel)
-
-or to extract all sites in a given region:
-
-.. code-block:: python
-
-  from rex import NSRDBX
-
-  nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
-  state='Colorado'
-  with NSRDBX(nsrdb_file, hsds=True) as f:
-      date = '2018-07-04 18:00:00'
-      dni_map = f.get_timestep_map('dni', date, region=state,
-                                   region_col='state')
-
-Lastly, ``NSRDBX`` can be used to extract all variables needed to run SAM at a
-given location:
-
-.. code-block:: python
-
-  from rex import NSRDBX
-
-  nsrdb_file = '/nrel/nsrdb/v3/nsrdb_2018.h5'
-  nrel = (39.741931, -105.169891)
-  with NSRDBX(nsrdb_file, hsds=True) as f:
-      nrel_sam_vars = f.get_SAM_lat_lon(nrel)
 
 References
 ----------
