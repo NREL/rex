@@ -44,6 +44,18 @@ Note that the WIND Toolkit version 1.0.0 (described above) includes the 2007-201
 The next generation WIND Toolkit version 1.2.0 includes years 2018-2020 in the same HSDS directory `/nrel/wtk/conus/` but with different meta data. 
 
 
+WIND Toolkit References
+***********************
+
+For more information about the WIND Toolkit please see the `website. <https://www.nrel.gov/grid/wind-toolkit.html>`_
+Users of the WIND Toolkit should use the following citations:
+
+- `Draxl, C., B.M. Hodge, A. Clifton, and J. McCaa. 2015. Overview and Meteorological Validation of the Wind Integration National Dataset Toolkit (Technical Report, NREL/TP-5000-61740). Golden, CO: National Renewable Energy Laboratory. <https://www.nrel.gov/docs/fy15osti/61740.pdf>`_
+- `Draxl, C., B.M. Hodge, A. Clifton, and J. McCaa. 2015. "The Wind Integration National Dataset (WIND) Toolkit." Applied Energy 151: 355366. <https://www.sciencedirect.com/science/article/pii/S0306261915004237?via%3Dihub>`_
+- `Lieberman-Cribbin, W., C. Draxl, and A. Clifton. 2014. Guide to Using the WIND Toolkit Validation Code (Technical Report, NREL/TP-5000-62595). Golden, CO: National Renewable Energy Laboratory. <https://www.nrel.gov/docs/fy15osti/62595.pdf>`_
+- `King, J., A. Clifton, and B.M. Hodge. 2014. Validation of Power Output for the WIND Toolkit (Technical Report, NREL/TP-5D00-61714). Golden, CO: National Renewable Energy Laboratory. <https://www.nrel.gov/docs/fy14osti/61714.pdf>`_
+
+
 2023 National Offshore Wind data set (NOW-23)
 ---------------------------------------------
  
@@ -55,18 +67,39 @@ For all regions, the NOW-23 data set coverage starts on January 1, 2000. For Haw
  
 The following variables are available:
  
-Planetary boundary layer height (m)
-Pressure at 0m, 100m, 200m, and 300m (Pa)
-Temperature at 2m, 10m, 20-m intervals between 20m and 300m, 400m, and 500m (°C)
-Wind direction at 10m, 20-m intervals between 20m and 300m, 400m, and 500m (° from N)
-Wind speed at 10m, 20-m intervals between 20m and 300m, 400m, and 500m (m s-1)
-Friction velocity at 2m (m s-1)
-Sea surface temperature (°C)
-Skin Temperature (°C)
-Surface heat flux (W m-2)
-Relative humidity at 2m (%)
-Inverse Monin-Obukhov length (m-1)
-Roughness length (m)
+-Planetary boundary layer height (m)
+-Pressure at 0m, 100m, 200m, and 300m (Pa)
+-Temperature at 2m, 10m, 20-m intervals between 20m and 300m, 400m, and 500m (°C)
+-Wind direction at 10m, 20-m intervals between 20m and 300m, 400m, and 500m (° from N)
+-Wind speed at 10m, 20-m intervals between 20m and 300m, 400m, and 500m (m s-1)
+-Friction velocity at 2m (m s-1)
+-Sea surface temperature (°C)
+-Skin Temperature (°C)
+-Surface heat flux (W m-2)
+-Relative humidity at 2m (%)
+-Inverse Monin-Obukhov length (m-1)
+-Roughness length (m)
+
+The following domains can be used to access the data using HSDS:
+
+- /nrel/wtk/great_lakes-5min/
+- /nrel/wtk/great_lakes/
+- /nrel/wtk/gulf_of_mexico/
+- /nrel/wtk/hawaii_5min/
+- /nrel/wtk/hawaii/
+- /nrel/wtk/maine/
+- /nrel/wtk/mid_atlantic_5min/
+- /nrel/wtk/mid_atlantic/
+- /nrel/wtk/now23_california/
+- /nrel/wtk/nw_pacific-5min/
+- /nrel/wtk/nw_pacific/
+- /nrel/wtk/south_atlantic/
+
+
+NOW-23 References
+*****************
+Bodini, N., Optis, M., Redfern, S., Rosencrans, D., Rybchuk, A., Lundquist, J. K., Pronk, V., Castagneri, S., Purkayastha, A., Draxl, C., Krishnamurthy, R., Young, E., Roberts, B., Rosenlieb, E., and Musial, W.: The 2023 National Offshore Wind data set (NOW-23), Earth Syst. Sci. Data Discuss. [preprint], https://doi.org/10.5194/essd-2023-490, in review, 2023.
+
 
 WINDX CLI
 ---------
@@ -93,13 +126,3 @@ command line utility provides the following options and commands:
     multi-site  Extract multiple sites given in '--sites' .csv or .json as...
     sam-file    Extract all datasets at the given hub height needed for SAM...
 
-References
-----------
-
-For more information about the WIND Toolkit please see the `website. <https://www.nrel.gov/grid/wind-toolkit.html>`_
-Users of the WIND Toolkit should use the following citations:
-
-- `Draxl, C., B.M. Hodge, A. Clifton, and J. McCaa. 2015. Overview and Meteorological Validation of the Wind Integration National Dataset Toolkit (Technical Report, NREL/TP-5000-61740). Golden, CO: National Renewable Energy Laboratory. <https://www.nrel.gov/docs/fy15osti/61740.pdf>`_
-- `Draxl, C., B.M. Hodge, A. Clifton, and J. McCaa. 2015. "The Wind Integration National Dataset (WIND) Toolkit." Applied Energy 151: 355366. <https://www.sciencedirect.com/science/article/pii/S0306261915004237?via%3Dihub>`_
-- `Lieberman-Cribbin, W., C. Draxl, and A. Clifton. 2014. Guide to Using the WIND Toolkit Validation Code (Technical Report, NREL/TP-5000-62595). Golden, CO: National Renewable Energy Laboratory. <https://www.nrel.gov/docs/fy15osti/62595.pdf>`_
-- `King, J., A. Clifton, and B.M. Hodge. 2014. Validation of Power Output for the WIND Toolkit (Technical Report, NREL/TP-5D00-61714). Golden, CO: National Renewable Energy Laboratory. <https://www.nrel.gov/docs/fy14osti/61714.pdf>`_
