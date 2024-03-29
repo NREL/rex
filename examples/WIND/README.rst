@@ -5,8 +5,8 @@ This page describes some of the unique attributes of NREL wind datasets. For
 instructions on how to access the data, see the docs page `here
 <https://nrel.github.io/rex/misc/examples.nrel_data.html>`_.
 
-WIND Toolkit
-------------
+WIND Toolkit v1.0.0
+-------------------
 
 The WIND Toolkit for North America was produced using the `Weather Research
 and Forecasting Model (WRF)
@@ -38,6 +38,35 @@ provided in three sets of files:
 - CONUS: Extracted exclusively from the CONUS domain
 - Canada: Combined data from the Canada and CONUS domains
 - Mexico: Combined data from the Mexico and CONUS domains
+
+Note that the WIND Toolkit version 1.0.0 (described above) includes the 2007-2013 years of the files located at the following hsds domain: `/nrel/wtk/conus/`
+
+The next generation WIND Toolkit version 1.2.0 includes years 2018-2020 in the same HSDS directory `/nrel/wtk/conus/` but with different meta data. 
+
+
+2023 National Offshore Wind data set (NOW-23)
+---------------------------------------------
+ 
+The 2023 National Offshore Wind data set (NOW-23) is the latest wind resource data set for offshore regions in the United States, which supersedes, for its offshore component, the Wind Integration National Dataset (WIND) Toolkit v1.0.0, which was published about a decade ago and is currently one of the primary resources for stakeholders conducting wind resource assessments in the continental United States.
+
+The NOW-23 data set was produced using the Weather Research and Forecasting Model (WRF) version 4.2.1. A regional approach was used: for each offshore region, the WRF setup was selected based on validation against available observations. The WRF model was initialized with the European Centre for Medium Range Weather Forecasts 5 Reanalysis (ERA-5) data set, using a 6-hour refresh rate. The model is configured with an initial horizontal grid spacing of 6 km and an internal nested domain that refined the spatial resolution to 2 km. The model is run with 61 vertical levels, with 12 levels in the lower 300m of the atmosphere, stretching from 5 m to 45 m in height. The MYNN planetary boundary layer and surface layer schemes were used the North Atlantic, Mid Atlantic, Great Lakes, Hawaii, and North Pacific regions. On the other hand, using the YSU planetary boundary layer and MM5 surface layer schemes resulted in a better skill in the South Atlantic, Gulf of Mexico, and South Pacific regions. A more detailed description of the WRF model setup can be found in the WRF namelist files linked at the bottom of this page.
+
+For all regions, the NOW-23 data set coverage starts on January 1, 2000. For Hawaii and the North Pacific regions, NOW-23 goes until December 31, 2019. For the South Pacific region, the model goes until 31 December, 2022. For all other regions, the model covers until December 31, 2020. Outputs are available at 5 minute resolution, and for all regions we have also included output files at hourly resolution.
+ 
+The following variables are available:
+ 
+Planetary boundary layer height (m)
+Pressure at 0m, 100m, 200m, and 300m (Pa)
+Temperature at 2m, 10m, 20-m intervals between 20m and 300m, 400m, and 500m (°C)
+Wind direction at 10m, 20-m intervals between 20m and 300m, 400m, and 500m (° from N)
+Wind speed at 10m, 20-m intervals between 20m and 300m, 400m, and 500m (m s-1)
+Friction velocity at 2m (m s-1)
+Sea surface temperature (°C)
+Skin Temperature (°C)
+Surface heat flux (W m-2)
+Relative humidity at 2m (%)
+Inverse Monin-Obukhov length (m-1)
+Roughness length (m)
 
 WINDX CLI
 ---------
