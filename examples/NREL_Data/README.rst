@@ -26,6 +26,7 @@ Definitions
  - ``h5pyd`` - The python library that provides the HDF REST interface to NREL data hosted on the cloud. This allows for the public to access small parts of large cloud-hosted datasets. See the `h5pyd <https://github.com/HDFGroup/h5pyd>`_ library for more details.
  - ``hsds`` - The highly scalable data service (HSDS) that we recommend to access small chunks of very large cloud-hosted NREL datasets. See the `hsds <https://github.com/HDFGroup/hsds>`_ library for more details.
  - ``meta`` - The ``dataset`` in an NREL h5 file that contains information about the spatial axis. This is typically a `pandas DataFrame <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_ with columns such as "latitude", "longitude", "state", etc... The DataFrame is typically converted to a records array for storage in an h5 ``dataset``. The length of the meta data should match the length of axis 1 of a 2D spatiotemporal ``dataset``.
+ - ``S3`` - Amazon Simple Storage Service (S3) is a basic cloud file storage system we use to store raw .h5 files in their full volume. Downloading files directly from S3 may not be the easiest way to access the data because each file tends to be multiple terabytes. Instead, you can stream small chunks of the files via HSDS. 
  - ``scale_factor`` - We frequently scale data by a multiplicative factor, round the data to integer precision, and store the data in integer arrays. The ``scale_factor`` is an attribute associated with the relevant h5 ``dataset`` that defines the multiplicative factor required to unscale the data from integer storage to the original physical units.
  - ``time_index`` - The ``dataset`` in an NREL h5 file that contains information about the temporal axis. This is typically a `pandas DatetimeIndex <https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html>`_ that has been converted to a string array for storage in an h5 ``dataset``. The length of this ``dataset`` should match the length of axis 0 of a 2D spatiotemporal ``dataset``.
 
@@ -79,6 +80,8 @@ thing. In a python kernel, ``import h5pyd`` and then run:
 The `Open Energy Data Initiative (OEDI) <https://openei.org/wiki/Main_Page>`_
 is also invaluable in finding energy-relevant public datasets that are not
 necessarily spatiotemporal h5 data.
+
+Note that raw NREL .h5 data files are hosted on AWS S3. In contrast, the files on HSDS are not real "files". They are just domains that you can access with h5pyd or rex tools to stream small chunks of the files stored on S3. The multi-terabyte .h5 files on S3 would be incredibly cumbersome to access otherwise. 
 
 We have also experimented with external data access using `fsspec <https://nrel.github.io/rex/misc/examples.fsspec.html>`_ and `zarr <https://nrel.github.io/rex/misc/examples.zarr.html>`_, but the examples below may not work with these utilities.
 
