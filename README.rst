@@ -2,31 +2,33 @@
 Welcome to The REsource eXtraction (rex) tool!
 **********************************************
 
-.. image:: https://github.com/NREL/rex/workflows/Documentation/badge.svg
+|Docs| |Tests| |Linter| |PyPi| |PythonV| |Conda| |Licence| |CodeCov| |Zeonodo|
+
+.. |Docs| image:: https://github.com/NREL/rex/workflows/Documentation/badge.svg
     :target: https://nrel.github.io/rex/
 
-.. image:: https://github.com/NREL/rex/workflows/Pytests/badge.svg
+.. |Tests| image:: https://github.com/NREL/rex/workflows/Pytests/badge.svg
     :target: https://github.com/NREL/rex/actions?query=workflow%3A%22Pytests%22
 
-.. image:: https://github.com/NREL/rex/workflows/Lint%20Code%20Base/badge.svg
+.. |Linter| image:: https://github.com/NREL/rex/workflows/Lint%20Code%20Base/badge.svg
     :target: https://github.com/NREL/rex/actions?query=workflow%3A%22Lint+Code+Base%22
 
-.. image:: https://img.shields.io/pypi/pyversions/NREL-rex.svg
+.. |PyPi| image:: https://img.shields.io/pypi/pyversions/NREL-rex.svg
     :target: https://pypi.org/project/NREL-rex/
 
-.. image:: https://badge.fury.io/py/NREL-rex.svg
+.. |PythonV| image:: https://badge.fury.io/py/NREL-rex.svg
     :target: https://badge.fury.io/py/NREL-rex
 
-.. image:: https://anaconda.org/nrel/nrel-rex/badges/version.svg
+.. |Conda| image:: https://anaconda.org/nrel/nrel-rex/badges/version.svg
     :target: https://anaconda.org/nrel/nrel-rex
 
-.. image:: https://anaconda.org/nrel/nrel-rex/badges/license.svg
+.. |Licence| image:: https://anaconda.org/nrel/nrel-rex/badges/license.svg
     :target: https://anaconda.org/nrel/nrel-rex
 
-.. image:: https://codecov.io/gh/nrel/rex/branch/main/graph/badge.svg?token=WQ95L11SRS
+.. |CodeCov| image:: https://codecov.io/gh/nrel/rex/branch/main/graph/badge.svg?token=WQ95L11SRS
     :target: https://codecov.io/gh/nrel/rex
 
-.. image:: https://zenodo.org/badge/253541811.svg
+.. |Zeonodo| image:: https://zenodo.org/badge/253541811.svg
    :target: https://zenodo.org/badge/latestdoi/253541811
 
 .. inclusion-intro
