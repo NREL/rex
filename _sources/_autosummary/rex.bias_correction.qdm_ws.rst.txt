@@ -1,0 +1,6 @@
+rex.bias\_correction.qdm\_ws
+============================
+
+.. currentmodule:: rex.bias_correction
+
+.. autofunction:: qdm_ws

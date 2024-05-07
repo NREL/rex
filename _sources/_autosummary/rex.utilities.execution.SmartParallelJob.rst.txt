@@ -1,0 +1,36 @@
+rex.utilities.execution.SmartParallelJob
+========================================
+
+.. currentmodule:: rex.utilities.execution
+
+.. autoclass:: SmartParallelJob
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SmartParallelJob.execute
+      ~SmartParallelJob.flush
+      ~SmartParallelJob.gather_and_flush
+      ~SmartParallelJob.run
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SmartParallelJob.execution_iter
+      ~SmartParallelJob.mem_util_lim
+      ~SmartParallelJob.n_workers
+      ~SmartParallelJob.obj
+   
+   

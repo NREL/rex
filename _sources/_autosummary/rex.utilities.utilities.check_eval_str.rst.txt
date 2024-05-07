@@ -1,0 +1,6 @@
+rex.utilities.utilities.check\_eval\_str
+========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: check_eval_str

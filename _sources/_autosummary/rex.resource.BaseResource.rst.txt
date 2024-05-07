@@ -1,0 +1,61 @@
+rex.resource.BaseResource
+=========================
+
+.. currentmodule:: rex.resource
+
+.. autoclass:: BaseResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~BaseResource.close
+      ~BaseResource.df_str_decode
+      ~BaseResource.get_SAM_df
+      ~BaseResource.get_attrs
+      ~BaseResource.get_dset_properties
+      ~BaseResource.get_meta_arr
+      ~BaseResource.get_scale_factor
+      ~BaseResource.get_units
+      ~BaseResource.open_dataset
+      ~BaseResource.preload_SAM
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~BaseResource.ADD_ATTR
+      ~BaseResource.SCALE_ATTR
+      ~BaseResource.UNIT_ATTR
+      ~BaseResource.adders
+      ~BaseResource.attrs
+      ~BaseResource.chunks
+      ~BaseResource.coordinates
+      ~BaseResource.data_version
+      ~BaseResource.datasets
+      ~BaseResource.dsets
+      ~BaseResource.dtypes
+      ~BaseResource.global_attrs
+      ~BaseResource.groups
+      ~BaseResource.h5
+      ~BaseResource.lat_lon
+      ~BaseResource.meta
+      ~BaseResource.res_dsets
+      ~BaseResource.resource_datasets
+      ~BaseResource.scale_factors
+      ~BaseResource.shape
+      ~BaseResource.shapes
+      ~BaseResource.time_index
+      ~BaseResource.units
+   
+   

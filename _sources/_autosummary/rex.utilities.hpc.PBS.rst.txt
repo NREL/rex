@@ -1,0 +1,48 @@
+rex.utilities.hpc.PBS
+=====================
+
+.. currentmodule:: rex.utilities.hpc
+
+.. autoclass:: PBS
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PBS.check_status
+      ~PBS.format_walltime
+      ~PBS.make_path
+      ~PBS.make_sh
+      ~PBS.parse_queue_str
+      ~PBS.qsub
+      ~PBS.query_queue
+      ~PBS.rm
+      ~PBS.s
+      ~PBS.submit
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PBS.MAX_NAME_LEN
+      ~PBS.QCOL_ID
+      ~PBS.QCOL_NAME
+      ~PBS.QCOL_STATUS
+      ~PBS.QSKIP
+      ~PBS.QSTAT_KEYS
+      ~PBS.USER
+      ~PBS.queue
+      ~PBS.queue_job_ids
+      ~PBS.queue_job_names
+   
+   

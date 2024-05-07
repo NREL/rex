@@ -1,0 +1,6 @@
+rex.utilities.fun\_utils.get\_class
+===================================
+
+.. currentmodule:: rex.utilities.fun_utils
+
+.. autofunction:: get_class

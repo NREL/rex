@@ -1,0 +1,65 @@
+rex.renewable\_resource.NSRDB
+=============================
+
+.. currentmodule:: rex.renewable_resource
+
+.. autoclass:: NSRDB
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~NSRDB.close
+      ~NSRDB.df_str_decode
+      ~NSRDB.get_SAM_df
+      ~NSRDB.get_attrs
+      ~NSRDB.get_dset_properties
+      ~NSRDB.get_meta_arr
+      ~NSRDB.get_scale_factor
+      ~NSRDB.get_units
+      ~NSRDB.open_dataset
+      ~NSRDB.preload_SAM
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~NSRDB.ADD_ATTR
+      ~NSRDB.INTERPOLABLE_DSETS
+      ~NSRDB.LAPSE_RATES
+      ~NSRDB.SCALE_ATTR
+      ~NSRDB.UNIT_ATTR
+      ~NSRDB.VARIABLE_NAME
+      ~NSRDB.VARIABLE_UNIT
+      ~NSRDB.adders
+      ~NSRDB.attrs
+      ~NSRDB.chunks
+      ~NSRDB.coordinates
+      ~NSRDB.data_version
+      ~NSRDB.datasets
+      ~NSRDB.dsets
+      ~NSRDB.dtypes
+      ~NSRDB.global_attrs
+      ~NSRDB.groups
+      ~NSRDB.h5
+      ~NSRDB.lat_lon
+      ~NSRDB.meta
+      ~NSRDB.res_dsets
+      ~NSRDB.resource_datasets
+      ~NSRDB.scale_factors
+      ~NSRDB.shape
+      ~NSRDB.shapes
+      ~NSRDB.time_index
+      ~NSRDB.units
+   
+   
