@@ -190,6 +190,7 @@ class SAMResource:
         ----------
         sites : int | list | tuple | slice
             int, list, tuple, or slice indicating sites to send to SAM
+            (sites is synonymous with gids aka spatial indices)
         tech : str
             SAM technology string. See class attributes for options.
         time_index : pandas.DatetimeIndex
@@ -305,6 +306,7 @@ class SAMResource:
         -------
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         """
         sites = self._sites
 
@@ -320,6 +322,7 @@ class SAMResource:
             Sites slice belonging to this instance of ProjectPoints.
             The type is slice if possible. Will be a list only if sites are
             non-sequential.
+            (sites is synonymous with gids aka spatial indices)
         """
         # try_slice is what the sites list would be if it is sequential
         if len(self.sites) > 1:
@@ -488,11 +491,13 @@ class SAMResource:
         ----------
         sites : int | list | tuple | slice
             int, list, tuple, or slice indicating sites to send to SAM
+            (sites is synonymous with gids aka spatial indices)
 
         Returns
         -------
         sites : list
             list of sites to send to SAM
+            (sites is synonymous with gids aka spatial indices)
         """
         if isinstance(sites, int):
             sites = [sites]
@@ -569,6 +574,7 @@ class SAMResource:
             arr data will be ensured within the min/max values of valid_range
         sites : list
             Resource gid site list for warning printout.
+            (sites is synonymous with gids aka spatial indices)
 
         Returns
         -------
@@ -1015,6 +1021,7 @@ class SAMResource:
             MultiFileResource, etc...)
         sites : list | slice | int
             List of site indices (axis=1)
+            (sites is synonymous with gids aka spatial indices)
         """
         if isinstance(sites, slice):
             last = np.arange(sites.stop)[sites][-1]
@@ -1045,6 +1052,7 @@ class SAMResource:
             Slicing argument for the resource temporal dimension (axis=0)
         sites : list | slice | int
             List of site indices (axis=1)
+            (sites is synonymous with gids aka spatial indices)
         hh : None | int
             Optional single hub height in meters that datasets are to be loaded
             from rex_res at

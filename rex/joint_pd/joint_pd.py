@@ -114,7 +114,6 @@ class JointPD:
             inclusive, so (0, 6, 2) would yield three bins with edges (0, 2, 4,
             6). If the stop value is not perfectly divisible by the step, the
             last bin will overshoot the stop value.
-        sites : list | slice, optional
         res_cls : Class, optional
             Resource handler class to use to access res_h5,
             by default Resource
@@ -123,6 +122,7 @@ class JointPD:
             behind HSDS, by default False
         sites_slice : slice | None, optional
             Sites to extract, if None all, by default None
+            (sites is synonymous with gids aka spatial indices)
 
         Returns
         -------
@@ -167,6 +167,7 @@ class JointPD:
             Dataset 2 to generate joint probabilty distribution for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         chunks_per_slice : int, optional
             Number of chunks to extract in each slice, by default 5
 
@@ -214,6 +215,7 @@ class JointPD:
             last bin will overshoot the stop value.
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -398,6 +400,7 @@ class JointPD:
             last bin will overshoot the stop value.
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         res_cls : Class, optional
             Resource class to use to access res_h5, by default Resource
         hsds : bool, optional
@@ -458,6 +461,7 @@ class JointPD:
             (start, stop, step) for wind direction bins
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         res_cls : Class, optional
             Resource class to use to access wind_h5, by default Resource
         hsds : bool, optional

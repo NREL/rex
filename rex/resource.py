@@ -1494,6 +1494,7 @@ class BaseResource(ABC):
             MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         tech : str
             Technology to be run by SAM
         time_index_step: int, optional
@@ -1526,6 +1527,7 @@ class BaseResource(ABC):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         tech : str
             Technology to be run by SAM
         unscale : bool

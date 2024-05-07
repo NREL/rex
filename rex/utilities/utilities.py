@@ -806,6 +806,7 @@ def split_sites_list(sites, slice_size):
     ----------
     sites : list
         Sites to extract as a list or numpy object to extract
+        (sites is synonymous with gids aka spatial indices)
     slice_size : int
         Number of sites in each slice to extract either on each worker,
         or in series
@@ -841,6 +842,7 @@ def slice_sites(shape, chunks, sites=None, chunks_per_slice=5):
         extracted
     sites : list | slice, optional
         Subset of sites to extract, by default None or all sites
+        (sites is synonymous with gids aka spatial indices)
     chunks_per_slice : int, optional
         Number of chunks to extract in each slice, by default 5
 

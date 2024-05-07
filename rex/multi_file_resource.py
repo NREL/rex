@@ -479,6 +479,7 @@ class MultiFileNSRDB(MultiFileResource, NSRDB):
             explicit list of complete filepaths.
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -576,6 +577,7 @@ class MultiFileWTK(MultiFileResource, WindResource):
             explicit list of complete filepaths.
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         hub_heights : int | float | list
             Hub heights to extract for SAM
         unscale : bool

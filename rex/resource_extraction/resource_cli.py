@@ -24,6 +24,7 @@ def _parse_sites(sites):
     ----------
     sites : str
         Path to .csv of .json containing sites to extract
+        (sites is synonymous with gids aka spatial indices)
 
     Returns
     -------

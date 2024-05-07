@@ -605,6 +605,7 @@ class TemporalStats:
             Dataset to extract data from
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         chunks_per_slice : int, optional
             Number of chunks to extract in each slice, by default 5
 
@@ -671,6 +672,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         diurnal : bool, optional
             Extract diurnal stats, by default False
         month : bool, optional
@@ -769,6 +771,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -806,6 +809,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -843,6 +847,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -880,6 +885,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -916,6 +922,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         max_workers : None | int, optional
             Number of workers to use, if 1 run in serial, if None use all
             available cores, by default None
@@ -992,6 +999,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         statistics : str | tuple | dict, optional
             Statistics to extract, either a key or tuple of keys in
             cls.STATS, or a dictionary of the form
@@ -1066,6 +1074,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         statistics : str | tuple | dict, optional
             Statistics to extract, either a key or tuple of keys in
             cls.STATS, or a dictionary of the form
@@ -1126,6 +1135,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         statistics : str | tuple | dict, optional
             Statistics to extract, either a key or tuple of keys in
             cls.STATS, or a dictionary of the form
@@ -1186,6 +1196,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         statistics : str | tuple | dict, optional
             Statistics to extract, either a key or tuple of keys in
             cls.STATS, or a dictionary of the form
@@ -1246,6 +1257,7 @@ class TemporalStats:
             Dataset to extract stats for
         sites : list | slice, optional
             Subset of sites to extract, by default None or all sites
+            (sites is synonymous with gids aka spatial indices)
         statistics : str | tuple | dict, optional
             Statistics to extract, either a key or tuple of keys in
             cls.STATS, or a dictionary of the form

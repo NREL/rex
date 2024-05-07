@@ -294,6 +294,7 @@ class MultiResolutionResource:
             Filepath to low-resolution h5 resource file.
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         *args : list
             Additional arguments required by the resource-specific data handler
             preload_SAM() method (e.g. "hub_heights" is required by

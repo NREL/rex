@@ -85,6 +85,7 @@ class WaveResource(BaseResource):
             MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         means : bool
             Boolean flag to compute mean resource when res_array is set
         time_index_step: int, optional
@@ -115,6 +116,7 @@ class WaveResource(BaseResource):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -535,6 +537,7 @@ class AbstractInterpolatedResource(BaseResource):
             Slice object representing any temporal subsampling
         sites : list | slice
             Spatial indices to load.
+            (sites is synonymous with gids aka spatial indices)
         """
 
         if isinstance(values, (int, float)):
@@ -656,6 +659,7 @@ class SolarResource(AbstractInterpolatedResource):
             MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         tech : str, optional
             SAM technology string, by default 'pvwattsv8'
         time_index_step: int, optional
@@ -708,6 +712,7 @@ class SolarResource(AbstractInterpolatedResource):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -777,6 +782,7 @@ class NSRDB(SolarResource):
             MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         tech : str, optional
             SAM technology string, by default 'pvwattsv8'
         time_index_step: int, optional
@@ -842,6 +848,7 @@ class NSRDB(SolarResource):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -1352,6 +1359,7 @@ class WindResource(AbstractInterpolatedResource):
             MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         hub_heights : int | float | list
             Hub heights to extract for SAM
         time_index_step: int, optional
@@ -1421,6 +1429,7 @@ class WindResource(AbstractInterpolatedResource):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         hub_heights : int | float | list
             Hub heights to extract for SAM
         unscale : bool
@@ -1525,6 +1534,7 @@ class GeothermalResource(AbstractInterpolatedResource):
             MultiFileResource, etc...)
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         depths :  int | float | list
             Depths to extract for SAM
         time_index_step: int, optional
@@ -1564,6 +1574,7 @@ class GeothermalResource(AbstractInterpolatedResource):
             h5_file to extract resource from
         sites : list
             List of sites to be provided to SAM
+            (sites is synonymous with gids aka spatial indices)
         depths :  int | float | list
             Depths to extract for SAM
         unscale : bool
