@@ -7,10 +7,7 @@ import logging
 import numpy as np
 import scipy
 
-from . import init_logger
-
-init_logger(__name__, log_level='DEBUG')
-logger = logging.getLogger('sup3r')
+logger = logging.getLogger(__name__)
 
 
 def sample_q_linear(n_samples):
@@ -274,7 +271,6 @@ class QuantileDeltaMapping:
         if len(arr.shape) == 1:
             arr = np.expand_dims(arr, 1)
 
-        logger.info('Cleaning params.')
         params_oh = self._clean_params(self.params_oh, arr.shape)
         params_mh = self._clean_params(self.params_mh, arr.shape)
         params_mf = self._clean_params(self.params_mf, arr.shape)
@@ -285,13 +281,13 @@ class QuantileDeltaMapping:
         # Changes in Quantiles and Extremes? Journal of Climate 28, 6938–6959
         # (2015).
 
-        logger.info('Computing CDF on modeled future data')
+        logger.debug('Computing CDF on modeled future data')
         q_mf = self.cdf(arr, params_mf)  # Eq.3: Tau_m_p = F_m_p(x_m_p)
-        logger.info('Computing PPF on observed historical data')
+        logger.debug('Computing PPF on observed historical data')
         x_oh = self.ppf(q_mf, params_oh)  # Eq.5: x^_o:m_h:p = F-1_o_h(Tau_m_p)
-        logger.info('Computing PPF on modeled historical data')
+        logger.debug('Computing PPF on modeled historical data')
         x_mh_mf = self.ppf(q_mf, params_mh)  # Eq.4 denom: F-1_m_h(Tau_m_p)
-        logger.info('Finished computing distributions.')
+        logger.debug('Finished computing distributions.')
 
         if self.relative:
             x_mh_mf[x_mh_mf == 0] = 0.001  # arbitrary limit to prevent div 0
