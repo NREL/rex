@@ -7,7 +7,10 @@ import logging
 import numpy as np
 import scipy
 
-logger = logging.getLogger(__name__)
+from . import init_logger
+
+init_logger(__name__, log_level='DEBUG')
+logger = logging.getLogger('sup3r')
 
 
 def sample_q_linear(n_samples):

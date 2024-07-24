@@ -2,27 +2,31 @@
 """
 pytests for resource extractors
 """
-from click.testing import CliRunner
-import numpy as np
 import os
-import pandas as pd
-from pandas.testing import assert_frame_equal
-import pytest
 import tempfile
 import traceback
 
+import numpy as np
+import pandas as pd
+import pytest
+from click.testing import CliRunner
+from pandas.testing import assert_frame_equal
+from rex import TESTDATADIR
+from rex.resource_extraction.resource_extraction import (
+    NSRDBX,
+    TREE_DIR,
+    MultiFileNSRDBX,
+    MultiFileWindX,
+    MultiTimeNSRDBX,
+    MultiTimeWindX,
+    MultiYearNSRDBX,
+    MultiYearWindX,
+    WaveX,
+    WindX,
+)
 from rex.resource_extraction.wind_cli import main
-from rex.resource_extraction.resource_extraction import (MultiFileWindX,
-                                                         MultiFileNSRDBX,
-                                                         MultiTimeWindX,
-                                                         MultiTimeNSRDBX,
-                                                         MultiYearWindX,
-                                                         MultiYearNSRDBX,
-                                                         NSRDBX, WindX, WaveX)
-from rex.resource_extraction.resource_extraction import TREE_DIR
 from rex.utilities.exceptions import ResourceValueError
 from rex.utilities.loggers import LOGGERS
-from rex import TESTDATADIR
 
 
 @pytest.fixture(scope="module")
@@ -106,13 +110,13 @@ def MultiTimeWindX_cls():
 
 
 def test_sam_csv_with_extra_commas(NSRDBX_cls):
-    """Test that extra commas are removed from meta values. """
+    """Test that extra commas are removed from meta values."""
 
     with tempfile.TemporaryDirectory() as td:
         out_path = os.path.join(td, 'test.csv')
         NSRDBX_cls.get_SAM_gid(0, out_path=out_path,
                                extra_meta_data={"urban": "Washington, D.C."})
-        with open(out_path, "r") as fh:
+        with open(out_path) as fh:
             col_names = fh.readline()
             values = fh.readline()
         assert (sum(char == "," for char in col_names)
@@ -135,9 +139,9 @@ def check_props(res_cls):
     assert np.all(~np.isin(['meta', 'time_index', 'coordinates'],
                            res_cls.resource_datasets))
 
-    assert np.all(np.in1d(res_cls.countries, meta['country'].unique()))
-    assert np.all(np.in1d(res_cls.states, meta['state'].unique()))
-    assert np.all(np.in1d(res_cls.counties, meta['county'].unique()))
+    assert np.all(np.isin(res_cls.countries, meta['country'].unique()))
+    assert np.all(np.isin(res_cls.states, meta['state'].unique()))
+    assert np.all(np.isin(res_cls.counties, meta['county'].unique()))
 
 
 def extract_site(res_cls, ds_name):
@@ -232,6 +236,7 @@ class TestNSRDBX:
     """
     NSRDBX Resource Extractor
     """
+
     @staticmethod
     def test_props(NSRDBX_cls):
         """
@@ -290,6 +295,7 @@ class TestMultiFileNSRDBX:
     """
     MultiFileNSRDBX Resource Extractor
     """
+
     @staticmethod
     def test_props(MultiFileNSRDBX_cls):
         """
@@ -349,6 +355,7 @@ class TestMultiYearNSRDBX:
     """
     MultiYearNSRDBX Resource Extractor
     """
+
     @staticmethod
     def test_props(MultiYearNSRDBX_cls):
         """
@@ -408,6 +415,7 @@ class TestMultiTimeNSRDBX:
     """
     MultiTimeNSRDBX Resource Extractor
     """
+
     @staticmethod
     def test_props(MultiTimeNSRDBX_cls):
         """
@@ -467,6 +475,7 @@ class TestWindX:
     """
     WindX Resource Extractor
     """
+
     @staticmethod
     def test_props(WindX_cls):
         """
@@ -525,6 +534,7 @@ class TestMultiFileWindX:
     """
     MultiFileWindX Resource Extractor
     """
+
     @staticmethod
     def test_props(MultiFileWindX_cls):
         """
@@ -584,6 +594,7 @@ class TestMultiYearWindX:
     """
     MultiYearWindX Resource Extractor
     """
+
     @staticmethod
     def test_props(MultiYearWindX_cls):
         """
@@ -643,6 +654,7 @@ class TestMultiTimeWindX:
     """
     MultiTimeWindX Resource Extractor
     """
+
     @staticmethod
     def test_props(MultiTimeWindX_cls):
         """
@@ -716,7 +728,7 @@ def test_WaveX(gid):
         test_df = f.get_gid_df(ds_name, gid)
 
     assert np.allclose(truth, test_ts)
-    index_len = np.product(truth.shape[:3])
+    index_len = np.prod(truth.shape[:3])
     gids = len(gid) if isinstance(gid, list) else 1
     assert np.allclose(truth.reshape((index_len, gids)), test_df.values)
     assert all(test_df.index == index)

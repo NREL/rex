@@ -3,28 +3,36 @@
 Resource Extraction Tools
 """
 import copy
-import h5py
 import logging
-import numpy as np
 import os
-import pandas as pd
 import pickle
-from scipy.spatial import cKDTree
 from tempfile import TemporaryDirectory
 from warnings import warn
 
-from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
-                                     MultiFileWTK)
+import h5py
+import numpy as np
+import pandas as pd
+from scipy.spatial import cKDTree
+
+from rex.multi_file_resource import (
+    MultiFileNSRDB,
+    MultiFileResource,
+    MultiFileWTK,
+)
 from rex.multi_time_resource import MultiTimeResource
 from rex.multi_year_resource import MultiYearResource
+from rex.renewable_resource import (
+    NSRDB,
+    SolarResource,
+    WaveResource,
+    WindResource,
+)
 from rex.resource import Resource, ResourceDataset
-from rex.renewable_resource import (NSRDB, SolarResource, WaveResource,
-                                    WindResource)
 from rex.temporal_stats.temporal_stats import TemporalStats
 from rex.utilities.exceptions import ResourceValueError, ResourceWarning
 from rex.utilities.execution import SpawnProcessPool
 from rex.utilities.loggers import log_versions
-from rex.utilities.utilities import parse_year, check_tz, res_dist_threshold
+from rex.utilities.utilities import check_tz, parse_year, res_dist_threshold
 
 # pylint: disable=consider-using-with
 TREE_DIR = TemporaryDirectory()
@@ -918,7 +926,7 @@ class ResourceX:
             returned
         """
         if isinstance(gid, (int, np.integer)):
-            gid = [gid, ]
+            gid = [gid]
 
         SAM_df = []
         for res_id in gid:
@@ -1675,6 +1683,7 @@ class SolarX(ResourceX):
     """
     Solar Resource extraction class
     """
+
     DEFAULT_RES_CLS = SolarResource
 
 
@@ -1682,6 +1691,7 @@ class NSRDBX(ResourceX):
     """
     NSRDB extraction class
     """
+
     DEFAULT_RES_CLS = NSRDB
 
 
@@ -1689,6 +1699,7 @@ class MultiFileNSRDBX(MultiFileResourceX):
     """
     Multi-File NSRDB extraction class
     """
+
     DEFAULT_RES_CLS = MultiFileNSRDB
 
 
@@ -1696,6 +1707,7 @@ class MultiYearNSRDBX(MultiYearResourceX):
     """
     Multi Year NSRDB extraction class
     """
+
     DEFAULT_RES_CLS = NSRDB
 
 
@@ -1703,6 +1715,7 @@ class MultiTimeNSRDBX(MultiTimeResourceX):
     """
     NSRDB extraction class for data stored temporaly accross multiple files
     """
+
     DEFAULT_RES_CLS = NSRDB
 
 
@@ -1710,6 +1723,7 @@ class WindX(ResourceX):
     """
     Wind Resource extraction class
     """
+
     DEFAULT_RES_CLS = WindResource
 
     def get_SAM_gid(self, hub_height, gid, out_path=None, write_time=True,
@@ -1837,6 +1851,7 @@ class MultiFileWindX(MultiFileResourceX):
     """
     Multi-File Wind Resource extraction class
     """
+
     DEFAULT_RES_CLS = MultiFileWTK
 
 
@@ -1844,6 +1859,7 @@ class MultiYearWindX(MultiYearResourceX):
     """
     Multi Year Wind Resource extraction class
     """
+
     DEFAULT_RES_CLS = WindResource
 
 
@@ -1852,6 +1868,7 @@ class MultiTimeWindX(MultiTimeResourceX):
     Wind resource extraction class for data stored temporaly accross multiple
     files
     """
+
     DEFAULT_RES_CLS = WindResource
 
 
@@ -1859,6 +1876,7 @@ class WaveX(ResourceX):
     """
     Wave data extraction class
     """
+
     DEFAULT_RES_CLS = WaveResource
 
     def get_gid_ts(self, ds_name, gid):
@@ -1906,7 +1924,7 @@ class WaveX(ResourceX):
             index = pd.MultiIndex.from_product(
                 [self.time_index, self['frequency'], self['direction']],
                 names=['time_index', 'frequency', 'direction'])
-            ax1 = np.product(df.shape[:3])
+            ax1 = np.prod(df.shape[:3])
             ax2 = df.shape[-1] if len(df.shape) == 4 else 1
             df = df.reshape(ax1, ax2)
         else:
@@ -1929,6 +1947,7 @@ class MultiYearWaveX(MultiYearResourceX):
     """
     Multi Year Wave extraction class
     """
+
     DEFAULT_RES_CLS = WaveResource
 
 
@@ -1937,4 +1956,5 @@ class MultiTimeWaveX(MultiTimeResourceX):
     Wave resource extraction class for data stored temporaly accross multiple
     files
     """
+
     DEFAULT_RES_CLS = WaveResource
