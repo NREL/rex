@@ -2,10 +2,10 @@
 """
 rex bias correction utilities.
 """
-import scipy
-import numpy as np
 import logging
 
+import numpy as np
+import scipy
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +192,7 @@ class QuantileDeltaMapping:
         """
 
         msg = f'params must be 2D array but received {type(params)}'
-        assert isinstance(params, np.ndarray), msg
+        assert hasattr(params, 'shape'), msg
 
         if len(params.shape) == 1:
             params = np.expand_dims(params, 0)
@@ -281,9 +281,13 @@ class QuantileDeltaMapping:
         # Changes in Quantiles and Extremes? Journal of Climate 28, 6938–6959
         # (2015).
 
+        logger.debug('Computing CDF on modeled future data')
         q_mf = self.cdf(arr, params_mf)  # Eq.3: Tau_m_p = F_m_p(x_m_p)
+        logger.debug('Computing PPF on observed historical data')
         x_oh = self.ppf(q_mf, params_oh)  # Eq.5: x^_o:m_h:p = F-1_o_h(Tau_m_p)
+        logger.debug('Computing PPF on modeled historical data')
         x_mh_mf = self.ppf(q_mf, params_mh)  # Eq.4 denom: F-1_m_h(Tau_m_p)
+        logger.debug('Finished computing distributions.')
 
         if self.relative:
             x_mh_mf[x_mh_mf == 0] = 0.001  # arbitrary limit to prevent div 0
