@@ -3,7 +3,7 @@
 rex bias correction utilities.
 """
 import os
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import logging
 import numpy as np
 import scipy
@@ -395,7 +395,8 @@ class QuantileDeltaMapping:
                                      self.relative, self.sampling,
                                      self.log_base)
                     futures[fut] = idx
-                for future, idx in futures.items():
+                for future in as_completed(futures):
+                    idx = futures[future]
                     arr_bc[:, idx] = future.result()
 
         msg = ('Input shape {} does not match QDM bias corrected output '
