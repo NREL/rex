@@ -381,23 +381,22 @@ class QuantileDeltaMapping:
                                   self.relative, self.sampling, self.log_base)
         else:
             max_workers = max_workers or os.cpu_count()
-            sslices = np.array_split(np.arange(arr.shape[1]), max_workers)
+            sslices = np.array_split(np.arange(arr.shape[1]), arr.shape[1])
             sslices = [slice(idx[0], idx[-1] + 1) for idx in sslices]
-            arr_bc = []
-            futures = []
+            arr_bc = arr.copy()
+            futures = {}
             with ProcessPoolExecutor(max_workers=max_workers) as exe:
-                for sslice in sslices:
-                    fut = exe.submit(self.run_qdm, arr[:, sslice],
-                                     self.params_oh[sslice],
-                                     self.params_mh[sslice],
-                                     self.params_mf[sslice], self.scipy_dist,
+                for idx in range(arr.shape[1]):
+                    idx = slice(idx, idx + 1)
+                    fut = exe.submit(self.run_qdm, arr[:, idx],
+                                     self.params_oh[idx],
+                                     self.params_mh[idx],
+                                     self.params_mf[idx], self.scipy_dist,
                                      self.relative, self.sampling,
                                      self.log_base)
-                    futures.append(fut)
-                for future in futures:
-                    arr_bc.append(future.result())
-
-            arr_bc = np.concatenate(arr_bc, axis=1)
+                    futures[fut] = idx
+                for future, idx in futures.items():
+                    arr_bc[:, idx] = future.result()
 
         msg = ('Input shape {} does not match QDM bias corrected output '
                'shape {}!'.format(arr.shape, arr_bc.shape))
