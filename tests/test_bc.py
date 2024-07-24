@@ -25,6 +25,9 @@ def test_qdm():
     params_oh = cdf(arr_oh, n_samples=100, sampling='invlog', log_base=10)
     params_mh = cdf(arr_mh, n_samples=100, sampling='invlog', log_base=10)
     params_mf = cdf(arr_mf, n_samples=100, sampling='invlog', log_base=10)
+    params_oh = params_oh[np.newaxis]  # qdm expects (space, time) for params
+    params_mh = params_mh[np.newaxis]  # qdm expects (space, time) for params
+    params_mf = params_mf[np.newaxis]  # qdm expects (space, time) for params
 
     qdm_abs_hist = QuantileDeltaMapping(params_oh, params_mh, params_mf=None,
                                         dist='empirical', relative=False,
@@ -40,8 +43,8 @@ def test_qdm():
                                        sampling='invlog', log_base=10)
 
     # absolute changes
-    arr_mh_bc = qdm_abs_hist(arr_mh)
-    arr_mf_bc = qdm_abs_fut(arr_mf)
+    arr_mh_bc = qdm_abs_hist(arr_mh[:, np.newaxis])
+    arr_mf_bc = qdm_abs_fut(arr_mf[:, np.newaxis])
 
     # check mean/max values for historical only (simple quantile mapping)
     assert not np.allclose(arr_mh.mean(), arr_oh.mean(), rtol=1e-2)
@@ -55,8 +58,8 @@ def test_qdm():
     assert np.allclose(diff_raw, diff_bc, rtol=1e-2)
 
     # relative changes
-    arr_mh_bc = qdm_rel_hist(arr_mh)
-    arr_mf_bc = qdm_rel_fut(arr_mf)
+    arr_mh_bc = qdm_rel_hist(arr_mh[:, np.newaxis])
+    arr_mf_bc = qdm_rel_fut(arr_mf[:, np.newaxis])
 
     # check trend
     diff_raw = arr_mf.mean() / arr_mh.mean()
