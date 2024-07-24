@@ -2,10 +2,11 @@
 """
 rex bias correction utilities.
 """
-import scipy
-import numpy as np
 import logging
 
+import dask.array as da
+import numpy as np
+import scipy
 
 logger = logging.getLogger(__name__)
 
@@ -192,7 +193,7 @@ class QuantileDeltaMapping:
         """
 
         msg = f'params must be 2D array but received {type(params)}'
-        assert isinstance(params, np.ndarray), msg
+        assert isinstance(params, (np.ndarray, da.core.Array)), msg
 
         if len(params.shape) == 1:
             params = np.expand_dims(params, 0)

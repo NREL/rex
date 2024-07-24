@@ -2,17 +2,18 @@
 """
 Classes to handle resource data
 """
-from abc import ABC
-import h5py
-import numpy as np
 import os
-import pandas as pd
-import dateutil
+from abc import ABC
 from warnings import warn
 
+import dateutil
+import h5py
+import numpy as np
+import pandas as pd
+
 from rex.sam_resource import SAMResource
-from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
+from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import check_tz, get_lat_lon_cols
 
 
@@ -202,8 +203,7 @@ class ResourceDataset:
                        'broadcast together with shapes {}'
                        .format(['({},)'.format(ln) for ln in list_len]))
                 raise IndexError(msg)
-            else:
-                list_len = list_len[0]
+            list_len = list_len[0]
         else:
             list_len = None
 
@@ -587,6 +587,7 @@ class BaseResource(ABC):
     """
     Abstract Base class to handle resource .h5 files
     """
+
     SCALE_ATTR = 'scale_factor'
     ADD_ATTR = 'add_offset'
     UNIT_ATTR = 'units'
@@ -619,7 +620,7 @@ class BaseResource(ABC):
         self.h5_file = h5_file
         if hsds:
             if mode != 'r':
-                raise IOError('Cannot write to files accessed vias HSDS!')
+                raise OSError('Cannot write to files accessed vias HSDS!')
 
             import h5pyd
             if hsds_kwargs is None:
@@ -633,7 +634,7 @@ class BaseResource(ABC):
             except Exception as e:
                 msg = ('Could not open file in mode "{}": "{}"'
                        .format(mode, self.h5_file))
-                raise IOError(msg) from e
+                raise OSError(msg) from e
 
         self._group = group
         self._unscale = unscale
@@ -925,7 +926,7 @@ class BaseResource(ABC):
         """
         if self._attrs is None:
             self._attrs = {}
-            for dset in self.datasets:
+            for dset in set(self.datasets).intersection(self.h5):
                 self._attrs[dset] = dict(self.h5[dset].attrs)
 
         return self._attrs
@@ -1572,7 +1573,6 @@ class Resource(BaseResource):
 
     Examples
     --------
-
     Extracting the resource's Datetime Index
 
     >>> file = '$TESTDATADIR/nsrdb/ri_100_nsrdb_2012.h5'
@@ -1741,6 +1741,7 @@ class Resource(BaseResource):
      [15. 15.]
      [15. 15.]]
     """
+
     SCALE_ATTR = 'scale_factor'
     ADD_ATTR = 'add_offset'
     UNIT_ATTR = 'units'
