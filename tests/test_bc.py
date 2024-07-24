@@ -16,11 +16,11 @@ def test_qdm():
     corrected data will not be perfectly precise, hence the rtol values
     """
 
-    ndata = int(1e4)
+    ntime = int(1e4)
 
-    arr_oh = np.random.gamma(0.5, scale=1.0, size=ndata)
-    arr_mh = np.random.gamma(0.75, scale=1.0, size=ndata)
-    arr_mf = np.random.gamma(1, scale=1.0, size=ndata)
+    arr_oh = np.random.gamma(0.5, scale=1.0, size=ntime)
+    arr_mh = np.random.gamma(0.75, scale=1.0, size=ntime)
+    arr_mf = np.random.gamma(1, scale=1.0, size=ntime)
 
     params_oh = cdf(arr_oh, n_samples=100, sampling='invlog', log_base=10)
     params_mh = cdf(arr_mh, n_samples=100, sampling='invlog', log_base=10)
@@ -65,3 +65,34 @@ def test_qdm():
     diff_raw = arr_mf.mean() / arr_mh.mean()
     diff_bc = arr_mf_bc.mean() / arr_mh_bc.mean()
     assert np.allclose(diff_raw, diff_bc, rtol=5e-2)
+
+
+def test_qdm_parallel():
+    """Test parallelization of QuantileDeltaMapping"""
+
+    ntime = int(1e4)
+    nspace = 1000
+    size = (ntime, nspace)
+
+    arr_oh = np.random.gamma(0.5, scale=1.0, size=size)
+    arr_mh = np.random.gamma(0.75, scale=1.0, size=size)
+    arr_mf = np.random.gamma(1, scale=1.0, size=size)
+
+    params_oh = []
+    params_mh = []
+    params_mf = []
+    for idx in range(nspace):
+        params_oh.append(cdf(arr_oh[:, idx], n_samples=100)[np.newaxis])
+        params_mh.append(cdf(arr_mh[:, idx], n_samples=100)[np.newaxis])
+        params_mf.append(cdf(arr_mf[:, idx], n_samples=100)[np.newaxis])
+
+    params_oh = np.concatenate(params_oh, axis=0)
+    params_mh = np.concatenate(params_mh, axis=0)
+    params_mf = np.concatenate(params_mf, axis=0)
+
+    qdm_rel_fut = QuantileDeltaMapping(params_oh, params_mh, params_mf,
+                                       dist='empirical', relative=True)
+
+    arr_mf_bc_ser = qdm_rel_fut(arr_mf, max_workers=1)
+    arr_mf_bc_par = qdm_rel_fut(arr_mf, max_workers=2)
+    assert np.allclose(arr_mf_bc_ser, arr_mf_bc_par)

@@ -2,8 +2,9 @@
 """
 rex bias correction utilities.
 """
+import os
+from concurrent.futures import ProcessPoolExecutor
 import logging
-
 import numpy as np
 import scipy
 
@@ -374,9 +375,29 @@ class QuantileDeltaMapping:
         if len(arr.shape) == 1:
             arr = np.expand_dims(arr, 1)
 
-        arr_bc = self.run_qdm(arr, self.params_oh, self.params_mh,
-                              self.params_mf, self.scipy_dist, self.relative,
-                              self.sampling, self.log_base)
+        if max_workers == 1:
+            arr_bc = self.run_qdm(arr, self.params_oh, self.params_mh,
+                                  self.params_mf, self.scipy_dist,
+                                  self.relative, self.sampling, self.log_base)
+        else:
+            max_workers = max_workers or os.cpu_count()
+            sslices = np.array_split(np.arange(arr.shape[1]), max_workers)
+            sslices = [slice(idx[0], idx[-1] + 1) for idx in sslices]
+            arr_bc = []
+            futures = []
+            with ProcessPoolExecutor(max_workers=max_workers) as exe:
+                for sslice in sslices:
+                    fut = exe.submit(self.run_qdm, arr[:, sslice],
+                                     self.params_oh[sslice],
+                                     self.params_mh[sslice],
+                                     self.params_mf[sslice], self.scipy_dist,
+                                     self.relative, self.sampling,
+                                     self.log_base)
+                    futures.append(fut)
+                for future in futures:
+                    arr_bc.append(future.result())
+
+            arr_bc = np.concatenate(arr_bc, axis=1)
 
         msg = ('Input shape {} does not match QDM bias corrected output '
                'shape {}!'.format(arr.shape, arr_bc.shape))
