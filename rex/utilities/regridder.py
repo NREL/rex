@@ -206,9 +206,6 @@ class Regridder:
             Flattened regridded spatiotemporal data
             (spatial, temporal)
         """
-        # if isinstance(data, da.core.Array):
-        #     return self._regrid_dask(data)
-        # return self._regrid_numpy(data)
 
         if len(data.shape) == 3:
             data = data.reshape((data.shape[0] * data.shape[1], -1))
@@ -286,7 +283,7 @@ class CachedRegridder:
             `array_name` will internally be replaced with either
             ``'indices'`` or ``'distances'``.
         """
-        self.indices, self.distances = self.load_cache(cache_pattern)
+        self.distances, self.indices = self.load_cache(cache_pattern)
         self.weights = _compute_weights(self.distances, self.MIN_DISTANCE)
 
     def __call__(self, data):
@@ -328,23 +325,23 @@ class CachedRegridder:
             Filepath pattern for cached indices and distances to load.
             Should be of the form ``'./{array_name}.pkl'`` where
             `array_name` will internally be replaced with either
-            ``'indices'`` or ``'distances'``.
+            ``'distances'`` or ``'indices'``.
 
         Returns
         -------
-        indices, distances : ndarray
-            Arrays of indices and distances output by the ball tree.
+        distances, indices : ndarray
+            Arrays of distances and indices output by the ball tree.
         """
-        index_file = cache_pattern.format(array_name='indices')
         distance_file = cache_pattern.format(array_name='distances')
+        index_file = cache_pattern.format(array_name='indices')
 
-        with open(index_file, 'rb') as f:
-            indices = pickle.load(f)
         with open(distance_file, 'rb') as f:
             distances = pickle.load(f)
+        with open(index_file, 'rb') as f:
+            indices = pickle.load(f)
 
-        logger.info('Loaded cache files: %s, %s', index_file, distance_file)
-        return indices, distances
+        logger.info('Loaded cache files: %s, %s', distance_file, index_file)
+        return distances, indices
 
     @classmethod
     def build_cache(cls, cache_pattern, *args, **kwargs):
@@ -356,22 +353,22 @@ class CachedRegridder:
             Filepath pattern used to cache indices and distances.
             Should be of the form ``'./{array_name}.pkl'`` where
             `array_name` will internally be replaced with either
-            ``'indices'`` or ``'distances'``.
+            ``'distances'`` or ``'indices'``.
         *args, **kwargs
             Arguments followed by keyword arguments that can be used to
             initialize :class:`Regridder`. The ``Regridder`` instance
             will generate the index and distance arrays to be cached.
         """
-        index_file = cache_pattern.format(array_name='indices')
         distance_file = cache_pattern.format(array_name='distances')
+        index_file = cache_pattern.format(array_name='indices')
 
         regridder = Regridder(*args, **kwargs)
 
-        with open(index_file, 'wb') as f:
-            pickle.dump(regridder.indices, f, protocol=4)
         with open(distance_file, 'wb') as f:
             pickle.dump(regridder.distances, f, protocol=4)
-        logger.info('Saved cache files: %s, %s', index_file, distance_file)
+        with open(index_file, 'wb') as f:
+            pickle.dump(regridder.indices, f, protocol=4)
+        logger.info('Saved cache files: %s, %s', distance_file, index_file)
 
 
 def _compute_weights(distances, min_distance):
