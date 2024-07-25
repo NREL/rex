@@ -2,8 +2,9 @@
 """
 rex bias correction utilities.
 """
+import os
+from concurrent.futures import ProcessPoolExecutor, as_completed
 import logging
-
 import numpy as np
 import scipy
 
@@ -170,7 +171,8 @@ class QuantileDeltaMapping:
 
         return inp
 
-    def _clean_params(self, params, arr_shape):
+    @staticmethod
+    def _clean_params(params, arr_shape, scipy_dist):
         """Verify and clean 2D parameter arrays for passing into empirical
         distribution or scipy continuous distribution functions.
 
@@ -181,6 +183,10 @@ class QuantileDeltaMapping:
             parameters for the distribution.
         arr_shape : tuple
             Array shape should be (time, space).
+        scipy_dist : scipy.stats.rv_continuous | None
+            Any continuous distribution class from ``scipy.stats`` or None if
+            using an empirical distribution (taken from attribute
+            ``QuantileDeltaMapping.scipy_dist``)
 
         Returns
         -------
@@ -202,65 +208,163 @@ class QuantileDeltaMapping:
         assert len(params.shape) == 2, msg
         assert params.shape[0] == arr_shape[1], msg
 
-        if self.scipy_dist is not None:
+        if scipy_dist is not None:
             params = [params[:, i] for i in range(params.shape[1])]
 
         return params
 
-    def _get_quantiles(self, n_samples):
+    @staticmethod
+    def _get_quantiles(n_samples, sampling, log_base):
         """If dist='empirical', this will get the quantile values for the CDF
         x-values specified in the input params"""
 
-        if self.sampling == 'linear':
+        if sampling == 'linear':
             quantiles = sample_q_linear(n_samples)
-        elif self.sampling == 'log':
-            quantiles = sample_q_log(n_samples, self.log_base)
-        elif self.sampling == 'invlog':
-            quantiles = sample_q_invlog(n_samples, self.log_base)
+        elif sampling == 'log':
+            quantiles = sample_q_log(n_samples, log_base)
+        elif sampling == 'invlog':
+            quantiles = sample_q_invlog(n_samples, log_base)
         else:
             msg = ('sampling option must be linear, log, or invlog, but '
-                   'received: {}'.format(self.sampling))
+                   'received: {}'.format(sampling))
             logger.error(msg)
             raise KeyError(msg)
 
         return quantiles
 
-    def cdf(self, x, params):
+    @classmethod
+    def cdf(cls, x, params, scipy_dist, sampling, log_base):
         """Run the CDF function e.g., convert physical variable to quantile"""
 
-        if self.scipy_dist is None:
+        if scipy_dist is None:
             p = np.zeros_like(x)
             for idx in range(x.shape[1]):
                 xp = params[idx, :]
-                fp = self._get_quantiles(len(xp))
+                fp = cls._get_quantiles(len(xp), sampling, log_base)
                 p[:, idx] = np.interp(x[:, idx], xp, fp)
         else:
-            p = self.scipy_dist.cdf(x, *params)
+            p = scipy_dist.cdf(x, *params)
 
         return p
 
-    def ppf(self, p, params):
+    @classmethod
+    def ppf(cls, p, params, scipy_dist, sampling, log_base):
         """Run the inverse CDF function (percent point function) e.g., convert
         quantile to physical variable"""
 
-        if self.scipy_dist is None:
+        if scipy_dist is None:
             x = np.zeros_like(p)
             for idx in range(p.shape[1]):
                 fp = params[idx, :]
-                xp = self._get_quantiles(len(fp))
+                xp = cls._get_quantiles(len(fp), sampling, log_base)
                 x[:, idx] = np.interp(p[:, idx], xp, fp)
         else:
-            x = self.scipy_dist.ppf(p, *params)
+            x = scipy_dist.ppf(p, *params)
 
         return x
 
-    def __call__(self, arr):
+    @classmethod
+    def run_qdm(cls, arr, params_oh, params_mh, params_mf,
+                scipy_dist, relative, sampling, log_base):
+        """Run the actual QDM operation from args without initializing the
+        ``QuantileDeltaMapping`` object
+
+        Parameters
+        ----------
+        arr : np.ndarray
+            2D array of values in shape (time, space)
+        params_oh : np.ndarray
+            2D array of **observed historical** distribution parameters created
+            from a multi-year set of data where the shape is (space, N). This
+            can be the output of a parametric distribution fit like
+            ``scipy.stats.weibull_min.fit()`` where N is the number of
+            parameters for that distribution, or this can define the x-values
+            of N points from an empirical CDF that will be linearly
+            interpolated between. If this is an empirical CDF, this must
+            include the 0th and 100th percentile values and have even
+            percentile spacing between values.
+        params_mh : np.ndarray
+            Same requirements as params_oh. This input arg is for the **modeled
+            historical distribution**.
+        params_mf : np.ndarray
+            Same requirements as params_oh. This input arg is for the **modeled
+            future distribution**.
+        scipy_dist : scipy.stats.rv_continuous | None
+            Any continuous distribution class from ``scipy.stats`` or None if
+            using an empirical distribution (taken from attribute
+            ``QuantileDeltaMapping.scipy_dist``)
+        relative : bool | np.ndarray
+            Flag to preserve relative rather than absolute changes in
+            quantiles. relative=False (default) will multiply by the change in
+            quantiles while relative=True will add. See Equations 4-6 from
+            Cannon et al., 2015 for more details. Can also be a 1D array of
+            dist inputs if being used from reV, but they must all be the same
+            option.
+        sampling : str | np.ndarray
+            If dist="empirical", this is an option for how the quantiles were
+            sampled to produce the params inputs, e.g., how to sample the
+            y-axis of the distribution (see sampling functions in
+            ``rex.utilities.bc_utils``). "linear" will do even spacing, "log"
+            will concentrate samples near quantile=0, and "invlog" will
+            concentrate samples near quantile=1. Can also be a 1D array of dist
+            inputs if being used from reV, but they must all be the same
+            option.
+        log_base : int | float | np.ndarray
+            Log base value if sampling is "log" or "invlog". A higher value
+            will concentrate more samples at the extreme sides of the
+            distribution. Can also be a 1D array of dist inputs if being used
+            from reV, but they must all be the same option.
+
+        Returns
+        -------
+        arr : np.ndarray
+            Bias corrected copy of the input array with same shape.
+        """
+
+        params_oh = cls._clean_params(params_oh, arr.shape, scipy_dist)
+        params_mh = cls._clean_params(params_mh, arr.shape, scipy_dist)
+        params_mf = cls._clean_params(params_mf, arr.shape, scipy_dist)
+
+        # Equation references are from Section 3 of Cannon et al 2015:
+        # Cannon, A. J., Sobie, S. R. & Murdock, T. Q. Bias Correction of GCM
+        # Precipitation by Quantile Mapping: How Well Do Methods Preserve
+        # Changes in Quantiles and Extremes? Journal of Climate 28, 6938–6959
+        # (2015).
+
+        logger.debug('Computing CDF on modeled future data')
+        # Eq.3: Tau_m_p = F_m_p(x_m_p)
+        q_mf = cls.cdf(arr, params_mf, scipy_dist, sampling, log_base)
+
+        logger.debug('Computing PPF on observed historical data')
+        # Eq.5: x^_o:m_h:p = F-1_o_h(Tau_m_p)
+        x_oh = cls.ppf(q_mf, params_oh, scipy_dist, sampling, log_base)
+
+        logger.debug('Computing PPF on modeled historical data')
+        # Eq.4 denom: F-1_m_h(Tau_m_p)
+        x_mh_mf = cls.ppf(q_mf, params_mh, scipy_dist, sampling, log_base)
+
+        logger.debug('Finished computing distributions.')
+
+        if relative:
+            x_mh_mf[x_mh_mf == 0] = 0.001  # arbitrary limit to prevent div 0
+            delta = arr / x_mh_mf  # Eq.4: x_m_p / F-1_m_h(Tau_m_p)
+            arr_bc = x_oh * delta  # Eq.6: x^_m_p = x^_o:m_h:p * delta
+        else:
+            delta = arr - x_mh_mf  # Eq.4: x_m_p - F-1_m_h(Tau_m_p)
+            arr_bc = x_oh + delta  # Eq.6: x^_m_p = x^_o:m_h:p + delta
+
+        return arr_bc
+
+    def __call__(self, arr, max_workers=1):
         """Run the QDM function to bias correct an array
 
         Parameters
         ----------
         arr : np.ndarray
             2D array of values in shape (time, space)
+        max_workers : int, None
+            Number of parallel workers to use in QDM bias correction. 1 will
+            run in serial (default), None will use all available cores.
 
         Returns
         -------
@@ -271,31 +375,29 @@ class QuantileDeltaMapping:
         if len(arr.shape) == 1:
             arr = np.expand_dims(arr, 1)
 
-        params_oh = self._clean_params(self.params_oh, arr.shape)
-        params_mh = self._clean_params(self.params_mh, arr.shape)
-        params_mf = self._clean_params(self.params_mf, arr.shape)
-
-        # Equation references are from Section 3 of Cannon et al 2015:
-        # Cannon, A. J., Sobie, S. R. & Murdock, T. Q. Bias Correction of GCM
-        # Precipitation by Quantile Mapping: How Well Do Methods Preserve
-        # Changes in Quantiles and Extremes? Journal of Climate 28, 6938–6959
-        # (2015).
-
-        logger.debug('Computing CDF on modeled future data')
-        q_mf = self.cdf(arr, params_mf)  # Eq.3: Tau_m_p = F_m_p(x_m_p)
-        logger.debug('Computing PPF on observed historical data')
-        x_oh = self.ppf(q_mf, params_oh)  # Eq.5: x^_o:m_h:p = F-1_o_h(Tau_m_p)
-        logger.debug('Computing PPF on modeled historical data')
-        x_mh_mf = self.ppf(q_mf, params_mh)  # Eq.4 denom: F-1_m_h(Tau_m_p)
-        logger.debug('Finished computing distributions.')
-
-        if self.relative:
-            x_mh_mf[x_mh_mf == 0] = 0.001  # arbitrary limit to prevent div 0
-            delta = arr / x_mh_mf  # Eq.4: x_m_p / F-1_m_h(Tau_m_p)
-            arr_bc = x_oh * delta  # Eq.6: x^_m_p = x^_o:m_h:p * delta
+        if max_workers == 1:
+            arr_bc = self.run_qdm(arr, self.params_oh, self.params_mh,
+                                  self.params_mf, self.scipy_dist,
+                                  self.relative, self.sampling, self.log_base)
         else:
-            delta = arr - x_mh_mf  # Eq.4: x_m_p - F-1_m_h(Tau_m_p)
-            arr_bc = x_oh + delta  # Eq.6: x^_m_p = x^_o:m_h:p + delta
+            max_workers = max_workers or os.cpu_count()
+            sslices = np.array_split(np.arange(arr.shape[1]), arr.shape[1])
+            sslices = [slice(idx[0], idx[-1] + 1) for idx in sslices]
+            arr_bc = arr.copy()
+            futures = {}
+            with ProcessPoolExecutor(max_workers=max_workers) as exe:
+                for idx in range(arr.shape[1]):
+                    idx = slice(idx, idx + 1)
+                    fut = exe.submit(self.run_qdm, arr[:, idx],
+                                     self.params_oh[idx],
+                                     self.params_mh[idx],
+                                     self.params_mf[idx], self.scipy_dist,
+                                     self.relative, self.sampling,
+                                     self.log_base)
+                    futures[fut] = idx
+                for future in as_completed(futures):
+                    idx = futures[future]
+                    arr_bc[:, idx] = future.result()
 
         msg = ('Input shape {} does not match QDM bias corrected output '
                'shape {}!'.format(arr.shape, arr_bc.shape))
