@@ -52,9 +52,6 @@ class Regridder:
     min_distance : float, optional
         Min Haversine distance to new grid points from original points
         before filling with NaNs. By default, ``1e-12``.
-    max_distance : float, optional
-        Max Haversine distance to new grid points from original points
-        before filling with NaNs. By default, ``0.01``.
     leaf_size : int, optional
         Leaf size for :class:`~sklearn.neighbors.BallTree` instance.
         By default, ``4``.
@@ -66,7 +63,6 @@ class Regridder:
     n_chunks: Optional[int] = 100
     max_workers: Optional[int] = None
     min_distance: Optional[float] = 1e-12
-    max_distance: Optional[float] = 0.01
     leaf_size: Optional[int] = 4
 
     def __post_init__(self):
@@ -233,7 +229,7 @@ class Regridder:
     @classmethod
     def run(cls, source_meta, target_meta, source_data, k_neighbors=4,
             n_chunks=100, max_workers=None, min_distance=1e-12,
-            max_distance=0.01, leaf_size=4):
+            leaf_size=4):
         """Regrid data using inverse distance weighting.
 
         Parameters
@@ -270,13 +266,10 @@ class Regridder:
         min_distance : float, optional
             Min Haversine distance to new grid points from original
             points before filling with NaNs. By default, ``1e-12``.
-        max_distance : float, optional
-            Max Haversine distance to new grid points from original
-            points before filling with NaNs. By default, ``0.01``.
         """
         regridder = cls(source_meta=source_meta, target_meta=target_meta,
                         leaf_size=leaf_size, k_neighbors=k_neighbors,
                         n_chunks=n_chunks, max_workers=max_workers,
-                        min_distance=min_distance, max_distance=max_distance)
+                        min_distance=min_distance)
         regridder.get_all_queries(max_workers)
         return regridder(source_data)
