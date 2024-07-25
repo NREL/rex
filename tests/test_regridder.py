@@ -3,6 +3,7 @@
 pytests for regridder
 """
 import os
+import tempfile
 
 import pytest
 import numpy as np
@@ -10,7 +11,7 @@ import pandas as pd
 import dask.array as da
 
 from rex import TESTDATADIR, Resource
-from rex.utilities.regridder import Regridder
+from rex.utilities.regridder import Regridder, CachedRegridder
 
 
 RANDOM_GENERATOR = np.random.default_rng(seed=42)
@@ -23,6 +24,7 @@ WTK_H5 = os.path.join(TESTDATADIR, "wtk", "ri_100_wtk_2012.h5")
      {"target": (2.5, 0.5), "k": 4, "expected": (2 + 3 + 6 + 7) / 4},
      {"target": (0.5, 2.5), "k": 4, "expected": (8 + 9 + 12 + 13) / 4},
      {"target": (2.5, 2.5), "k": 4, "expected": (10 + 11 + 14 + 15) / 4},
+     {"target": (1.5, 1.5), "k": 4, "expected": (5 + 6 + 9 + 10) / 4},
      {"target": (0.8, 0), "k": 1, "expected": 1},
      {"target": (0, 0.9), "k": 1, "expected": 4},
      {"target": (1, 0.9), "k": 2, "expected": (1 / 9 * 1 + 5) / (1 / 9 + 1)}])
@@ -43,6 +45,41 @@ def test_regridding_basic(params):
     regridder = Regridder(source, target, k_neighbors=params["k"])
     out = regridder(vals.flatten()[:, None]).compute()
     assert np.allclose(out, params["expected"], atol=0.0001)
+
+
+@pytest.mark.parametrize(
+    "params",
+    [{"target": (0.5, 0.5), "k": 4, "expected": (0 + 1 + 4 + 5) / 4},
+     {"target": (2.5, 0.5), "k": 4, "expected": (2 + 3 + 6 + 7) / 4},
+     {"target": (0.5, 2.5), "k": 4, "expected": (8 + 9 + 12 + 13) / 4},
+     {"target": (2.5, 2.5), "k": 4, "expected": (10 + 11 + 14 + 15) / 4},
+     {"target": (1.5, 1.5), "k": 4, "expected": (5 + 6 + 9 + 10) / 4},
+     {"target": (0.8, 0), "k": 1, "expected": 1},
+     {"target": (0, 0.9), "k": 1, "expected": 4},
+     {"target": (1, 0.9), "k": 2, "expected": (1 / 9 * 1 + 5) / (1 / 9 + 1)}])
+def test_regridding_cached(params):
+    """Run basic tests through cached regridder"""
+    X, Y  = np.meshgrid(np.arange(4), np.arange(4))
+    source = pd.DataFrame({"latitude": X.flatten(), "longitude": Y.flatten()})
+
+    vals = np.arange(16).reshape(4, 4)
+    # vals:
+    # [[ 0,  1,  2,  3],
+    #  [ 4,  5,  6,  7],
+    #  [ 8,  9, 10, 11],
+    #  [12, 13, 14, 15]]
+
+    x, y = params["target"]
+    target = pd.DataFrame({"latitude": [x], "longitude": [y]})
+
+    with tempfile.TemporaryDirectory() as td:
+        cache_pattern = os.path.join(td, "{array_name}.pkl")
+        CachedRegridder.build_cache(cache_pattern, source, target,
+                                    k_neighbors=params["k"])
+
+        regridder = CachedRegridder(cache_pattern)
+        out = regridder(vals.flatten()[:, None])
+        assert np.allclose(out, params["expected"], atol=0.0001)
 
 
 def test_regridding_with_dask():

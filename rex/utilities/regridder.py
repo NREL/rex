@@ -1,6 +1,7 @@
 """Code for regridding data from one list of coordinates to another"""
 
 import logging
+import pickle
 import pprint
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, asdict
@@ -205,6 +206,10 @@ class Regridder:
             Flattened regridded spatiotemporal data
             (spatial, temporal)
         """
+        # if isinstance(data, da.core.Array):
+        #     return self._regrid_dask(data)
+        # return self._regrid_numpy(data)
+
         if len(data.shape) == 3:
             data = data.reshape((data.shape[0] * data.shape[1], -1))
 
@@ -263,6 +268,72 @@ class Regridder:
                         min_distance=min_distance)
         regridder.get_all_queries(max_workers)
         return regridder(source_data)
+
+
+class CachedRegridder:
+
+    MIN_DISTANCE = 1e-12
+
+    def __init__(self, cache_pattern):
+        self.indices, self.distances = self.load_cache(cache_pattern)
+        self.weights = _compute_weights(self.distances, self.MIN_DISTANCE)
+
+    def __call__(self, data):
+        """Regrid given spatiotemporal data over entire grid
+
+        Parameters
+        ----------
+        data : ndarray
+            Spatiotemporal data to regrid to target_meta. Data can be flattened
+            in the spatial dimension to match the target_meta or be in a 2D
+            spatial grid, e.g.:
+            (spatial, temporal) or (spatial_1, spatial_2, temporal)
+
+        Returns
+        -------
+        out : ndarray
+            Flattened regridded spatiotemporal data
+            (spatial, temporal)
+        """
+        if len(data.shape) == 3:
+            data = data.reshape((data.shape[0] * data.shape[1], -1))
+
+        msg = 'Input data must be 2D (spatial, temporal)'
+        assert len(data.shape) == 2, msg
+
+        vals = data[np.array(self.indices)]
+        vals = np.transpose(vals, (2, 0, 1))
+
+        out = np.einsum('ijk,jk->ij', vals, self.weights).T
+        return out
+
+    @staticmethod
+    def load_cache(cache_pattern):
+        """Load cached indices and distances from ball tree query"""
+        index_file = cache_pattern.format(array_name='indices')
+        distance_file = cache_pattern.format(array_name='distances')
+
+        with open(index_file, 'rb') as f:
+            indices = pickle.load(f)
+        with open(distance_file, 'rb') as f:
+            distances = pickle.load(f)
+
+        logger.info('Loaded cache files: %s, %s', index_file, distance_file)
+        return indices, distances
+
+    @classmethod
+    def build_cache(cls, cache_pattern, *args, **kwargs):
+        """Cache indices and distances from ball tree query"""
+        index_file = cache_pattern.format(array_name='indices')
+        distance_file = cache_pattern.format(array_name='distances')
+
+        regridder = Regridder(*args, **kwargs)
+
+        with open(index_file, 'wb') as f:
+            pickle.dump(regridder.indices, f, protocol=4)
+        with open(distance_file, 'wb') as f:
+            pickle.dump(regridder.distances, f, protocol=4)
+        logger.info('Saved cache files: %s, %s', index_file, distance_file)
 
 
 def _compute_weights(distances, min_distance):
