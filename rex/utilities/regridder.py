@@ -18,7 +18,7 @@ from sklearn.neighbors import BallTree
 logger = logging.getLogger(__name__)
 
 
-#pylint: disable=attribute-defined-outside-init
+# pylint: disable=attribute-defined-outside-init
 @dataclass
 class Regridder:
     """Interpolate from one grid to another using inverse weighted distances.
