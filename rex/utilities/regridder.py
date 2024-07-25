@@ -18,6 +18,7 @@ from sklearn.neighbors import BallTree
 logger = logging.getLogger(__name__)
 
 
+#pylint: disable=attribute-defined-outside-init
 @dataclass
 class Regridder:
     """Interpolate from one grid to another using inverse weighted distances.
@@ -51,8 +52,8 @@ class Regridder:
         `target_meta` coordinate. By default, ``None``, which uses all
         available CPU cores.
     min_distance : float, optional
-        Min Haversine distance to new grid points from original points
-        before filling with NaNs. By default, ``1e-12``.
+        Minimum distance to use for inverse-weighted distances
+        calculation to avoid diving by 0. By default, ``1e-12``.
     leaf_size : int, optional
         Leaf size for :class:`~sklearn.neighbors.BallTree` instance.
         By default, ``4``.
@@ -256,8 +257,8 @@ class Regridder:
             each `target_meta` coordinate. By default, ``None``, which
             uses all available CPU cores.
         min_distance : float, optional
-            Min Haversine distance to new grid points from original
-            points before filling with NaNs. By default, ``1e-12``.
+            Minimum distance to use for inverse-weighted distances
+            calculation to avoid diving by 0. By default, ``1e-12``.
         """
         regridder = cls(source_meta=source_meta, target_meta=target_meta,
                         leaf_size=leaf_size, k_neighbors=k_neighbors,
@@ -268,9 +269,10 @@ class Regridder:
 
 
 class CachedRegridder:
-    """Interpolate from one grid to another using cached inds and dists."""
+    """Interpolate from one grid to another using cached dists and inds."""
 
     MIN_DISTANCE = 1e-12
+    """Minimum distance for inverse-weights calc to avoid dividing by 0. """
 
     def __init__(self, cache_pattern):
         """
@@ -278,10 +280,10 @@ class CachedRegridder:
         Parameters
         ----------
         cache_pattern : str
-            Filepath pattern for cached indices and distances to load.
+            Filepath pattern for cached distances and indices to load.
             Should be of the form ``'./{array_name}.pkl'`` where
             `array_name` will internally be replaced with either
-            ``'indices'`` or ``'distances'``.
+            ``'distances'`` or ``'indices'``.
         """
         self.distances, self.indices = self.load_cache(cache_pattern)
         self.weights = _compute_weights(self.distances, self.MIN_DISTANCE)
@@ -292,9 +294,9 @@ class CachedRegridder:
         Parameters
         ----------
         data : ndarray
-            Spatiotemporal data to regrid to target_meta. Data can be flattened
-            in the spatial dimension to match the target_meta or be in a 2D
-            spatial grid, e.g.:
+            Spatiotemporal data to regrid to target_meta. Data can be
+            flattened in the spatial dimension to match the
+            `target_meta` or be in a 2D spatial grid, e.g.:
             (spatial, temporal) or (spatial_1, spatial_2, temporal)
 
         Returns
@@ -322,7 +324,7 @@ class CachedRegridder:
         Parameters
         ----------
         cache_pattern : str
-            Filepath pattern for cached indices and distances to load.
+            Filepath pattern for cached distances and indices to load.
             Should be of the form ``'./{array_name}.pkl'`` where
             `array_name` will internally be replaced with either
             ``'distances'`` or ``'indices'``.
@@ -345,19 +347,19 @@ class CachedRegridder:
 
     @classmethod
     def build_cache(cls, cache_pattern, *args, **kwargs):
-        """Cache indices and distances from ball tree query.
+        """Cache distances and indices from ball tree query.
 
         Parameters
         ----------
         cache_pattern : str
-            Filepath pattern used to cache indices and distances.
+            Filepath pattern used to cache distances and indices.
             Should be of the form ``'./{array_name}.pkl'`` where
             `array_name` will internally be replaced with either
             ``'distances'`` or ``'indices'``.
         *args, **kwargs
             Arguments followed by keyword arguments that can be used to
             initialize :class:`Regridder`. The ``Regridder`` instance
-            will generate the index and distance arrays to be cached.
+            will generate the distance and index arrays to be cached.
         """
         distance_file = cache_pattern.format(array_name='distances')
         index_file = cache_pattern.format(array_name='indices')
