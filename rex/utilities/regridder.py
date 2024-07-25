@@ -98,17 +98,7 @@ class Regridder:
     def weights(self):
         """Get weights used for regridding"""
         if self._weights is None:
-            dists = np.array(self.distances, dtype=np.float32)
-            mask = dists < self.min_distance
-            dists[mask] = self.min_distance
-            if mask.sum() > 0:
-                logger.info("%d of %d neighbor distances are within %.5f.",
-                            np.sum(mask), np.prod(mask.shape),
-                            self.min_distance)
-            weights = 1 / dists
-            weights[mask.any(axis=1), :] = (np.eye(1, self.k_neighbors)
-                                            .flatten())
-            self._weights = weights / np.sum(weights, axis=-1)[:, None]
+            self._weights = _compute_weights(self.distances, self.min_distance)
         return self._weights
 
     @property
@@ -273,3 +263,18 @@ class Regridder:
                         min_distance=min_distance)
         regridder.get_all_queries(max_workers)
         return regridder(source_data)
+
+
+def _compute_weights(distances, min_distance):
+    """Compute inverse weights from distance values. """
+    dists = np.array(distances, dtype=np.float32)
+    mask = dists < min_distance
+    dists[mask] = min_distance
+    if mask.sum() > 0:
+        logger.info("%d of %d neighbor distances are within %.5f.",
+                    np.sum(mask), np.prod(mask.shape),
+                    min_distance)
+    weights = 1 / dists
+    weights[mask.any(axis=1), :] = (np.eye(1, dists.shape[1])
+                                    .flatten())
+    return weights / np.sum(weights, axis=-1)[:, None]
