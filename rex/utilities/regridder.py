@@ -3,12 +3,12 @@
 import logging
 import pickle
 import pprint
+from functools import cached_property
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, asdict
 from datetime import datetime as dt
 from typing import Optional
 
-import dask.array as da
 import numpy as np
 import pandas as pd
 import psutil
@@ -18,9 +18,61 @@ from sklearn.neighbors import BallTree
 logger = logging.getLogger(__name__)
 
 
+class _InterpolationMixin:
+    """Inverse-weighted distance interpolation logic.
+
+    This mixin class is only intended to be used with classes that
+    have the following attributes:
+
+        - self.distances: ndarray of distances from ball tree query
+        - self.distances: ndarray of indices from ball tree query
+        - self.min_distance: float representing the minimum distance to
+                             use for inverse-weighted distances
+                             calculation to avoid diving by 0
+    """
+
+    @cached_property
+    def weights(self):
+        """ndarray: Weights used for regridding. """
+        return _compute_weights(self.indices, self.min_distance)
+
+
+    def __call__(self, data):
+        """Regrid given spatiotemporal data over entire grid.
+
+        Parameters
+        ----------
+        data : ndarray
+            Spatiotemporal data to regrid to target_meta. Data can be
+            flattened in the spatial dimension to match the
+            `target_meta` or be in a 2D spatial grid, e.g.:
+            (spatial, temporal) or (spatial_1, spatial_2, temporal)
+
+        Returns
+        -------
+        out : ndarray
+            Flattened regridded spatiotemporal data
+            (spatial, temporal)
+        """
+        if len(data.shape) == 3:
+            data = data.reshape((data.shape[0] * data.shape[1], -1))
+
+        msg = "Input data must be 2D (spatial, temporal)"
+        assert len(data.shape) == 2, msg
+
+        if hasattr(data, 'compute'):  # data is Dask array
+            new_shape = (len(self.indices), self.k_neighbors, -1)
+            vals = data[np.concatenate(self.indices)].reshape(new_shape)
+        else:
+            vals = data[np.array(self.indices)]
+
+        vals = np.transpose(vals, (2, 0, 1))
+        return np.einsum('ijk,jk->ij', vals, self.weights).T
+
+
 # pylint: disable=attribute-defined-outside-init
 @dataclass
-class Regridder:
+class Regridder(_InterpolationMixin):
     """Interpolate from one grid to another using inverse weighted distances.
 
     This class builds ball tree and runs all queries to create full
@@ -95,13 +147,6 @@ class Regridder:
         self._indices = [None] * len(self.target_meta)
         self._distances = [None] * len(self.target_meta)
         self.get_all_queries(self.max_workers)
-
-    @property
-    def weights(self):
-        """Get weights used for regridding"""
-        if self._weights is None:
-            self._weights = _compute_weights(self.distances, self.min_distance)
-        return self._weights
 
     @property
     def tree(self):
@@ -190,35 +235,6 @@ class Regridder:
         out = self.target_meta.iloc[s_slice][["latitude", "longitude"]].values
         return np.radians(out)
 
-    def __call__(self, data):
-        """Regrid given spatiotemporal data over entire grid.
-
-        Parameters
-        ----------
-        data : ndarray
-            Spatiotemporal data to regrid to target_meta. Data can be
-            flattened in the spatial dimension to match the
-            `target_meta` or be in a 2D spatial grid, e.g.:
-            (spatial, temporal) or (spatial_1, spatial_2, temporal)
-
-        Returns
-        -------
-        out : ndarray
-            Flattened regridded spatiotemporal data
-            (spatial, temporal)
-        """
-
-        if len(data.shape) == 3:
-            data = data.reshape((data.shape[0] * data.shape[1], -1))
-
-        msg = "Input data must be 2D (spatial, temporal)"
-        assert len(data.shape) == 2, msg
-        new_shape = (len(self.indices), self.k_neighbors, -1)
-
-        vals = data[da.concatenate(self.indices)].reshape(new_shape)
-        vals = da.transpose(vals, axes=(2, 0, 1))
-        return da.einsum("ijk,jk->ij", vals, self.weights).T
-
     @classmethod
     def run(cls, source_meta, target_meta, source_data, k_neighbors=4,
             n_chunks=100, max_workers=None, min_distance=1e-12,
@@ -268,13 +284,10 @@ class Regridder:
         return regridder(source_data)
 
 
-class CachedRegridder:
+class CachedRegridder(_InterpolationMixin):
     """Interpolate from one grid to another using cached dists and inds."""
 
-    MIN_DISTANCE = 1e-12
-    """Minimum distance for inverse-weights calc to avoid dividing by 0. """
-
-    def __init__(self, cache_pattern):
+    def __init__(self, cache_pattern, min_distance=1e-12):
         """
 
         Parameters
@@ -283,39 +296,13 @@ class CachedRegridder:
             Filepath pattern for cached distances and indices to load.
             Should be of the form ``'./{array_name}.pkl'`` where
             `array_name` will internally be replaced with either
-            ``'distances'`` or ``'indices'``.
+            ``'distances'`` or ``'indices'``.'
+        min_distance : float, optional
+            Minimum distance to use for inverse-weighted distances
+            calculation to avoid diving by 0. By default, ``1e-12``.
         """
         self.distances, self.indices = self.load_cache(cache_pattern)
-        self.weights = _compute_weights(self.distances, self.MIN_DISTANCE)
-
-    def __call__(self, data):
-        """Regrid given spatiotemporal data over entire grid
-
-        Parameters
-        ----------
-        data : ndarray
-            Spatiotemporal data to regrid to target_meta. Data can be
-            flattened in the spatial dimension to match the
-            `target_meta` or be in a 2D spatial grid, e.g.:
-            (spatial, temporal) or (spatial_1, spatial_2, temporal)
-
-        Returns
-        -------
-        out : ndarray
-            Flattened regridded spatiotemporal data
-            (spatial, temporal)
-        """
-        if len(data.shape) == 3:
-            data = data.reshape((data.shape[0] * data.shape[1], -1))
-
-        msg = 'Input data must be 2D (spatial, temporal)'
-        assert len(data.shape) == 2, msg
-
-        vals = data[np.array(self.indices)]
-        vals = np.transpose(vals, (2, 0, 1))
-
-        out = np.einsum('ijk,jk->ij', vals, self.weights).T
-        return out
+        self.min_distance = min_distance
 
     @staticmethod
     def load_cache(cache_pattern):
