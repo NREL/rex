@@ -32,7 +32,7 @@ def test_regridding_basic(params):
     X, Y  = np.meshgrid(np.arange(4), np.arange(4))
     source = pd.DataFrame({"latitude": X.flatten(), "longitude": Y.flatten()})
 
-    vals = da.from_array(np.arange(16).reshape(4, 4))
+    vals = np.arange(16).reshape(4, 4)
     # vals:
     # [[ 0,  1,  2,  3],
     #  [ 4,  5,  6,  7],
@@ -42,7 +42,7 @@ def test_regridding_basic(params):
     x, y = params["target"]
     target = pd.DataFrame({"latitude": [x], "longitude": [y]})
     regridder = Regridder(source, target, k_neighbors=params["k"])
-    out = regridder(vals.flatten()[:, None]).compute()
+    out = regridder(vals.flatten()[:, None])
     assert np.allclose(out, params["expected"], atol=0.0001)
 
 
