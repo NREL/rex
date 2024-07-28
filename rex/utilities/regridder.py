@@ -25,7 +25,7 @@ class _InterpolationMixin:
     have the following attributes:
 
         - self.distances: ndarray of distances from ball tree query
-        - self.distances: ndarray of indices from ball tree query
+        - self.indices: ndarray of indices from ball tree query
         - self.min_distance: float representing the minimum distance to
                              use for inverse-weighted distances
                              calculation to avoid diving by 0
