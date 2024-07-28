@@ -34,7 +34,7 @@ class _InterpolationMixin:
     @cached_property
     def weights(self):
         """ndarray: Weights used for regridding. """
-        return _compute_weights(self.indices, self.min_distance)
+        return _compute_weights(self.distances, self.min_distance)
 
 
     def __call__(self, data):
@@ -61,7 +61,7 @@ class _InterpolationMixin:
         assert len(data.shape) == 2, msg
 
         if hasattr(data, 'compute'):  # data is Dask array
-            new_shape = (len(self.indices), self.k_neighbors, -1)
+            new_shape = (len(self.indices), len(self.indices[0]), -1)
             vals = data[np.concatenate(self.indices)].reshape(new_shape)
         else:
             vals = data[np.array(self.indices)]
