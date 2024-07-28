@@ -84,7 +84,8 @@ class QuantileDeltaMapping:
     """
 
     def __init__(self, params_oh, params_mh, params_mf, dist='empirical',
-                 relative=True, sampling='linear', log_base=10):
+                 relative=True, sampling='linear', log_base=10,
+                 delta_denom_min=None, delta_denom_zero=None):
         """
         Parameters
         ----------
@@ -132,6 +133,18 @@ class QuantileDeltaMapping:
             will concentrate more samples at the extreme sides of the
             distribution. Can also be a 1D array of dist inputs if being used
             from reV, but they must all be the same option.
+        delta_denom_min : float | None
+            Option to specify a minimum value for the denominator term in the
+            calculation of a relative delta value. This prevents division by a
+            very small number making delta blow up and resulting in very large
+            output bias corrected values. See equation 4 of Cannon et al., 2015
+            for the delta term.
+        delta_denom_zero : float | None
+            Option to specify a value to replace zeros in the denominator term
+            in the calculation of a relative delta value. This prevents
+            division by a very small number making delta blow up and resulting
+            in very large output bias corrected values. See equation 4 of
+            Cannon et al., 2015 for the delta term.
         """
 
         self.params_oh = params_oh
@@ -142,6 +155,8 @@ class QuantileDeltaMapping:
         self.sampling = str(self._clean_kwarg(sampling)).casefold()
         self.log_base = float(self._clean_kwarg(log_base))
         self.scipy_dist = None
+        self.delta_denom_min = delta_denom_min
+        self.delta_denom_zero = delta_denom_zero
 
         if self.dist_name != 'empirical':
             self.scipy_dist = getattr(scipy.stats, self.dist_name, None)
@@ -265,7 +280,8 @@ class QuantileDeltaMapping:
 
     @classmethod
     def run_qdm(cls, arr, params_oh, params_mh, params_mf,
-                scipy_dist, relative, sampling, log_base):
+                scipy_dist, relative, sampling, log_base, delta_denom_min,
+                delta_denom_zero):
         """Run the actual QDM operation from args without initializing the
         ``QuantileDeltaMapping`` object
 
@@ -314,6 +330,18 @@ class QuantileDeltaMapping:
             will concentrate more samples at the extreme sides of the
             distribution. Can also be a 1D array of dist inputs if being used
             from reV, but they must all be the same option.
+        delta_denom_min : float | None
+            Option to specify a minimum value for the denominator term in the
+            calculation of a relative delta value. This prevents division by a
+            very small number making delta blow up and resulting in very large
+            output bias corrected values. See equation 4 of Cannon et al., 2015
+            for the delta term.
+        delta_denom_zero : float | None
+            Option to specify a value to replace zeros in the denominator term
+            in the calculation of a relative delta value. This prevents
+            division by a very small number making delta blow up and resulting
+            in very large output bias corrected values. See equation 4 of
+            Cannon et al., 2015 for the delta term.
 
         Returns
         -------
@@ -346,7 +374,10 @@ class QuantileDeltaMapping:
         logger.debug('Finished computing distributions.')
 
         if relative:
-            x_mh_mf[x_mh_mf == 0] = 0.001  # arbitrary limit to prevent div 0
+            if delta_denom_zero is not None:
+                x_mh_mf[x_mh_mf == 0] = delta_denom_zero
+            elif delta_denom_min is not None:
+                x_mh_mf = np.maximum(x_mh_mf, delta_denom_min)
             delta = arr / x_mh_mf  # Eq.4: x_m_p / F-1_m_h(Tau_m_p)
             arr_bc = x_oh * delta  # Eq.6: x^_m_p = x^_o:m_h:p * delta
         else:
@@ -378,7 +409,8 @@ class QuantileDeltaMapping:
         if max_workers == 1:
             arr_bc = self.run_qdm(arr, self.params_oh, self.params_mh,
                                   self.params_mf, self.scipy_dist,
-                                  self.relative, self.sampling, self.log_base)
+                                  self.relative, self.sampling, self.log_base,
+                                  self.delta_denom_min, self.delta_denom_zero)
         else:
             max_workers = max_workers or os.cpu_count()
             sslices = np.array_split(np.arange(arr.shape[1]), arr.shape[1])
@@ -393,7 +425,8 @@ class QuantileDeltaMapping:
                                      self.params_mh[idx],
                                      self.params_mf[idx], self.scipy_dist,
                                      self.relative, self.sampling,
-                                     self.log_base)
+                                     self.log_base, self.delta_denom_min,
+                                     self.delta_denom_zero)
                     futures[fut] = idx
                 for future in as_completed(futures):
                     idx = futures[future]
