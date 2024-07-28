@@ -21,21 +21,20 @@ jobs:
         with:
           auto-update-conda: true
           python-version: 3.9
-      - name: Install rex dependencies
-        working-directory: ./rex
-        shell: bash -l {0}
-        run: |
-          conda install pip pandas
-          pip install -e .
       - name: Install reVX dependencies
         working-directory: ./reVX
         shell: bash -l {0}
         run: |
-          conda install rtree pytest
+          conda install pip rtree pytest
           pip install geopandas
           pip install --upgrade --force-reinstall shapely~=1.8
           pip install -e .
           pip install HOPP
+      - name: Install rex
+        working-directory: ./rex
+        shell: bash -l {0}
+        run: |
+          pip install -e .
       - name: Run reVX pytest
         working-directory: ./reVX
         shell: bash -l {0}
