@@ -36,7 +36,6 @@ class _InterpolationMixin:
         """ndarray: Weights used for regridding. """
         return _compute_weights(self.distances, self.min_distance)
 
-
     def __call__(self, data):
         """Regrid given spatiotemporal data over entire grid.
 
