@@ -8,7 +8,6 @@ import tempfile
 import pytest
 import numpy as np
 import pandas as pd
-import dask.array as da
 
 from rex import TESTDATADIR, Resource
 from rex.utilities.regridder import Regridder, CachedRegridder
@@ -82,7 +81,7 @@ def test_regridding_cached(params):
         assert np.allclose(out, params["expected"], atol=0.0001)
 
 
-def test_regridding_with_dask():
+def test_regridding_wtk():
     """Make sure regridding reproduces original data when coordinates in the
     meta is the same"""
 
