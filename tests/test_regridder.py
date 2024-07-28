@@ -90,13 +90,11 @@ def test_regridding_with_dask():
         source_meta = res.meta.copy()
         source_meta['gid'] = np.arange(len(source_meta))
         shuffled_meta = source_meta.sample(frac=1, random_state=0)
-        ws = res['windspeed_100m', ...]
+        ws = res['windspeed_100m']
 
         regridder = Regridder(source_meta=source_meta,
                               target_meta=shuffled_meta, max_workers=1)
-
-        out = regridder(ws.T).T.compute()
-
+        out = regridder(ws.T).T
         assert np.array_equal(ws[:, shuffled_meta['gid'].values], out)
 
         new_shuffled_meta = shuffled_meta.copy()
@@ -111,8 +109,8 @@ def test_regridding_with_dask():
                             source_data=ws.T,
                             max_workers=1, min_distance=0)
 
-        assert np.allclose(ws[:, new_shuffled_meta['gid'].values],
-                           out.T.compute(), atol=0.1)
+        assert np.allclose(ws[:, new_shuffled_meta['gid'].values], out.T,
+                           atol=0.1)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
