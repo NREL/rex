@@ -41,7 +41,7 @@ class _InterpolationMixin:
 
         Parameters
         ----------
-        data : ndarray
+        data : :obj:`numpy.ndarray` | :obj:`dask.core.array.Array`
             Spatiotemporal data to regrid to target_meta. Data can be
             flattened in the spatial dimension to match the
             `target_meta` or be in a 2D spatial grid, e.g.:
@@ -49,7 +49,7 @@ class _InterpolationMixin:
 
         Returns
         -------
-        out : ndarray
+        out : :obj:`numpy.ndarray` | :obj:`dask.core.array.Array`
             Flattened regridded spatiotemporal data
             (spatial, temporal)
         """
