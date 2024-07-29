@@ -43,11 +43,11 @@ Setting up an HSDS server on an EC2 instance or your local machine isn't too har
 
 Make sure you have python 3.x (we recommend 3.10), pip, and git installed. We find it easiest to manage your HSDS environment by installing `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ and creating a clean HSDS environment. Once you have that setup, follow these instructions:
 
-#. In your shell, install nrel-rex >= v0.2.86 using pip (this should also install HSDS and h5pyd).
+#. In your shell, install nrel-rex >= v0.2.88 using pip, making sure to include the optional HSDS dependency:
 
     .. code-block:: bash
 
-      pip install "nrel-rex>=0.2.86"
+      pip install "nrel-rex[hsds]>=0.2.88"
 
 #. Set your environment variables (if using windows, use ``set`` instead of ``export``) (this has to be done every time you login to a shell unless you set these in your ``.bashrc``):
 
