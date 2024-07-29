@@ -42,6 +42,7 @@ with open("requirements.txt") as f:
     install_requires = f.readlines()
 
 test_requires = ["pytest>=5.2", ]
+dev_requires = ["flake8", "pre-commit", "pylint", "hsds>=0.8.4"]
 description = ("National Renewable Energy Laboratory's (NREL's) REsource "
                "eXtraction tool: rex")
 
@@ -87,7 +88,8 @@ setup(
     install_requires=install_requires,
     extras_require={
         "test": test_requires,
-        "dev": test_requires + ["flake8", "pre-commit", "pylint"],
+        "dev": test_requires + dev_requires,
+        "hsds": ["hsds>=0.8.4"]
     },
     cmdclass={"develop": PostDevelopCommand},
 )

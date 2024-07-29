@@ -1,7 +1,6 @@
 click>=7.0
 h5py>=2.10.0,!=3.0.0
 h5pyd>=0.18.0
-hsds>=0.8.4
 numpy>=1.16
 pandas>=2.0
 psutil>=5.6
