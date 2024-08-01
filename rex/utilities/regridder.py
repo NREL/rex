@@ -59,8 +59,9 @@ class _InterpolationMixin:
         msg = "Input data must be 2D (spatial, temporal)"
         assert len(data.shape) == 2, msg
 
-        if hasattr(data, 'vindex'):  # data is Dask array
-            vals = data.vindex[self.indices]
+        if hasattr(data, "compute"):  # data is Dask array
+            shape = (len(self.indices), self.k_neighbors, data.shape[-1])
+            vals = data[np.concatenate(self.indices)].reshape(shape)
         else:
             vals = data[self.indices]
 
