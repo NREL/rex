@@ -1,0 +1,65 @@
+rex.multi\_file\_resource.MultiFileResource
+===========================================
+
+.. currentmodule:: rex.multi_file_resource
+
+.. autoclass:: MultiFileResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiFileResource.close
+      ~MultiFileResource.df_str_decode
+      ~MultiFileResource.get_SAM_df
+      ~MultiFileResource.get_attrs
+      ~MultiFileResource.get_dset_properties
+      ~MultiFileResource.get_meta_arr
+      ~MultiFileResource.get_scale_factor
+      ~MultiFileResource.get_units
+      ~MultiFileResource.open_dataset
+      ~MultiFileResource.preload_SAM
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiFileResource.ADD_ATTR
+      ~MultiFileResource.INTERPOLABLE_DSETS
+      ~MultiFileResource.LAPSE_RATES
+      ~MultiFileResource.SCALE_ATTR
+      ~MultiFileResource.UNIT_ATTR
+      ~MultiFileResource.VARIABLE_NAME
+      ~MultiFileResource.VARIABLE_UNIT
+      ~MultiFileResource.adders
+      ~MultiFileResource.attrs
+      ~MultiFileResource.chunks
+      ~MultiFileResource.coordinates
+      ~MultiFileResource.data_version
+      ~MultiFileResource.datasets
+      ~MultiFileResource.dsets
+      ~MultiFileResource.dtypes
+      ~MultiFileResource.global_attrs
+      ~MultiFileResource.groups
+      ~MultiFileResource.h5
+      ~MultiFileResource.lat_lon
+      ~MultiFileResource.meta
+      ~MultiFileResource.res_dsets
+      ~MultiFileResource.resource_datasets
+      ~MultiFileResource.scale_factors
+      ~MultiFileResource.shape
+      ~MultiFileResource.shapes
+      ~MultiFileResource.time_index
+      ~MultiFileResource.units
+   
+   

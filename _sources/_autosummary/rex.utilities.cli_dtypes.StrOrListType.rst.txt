@@ -1,0 +1,40 @@
+rex.utilities.cli\_dtypes.StrOrListType
+=======================================
+
+.. currentmodule:: rex.utilities.cli_dtypes
+
+.. autoclass:: StrOrListType
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~StrOrListType.convert
+      ~StrOrListType.dtype
+      ~StrOrListType.fail
+      ~StrOrListType.get_metavar
+      ~StrOrListType.get_missing_message
+      ~StrOrListType.shell_complete
+      ~StrOrListType.split_envvar_value
+      ~StrOrListType.to_info_dict
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~StrOrListType.arity
+      ~StrOrListType.envvar_list_splitter
+      ~StrOrListType.is_composite
+      ~StrOrListType.name
+   
+   

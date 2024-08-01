@@ -1,0 +1,6 @@
+rex.utilities.exceptions.LoggerWarning
+======================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: LoggerWarning

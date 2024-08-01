@@ -1,0 +1,69 @@
+rex.resource\_extraction.resource\_extraction.NSRDBX
+====================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: NSRDBX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~NSRDBX.box_gids
+      ~NSRDBX.close
+      ~NSRDBX.get_SAM_gid
+      ~NSRDBX.get_SAM_lat_lon
+      ~NSRDBX.get_box_df
+      ~NSRDBX.get_box_ts
+      ~NSRDBX.get_gid_df
+      ~NSRDBX.get_gid_ts
+      ~NSRDBX.get_grid_vectors
+      ~NSRDBX.get_lat_lon_df
+      ~NSRDBX.get_lat_lon_ts
+      ~NSRDBX.get_raster_index
+      ~NSRDBX.get_region_df
+      ~NSRDBX.get_region_ts
+      ~NSRDBX.get_timestep_map
+      ~NSRDBX.lat_lon_gid
+      ~NSRDBX.make_SAM_files
+      ~NSRDBX.region_gids
+      ~NSRDBX.save_region
+      ~NSRDBX.save_subset
+      ~NSRDBX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~NSRDBX.attrs
+      ~NSRDBX.coordinates
+      ~NSRDBX.counties
+      ~NSRDBX.countries
+      ~NSRDBX.data_version
+      ~NSRDBX.datasets
+      ~NSRDBX.distance_threshold
+      ~NSRDBX.dsets
+      ~NSRDBX.global_attrs
+      ~NSRDBX.groups
+      ~NSRDBX.h5
+      ~NSRDBX.lat_lon
+      ~NSRDBX.meta
+      ~NSRDBX.res_dsets
+      ~NSRDBX.resource
+      ~NSRDBX.resource_datasets
+      ~NSRDBX.shape
+      ~NSRDBX.states
+      ~NSRDBX.time_index
+      ~NSRDBX.tree
+   
+   

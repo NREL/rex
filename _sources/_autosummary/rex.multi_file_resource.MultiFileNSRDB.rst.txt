@@ -1,0 +1,65 @@
+rex.multi\_file\_resource.MultiFileNSRDB
+========================================
+
+.. currentmodule:: rex.multi_file_resource
+
+.. autoclass:: MultiFileNSRDB
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiFileNSRDB.close
+      ~MultiFileNSRDB.df_str_decode
+      ~MultiFileNSRDB.get_SAM_df
+      ~MultiFileNSRDB.get_attrs
+      ~MultiFileNSRDB.get_dset_properties
+      ~MultiFileNSRDB.get_meta_arr
+      ~MultiFileNSRDB.get_scale_factor
+      ~MultiFileNSRDB.get_units
+      ~MultiFileNSRDB.open_dataset
+      ~MultiFileNSRDB.preload_SAM
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiFileNSRDB.ADD_ATTR
+      ~MultiFileNSRDB.INTERPOLABLE_DSETS
+      ~MultiFileNSRDB.LAPSE_RATES
+      ~MultiFileNSRDB.SCALE_ATTR
+      ~MultiFileNSRDB.UNIT_ATTR
+      ~MultiFileNSRDB.VARIABLE_NAME
+      ~MultiFileNSRDB.VARIABLE_UNIT
+      ~MultiFileNSRDB.adders
+      ~MultiFileNSRDB.attrs
+      ~MultiFileNSRDB.chunks
+      ~MultiFileNSRDB.coordinates
+      ~MultiFileNSRDB.data_version
+      ~MultiFileNSRDB.datasets
+      ~MultiFileNSRDB.dsets
+      ~MultiFileNSRDB.dtypes
+      ~MultiFileNSRDB.global_attrs
+      ~MultiFileNSRDB.groups
+      ~MultiFileNSRDB.h5
+      ~MultiFileNSRDB.lat_lon
+      ~MultiFileNSRDB.meta
+      ~MultiFileNSRDB.res_dsets
+      ~MultiFileNSRDB.resource_datasets
+      ~MultiFileNSRDB.scale_factors
+      ~MultiFileNSRDB.shape
+      ~MultiFileNSRDB.shapes
+      ~MultiFileNSRDB.time_index
+      ~MultiFileNSRDB.units
+   
+   
