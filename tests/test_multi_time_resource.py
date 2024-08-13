@@ -376,6 +376,21 @@ def test_map_hsds_files():
     assert not any(wrong), 'Wrong files: {}'.format(wrong)
 
 
+def test_multi_time_resource_acts_like_resource_single_file():
+    """Test that MultiTimeWindResource nehaves like Resource for one file."""
+
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    with Resource(path) as res, MultiTimeWindResource([path]) as mt_res:
+        assert set(res.datasets) == set(mt_res.datasets)
+        assert (res.time_index == mt_res.time_index).all()
+        assert res.shape == mt_res.shape
+        for ds in res.datasets:
+            if any(kw in ds for kw in ['meta', 'time']):
+                continue
+            assert np.allclose(res[ds], mt_res[ds])
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 
