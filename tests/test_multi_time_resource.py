@@ -377,7 +377,7 @@ def test_map_hsds_files():
 
 
 def test_multi_time_resource_acts_like_resource_single_file():
-    """Test that MultiTimeWindResource nehaves like Resource for one file."""
+    """Test that MultiTimeWindResource behaves like Resource for one file."""
 
     path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
 
