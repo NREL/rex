@@ -170,3 +170,20 @@ def test_preload_sam():
                 assert np.allclose(true, test)
 
         mrr.close()
+
+
+@pytest.mark.timeout(10)
+def test_multi_res_resource_iterator():
+    """
+    test MultiResolutionResource iterator. Incorrect implementation can
+    cause an infinite loop
+    """
+    with tempfile.TemporaryDirectory() as td:
+        fp_hr, fp_lr = make_multi_res_files(td)
+        mrr = MultiResolutionResource(fp_hr, fp_lr, handler_class=WindResource)
+        dsets_permutation = {(a, b) for a in mrr for b in mrr}
+        num_dsets = len(mrr.datasets)
+
+        mrr.close()
+
+    assert len(dsets_permutation) == num_dsets ** 2

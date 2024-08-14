@@ -16,7 +16,7 @@ from rex.renewable_resource import (
     WaveResource,
     WindResource,
 )
-from rex.resource import Resource
+from rex.resource import Resource, BaseDatasetIterable
 from rex.utilities.exceptions import FileInputError
 from rex.utilities.parse_keys import parse_keys, parse_slice
 
@@ -60,7 +60,6 @@ class MultiTimeH5:
         self._shape = None
         self._time_index = None
         self._time_slice_map = []
-        self._i = 0
 
     def __repr__(self):
         msg = ("{} for {}:\n Contains data from {} files"
@@ -421,7 +420,7 @@ class MultiTimeH5:
             f.close()
 
 
-class MultiTimeResource:
+class MultiTimeResource(BaseDatasetIterable):
     """
     Class to handle resource data stored temporally accross multiple
     .h5 files
@@ -522,7 +521,6 @@ class MultiTimeResource:
         self._h5 = MultiTimeH5(self.h5_path, res_cls=res_cls, **cls_kwargs)
         self.h5_files = self._h5.h5_files
         self.h5_file = self.h5_files[0]
-        self._i = 0
 
     def __repr__(self):
         msg = "{} for {}".format(self.__class__.__name__, self.h5_path)
@@ -539,19 +537,6 @@ class MultiTimeResource:
 
     def __len__(self):
         return len(self.h5.time_index)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._i >= len(self.datasets):
-            self._i = 0
-            raise StopIteration
-
-        dset = self.datasets[self._i]
-        self._i += 1
-
-        return dset
 
     def __getitem__(self, keys):
         ds, ds_slice = parse_keys(keys)

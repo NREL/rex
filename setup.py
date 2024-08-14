@@ -41,7 +41,7 @@ class PostDevelopCommand(develop):
 with open("requirements.txt") as f:
     install_requires = f.readlines()
 
-test_requires = ["pytest>=5.2", ]
+test_requires = ["pytest>=5.2", "pytest-timeout>=2.3.1"]
 dev_requires = ["flake8", "pre-commit", "pylint", "hsds>=0.8.4"]
 description = ("National Renewable Energy Laboratory's (NREL's) REsource "
                "eXtraction tool: rex")
