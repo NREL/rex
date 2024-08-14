@@ -10,12 +10,12 @@ import numpy as np
 from rex.renewable_resource import (NSRDB, SolarResource, GeothermalResource,
                                     WindResource, WaveResource,
                                     AbstractInterpolatedResource)
-from rex.resource import Resource
+from rex.resource import Resource, BaseDatasetIterable
 from rex.utilities.exceptions import FileInputError, ResourceRuntimeError
 from rex.utilities.utilities import unstupify_path
 
 
-class MultiH5:
+class MultiH5(BaseDatasetIterable):
     """
     Class to handle multiple h5 file Resources
     """
@@ -31,8 +31,6 @@ class MultiH5:
         """
         self._dset_map = self._map_file_dsets(h5_files)
         self._h5_map = self._map_file_instances(set(self._dset_map.values()))
-
-        self._i = 0
 
         if check_files:
             self._preflight_check()
@@ -65,19 +63,6 @@ class MultiH5:
                              .format(dset, self.datasets))
 
         return ds
-
-    def __next__(self):
-        if self._i >= len(self.datasets):
-            self._i = 0
-            raise StopIteration
-
-        dset = self.datasets[self._i]
-        self._i += 1
-
-        return dset
-
-    def __iter__(self):
-        return self
 
     def __contains__(self, dset):
         return dset in self.datasets
