@@ -127,7 +127,7 @@ class MultiH5(BaseDatasetIterable):
         shared_dsets = []
         try:
             with h5py.File(h5_path, mode='r') as f:
-                for dset in f:
+                for dset in Resource._get_datasets(f):
                     if dset not in ['meta', 'time_index', 'coordinates']:
                         unique_dsets.append(dset)
                     else:
