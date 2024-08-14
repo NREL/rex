@@ -19,10 +19,11 @@ jobs:
         pip install --upgrade pip
         pip install pytest
         pip install pytest-cov
+        pip install pytest-timeout
+        pip install flaky
         pip install -e .
     - name: Generate coverage report
       run: |
-        pip install pytest-cov
         cd tests
         pytest --disable-warnings --cov=./ --cov-report=xml:coverage.xml
     - name: Upload coverage to Codecov
