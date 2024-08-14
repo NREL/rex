@@ -1529,7 +1529,6 @@ class MultiFileResourceX(ResourceX):
                             str_decode=str_decode, check_files=check_files)
         self._dist_thresh = None
         self._tree = tree
-        self._i = 0
 
 
 class MultiYearResourceX(ResourceX):
@@ -1576,7 +1575,6 @@ class MultiYearResourceX(ResourceX):
                                       hsds_kwargs=hsds_kwargs)
         self._dist_thresh = None
         self._tree = tree
-        self._i = 0
 
     def get_means_map(self, ds_name, year=None, region=None,
                       region_col='state', max_workers=None,
@@ -1662,7 +1660,6 @@ class MultiTimeResourceX(ResourceX):
                                       hsds=hsds, hsds_kwargs=hsds_kwargs)
         self._dist_thresh = None
         self._tree = tree
-        self._i = 0
 
 
 class SolarX(ResourceX):

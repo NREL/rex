@@ -390,7 +390,6 @@ class MultiFileResource(AbstractInterpolatedResource):
         self._shapes = None
         self._chunks = None
         self._dtypes = None
-        self._i = 0
 
         self._interp_var = None
         self._use_lapse = use_lapse_rate

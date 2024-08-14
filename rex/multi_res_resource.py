@@ -70,7 +70,6 @@ class MultiResolutionResource:
         self._lr_res = handler_class(h5_lr, **handle_kwargs)
         self._nn_map = nn_map
         self._nn_d = nn_d
-        self._i = 0
 
         if self._nn_map is None:
             self._nn_d, self._nn_map = self.make_nn_map(self._hr_res,

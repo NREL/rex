@@ -58,7 +58,6 @@ class MultiTimeH5:
         self._shape = None
         self._time_index = None
         self._time_slice_map = []
-        self._i = 0
 
     def __repr__(self):
         msg = ("{} for {}:\n Contains data from {} files"
