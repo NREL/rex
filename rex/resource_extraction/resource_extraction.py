@@ -27,7 +27,7 @@ from rex.renewable_resource import (
     WaveResource,
     WindResource,
 )
-from rex.resource import Resource, ResourceDataset
+from rex.resource import Resource, ResourceDataset, BaseDatasetIterable
 from rex.temporal_stats.temporal_stats import TemporalStats
 from rex.utilities.exceptions import ResourceValueError, ResourceWarning
 from rex.utilities.execution import SpawnProcessPool
@@ -39,7 +39,7 @@ TREE_DIR = TemporaryDirectory()
 logger = logging.getLogger(__name__)
 
 
-class ResourceX:
+class ResourceX(BaseDatasetIterable):
     """
     Resource data extraction tool
     """
@@ -88,7 +88,6 @@ class ResourceX:
                             group=group, hsds=hsds, hsds_kwargs=hsds_kwargs)
         self._dist_thresh = None
         self._tree = tree
-        self._i = 0
 
     def __repr__(self):
         msg = "{} extractor for {}".format(self._res.__class__.__name__,
@@ -113,19 +112,6 @@ class ResourceX:
 
     def __contains__(self, dset):
         return dset in self.datasets
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._i >= len(self.datasets):
-            self._i = 0
-            raise StopIteration
-
-        dset = self.datasets[self._i]
-        self._i += 1
-
-        return dset
 
     @property
     def resource(self):

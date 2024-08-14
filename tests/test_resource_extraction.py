@@ -1130,6 +1130,19 @@ def test_get_bad_raster_index():
             ext.get_raster_index(target, shape, meta=meta)
 
 
+@pytest.mark.timeout(10)
+def test_resourcex_iterable(NSRDBX_cls):
+    """
+    test ResourceX iterator. Incorrect implementation can cause an
+    infinite loop
+    """
+    with NSRDBX_cls as res:
+        dsets_permutation = {(a, b) for a in res for b in res}
+        num_dsets = len(res.datasets)
+
+    assert len(dsets_permutation) == num_dsets ** 2
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 
