@@ -952,7 +952,7 @@ def test_1D_dataset_slicing_spatial_repeat():
 @pytest.mark.timeout(10)
 def test_resource_iterator():
     """
-    test MultiH5 iterator. Incorrect implementation can cause an infinite loop
+    test Resource iterator. Incorrect implementation can cause an infinite loop
     """
     h5_file = os.path.join(TESTDATADIR, 'nsrdb', 'nsrdb_irradiance_2018.h5')
     with Resource(h5_file) as res:
