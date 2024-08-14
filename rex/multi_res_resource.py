@@ -237,17 +237,7 @@ class MultiResolutionResource:
         return out
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._i >= len(self.datasets):
-            self._i = 0
-            raise StopIteration
-
-        dset = self.datasets[self._i]
-        self._i += 1
-
-        return dset
+        return iter(self.datasets)
 
     def __contains__(self, dset):
         return dset in self.datasets
