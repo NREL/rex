@@ -184,4 +184,6 @@ def test_multi_res_resource_iterator():
         dsets_permutation = {(a, b) for a in mrr for b in mrr}
         num_dsets = len(mrr.datasets)
 
+        mrr.close()
+
     assert len(dsets_permutation) == num_dsets ** 2
