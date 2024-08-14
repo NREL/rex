@@ -3,7 +3,7 @@
 Classes to handle resource data
 """
 import os
-from abc import ABC
+from abc import ABC, abstractmethod
 from warnings import warn
 
 import dateutil
@@ -15,6 +15,18 @@ from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import check_tz, get_lat_lon_cols
+
+
+class BaseDatasetIterable(ABC):
+    """Base class for file that is iterable over datasets. """
+
+    @property
+    @abstractmethod
+    def datasets(self):
+        """iterable: Datasets available in file. """
+
+    def __iter__(self):
+        return iter(self.datasets)
 
 
 class ResourceDataset:
