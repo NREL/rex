@@ -44,7 +44,7 @@ def get_dataset_attributes(h5_file, out_json=None, chunk_size=2,
     with h5py.File(h5_file, 'r') as f:
         global_attrs = dict(f.attrs)
 
-        for ds_name in BaseResource._get_datasets(f):
+        for ds_name in f:
             ds = f[ds_name]
             try:
                 arr_size = ds_name in ['meta', 'coordinates', 'time_index']
