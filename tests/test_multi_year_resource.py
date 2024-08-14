@@ -373,6 +373,21 @@ def test_my_resource_iterator():
     assert len(dsets_permutation) == num_dsets ** 2
 
 
+@pytest.mark.timeout(10)
+def test_myh5_iterator():
+    """
+    test MultiYearH5 iterator. Incorrect implementation can
+    cause an infinite loop
+    """
+    path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_*.h5')
+
+    myh5 = MultiYearH5(path)
+    dsets_permutation = {(a, b) for a in myh5 for b in myh5}
+    num_dsets = len(myh5.years)
+
+    assert len(dsets_permutation) == num_dsets ** 2
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 

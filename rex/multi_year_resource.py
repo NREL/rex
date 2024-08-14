@@ -58,7 +58,6 @@ class MultiYearH5(MultiTimeH5):
         self._datasets = None
         self._shape = None
         self._time_index = None
-        self._i = 0
 
     def __repr__(self):
         msg = ("{} for {}:\n Contains data for {} years"
@@ -82,17 +81,7 @@ class MultiYearH5(MultiTimeH5):
         return h5
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._i >= len(self.years):
-            self._i = 0
-            raise StopIteration
-
-        year = self.years[self._i]
-        self._i += 1
-
-        return year
+        return iter(self.years)
 
     def __contains__(self, year):
         return year in self.years
@@ -451,7 +440,6 @@ class MultiYearResource(MultiTimeResource):
                                **cls_kwargs)
         self.h5_files = self._h5.h5_files
         self.h5_file = self.h5_files[0]
-        self._i = 0
 
     @property
     def years(self):
