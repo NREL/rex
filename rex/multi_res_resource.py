@@ -70,7 +70,6 @@ class MultiResolutionResource:
         self._lr_res = handler_class(h5_lr, **handle_kwargs)
         self._nn_map = nn_map
         self._nn_d = nn_d
-        self._i = 0
 
         if self._nn_map is None:
             self._nn_d, self._nn_map = self.make_nn_map(self._hr_res,
@@ -237,17 +236,7 @@ class MultiResolutionResource:
         return out
 
     def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._i >= len(self.datasets):
-            self._i = 0
-            raise StopIteration
-
-        dset = self.datasets[self._i]
-        self._i += 1
-
-        return dset
+        return iter(self.datasets)
 
     def __contains__(self, dset):
         return dset in self.datasets

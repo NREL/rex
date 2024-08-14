@@ -9,8 +9,8 @@ from pandas.testing import assert_frame_equal
 import pytest
 
 from rex import TESTDATADIR
-from rex.multi_time_resource import (MultiTimeH5, MultiTimeNSRDB,
-                                     MultiTimeWindResource)
+from rex.multi_time_resource import (MultiTimeH5, MultiTimeResource,
+                                     MultiTimeNSRDB, MultiTimeWindResource)
 from rex.resource import Resource
 
 
@@ -321,6 +321,21 @@ def test_map_hsds_files():
     wrong = [f for f in hsds_fps if f not in files]
     assert not any(missing), 'Missed files: {}'.format(missing)
     assert not any(wrong), 'Wrong files: {}'.format(wrong)
+
+
+@pytest.mark.timeout(10)
+def test_mt_iterator():
+    """
+    test MultiTimeResource iterator. Incorrect implementation can
+    cause an infinite loop
+    """
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+
+    with MultiTimeResource(path) as res:
+        dsets_permutation = {(a, b) for a in res for b in res}
+        num_dsets = len(res.datasets)
+
+    assert len(dsets_permutation) == num_dsets ** 2
 
 
 def execute_pytest(capture='all', flags='-rapP'):

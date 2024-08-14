@@ -949,6 +949,32 @@ def test_1D_dataset_slicing_spatial_repeat():
                 assert res['dset3', 55, 79].dtype == np.float32
 
 
+@pytest.mark.timeout(10)
+def test_resource_iterator():
+    """
+    test Resource iterator. Incorrect implementation can cause an infinite loop
+    """
+    h5_file = os.path.join(TESTDATADIR, 'nsrdb', 'nsrdb_irradiance_2018.h5')
+    with Resource(h5_file) as res:
+        dsets_permutation = {(a, b) for a in res for b in res}
+        num_dsets = len(res.datasets)
+
+    assert len(dsets_permutation) == num_dsets ** 2
+
+
+@pytest.mark.timeout(10)
+def test_mh5_iterator():
+    """
+    test MultiH5 iterator. Incorrect implementation can cause an infinite loop
+    """
+    h5_files = [os.path.join(TESTDATADIR, 'nsrdb', 'nsrdb_irradiance_2018.h5'),
+                os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_100m.h5')]
+
+    mh5 = MultiH5(h5_files)
+    dsets_permutation = {(a, b) for a in mh5 for b in mh5}
+    assert len(dsets_permutation) == len(mh5.datasets) ** 2
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 
