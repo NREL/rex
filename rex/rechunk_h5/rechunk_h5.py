@@ -44,7 +44,7 @@ def get_dataset_attributes(h5_file, out_json=None, chunk_size=2,
     with h5py.File(h5_file, 'r') as f:
         global_attrs = dict(f.attrs)
 
-        for ds_name in f:
+        for ds_name in BaseResource._get_datasets(f):
             ds = f[ds_name]
             try:
                 arr_size = ds_name in ['meta', 'coordinates', 'time_index']
@@ -88,6 +88,9 @@ def get_dataset_attributes(h5_file, out_json=None, chunk_size=2,
 class RechunkH5:
     """
     Class to create new .h5 file with new chunking
+
+    .. WARNING:: This code does not currently support re-chunking H5
+                 files with grouped datasets.
     """
     # None time-series
     NON_TS_DSETS = ('meta', 'coordinates', 'time_index')
