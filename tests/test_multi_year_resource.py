@@ -358,6 +358,21 @@ def test_multi_file_year():
             assert test_meta.equals(f.meta)
 
 
+@pytest.mark.timeout(10)
+def test_my_resource_iterator():
+    """
+    test MultiYearWindResource iterator. Incorrect implementation can
+    cause an infinite loop
+    """
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_*.h5')
+
+    with MultiYearWindResource(path) as res:
+        dsets_permutation = {(a, b) for a in res for b in res}
+        num_dsets = len(res.datasets)
+
+    assert len(dsets_permutation) == num_dsets ** 2
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 
