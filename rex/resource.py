@@ -595,7 +595,7 @@ class ResourceDataset:
         return dset[ds_slice]
 
 
-class BaseResource(ABC):
+class BaseResource(BaseDatasetIterable):
     """
     Abstract Base class to handle resource .h5 files
     """
@@ -658,7 +658,6 @@ class BaseResource(ABC):
         self._shapes = None
         self._chunks = None
         self._dtypes = None
-        self._i = 0
 
     def __repr__(self):
         msg = "{} for {}".format(self.__class__.__name__, self.h5_file)
@@ -702,19 +701,6 @@ class BaseResource(ABC):
             out = self._get_ds(ds, ds_slice)
 
         return out
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self._i >= len(self.datasets):
-            self._i = 0
-            raise StopIteration
-
-        dset = self.datasets[self._i]
-        self._i += 1
-
-        return dset
 
     def __contains__(self, dset):
         return dset in self.datasets
