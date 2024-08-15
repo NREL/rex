@@ -975,6 +975,64 @@ def test_mh5_iterator():
     assert len(dsets_permutation) == len(mh5.datasets) ** 2
 
 
+@pytest.mark.parametrize("read_class", [Resource, MultiFileResource])
+def test_attrs_for_grouped_datasets(read_class):
+    """"Test attrs for files with datasets under groups."""
+
+    meta = pd.DataFrame({'latitude': np.ones(100),
+                         'longitude': np.zeros(100)})
+    time_index = pd_date_range('20210101', '20220101', freq='1h',
+                               closed='right')
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, 'outputs.h5')
+
+        with Outputs(fp, 'w') as f:
+            f.meta = meta
+            f.time_index = time_index
+
+        Outputs.add_dataset(h5_file=fp, dset_name='dset1',
+                            dset_data=np.ones((8760, 100)) * 42.42,
+                            attrs={'scale_factor': 100}, dtype=np.int32)
+
+        with Outputs(fp, 'a', group="g1") as f:
+            f.meta = meta
+            f.time_index = time_index
+
+        Outputs.add_dataset(h5_file=fp, dset_name='dset_g1',
+                            dset_data=np.ones((8760, 100)) * 42.42,
+                            attrs={'scale_factor': 100}, dtype=np.int32,
+                            group="g1")
+
+        with read_class(fp) as res:
+            assert np.allclose(res["dset1"], 42.42)
+            assert np.allclose(res["g1/dset_g1"], 42.42)
+
+            expected_dsets = {'dset1', 'meta', 'time_index',
+                              'g1/dset_g1', 'g1/meta', 'g1/time_index'}
+            assert set(res.datasets) == expected_dsets
+            assert set(res.dtypes) == expected_dsets
+
+            expected_attrs = {'dset1': {'scale_factor': 100},
+                              'g1/dset_g1': {'scale_factor': 100},
+                              'g1/meta': {}, 'g1/time_index': {},
+                              'meta': {}, 'time_index': {}}
+            assert res.attrs == expected_attrs
+
+            expected_shapes = {'dset1': (8760, 100),
+                               'g1/dset_g1': (8760, 100),
+                               'g1/meta': (100,),
+                               'g1/time_index': (8760,),
+                               'meta': (100,), 'time_index': (8760,)}
+            assert res.shapes == expected_shapes
+
+            expected_chunks = {'dset1': None,
+                               'g1/dset_g1': None,
+                               'g1/meta': None,
+                               'g1/time_index': None,
+                               'meta': None, 'time_index': None}
+            assert res.chunks == expected_chunks
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 

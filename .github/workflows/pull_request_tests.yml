@@ -29,6 +29,7 @@ jobs:
           pip install pytest
           pip install pytest-cov
           pip install pytest-timeout
+          pip install flaky
           pip install -e .
       - name: Run pytest and Generate coverage report
         run: |

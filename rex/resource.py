@@ -924,7 +924,7 @@ class BaseResource(BaseDatasetIterable):
         """
         if self._attrs is None:
             self._attrs = {}
-            for dset in set(self.datasets).intersection(self.h5):
+            for dset in self.datasets:
                 self._attrs[dset] = dict(self.h5[dset].attrs)
 
         return self._attrs
