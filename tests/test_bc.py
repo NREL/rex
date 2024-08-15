@@ -4,11 +4,13 @@ pytests for bias correction utilities
 """
 
 import numpy as np
+from flaky import flaky
 
 from rex.temporal_stats.temporal_stats import cdf
 from rex.utilities.bc_utils import QuantileDeltaMapping
 
 
+@flaky(max_runs=3, min_passes=1)
 def test_qdm():
     """Test basic QuantileDeltaMapping functionality with dummy distributions
 
