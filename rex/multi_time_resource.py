@@ -3,8 +3,9 @@
 Classes to handle resource data stored over multiple files
 """
 import os
-from fnmatch import fnmatch
 from glob import glob
+from itertools import chain
+from fnmatch import fnmatch
 
 import numpy as np
 import pandas as pd
@@ -33,8 +34,9 @@ class MultiTimeH5:
         h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes. Can also be an
-            explicit list of multi time files.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         res_cls : obj
             Resource class to use to open and access resource data
         hsds : bool
@@ -259,8 +261,9 @@ class MultiTimeH5:
         h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes. Can also be an
-            explicit list of multi time files.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         hsds : bool
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
             behind HSDS
@@ -278,10 +281,9 @@ class MultiTimeH5:
             file_paths = cls._get_hsds_file_paths(h5_path,
                                                   hsds_kwargs=hsds_kwargs)
         elif isinstance(h5_path, (list, tuple)):
-            for fp in h5_path:
-                msg = 'Does not exist: {}'.format(fp)
-                assert os.path.exists(fp), msg
-            file_paths = h5_path
+            file_paths = list(chain.from_iterable(glob(fp) for fp in h5_path))
+            for fp in file_paths:
+                assert os.path.exists(fp), 'Does not exist: {}'.format(fp)
         elif os.path.isdir(h5_path):
             msg = ('h5_path must be a unix shell style pattern with '
                    'wildcard * in order to find files, but received '
@@ -493,8 +495,9 @@ class MultiTimeResource(BaseDatasetIterable):
         h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes. Can also be an
-            explicit list of multi time files.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -850,8 +853,9 @@ class MultiTimeSolarResource:
         h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes. Can also be an
-            explicit list of multi time files.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -885,8 +889,9 @@ class MultiTimeNSRDB(MultiTimeResource):
         h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes. Can also be an
-            explicit list of multi time files.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -920,8 +925,9 @@ class MultiTimeWindResource(MultiTimeResource):
         h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes. Can also be an
-            explicit list of multi time files.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool
@@ -953,8 +959,9 @@ class MultiTimeWaveResource(MultiTimeResource):
         h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes. Can also be an
-            explicit list of multi time files.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         unscale : bool
             Boolean flag to automatically unscale variables on extraction
         str_decode : bool

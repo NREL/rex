@@ -36,6 +36,16 @@ def MultiTimeNSRDB_list_res():
 
 
 @pytest.fixture
+def MultiTimeNSRDB_wildcard_list_res():
+    """
+    Init NSRDB resource handler
+    """
+    files = [os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_20*.h5')]
+
+    return MultiTimeNSRDB(files)
+
+
+@pytest.fixture
 def MultiTimeWind_res():
     """
     Init WindResource resource handler
@@ -258,6 +268,49 @@ class TestMultiTimeList:
         MultiTimeNSRDB_list_res.close()
 
 
+class TestMultiTimeWildcardList:
+    """
+    Test multi time resource handler from list of files with wildcards
+    """
+    @staticmethod
+    def test_res(MultiTimeNSRDB_wildcard_list_res):
+        """
+        test NSRDB class calls
+        """
+        check_res(MultiTimeNSRDB_wildcard_list_res)
+        assert len(MultiTimeNSRDB_wildcard_list_res.h5.files) >= 2
+        MultiTimeNSRDB_wildcard_list_res.close()
+
+    @staticmethod
+    def test_meta(MultiTimeNSRDB_wildcard_list_res):
+        """
+        test extraction of NSRDB meta data
+        """
+        check_meta(MultiTimeNSRDB_wildcard_list_res)
+        assert len(MultiTimeNSRDB_wildcard_list_res.h5.files) >= 2
+        MultiTimeNSRDB_wildcard_list_res.close()
+
+    @staticmethod
+    def test_time_index(MultiTimeNSRDB_wildcard_list_res):
+        """
+        test extraction of NSRDB time_index
+        """
+        check_time_index(MultiTimeNSRDB_wildcard_list_res)
+        assert len(MultiTimeNSRDB_wildcard_list_res.h5.files) >= 2
+        MultiTimeNSRDB_wildcard_list_res.close()
+
+    @staticmethod
+    def test_ds(MultiTimeNSRDB_wildcard_list_res, ds_name='dni'):
+        """
+        test extraction of a variable array, attributes, and properties
+        """
+        check_dset(MultiTimeNSRDB_wildcard_list_res, ds_name)
+        check_attrs(MultiTimeNSRDB_wildcard_list_res, ds_name)
+        check_properties(MultiTimeNSRDB_wildcard_list_res, ds_name)
+        assert len(MultiTimeNSRDB_wildcard_list_res.h5.files) >= 2
+        MultiTimeNSRDB_wildcard_list_res.close()
+
+
 class TestMultiTimeWindResource:
     """
     Multi Year WindResource Resource handler tests
@@ -321,6 +374,21 @@ def test_map_hsds_files():
     wrong = [f for f in hsds_fps if f not in files]
     assert not any(missing), 'Missed files: {}'.format(missing)
     assert not any(wrong), 'Wrong files: {}'.format(wrong)
+
+
+def test_multi_time_resource_acts_like_resource_single_file():
+    """Test that MultiTimeWindResource behaves like Resource for one file."""
+
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+
+    with Resource(path) as res, MultiTimeWindResource([path]) as mt_res:
+        assert set(res.datasets) == set(mt_res.datasets)
+        assert (res.time_index == mt_res.time_index).all()
+        assert res.shape == mt_res.shape
+        for ds in res.datasets:
+            if any(kw in ds for kw in ['meta', 'time']):
+                continue
+            assert np.allclose(res[ds], mt_res[ds])
 
 
 @pytest.mark.timeout(10)

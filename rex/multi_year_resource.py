@@ -411,10 +411,12 @@ class MultiYearResource(MultiTimeResource):
         """
         Parameters
         ----------
-        h5_path : str
+        h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -498,10 +500,12 @@ class MultiYearNSRDB(MultiYearResource):
         """
         Parameters
         ----------
-        h5_path : str
+        h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -532,10 +536,12 @@ class MultiYearWindResource(MultiYearResource):
         """
         Parameters
         ----------
-        h5_path : str
+        h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -566,10 +572,12 @@ class MultiYearWaveResource(MultiYearResource):
         """
         Parameters
         ----------
-        h5_path : str
+        h5_path : str | list
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes.
+            but can have different datasets or time indexes. Can also be
+            an explicit list of multi time files, which themselves can
+            contain * wildcards.
         years : list, optional
             List of years to access, by default None
         unscale : bool
