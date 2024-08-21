@@ -364,7 +364,6 @@ class TestMultiTimePatternList:
         MultiTimeNSRDB_pattern_list_res.close()
 
 
-
 class TestMultiTimeWindResource:
     """
     Multi Year WindResource Resource handler tests
