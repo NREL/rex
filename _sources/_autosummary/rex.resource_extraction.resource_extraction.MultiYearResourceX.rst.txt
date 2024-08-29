@@ -1,0 +1,70 @@
+rex.resource\_extraction.resource\_extraction.MultiYearResourceX
+================================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: MultiYearResourceX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiYearResourceX.box_gids
+      ~MultiYearResourceX.close
+      ~MultiYearResourceX.get_SAM_gid
+      ~MultiYearResourceX.get_SAM_lat_lon
+      ~MultiYearResourceX.get_box_df
+      ~MultiYearResourceX.get_box_ts
+      ~MultiYearResourceX.get_gid_df
+      ~MultiYearResourceX.get_gid_ts
+      ~MultiYearResourceX.get_grid_vectors
+      ~MultiYearResourceX.get_lat_lon_df
+      ~MultiYearResourceX.get_lat_lon_ts
+      ~MultiYearResourceX.get_means_map
+      ~MultiYearResourceX.get_raster_index
+      ~MultiYearResourceX.get_region_df
+      ~MultiYearResourceX.get_region_ts
+      ~MultiYearResourceX.get_timestep_map
+      ~MultiYearResourceX.lat_lon_gid
+      ~MultiYearResourceX.make_SAM_files
+      ~MultiYearResourceX.region_gids
+      ~MultiYearResourceX.save_region
+      ~MultiYearResourceX.save_subset
+      ~MultiYearResourceX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiYearResourceX.attrs
+      ~MultiYearResourceX.coordinates
+      ~MultiYearResourceX.counties
+      ~MultiYearResourceX.countries
+      ~MultiYearResourceX.data_version
+      ~MultiYearResourceX.datasets
+      ~MultiYearResourceX.distance_threshold
+      ~MultiYearResourceX.dsets
+      ~MultiYearResourceX.global_attrs
+      ~MultiYearResourceX.groups
+      ~MultiYearResourceX.h5
+      ~MultiYearResourceX.lat_lon
+      ~MultiYearResourceX.meta
+      ~MultiYearResourceX.res_dsets
+      ~MultiYearResourceX.resource
+      ~MultiYearResourceX.resource_datasets
+      ~MultiYearResourceX.shape
+      ~MultiYearResourceX.states
+      ~MultiYearResourceX.time_index
+      ~MultiYearResourceX.tree
+   
+   

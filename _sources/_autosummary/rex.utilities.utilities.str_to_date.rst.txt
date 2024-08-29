@@ -1,0 +1,6 @@
+rex.utilities.utilities.str\_to\_date
+=====================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: str_to_date

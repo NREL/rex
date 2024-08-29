@@ -1,0 +1,70 @@
+rex.multi\_file\_resource.MultiFileWTK
+======================================
+
+.. currentmodule:: rex.multi_file_resource
+
+.. autoclass:: MultiFileWTK
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiFileWTK.circular_interp
+      ~MultiFileWTK.close
+      ~MultiFileWTK.df_str_decode
+      ~MultiFileWTK.get_SAM_df
+      ~MultiFileWTK.get_attrs
+      ~MultiFileWTK.get_dset_properties
+      ~MultiFileWTK.get_meta_arr
+      ~MultiFileWTK.get_scale_factor
+      ~MultiFileWTK.get_units
+      ~MultiFileWTK.monin_obukhov_extrapolation
+      ~MultiFileWTK.open_dataset
+      ~MultiFileWTK.power_law_interp
+      ~MultiFileWTK.preload_SAM
+      ~MultiFileWTK.shortest_angle
+      ~MultiFileWTK.stability_function
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiFileWTK.ADD_ATTR
+      ~MultiFileWTK.INTERPOLABLE_DSETS
+      ~MultiFileWTK.LAPSE_RATES
+      ~MultiFileWTK.SCALE_ATTR
+      ~MultiFileWTK.UNIT_ATTR
+      ~MultiFileWTK.VARIABLE_NAME
+      ~MultiFileWTK.VARIABLE_UNIT
+      ~MultiFileWTK.adders
+      ~MultiFileWTK.attrs
+      ~MultiFileWTK.chunks
+      ~MultiFileWTK.coordinates
+      ~MultiFileWTK.data_version
+      ~MultiFileWTK.datasets
+      ~MultiFileWTK.dsets
+      ~MultiFileWTK.dtypes
+      ~MultiFileWTK.global_attrs
+      ~MultiFileWTK.groups
+      ~MultiFileWTK.h5
+      ~MultiFileWTK.lat_lon
+      ~MultiFileWTK.meta
+      ~MultiFileWTK.res_dsets
+      ~MultiFileWTK.resource_datasets
+      ~MultiFileWTK.scale_factors
+      ~MultiFileWTK.shape
+      ~MultiFileWTK.shapes
+      ~MultiFileWTK.time_index
+      ~MultiFileWTK.units
+   
+   
