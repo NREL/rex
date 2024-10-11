@@ -71,6 +71,28 @@ def sample_q_invlog(n_samples, log_base):
     return quantiles
 
 
+def sample_cdf(quantiles, x_values, n_samples):
+    """Randomly draw a number of real values from a CDF.
+
+    quantiles : np.ndarray
+        1D array of quantile values from 0 to 1. Must be monotonic.
+    x_values : np.ndarray
+        Values on the x-axis of a CDF corresponding to quantiles. Must be
+        monotonic.
+    n_samples : int
+        Number of sample to draw
+
+    Returns
+    -------
+    samples : np.ndarray
+        1D array of real values sampled from the CDF made up by quantiles and
+        x_values
+    """
+    samples = np.random.uniform(0, 1, n_samples)
+    samples = np.interp(samples, quantiles, x_values)
+    return samples
+
+
 class QuantileDeltaMapping:
     """Class for quantile delta mapping based on the method from
     Cannon et al., 2015
@@ -376,7 +398,7 @@ class QuantileDeltaMapping:
         if relative:
             if delta_denom_zero is not None:
                 x_mh_mf[x_mh_mf == 0] = delta_denom_zero
-            elif delta_denom_min is not None:
+            if delta_denom_min is not None:
                 x_mh_mf = np.maximum(x_mh_mf, delta_denom_min)
             delta = arr / x_mh_mf  # Eq.4: x_m_p / F-1_m_h(Tau_m_p)
             arr_bc = x_oh * delta  # Eq.6: x^_m_p = x^_o:m_h:p * delta
