@@ -163,7 +163,7 @@ def qdm_irrad(ghi, dni, dhi,
               ghi_params_mf=None, dni_params_mf=None,
               dist='empirical', relative=True,
               sampling='linear', log_base=10,
-              delta_denom_min=None, delta_denom_zero=0.01):
+              delta_denom_min=0.01, delta_denom_zero=None):
     """Correct irradiance using the quantile delta mapping based on the method
     from Cannon et al., 2015
 
@@ -289,7 +289,7 @@ def qdm_irrad(ghi, dni, dhi,
 
 def qdm_ws(ws, params_oh, params_mh, params_mf=None, dist='empirical',
            relative=True, sampling='linear', log_base=10,
-           delta_denom_min=None, delta_denom_zero=0.01):
+           delta_denom_min=0.01, delta_denom_zero=None):
     """Correct windspeed using quantile delta mapping based on the method from
     Cannon et al., 2015
 
