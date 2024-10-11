@@ -1,0 +1,6 @@
+rex.utilities.exceptions.JSONError
+==================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: JSONError

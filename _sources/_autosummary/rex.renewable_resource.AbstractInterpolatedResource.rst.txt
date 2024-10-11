@@ -1,0 +1,65 @@
+rex.renewable\_resource.AbstractInterpolatedResource
+====================================================
+
+.. currentmodule:: rex.renewable_resource
+
+.. autoclass:: AbstractInterpolatedResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~AbstractInterpolatedResource.close
+      ~AbstractInterpolatedResource.df_str_decode
+      ~AbstractInterpolatedResource.get_SAM_df
+      ~AbstractInterpolatedResource.get_attrs
+      ~AbstractInterpolatedResource.get_dset_properties
+      ~AbstractInterpolatedResource.get_meta_arr
+      ~AbstractInterpolatedResource.get_scale_factor
+      ~AbstractInterpolatedResource.get_units
+      ~AbstractInterpolatedResource.open_dataset
+      ~AbstractInterpolatedResource.preload_SAM
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~AbstractInterpolatedResource.ADD_ATTR
+      ~AbstractInterpolatedResource.INTERPOLABLE_DSETS
+      ~AbstractInterpolatedResource.LAPSE_RATES
+      ~AbstractInterpolatedResource.SCALE_ATTR
+      ~AbstractInterpolatedResource.UNIT_ATTR
+      ~AbstractInterpolatedResource.VARIABLE_NAME
+      ~AbstractInterpolatedResource.VARIABLE_UNIT
+      ~AbstractInterpolatedResource.adders
+      ~AbstractInterpolatedResource.attrs
+      ~AbstractInterpolatedResource.chunks
+      ~AbstractInterpolatedResource.coordinates
+      ~AbstractInterpolatedResource.data_version
+      ~AbstractInterpolatedResource.datasets
+      ~AbstractInterpolatedResource.dsets
+      ~AbstractInterpolatedResource.dtypes
+      ~AbstractInterpolatedResource.global_attrs
+      ~AbstractInterpolatedResource.groups
+      ~AbstractInterpolatedResource.h5
+      ~AbstractInterpolatedResource.lat_lon
+      ~AbstractInterpolatedResource.meta
+      ~AbstractInterpolatedResource.res_dsets
+      ~AbstractInterpolatedResource.resource_datasets
+      ~AbstractInterpolatedResource.scale_factors
+      ~AbstractInterpolatedResource.shape
+      ~AbstractInterpolatedResource.shapes
+      ~AbstractInterpolatedResource.time_index
+      ~AbstractInterpolatedResource.units
+   
+   

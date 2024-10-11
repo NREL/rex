@@ -1,0 +1,6 @@
+rex.utilities.utilities.jsonify\_dict
+=====================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: jsonify_dict

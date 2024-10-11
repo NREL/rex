@@ -1,0 +1,65 @@
+rex.renewable\_resource.GeothermalResource
+==========================================
+
+.. currentmodule:: rex.renewable_resource
+
+.. autoclass:: GeothermalResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~GeothermalResource.close
+      ~GeothermalResource.df_str_decode
+      ~GeothermalResource.get_SAM_df
+      ~GeothermalResource.get_attrs
+      ~GeothermalResource.get_dset_properties
+      ~GeothermalResource.get_meta_arr
+      ~GeothermalResource.get_scale_factor
+      ~GeothermalResource.get_units
+      ~GeothermalResource.open_dataset
+      ~GeothermalResource.preload_SAM
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~GeothermalResource.ADD_ATTR
+      ~GeothermalResource.INTERPOLABLE_DSETS
+      ~GeothermalResource.LAPSE_RATES
+      ~GeothermalResource.SCALE_ATTR
+      ~GeothermalResource.UNIT_ATTR
+      ~GeothermalResource.VARIABLE_NAME
+      ~GeothermalResource.VARIABLE_UNIT
+      ~GeothermalResource.adders
+      ~GeothermalResource.attrs
+      ~GeothermalResource.chunks
+      ~GeothermalResource.coordinates
+      ~GeothermalResource.data_version
+      ~GeothermalResource.datasets
+      ~GeothermalResource.dsets
+      ~GeothermalResource.dtypes
+      ~GeothermalResource.global_attrs
+      ~GeothermalResource.groups
+      ~GeothermalResource.h5
+      ~GeothermalResource.lat_lon
+      ~GeothermalResource.meta
+      ~GeothermalResource.res_dsets
+      ~GeothermalResource.resource_datasets
+      ~GeothermalResource.scale_factors
+      ~GeothermalResource.shape
+      ~GeothermalResource.shapes
+      ~GeothermalResource.time_index
+      ~GeothermalResource.units
+   
+   

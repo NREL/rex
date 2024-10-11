@@ -1,0 +1,6 @@
+rex.utilities.bc\_parse\_table.parse\_bc\_table
+===============================================
+
+.. currentmodule:: rex.utilities.bc_parse_table
+
+.. autofunction:: parse_bc_table
