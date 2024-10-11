@@ -162,7 +162,8 @@ def qdm_irrad(ghi, dni, dhi,
               ghi_params_mh, dni_params_mh,
               ghi_params_mf=None, dni_params_mf=None,
               dist='empirical', relative=True,
-              sampling='linear', log_base=10):
+              sampling='linear', log_base=10,
+              delta_denom_min=None, delta_denom_zero=0.01):
     """Correct irradiance using the quantile delta mapping based on the method
     from Cannon et al., 2015
 
@@ -233,6 +234,18 @@ def qdm_irrad(ghi, dni, dhi,
         will concentrate more samples at the extreme sides of the
         distribution. Can also be a 1D array of dist inputs if being used from
         reV, but they must all be the same option.
+    delta_denom_min : float | None
+        Option to specify a minimum value for the denominator term in the
+        calculation of a relative delta value. This prevents division by a
+        very small number making delta blow up and resulting in very large
+        output bias corrected values. See equation 4 of Cannon et al., 2015
+        for the delta term.
+    delta_denom_zero : float | None
+        Option to specify a value to replace zeros in the denominator term
+        in the calculation of a relative delta value. This prevents
+        division by a very small number making delta blow up and resulting
+        in very large output bias corrected values. See equation 4 of
+        Cannon et al., 2015 for the delta term.
 
     Returns
     -------
@@ -249,11 +262,15 @@ def qdm_irrad(ghi, dni, dhi,
     ghi_qdm = QuantileDeltaMapping(ghi_params_oh, ghi_params_mh,
                                    ghi_params_mf, dist=dist,
                                    relative=relative, sampling=sampling,
-                                   log_base=log_base)
+                                   log_base=log_base,
+                                   delta_denom_min=delta_denom_min,
+                                   delta_denom_zero=delta_denom_zero)
     dni_qdm = QuantileDeltaMapping(dni_params_oh, dni_params_mh,
                                    dni_params_mf, dist=dist,
                                    relative=relative, sampling=sampling,
-                                   log_base=log_base)
+                                   log_base=log_base,
+                                   delta_denom_min=delta_denom_min,
+                                   delta_denom_zero=delta_denom_zero)
 
     # This will prevent inverse CDF functions from returning zero resulting in
     # a divide by zero error in the calculation of the QDM delta. These zeros
@@ -271,7 +288,8 @@ def qdm_irrad(ghi, dni, dhi,
 
 
 def qdm_ws(ws, params_oh, params_mh, params_mf=None, dist='empirical',
-           relative=True, sampling='linear', log_base=10):
+           relative=True, sampling='linear', log_base=10,
+           delta_denom_min=None, delta_denom_zero=0.01):
     """Correct windspeed using quantile delta mapping based on the method from
     Cannon et al., 2015
 
@@ -326,6 +344,18 @@ def qdm_ws(ws, params_oh, params_mh, params_mf=None, dist='empirical',
         will concentrate more samples at the extreme sides of the
         distribution. Can also be a 1D array of dist inputs if being used from
         reV, but they must all be the same option.
+    delta_denom_min : float | None
+        Option to specify a minimum value for the denominator term in the
+        calculation of a relative delta value. This prevents division by a
+        very small number making delta blow up and resulting in very large
+        output bias corrected values. See equation 4 of Cannon et al., 2015
+        for the delta term.
+    delta_denom_zero : float | None
+        Option to specify a value to replace zeros in the denominator term
+        in the calculation of a relative delta value. This prevents
+        division by a very small number making delta blow up and resulting
+        in very large output bias corrected values. See equation 4 of
+        Cannon et al., 2015 for the delta term.
 
     Returns
     -------
@@ -335,7 +365,9 @@ def qdm_ws(ws, params_oh, params_mh, params_mf=None, dist='empirical',
 
     qdm = QuantileDeltaMapping(params_oh, params_mh, params_mf, dist=dist,
                                relative=relative, sampling=sampling,
-                               log_base=log_base)
+                               log_base=log_base,
+                               delta_denom_min=delta_denom_min,
+                               delta_denom_zero=delta_denom_zero)
 
     # This will prevent inverse CDF functions from returning zero resulting in
     # a divide by zero error in the calculation of the QDM delta. These zeros
