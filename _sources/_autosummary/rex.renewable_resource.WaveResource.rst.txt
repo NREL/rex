@@ -1,0 +1,61 @@
+rex.renewable\_resource.WaveResource
+====================================
+
+.. currentmodule:: rex.renewable_resource
+
+.. autoclass:: WaveResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~WaveResource.close
+      ~WaveResource.df_str_decode
+      ~WaveResource.get_SAM_df
+      ~WaveResource.get_attrs
+      ~WaveResource.get_dset_properties
+      ~WaveResource.get_meta_arr
+      ~WaveResource.get_scale_factor
+      ~WaveResource.get_units
+      ~WaveResource.open_dataset
+      ~WaveResource.preload_SAM
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~WaveResource.ADD_ATTR
+      ~WaveResource.SCALE_ATTR
+      ~WaveResource.UNIT_ATTR
+      ~WaveResource.adders
+      ~WaveResource.attrs
+      ~WaveResource.chunks
+      ~WaveResource.coordinates
+      ~WaveResource.data_version
+      ~WaveResource.datasets
+      ~WaveResource.dsets
+      ~WaveResource.dtypes
+      ~WaveResource.global_attrs
+      ~WaveResource.groups
+      ~WaveResource.h5
+      ~WaveResource.lat_lon
+      ~WaveResource.meta
+      ~WaveResource.res_dsets
+      ~WaveResource.resource_datasets
+      ~WaveResource.scale_factors
+      ~WaveResource.shape
+      ~WaveResource.shapes
+      ~WaveResource.time_index
+      ~WaveResource.units
+   
+   

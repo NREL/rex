@@ -1,0 +1,6 @@
+rex.utilities.exceptions.ExecutionError
+=======================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: ExecutionError

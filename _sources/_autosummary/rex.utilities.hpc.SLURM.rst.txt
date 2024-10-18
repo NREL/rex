@@ -1,0 +1,53 @@
+rex.utilities.hpc.SLURM
+=======================
+
+.. currentmodule:: rex.utilities.hpc
+
+.. autoclass:: SLURM
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SLURM.change_qos
+      ~SLURM.check_status
+      ~SLURM.format_walltime
+      ~SLURM.hold
+      ~SLURM.make_path
+      ~SLURM.make_sh
+      ~SLURM.parse_queue_str
+      ~SLURM.query_queue
+      ~SLURM.release
+      ~SLURM.rm
+      ~SLURM.s
+      ~SLURM.sbatch
+      ~SLURM.scancel
+      ~SLURM.scontrol
+      ~SLURM.submit
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SLURM.MAX_NAME_LEN
+      ~SLURM.QCOL_ID
+      ~SLURM.QCOL_NAME
+      ~SLURM.QCOL_STATUS
+      ~SLURM.QSKIP
+      ~SLURM.SQ_FORMAT
+      ~SLURM.USER
+      ~SLURM.queue
+      ~SLURM.queue_job_ids
+      ~SLURM.queue_job_names
+   
+   

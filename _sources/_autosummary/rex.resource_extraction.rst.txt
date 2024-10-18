@@ -1,0 +1,36 @@
+rex.resource\_extraction
+========================
+
+.. automodule:: rex.resource_extraction
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   US_wave_cli
+   multi_year_resource_cli
+   nsrdb_cli
+   resource_cli
+   resource_extraction
+   wave_cli
+   wind_cli
+

@@ -1,0 +1,33 @@
+rex.utilities.loggers.LoggingAttributes
+=======================================
+
+.. currentmodule:: rex.utilities.loggers
+
+.. autoclass:: LoggingAttributes
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~LoggingAttributes.clear
+      ~LoggingAttributes.init_loggers
+      ~LoggingAttributes.set_logger
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~LoggingAttributes.logger_names
+      ~LoggingAttributes.loggers
+   
+   

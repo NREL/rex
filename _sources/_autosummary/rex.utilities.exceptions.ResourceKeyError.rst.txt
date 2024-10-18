@@ -1,0 +1,6 @@
+rex.utilities.exceptions.ResourceKeyError
+=========================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: ResourceKeyError

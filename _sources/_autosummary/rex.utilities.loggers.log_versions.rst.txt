@@ -1,0 +1,6 @@
+rex.utilities.loggers.log\_versions
+===================================
+
+.. currentmodule:: rex.utilities.loggers
+
+.. autofunction:: log_versions
