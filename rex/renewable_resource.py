@@ -901,6 +901,17 @@ class WindResource(AbstractInterpolatedResource):
     """
     Class to handle Wind BaseResource .h5 files
 
+    Notes
+    -----
+    Interpolation between hub-heights is performed using linear
+    interpolation. While wind follows a log profile macroscopically,
+    using power law interpolation doesn't allow for negative wind shear,
+    which we see often at the taller hub heights we care about. In other
+    words, power law interpolation is a bad assumption for near surface
+    wind, and linear interpolation is a much better approach.
+    Extrapolation beyond the resource data hub heights is still
+    performed using power law interpolation.
+
     See Also
     --------
     resource.AbstractInterpolatedResource : Parent class
@@ -1073,6 +1084,14 @@ class WindResource(AbstractInterpolatedResource):
         -------
         out : ndarray
             Time-series array at height h
+
+        Notes
+        -----
+        While wind follows a log profile macroscopically, using power
+        law interpolation doesn't allow for negative wind shear, which
+        we see often at the taller hub heights we care about. This means
+        yous should prefer linear interpolation over power law
+        interpolation when possible for near surface wind.
         """
         if h_1 > h_2:
             h_1, h_2 = h_2, h_1
@@ -1235,7 +1254,18 @@ class WindResource(AbstractInterpolatedResource):
         return super()._get_ds_interpolated(ds_name, ds_slice)
 
     def _get_calculated_ds(self, val, ds_name, var_name, ds_slice):
-        """Get interpolated/extrapolated values for the dataset. """
+        """Get interpolated/extrapolated values for the dataset.
+
+        Note that interpolation between hub-heights is performed using
+        linear interpolation. While wind follows a log profile
+        macroscopically, using power law interpolation doesn't allow for
+        negative wind shear, which we see often at the taller hub
+        heights we care about. In other words, power law interpolation
+        is a bad assumption for near surface wind, and linear
+        interpolation is a much better approach. Extrapolation beyond
+        the resource data hub heights is still performed using power law
+        interpolation.
+        """
         heights = self._interpolation_variable[var_name]
         (h1, h2), extrapolate = self._get_nearest_val(val, heights)
 
