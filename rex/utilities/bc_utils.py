@@ -107,7 +107,8 @@ class QuantileDeltaMapping:
 
     def __init__(self, params_oh, params_mh, params_mf, dist='empirical',
                  relative=True, sampling='linear', log_base=10,
-                 delta_denom_min=None, delta_denom_zero=None):
+                 delta_denom_min=None, delta_denom_zero=None,
+                 delta_range=None):
         """
         Parameters
         ----------
@@ -167,6 +168,11 @@ class QuantileDeltaMapping:
             division by a very small number making delta blow up and resulting
             in very large output bias corrected values. See equation 4 of
             Cannon et al., 2015 for the delta term.
+        delta_range : tuple | None
+            Option to set a (min, max) on the delta term in QDM. This can help
+            prevent QDM from making non-realistic increases/decreases in
+            otherwise physical values. See equation 4 of Cannon et al., 2015
+            for the delta term.
         """
 
         self.params_oh = params_oh
@@ -179,6 +185,7 @@ class QuantileDeltaMapping:
         self.scipy_dist = None
         self.delta_denom_min = delta_denom_min
         self.delta_denom_zero = delta_denom_zero
+        self.delta_range = delta_range
 
         if self.dist_name != 'empirical':
             self.scipy_dist = getattr(scipy.stats, self.dist_name, None)
@@ -303,7 +310,7 @@ class QuantileDeltaMapping:
     @classmethod
     def run_qdm(cls, arr, params_oh, params_mh, params_mf,
                 scipy_dist, relative, sampling, log_base, delta_denom_min,
-                delta_denom_zero):
+                delta_denom_zero, delta_range):
         """Run the actual QDM operation from args without initializing the
         ``QuantileDeltaMapping`` object
 
@@ -364,6 +371,11 @@ class QuantileDeltaMapping:
             division by a very small number making delta blow up and resulting
             in very large output bias corrected values. See equation 4 of
             Cannon et al., 2015 for the delta term.
+        delta_range : tuple | None
+            Option to set a (min, max) on the delta term in QDM. This can help
+            prevent QDM from making non-realistic increases/decreases in
+            otherwise physical values. See equation 4 of Cannon et al., 2015
+            for the delta term.
 
         Returns
         -------
@@ -401,9 +413,16 @@ class QuantileDeltaMapping:
             if delta_denom_min is not None:
                 x_mh_mf = np.maximum(x_mh_mf, delta_denom_min)
             delta = arr / x_mh_mf  # Eq.4: x_m_p / F-1_m_h(Tau_m_p)
+            if delta_range is not None:
+                delta = np.maximum(delta, np.min(delta_range))
+                delta = np.minimum(delta, np.max(delta_range))
             arr_bc = x_oh * delta  # Eq.6: x^_m_p = x^_o:m_h:p * delta
+
         else:
             delta = arr - x_mh_mf  # Eq.4: x_m_p - F-1_m_h(Tau_m_p)
+            if delta_range is not None:
+                delta = np.maximum(delta, np.min(delta_range))
+                delta = np.minimum(delta, np.max(delta_range))
             arr_bc = x_oh + delta  # Eq.6: x^_m_p = x^_o:m_h:p + delta
 
         return arr_bc
@@ -432,7 +451,8 @@ class QuantileDeltaMapping:
             arr_bc = self.run_qdm(arr, self.params_oh, self.params_mh,
                                   self.params_mf, self.scipy_dist,
                                   self.relative, self.sampling, self.log_base,
-                                  self.delta_denom_min, self.delta_denom_zero)
+                                  self.delta_denom_min, self.delta_denom_zero,
+                                  self.delta_range)
         else:
             max_workers = max_workers or os.cpu_count()
             sslices = np.array_split(np.arange(arr.shape[1]), arr.shape[1])
@@ -448,7 +468,7 @@ class QuantileDeltaMapping:
                                      self.params_mf[idx], self.scipy_dist,
                                      self.relative, self.sampling,
                                      self.log_base, self.delta_denom_min,
-                                     self.delta_denom_zero)
+                                     self.delta_denom_zero, self.delta_range)
                     futures[fut] = idx
                 for future in as_completed(futures):
                     idx = futures[future]
