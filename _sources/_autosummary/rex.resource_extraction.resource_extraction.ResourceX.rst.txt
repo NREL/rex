@@ -1,0 +1,69 @@
+rex.resource\_extraction.resource\_extraction.ResourceX
+=======================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: ResourceX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ResourceX.box_gids
+      ~ResourceX.close
+      ~ResourceX.get_SAM_gid
+      ~ResourceX.get_SAM_lat_lon
+      ~ResourceX.get_box_df
+      ~ResourceX.get_box_ts
+      ~ResourceX.get_gid_df
+      ~ResourceX.get_gid_ts
+      ~ResourceX.get_grid_vectors
+      ~ResourceX.get_lat_lon_df
+      ~ResourceX.get_lat_lon_ts
+      ~ResourceX.get_raster_index
+      ~ResourceX.get_region_df
+      ~ResourceX.get_region_ts
+      ~ResourceX.get_timestep_map
+      ~ResourceX.lat_lon_gid
+      ~ResourceX.make_SAM_files
+      ~ResourceX.region_gids
+      ~ResourceX.save_region
+      ~ResourceX.save_subset
+      ~ResourceX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ResourceX.attrs
+      ~ResourceX.coordinates
+      ~ResourceX.counties
+      ~ResourceX.countries
+      ~ResourceX.data_version
+      ~ResourceX.datasets
+      ~ResourceX.distance_threshold
+      ~ResourceX.dsets
+      ~ResourceX.global_attrs
+      ~ResourceX.groups
+      ~ResourceX.h5
+      ~ResourceX.lat_lon
+      ~ResourceX.meta
+      ~ResourceX.res_dsets
+      ~ResourceX.resource
+      ~ResourceX.resource_datasets
+      ~ResourceX.shape
+      ~ResourceX.states
+      ~ResourceX.time_index
+      ~ResourceX.tree
+   
+   

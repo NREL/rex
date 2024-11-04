@@ -1,0 +1,6 @@
+rex.utilities.utilities.res\_dist\_threshold
+============================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: res_dist_threshold

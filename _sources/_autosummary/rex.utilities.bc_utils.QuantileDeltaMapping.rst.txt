@@ -1,0 +1,26 @@
+rex.utilities.bc\_utils.QuantileDeltaMapping
+============================================
+
+.. currentmodule:: rex.utilities.bc_utils
+
+.. autoclass:: QuantileDeltaMapping
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~QuantileDeltaMapping.cdf
+      ~QuantileDeltaMapping.ppf
+      ~QuantileDeltaMapping.run_qdm
+   
+   
+
+   
+   
+   

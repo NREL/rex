@@ -1,0 +1,6 @@
+rex.utilities.utilities.parse\_table
+====================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: parse_table

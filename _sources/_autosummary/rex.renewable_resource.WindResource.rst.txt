@@ -1,0 +1,70 @@
+rex.renewable\_resource.WindResource
+====================================
+
+.. currentmodule:: rex.renewable_resource
+
+.. autoclass:: WindResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~WindResource.circular_interp
+      ~WindResource.close
+      ~WindResource.df_str_decode
+      ~WindResource.get_SAM_df
+      ~WindResource.get_attrs
+      ~WindResource.get_dset_properties
+      ~WindResource.get_meta_arr
+      ~WindResource.get_scale_factor
+      ~WindResource.get_units
+      ~WindResource.monin_obukhov_extrapolation
+      ~WindResource.open_dataset
+      ~WindResource.power_law_interp
+      ~WindResource.preload_SAM
+      ~WindResource.shortest_angle
+      ~WindResource.stability_function
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~WindResource.ADD_ATTR
+      ~WindResource.INTERPOLABLE_DSETS
+      ~WindResource.LAPSE_RATES
+      ~WindResource.SCALE_ATTR
+      ~WindResource.UNIT_ATTR
+      ~WindResource.VARIABLE_NAME
+      ~WindResource.VARIABLE_UNIT
+      ~WindResource.adders
+      ~WindResource.attrs
+      ~WindResource.chunks
+      ~WindResource.coordinates
+      ~WindResource.data_version
+      ~WindResource.datasets
+      ~WindResource.dsets
+      ~WindResource.dtypes
+      ~WindResource.global_attrs
+      ~WindResource.groups
+      ~WindResource.h5
+      ~WindResource.lat_lon
+      ~WindResource.meta
+      ~WindResource.res_dsets
+      ~WindResource.resource_datasets
+      ~WindResource.scale_factors
+      ~WindResource.shape
+      ~WindResource.shapes
+      ~WindResource.time_index
+      ~WindResource.units
+   
+   
