@@ -159,3 +159,11 @@ def test_difficult_qdm():
                                        delta_denom_min=0.01)
     arr_bc = qdm_rel_fut(arr[:, np.newaxis])
     assert arr_bc.max() < 40  # fixed result
+
+    # test that delta_range fixes this
+    qdm_rel_fut = QuantileDeltaMapping(params_oh, params_mh, params_mf,
+                                       dist='empirical', relative=True,
+                                       sampling='invlog', log_base=10,
+                                       delta_range=(0.5, 1.5))
+    arr_bc = qdm_rel_fut(arr[:, np.newaxis])
+    assert arr_bc.max() < (arr.max() * 1.5)  # fixed result
