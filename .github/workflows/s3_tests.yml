@@ -1,4 +1,4 @@
-name: h5pyd tests
+name: s3 fsspec tests
 
 on: pull_request
 
