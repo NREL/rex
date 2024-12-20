@@ -113,7 +113,9 @@ class WaveResource(BaseResource):
         Parameters
         ----------
         h5_file : str
-            h5_file to extract resource from
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
         sites : list
             List of sites to be provided to SAM
             (sites is synonymous with gids aka spatial indices)
@@ -126,7 +128,8 @@ class WaveResource(BaseResource):
             Group within .h5 resource file to open
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -173,7 +176,9 @@ class AbstractInterpolatedResource(BaseResource):
         Parameters
         ----------
         h5_file : str
-            Path to .h5 resource file
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
         mode : str, optional
             Mode to instantiate h5py.File instance, by default 'r'
         unscale : bool
@@ -193,7 +198,8 @@ class AbstractInterpolatedResource(BaseResource):
             option has no effect if data is available at multiple hub-heights.
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -709,7 +715,9 @@ class SolarResource(AbstractInterpolatedResource):
         Parameters
         ----------
         h5_file : str
-            h5_file to extract resource from
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
         sites : list
             List of sites to be provided to SAM
             (sites is synonymous with gids aka spatial indices)
@@ -722,7 +730,8 @@ class SolarResource(AbstractInterpolatedResource):
             Group within .h5 resource file to open
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -845,7 +854,9 @@ class NSRDB(SolarResource):
         Parameters
         ----------
         h5_file : str
-            h5_file to extract resource from
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
         sites : list
             List of sites to be provided to SAM
             (sites is synonymous with gids aka spatial indices)
@@ -858,7 +869,8 @@ class NSRDB(SolarResource):
             Group within .h5 resource file to open
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -1456,7 +1468,9 @@ class WindResource(AbstractInterpolatedResource):
         Parameters
         ----------
         h5_file : str
-            h5_file to extract resource from
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
         sites : list
             List of sites to be provided to SAM
             (sites is synonymous with gids aka spatial indices)
@@ -1471,7 +1485,8 @@ class WindResource(AbstractInterpolatedResource):
             Group within .h5 resource file to open
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -1601,7 +1616,9 @@ class GeothermalResource(AbstractInterpolatedResource):
         Parameters
         ----------
         h5_file : str
-            h5_file to extract resource from
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
         sites : list
             List of sites to be provided to SAM
             (sites is synonymous with gids aka spatial indices)
@@ -1616,7 +1633,8 @@ class GeothermalResource(AbstractInterpolatedResource):
             Group within .h5 resource file to open
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
