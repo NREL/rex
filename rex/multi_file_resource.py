@@ -4,7 +4,7 @@ Classes to handle resource data
 """
 import os
 from glob import glob
-import h5py
+import logging
 import numpy as np
 
 from rex.renewable_resource import (NSRDB, SolarResource, GeothermalResource,
@@ -13,6 +13,9 @@ from rex.renewable_resource import (NSRDB, SolarResource, GeothermalResource,
 from rex.resource import Resource, BaseDatasetIterable
 from rex.utilities.exceptions import FileInputError, ResourceRuntimeError
 from rex.utilities.utilities import unstupify_path
+
+
+logger = logging.getLogger(__name__)
 
 
 class MultiH5(BaseDatasetIterable):
@@ -59,8 +62,9 @@ class MultiH5(BaseDatasetIterable):
             h5 = self._h5_map[path]
             ds = h5[dset]
         else:
-            raise ValueError('{} is invalid must be one of: {}'
-                             .format(dset, self.datasets))
+            msg = f'{dset} is invalid must be one of: {self.datasets}'
+            logger.error(msg)
+            raise ValueError(msg)
 
         return ds
 
@@ -126,7 +130,7 @@ class MultiH5(BaseDatasetIterable):
         unique_dsets = []
         shared_dsets = []
         try:
-            with h5py.File(h5_path, mode='r') as f:
+            with Resource.open_file(h5_path, mode='r') as f:
                 for dset in Resource._get_datasets(f):
                     if dset not in ['meta', 'time_index', 'coordinates']:
                         unique_dsets.append(dset)
@@ -134,6 +138,7 @@ class MultiH5(BaseDatasetIterable):
                         shared_dsets.append(dset)
         except Exception as e:
             msg = ('Could not read file: "{}"'.format(h5_path))
+            logger.error(msg)
             raise IOError(msg) from e
 
         return unique_dsets, shared_dsets
@@ -183,7 +188,7 @@ class MultiH5(BaseDatasetIterable):
         """
         h5_map = {}
         for f_path in h5_files:
-            h5_map[f_path] = h5py.File(f_path, mode='r')
+            h5_map[f_path] = Resource.open_file(f_path, mode='r')
 
         return h5_map
 
@@ -218,6 +223,7 @@ class MultiH5(BaseDatasetIterable):
         if bad_files:
             msg = ("The following files' coordinates and time-index do not "
                    "match:\n{}".format(bad_files))
+            logger.error(msg)
             raise ResourceRuntimeError(msg)
 
     def close(self):
@@ -277,6 +283,7 @@ class MultiH5Path(MultiH5):
             msg = ('h5_path must be a unix shell style pattern with '
                    'wildcard * in order to find files, but received '
                    'directory specification: {}'.format(h5_path))
+            logger.error(msg)
             raise FileInputError(msg)
 
         file_paths = glob(h5_path)
@@ -284,6 +291,7 @@ class MultiH5Path(MultiH5):
         if not any(file_paths):
             msg = ('Could not find any file paths with pattern: {}'
                    .format(h5_path))
+            logger.error(msg)
             raise FileInputError(msg)
 
         return h5_path, file_paths
@@ -430,6 +438,7 @@ class MultiFileResource(AbstractInterpolatedResource):
         else:
             msg = ('Cannot initialize MultiH5 from {}, expecting a path or a '
                    'list of .h5 file paths'.format(type(h5_source)))
+            logger.error(msg)
             raise ResourceRuntimeError(msg)
 
         return multi_h5
