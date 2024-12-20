@@ -1200,7 +1200,7 @@ class BaseResource(BaseDatasetIterable):
         """
         if isinstance(file_path, (list, tuple)):
             file_path = file_path[0]
-        return file_path.startswith('/nrel/')
+        return str(file_path).startswith('/nrel/')
 
     @staticmethod
     def is_s3_file(file_path):
@@ -1218,7 +1218,7 @@ class BaseResource(BaseDatasetIterable):
         """
         if isinstance(file_path, (list, tuple)):
             file_path = file_path[0]
-        return file_path.startswith('s3://')
+        return str(file_path).startswith('s3://')
 
     def get_attrs(self, dset=None):
         """
