@@ -7,7 +7,7 @@ separate github action that sets up a local hsds server before running the
 test.
 """
 import numpy as np
-from rex import NSRDB, WindResource
+from rex import NSRDB, WindResource, MultiYearResource
 
 
 def test_nsrdb():
@@ -38,3 +38,14 @@ def test_sup3rcc():
         temp = res['temperature_2m', 0:10, 0]
         assert isinstance(dsets, list)
         assert isinstance(temp, np.ndarray)
+
+
+def test_multiyear():
+    """Test retrieving multi year NSRDB data"""
+    files = ["s3://nrel-pds-nsrdb/current/nsrdb_199*.h5"]
+    with MultiYearResource(files) as res:
+        dsets = res.dsets
+        ghi = res['ghi', 0:10, 0]
+        assert res.shape[0] == 35040  # 2x years at 30min (1998 and 1999)
+        assert isinstance(dsets, list)
+        assert isinstance(ghi, np.ndarray)

@@ -6,6 +6,7 @@ import os
 from glob import glob
 from itertools import chain
 from fnmatch import fnmatch
+import logging
 
 import numpy as np
 import pandas as pd
@@ -19,6 +20,9 @@ from rex.renewable_resource import (
 from rex.resource import Resource, BaseDatasetIterable
 from rex.utilities.exceptions import FileInputError
 from rex.utilities.parse_keys import parse_keys, parse_slice
+
+
+logger = logging.getLogger(__name__)
 
 
 class MultiTimeH5:
@@ -224,10 +228,22 @@ class MultiTimeH5:
         file_paths : list
             List of filepaths for this handler to handle.
         """
-        import h5pyd
+        try:
+            import h5pyd
+        except Exception as e:
+            msg = (f'Tried to open hsds file path: "{h5_path}" with '
+                   'h5pyd but could not import, try `pip install h5pyd`')
+            logger.error(msg)
+            raise ImportError(msg) from e
 
         if hsds_kwargs is None:
             hsds_kwargs = {}
+
+        if isinstance(h5_path, (list, tuple)):
+            msg = ('HSDS filepath must be a string, possibly with glob '
+                   'pattern, but received list/tuple')
+            logger.error(msg)
+            raise TypeError(msg)
 
         hsds_dir = os.path.dirname(h5_path)
         fn = os.path.basename(h5_path)
@@ -237,17 +253,60 @@ class MultiTimeH5:
                    'directory name! The directory must be explicit but the '
                    'filename can have wildcards. This HSDS h5_path input '
                    'cannot be used: {}'.format(h5_path))
+            logger.error(msg)
             raise FileNotFoundError(msg)
 
         if not fn:
             msg = ('h5_path must be a unix shell style pattern with '
                    'wildcard * in order to find files, but received '
                    'directory specification: {}'.format(h5_path))
+            logger.error(msg)
             raise FileInputError(msg)
 
         with h5pyd.Folder(hsds_dir + '/', **hsds_kwargs) as f:
             file_paths = [f'{hsds_dir}/{fn}' for fn in f
                           if fnmatch(f'{hsds_dir}/{fn}', h5_path)]
+
+        return file_paths
+
+    @staticmethod
+    def _get_s3_file_paths(h5_path):
+        """
+        Get a list of h5 filepaths matching the h5_path specification from s3
+
+        Parameters
+        ----------
+        h5_path : str
+            Unix shell style pattern path with * wildcards to multi-file
+            resource file sets. Files must have the same coordinates
+            but can have different datasets or time indexes.
+
+        Returns
+        -------
+        file_paths : list
+            List of filepaths for this handler to handle.
+        """
+        try:
+            import s3fs
+        except Exception as e:
+            msg = (f'Tried to open s3 file path: "{h5_path}" with '
+                   'fsspec but could not import, try '
+                   '`pip install fsspec s3fs`')
+            logger.error(msg)
+            raise ImportError(msg) from e
+
+        s3 = s3fs.S3FileSystem(anon=True)
+
+        if isinstance(h5_path, (list, tuple)):
+            file_paths = [s3.glob(fp) for fp in h5_path]
+            file_paths = list(chain.from_iterable(file_paths))
+        elif isinstance(h5_path, str):
+            file_paths = s3.glob(h5_path)
+
+        # s3fs glob drops prefix for some reason
+        for i, fp in enumerate(file_paths):
+            if not fp.startswith('s3://'):
+                file_paths[i] = f's3://{fp}'
 
         return file_paths
 
@@ -277,9 +336,11 @@ class MultiTimeH5:
             List of filepaths for this handler to handle.
         """
 
-        if hsds:
+        if Resource.is_hsds_file(h5_path) or hsds:
             file_paths = cls._get_hsds_file_paths(h5_path,
                                                   hsds_kwargs=hsds_kwargs)
+        elif Resource.is_s3_file(h5_path):
+            file_paths = cls._get_s3_file_paths(h5_path)
         elif isinstance(h5_path, (list, tuple)):
             file_paths = list(chain.from_iterable(glob(fp) for fp in h5_path))
             for fp in file_paths:

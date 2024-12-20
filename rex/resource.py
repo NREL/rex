@@ -1112,8 +1112,8 @@ class BaseResource(BaseDatasetIterable):
 
         return ds
 
-    @staticmethod
-    def open_file(file_path, mode='r', hsds=False, hsds_kwargs=None):
+    @classmethod
+    def open_file(cls, file_path, mode='r', hsds=False, hsds_kwargs=None):
         """Open a filepath to an h5, s3, or hsds nrel resource file with the
         appropriate python object.
 
@@ -1140,7 +1140,7 @@ class BaseResource(BaseDatasetIterable):
             file on s3 using h5py and fsspec, or the file on HSDS using h5pyd.
         """
 
-        if file_path.startswith('/nrel/') or hsds:
+        if cls.is_hsds_file(file_path) or hsds:
             if mode != 'r':
                 msg = 'Cannot write to files accessed via HSDS!'
                 logger.error(msg)
@@ -1160,7 +1160,7 @@ class BaseResource(BaseDatasetIterable):
             file = h5pyd.File(file_path, mode='r', use_cache=False,
                               **hsds_kwargs)
 
-        elif file_path.startswith('s3://'):
+        elif cls.is_s3_file(file_path):
             if mode != 'r':
                 msg = 'Cannot write to files accessed via s3/fsspec!'
                 logger.error(msg)
@@ -1183,6 +1183,42 @@ class BaseResource(BaseDatasetIterable):
             file = h5py.File(file_path, mode=mode)
 
         return file
+
+    @staticmethod
+    def is_hsds_file(file_path):
+        """Parse one or more filepath to determine if it is hsds
+
+        Parameters
+        ----------
+        file_path : str | list
+            One or more file paths (only the first is parsed if multiple)
+
+        Returns
+        -------
+        is_hsds_file : bool
+            True if hsds
+        """
+        if isinstance(file_path, (list, tuple)):
+            file_path = file_path[0]
+        return file_path.startswith('/nrel/')
+
+    @staticmethod
+    def is_s3_file(file_path):
+        """Parse one or more filepath to determine if it is s3
+
+        Parameters
+        ----------
+        file_path : str | list
+            One or more file paths (only the first is parsed if multiple)
+
+        Returns
+        -------
+        is_s3_file : bool
+            True if s3
+        """
+        if isinstance(file_path, (list, tuple)):
+            file_path = file_path[0]
+        return file_path.startswith('s3://')
 
     def get_attrs(self, dset=None):
         """
