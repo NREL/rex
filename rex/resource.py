@@ -1140,9 +1140,9 @@ class BaseResource(BaseDatasetIterable):
             file on s3 using h5py and fsspec, or the file on HSDS using h5pyd.
         """
 
-        if file_path.startswith('/hsds/') or hsds:
+        if file_path.startswith('/nrel/') or hsds:
             if mode != 'r':
-                msg = 'Cannot write to files accessed vias HSDS!'
+                msg = 'Cannot write to files accessed via HSDS!'
                 logger.error(msg)
                 raise OSError(msg)
 
@@ -1160,11 +1160,12 @@ class BaseResource(BaseDatasetIterable):
             file = h5pyd.File(file_path, mode='r', use_cache=False,
                               **hsds_kwargs)
 
-        if file_path.startswith('s3://'):
+        elif file_path.startswith('s3://'):
             if mode != 'r':
-                msg = 'Cannot write to files accessed vias HSDS!'
+                msg = 'Cannot write to files accessed via s3/fsspec!'
                 logger.error(msg)
                 raise OSError(msg)
+
             try:
                 import fsspec
             except Exception as e:
