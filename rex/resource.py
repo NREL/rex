@@ -1114,7 +1114,30 @@ class BaseResource(BaseDatasetIterable):
 
     @staticmethod
     def open_file(file_path, mode='r', hsds=False, hsds_kwargs=None):
-        """
+        """Open a filepath to an h5, s3, or hsds nrel resource file with the
+        appropriate python object.
+
+        Parameters
+        ----------
+        file_path : str
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
+        mode : str, optional
+            Mode to instantiate h5py.File instance, by default 'r'
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
+
+        Returns
+        -------
+        file : h5py.File | h5pyd.File
+            H5 file handler either opening the local file using h5py, or the
+            file on s3 using h5py and fsspec, or the file on HSDS using h5pyd.
         """
 
         if file_path.startswith('/hsds/') or hsds:
