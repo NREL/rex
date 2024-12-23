@@ -70,28 +70,23 @@ However, this method is slow. The most performant method is via ``HSDS``.
 or server for just the time or space domain you're interested in.
 
 See `this docs page <https://nrel.github.io/rex/misc/examples.fsspec.html>`_
-for easy (but slow) access of the source .h5 files on s3 with ``fsspec``.
+for easy (but slow) access of the source .h5 files on s3 with ``fsspec`` that
+requires basically zero setup. To find relevant S3 files, you can explore the
+S3 directory structure on `OEDI <https://openei.org/wiki/Main_Page>`_ or
+with the `AWS CLI <https://aws.amazon.com/cli/>`_
 
 See `this docs page <https://nrel.github.io/rex/misc/examples.hsds.html>`_ for
-instructions on how to set up HSDS and then continue on to the Data Access
-Examples section below.
+instructions on how to set up HSDS for more performant data access that
+requires a bit of setup. To find relevant HSDS files, you can use HSDS and
+h5pyd to explore the NREL public data directory listings. For example, if you
+are running an HSDS local server, you can use the CLI utility ``hsls``, for
+example, run: ``$ hsls /nrel/`` or ``$ hsls /nrel/nsrdb/v3/``. You can also use
+h5pyd to do the same thing. In a python kernel, ``import h5pyd`` and then run:
+``print(list(h5pyd.Folder('/nrel/')))`` to list the ``/nrel/`` directory.
 
 There is also an experiment with using `zarr
 <https://nrel.github.io/rex/misc/examples.zarr.html>`_, but the examples below
 may not work with these utilities and the zarr example is not regularly tested.
-
-To find relevant HSDS files, you can use HSDS and h5pyd to explore the NREL
-public data directory listings. For example, if you are running an HSDS local
-server, you can use the CLI utility ``hsls``, for example, run: ``$ hsls
-/nrel/`` or ``$ hsls /nrel/nsrdb/v3/``. You can also use h5pyd to do the same
-thing. In a python kernel, ``import h5pyd`` and then run:
-``print(list(h5pyd.Folder('/nrel/')))`` to list the ``/nrel/`` directory.
-
-Note that raw NREL .h5 data files are hosted on AWS S3. In contrast, the files
-on HSDS are not real "files". They are just domains that you can access with
-h5pyd or rex tools to stream small chunks of the files stored on S3. The
-multi-terabyte .h5 files on S3 would be incredibly cumbersome to access
-otherwise.
 
 The `Open Energy Data Initiative (OEDI) <https://openei.org/wiki/Main_Page>`_
 is also invaluable for finding the source s3 filepaths and for finding
@@ -104,7 +99,6 @@ Data Access Examples
 
 If you are on the NREL HPC, update the file paths with the relevant NREL HPC
 file paths in ``/datasets/``.
-
 
 If you are not at NREL, see the "Data Location - External Users" section above
 for S3 instructions or for how to setup HSDS and how to find the files that

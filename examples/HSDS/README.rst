@@ -1,7 +1,26 @@
 Highly Scalable Data Service (HSDS)
 ===================================
 
-`The Highly Scalable Data Service (HSDS) <https://www.hdfgroup.org/solutions/highly-scalable-data-service-hsds/>`_ is a cloud-optimized solution for storing and accessing HDF5 files, e.g. the NREL wind and solar datasets. You can access NREL data via HSDS in a few ways. Read below to find out more.
+`The Highly Scalable Data Service (HSDS)
+<https://www.hdfgroup.org/solutions/highly-scalable-data-service-hsds/>`_ is a
+cloud-optimized solution for storing and accessing HDF5 files, e.g. the NREL
+wind and solar datasets. You can access NREL data via HSDS in a few ways. Read
+below to find out more.
+
+Note that raw NREL .h5 data files are hosted on AWS S3. In contrast, the files
+on HSDS are not real "files". They are just domains that you can access with
+h5pyd or rex tools to stream small chunks of the files stored on S3. The
+multi-terabyte .h5 files on S3 would be incredibly cumbersome to access
+otherwise.
+
+Extra Requirements
+------------------
+
+You may need some additional software beyond the basic ``rex`` install to run this example:
+
+.. code-block:: bash
+
+    pip install NREL-rex[hsds]
 
 NREL Developer API
 ------------------

@@ -5,13 +5,6 @@ Installation
    :start-after: Installing rex
    :end-before: Recommended Citation
 
-Usage on Eagle
-==============
-
-.. include:: ../../../README.rst
-   :start-after: Using Eagle Env
-   :end-before: Installing rex
-
 Command Line Tools
 ==================
 

@@ -1150,7 +1150,8 @@ class BaseResource(BaseDatasetIterable):
                 import h5pyd
             except Exception as e:
                 msg = (f'Tried to open hsds file path: "{file_path}" with '
-                       'h5pyd but could not import, try `pip install h5pyd`')
+                       'h5pyd but could not import, try '
+                       '`pip install NREL-rex[hsds]`')
                 logger.error(msg)
                 raise ImportError(msg) from e
 
@@ -1171,7 +1172,7 @@ class BaseResource(BaseDatasetIterable):
             except Exception as e:
                 msg = (f'Tried to open s3 file path: "{file_path}" with '
                        'fsspec but could not import, try '
-                       '`pip install fsspec s3fs`')
+                       '`pip install NREL-rex[s3]`')
                 logger.error(msg)
                 raise ImportError(msg) from e
 

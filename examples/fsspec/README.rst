@@ -12,14 +12,14 @@ You may need some additional software beyond the basic ``rex`` install to run th
 
 .. code-block:: bash
 
-    pip install fsspec s3fs
+    pip install NREL-rex[s3]
 
 Code Example
 ------------
 
-To open an .h5 file hosted on AWS S3, simply use a path to an S3 resource.:
+To open an .h5 file hosted on AWS S3, simply use a path to an S3 resource with any of the ``rex`` file handlers:
 
-- Change ``fp`` to your desired AWS .h5 resource paths (find the s3 paths on `Open Energy Data Initiative (OEDI) <https://openei.org/wiki/Main_Page>`_).
+- Change ``fp`` to your desired AWS .h5 resource paths (find the s3 paths on `OEDI <https://openei.org/wiki/Main_Page>`_ or with the `AWS CLI <https://aws.amazon.com/cli/>`_).
 - Running this example on a laptop, it takes ~14 seconds to read the meta data, and another ~14 seconds to read the GHI timeseries. This may be faster when running on AWS services in the same region hosting the .h5 file. It is much slower when running on the NREL VPN.
 
 .. code-block:: python

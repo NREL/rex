@@ -232,7 +232,8 @@ class MultiTimeH5:
             import h5pyd
         except Exception as e:
             msg = (f'Tried to open hsds file path: "{h5_path}" with '
-                   'h5pyd but could not import, try `pip install h5pyd`')
+                   'h5pyd but could not import, try '
+                   '`pip install NREL-rex[hsds]`')
             logger.error(msg)
             raise ImportError(msg) from e
 
@@ -291,7 +292,7 @@ class MultiTimeH5:
         except Exception as e:
             msg = (f'Tried to open s3 file path: "{h5_path}" with '
                    'fsspec but could not import, try '
-                   '`pip install fsspec s3fs`')
+                   '`pip install NREL-rex[s3]`')
             logger.error(msg)
             raise ImportError(msg) from e
 
