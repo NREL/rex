@@ -242,7 +242,7 @@ class MultiTimeH5:
 
         if isinstance(h5_path, (list, tuple)):
             msg = ('HSDS filepath must be a string, possibly with glob '
-                   'pattern, but received list/tuple')
+                   f'pattern, but received list/tuple: {h5_path}')
             logger.error(msg)
             raise TypeError(msg)
 
