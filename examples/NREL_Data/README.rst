@@ -62,7 +62,7 @@ Data Location - External Users
 ------------------------------
 
 If you are not at NREL, you can't just download these files. They are massive
-and downloading the full files would crash your computer.  the easiest way to
+and downloading the full files would crash your computer. The easiest way to
 access this data is probably with ``fsspec``, which allows you to access files
 directly on S3 with only one additional installation and no server setup.
 However, this method is slow. The most performant method is via ``HSDS``.
