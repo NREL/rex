@@ -26,7 +26,7 @@ Definitions
  - ``h5pyd`` - The python library that provides the HDF REST interface to NREL data hosted on the cloud. This allows for the public to access small parts of large cloud-hosted datasets. See the `h5pyd <https://github.com/HDFGroup/h5pyd>`_ library for more details.
  - ``hsds`` - The highly scalable data service (HSDS) that we recommend to access small chunks of very large cloud-hosted NREL datasets. See the `hsds <https://github.com/HDFGroup/hsds>`_ library for more details.
  - ``meta`` - The ``dataset`` in an NREL h5 file that contains information about the spatial axis. This is typically a `pandas DataFrame <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_ with columns such as "latitude", "longitude", "state", etc... The DataFrame is typically converted to a records array for storage in an h5 ``dataset``. The length of the meta data should match the length of axis 1 of a 2D spatiotemporal ``dataset``.
- - ``S3`` - Amazon Simple Storage Service (S3) is a basic cloud file storage system we use to store raw .h5 files in their full volume. Downloading files directly from S3 may not be the easiest way to access the data because each file tends to be multiple terabytes. Instead, you can stream small chunks of the files via HSDS. 
+ - ``S3`` - Amazon Simple Storage Service (S3) is a basic cloud file storage system we use to store raw .h5 files in their full volume. Downloading files directly from S3 may not be the easiest way to access the data because each file tends to be multiple terabytes. Instead, you can stream small chunks of the files via HSDS.
  - ``scale_factor`` - We frequently scale data by a multiplicative factor, round the data to integer precision, and store the data in integer arrays. The ``scale_factor`` is an attribute associated with the relevant h5 ``dataset`` that defines the multiplicative factor required to unscale the data from integer storage to the original physical units.
  - ``time_index`` - The ``dataset`` in an NREL h5 file that contains information about the temporal axis. This is typically a `pandas DatetimeIndex <https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html>`_ that has been converted to a string array for storage in an h5 ``dataset``. The length of this ``dataset`` should match the length of axis 0 of a 2D spatiotemporal ``dataset``.
 
@@ -56,44 +56,54 @@ This datasets directory should not be confused with a ``dataset`` from an h5
 file.
 
 When using the ``rex`` examples below, update the file paths with the relevant
-NREL HPC file paths in ``/datasets/`` and set ``hsds=False``.
+NREL HPC file paths in ``/datasets/``.
 
 Data Location - External Users
 ------------------------------
 
-If you are not at NREL, the easiest way to access this data is via HSDS. These
-files are massive and downloading the full files would crash your computer.
-HSDS provides a solution to stream small chunks of the data to your laptop or
-server for just the time or space domain you're interested in.
+If you are not at NREL, you can't just download these files. They are massive
+and downloading the full files would crash your computer. The easiest way to
+access this data is probably with ``fsspec``, which allows you to access files
+directly on S3 with only one additional installation and no server setup.
+However, this method is slow. The most performant method is via ``HSDS``.
+``HSDS`` provides a solution to stream small chunks of the data to your laptop
+or server for just the time or space domain you're interested in.
+
+See `this docs page <https://nrel.github.io/rex/misc/examples.fsspec.html>`_
+for easy (but slow) access of the source .h5 files on s3 with ``fsspec`` that
+requires basically zero setup. To find relevant S3 files, you can explore the
+S3 directory structure on `OEDI <https://openei.org/wiki/Main_Page>`_ or
+with the `AWS CLI <https://aws.amazon.com/cli/>`_
 
 See `this docs page <https://nrel.github.io/rex/misc/examples.hsds.html>`_ for
-instructions on how to set up HSDS and then continue on to the Data Access
-Examples section below.
-
-To find relevant HSDS files, you can use HSDS and h5pyd to explore the NREL
-public data directory listings. For example, if you are running an HSDS local
-server, you can use the CLI utility ``hsls``, for example, run: ``$ hsls
-/nrel/`` or ``$ hsls /nrel/nsrdb/v3/``. You can also use h5pyd to do the same
-thing. In a python kernel, ``import h5pyd`` and then run:
+instructions on how to set up HSDS for more performant data access that
+requires a bit of setup. To find relevant HSDS files, you can use HSDS and
+h5pyd to explore the NREL public data directory listings. For example, if you
+are running an HSDS local server, you can use the CLI utility ``hsls``, for
+example, run: ``$ hsls /nrel/`` or ``$ hsls /nrel/nsrdb/v3/``. You can also use
+h5pyd to do the same thing. In a python kernel, ``import h5pyd`` and then run:
 ``print(list(h5pyd.Folder('/nrel/')))`` to list the ``/nrel/`` directory.
 
+There is also an experiment with using `zarr
+<https://nrel.github.io/rex/misc/examples.zarr.html>`_, but the examples below
+may not work with these utilities and the zarr example is not regularly tested.
+
 The `Open Energy Data Initiative (OEDI) <https://openei.org/wiki/Main_Page>`_
-is also invaluable in finding energy-relevant public datasets that are not
-necessarily spatiotemporal h5 data.
+is also invaluable for finding the source s3 filepaths and for finding
+energy-relevant public datasets that are not necessarily spatiotemporal h5
+data.
 
-Note that raw NREL .h5 data files are hosted on AWS S3. In contrast, the files on HSDS are not real "files". They are just domains that you can access with h5pyd or rex tools to stream small chunks of the files stored on S3. The multi-terabyte .h5 files on S3 would be incredibly cumbersome to access otherwise. 
-
-We have also experimented with external data access using `fsspec <https://nrel.github.io/rex/misc/examples.fsspec.html>`_ and `zarr <https://nrel.github.io/rex/misc/examples.zarr.html>`_, but the examples below may not work with these utilities.
 
 Data Access Examples
 --------------------
 
-If you are on the NREL HPC, update the file paths in the examples below and set
-``hsds=False``.
+If you are on the NREL HPC, update the file paths with the relevant NREL HPC
+file paths in ``/datasets/``.
 
 If you are not at NREL, see the "Data Location - External Users" section above
-for how to setup HSDS and how to find the files that you're interested in. Then
-update the file paths to the files you want and keep ``hsds=True``.
+for S3 instructions or for how to setup HSDS and how to find the files that
+you're interested in. Then update the file paths to the files you want either
+on HSDS or S3.
 
 The rex Resource Class
 ++++++++++++++++++++++
@@ -105,7 +115,7 @@ retrieve ``time_index`` and ``meta`` datasets in their native pandas datatypes.
 .. code-block:: python
 
     from rex import Resource
-    with Resource('/nrel/nsrdb/current/nsrdb_2020.h5', hsds=True) as res:
+    with Resource('/nrel/nsrdb/current/nsrdb_2020.h5') as res:
         ghi = res['ghi', :, 500]
         print(res.dsets)
         print(res.attrs['ghi'])
@@ -131,7 +141,7 @@ windspeed is not available as a ``dataset``:
 .. code-block:: python
 
     from rex import WindResource
-    with WindResource('/nrel/wtk/conus/wtk_conus_2007.h5', hsds=True) as res:
+    with WindResource('/nrel/wtk/conus/wtk_conus_2007.h5') as res:
         ws88 = res['windspeed_88m', :, 1000]
         print(res.dsets)
         print(ws88)
@@ -150,7 +160,7 @@ for a requested coordinate:
 .. code-block:: python
 
     from rex import ResourceX
-    with ResourceX('/nrel/wtk/conus/wtk_conus_2007.h5', hsds=True) as res:
+    with ResourceX('/nrel/wtk/conus/wtk_conus_2007.h5') as res:
         df = res.get_lat_lon_df('temperature_2m', (39.7407, -105.1686))
         print(df)
 
@@ -170,7 +180,7 @@ the System Advisor Model (SAM). For example, try:
 .. code-block:: python
 
     from rex import SolarX
-    with SolarX('/nrel/nsrdb/current/nsrdb_2020.h5', hsds=True) as res:
+    with SolarX('/nrel/nsrdb/current/nsrdb_2020.h5') as res:
         df = res.get_SAM_lat_lon((39.7407, -105.1686))
         print(df)
 

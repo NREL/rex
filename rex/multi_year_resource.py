@@ -31,14 +31,16 @@ class MultiYearH5(MultiTimeH5):
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes.
+            but can have different datasets or time indexes. Can also be a path
+            on HSDS starting with /nrel/ or a path on s3 starting with s3://
         years : list, optional
             List of integer years to access, by default None
         res_cls : obj
             Resource class to use to open and access resource data
         hsds : bool
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -416,7 +418,8 @@ class MultiYearResource(MultiTimeResource):
             resource file sets. Files must have the same coordinates
             but can have different datasets or time indexes. Can also be
             an explicit list of multi time files, which themselves can
-            contain * wildcards.
+            contain * wildcards. Can also be a path on HSDS starting with
+            /nrel/ or a path on s3 starting with s3://
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -428,7 +431,8 @@ class MultiYearResource(MultiTimeResource):
             Resource handler to us to open individual .h5 files
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -469,7 +473,8 @@ class MultiYearSolarResource:
         h5_path : str
             Unix shell style pattern path with * wildcards to multi-file
             resource file sets. Files must have the same coordinates
-            but can have different datasets or time indexes.
+            but can have different datasets or time indexes. Can also be a path
+            on HSDS starting with /nrel/ or a path on s3 starting with s3://
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -479,7 +484,8 @@ class MultiYearSolarResource:
             strings. Setting this to False will speed up the meta data read.
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -505,7 +511,8 @@ class MultiYearNSRDB(MultiYearResource):
             resource file sets. Files must have the same coordinates
             but can have different datasets or time indexes. Can also be
             an explicit list of multi time files, which themselves can
-            contain * wildcards.
+            contain * wildcards. Can also be a path on HSDS starting with
+            /nrel/ or a path on s3 starting with s3://
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -515,7 +522,8 @@ class MultiYearNSRDB(MultiYearResource):
             strings. Setting this to False will speed up the meta data read.
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -541,7 +549,8 @@ class MultiYearWindResource(MultiYearResource):
             resource file sets. Files must have the same coordinates
             but can have different datasets or time indexes. Can also be
             an explicit list of multi time files, which themselves can
-            contain * wildcards.
+            contain * wildcards. Can also be a path on HSDS starting with
+            /nrel/ or a path on s3 starting with s3://
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -551,7 +560,8 @@ class MultiYearWindResource(MultiYearResource):
             strings. Setting this to False will speed up the meta data read.
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -577,7 +587,8 @@ class MultiYearWaveResource(MultiYearResource):
             resource file sets. Files must have the same coordinates
             but can have different datasets or time indexes. Can also be
             an explicit list of multi time files, which themselves can
-            contain * wildcards.
+            contain * wildcards. Can also be a path on HSDS starting with
+            /nrel/ or a path on s3 starting with s3://
         years : list, optional
             List of years to access, by default None
         unscale : bool
@@ -587,7 +598,8 @@ class MultiYearWaveResource(MultiYearResource):
             strings. Setting this to False will speed up the meta data read.
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None

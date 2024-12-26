@@ -4,6 +4,7 @@ Classes to handle resource data
 """
 import os
 from abc import ABC, abstractmethod
+import logging
 from warnings import warn
 
 import dateutil
@@ -15,6 +16,9 @@ from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import check_tz, get_lat_lon_cols
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseDatasetIterable(ABC):
@@ -214,6 +218,7 @@ class ResourceDataset:
                 msg = ('shape mismatch: indexing arrays could not be '
                        'broadcast together with shapes {}'
                        .format(['({},)'.format(ln) for ln in list_len]))
+                logger.error(msg)
                 raise IndexError(msg)
             list_len = list_len[0]
         else:
@@ -507,6 +512,7 @@ class ResourceDataset:
                         'limits, especially if you are using an NREL '
                         'developer API key. For more details, see: '
                         'https://nrel.github.io/rex/misc/examples.hsds.html')
+            logger.error(msg)
             raise ResourceRuntimeError(msg) from e
 
         # check to see if idx_slice needs to be applied
@@ -610,7 +616,9 @@ class BaseResource(BaseDatasetIterable):
         Parameters
         ----------
         h5_file : str
-            Path to .h5 resource file
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
         mode : str, optional
             Mode to instantiate h5py.File instance, by default 'r'
         unscale : bool, optional
@@ -624,29 +632,21 @@ class BaseResource(BaseDatasetIterable):
             Group within .h5 resource file to open, by default None
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
         """
         self.h5_file = h5_file
-        if hsds:
-            if mode != 'r':
-                raise OSError('Cannot write to files accessed vias HSDS!')
 
-            import h5pyd
-            if hsds_kwargs is None:
-                hsds_kwargs = {}
-
-            self._h5 = h5pyd.File(self.h5_file, mode='r', use_cache=False,
-                                  **hsds_kwargs)
-        else:
-            try:
-                self._h5 = h5py.File(self.h5_file, mode=mode)
-            except Exception as e:
-                msg = ('Could not open file in mode "{}": "{}"'
-                       .format(mode, self.h5_file))
-                raise OSError(msg) from e
+        try:
+            self._h5 = self.open_file(h5_file, mode=mode, hsds=hsds,
+                                      hsds_kwargs=hsds_kwargs)
+        except Exception as e:
+            msg = f'Could not open file in mode "{mode}": "{h5_file}"'
+            logger.error(msg)
+            raise OSError(msg) from e
 
         self._group = group
         self._unscale = unscale
@@ -695,6 +695,7 @@ class BaseResource(BaseDatasetIterable):
                 out = self.get_SAM_df(site)  # pylint: disable=E1111
             else:
                 msg = "Can only extract SAM DataFrame for a single site"
+                logger.error(msg)
                 raise ResourceRuntimeError(msg)
 
         else:
@@ -840,7 +841,9 @@ class BaseResource(BaseDatasetIterable):
             if 'meta' in self.h5:
                 self._meta = self._get_meta('meta', slice(None))
             else:
-                raise ResourceKeyError("'meta' is not a valid dataset")
+                msg = "'meta' is not a valid dataset"
+                logger.error(msg)
+                raise ResourceKeyError(msg)
 
         return self._meta
 
@@ -858,7 +861,9 @@ class BaseResource(BaseDatasetIterable):
                 self._time_index = self._get_time_index('time_index',
                                                         slice(None))
             else:
-                raise ResourceKeyError("'time_index' is not a valid dataset!")
+                msg = "'time_index' is not a valid dataset!"
+                logger.error(msg)
+                raise ResourceKeyError(msg)
 
         return self._time_index
 
@@ -1098,13 +1103,123 @@ class BaseResource(BaseDatasetIterable):
             Resource for open resource dataset
         """
         if ds_name not in self.datasets:
-            raise ResourceKeyError('{} not in {}'
-                                   .format(ds_name, self.datasets))
+            msg = '{} not in {}'.format(ds_name, self.datasets)
+            logger.error(msg)
+            raise ResourceKeyError(msg)
 
         ds = ResourceDataset(self.h5[ds_name], scale_attr=self.SCALE_ATTR,
                              add_attr=self.ADD_ATTR, unscale=self._unscale)
 
         return ds
+
+    @classmethod
+    def open_file(cls, file_path, mode='r', hsds=False, hsds_kwargs=None):
+        """Open a filepath to an h5, s3, or hsds nrel resource file with the
+        appropriate python object.
+
+        Parameters
+        ----------
+        file_path : str
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
+        mode : str, optional
+            Mode to instantiate h5py.File instance, by default 'r'
+        hsds : bool, optional
+            Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+            password, by default None
+
+        Returns
+        -------
+        file : h5py.File | h5pyd.File
+            H5 file handler either opening the local file using h5py, or the
+            file on s3 using h5py and fsspec, or the file on HSDS using h5pyd.
+        """
+
+        if cls.is_hsds_file(file_path) or hsds:
+            if mode != 'r':
+                msg = 'Cannot write to files accessed via HSDS!'
+                logger.error(msg)
+                raise OSError(msg)
+
+            try:
+                import h5pyd
+            except Exception as e:
+                msg = (f'Tried to open hsds file path: "{file_path}" with '
+                       'h5pyd but could not import, try '
+                       '`pip install NREL-rex[hsds]`')
+                logger.error(msg)
+                raise ImportError(msg) from e
+
+            if hsds_kwargs is None:
+                hsds_kwargs = {}
+
+            file = h5pyd.File(file_path, mode='r', use_cache=False,
+                              **hsds_kwargs)
+
+        elif cls.is_s3_file(file_path):
+            if mode != 'r':
+                msg = 'Cannot write to files accessed via s3/fsspec!'
+                logger.error(msg)
+                raise OSError(msg)
+
+            try:
+                import fsspec
+            except Exception as e:
+                msg = (f'Tried to open s3 file path: "{file_path}" with '
+                       'fsspec but could not import, try '
+                       '`pip install NREL-rex[s3]`')
+                logger.error(msg)
+                raise ImportError(msg) from e
+
+            s3f = fsspec.open(file_path, mode='rb', anon=True,
+                              default_fill_cache=False)
+            file = h5py.File(s3f.open(), mode=mode)
+
+        else:
+            file = h5py.File(file_path, mode=mode)
+
+        return file
+
+    @staticmethod
+    def is_hsds_file(file_path):
+        """Parse one or more filepath to determine if it is hsds
+
+        Parameters
+        ----------
+        file_path : str | list
+            One or more file paths (only the first is parsed if multiple)
+
+        Returns
+        -------
+        is_hsds_file : bool
+            True if hsds
+        """
+        if isinstance(file_path, (list, tuple)):
+            file_path = file_path[0]
+        return str(file_path).startswith('/nrel/')
+
+    @staticmethod
+    def is_s3_file(file_path):
+        """Parse one or more filepath to determine if it is s3
+
+        Parameters
+        ----------
+        file_path : str | list
+            One or more file paths (only the first is parsed if multiple)
+
+        Returns
+        -------
+        is_s3_file : bool
+            True if s3
+        """
+        if isinstance(file_path, (list, tuple)):
+            file_path = file_path[0]
+        return str(file_path).startswith('s3://')
 
     def get_attrs(self, dset=None):
         """
@@ -1209,7 +1324,9 @@ class BaseResource(BaseDatasetIterable):
             if self._str_decode and np.issubdtype(meta_arr.dtype, np.bytes_):
                 meta_arr = np.char.decode(meta_arr, encoding='utf-8')
         else:
-            raise ResourceKeyError("'meta' is not a valid dataset")
+            msg = "'meta' is not a valid dataset"
+            logger.error(msg)
+            raise ResourceKeyError(msg)
 
         return meta_arr
 
@@ -1320,6 +1437,7 @@ class BaseResource(BaseDatasetIterable):
         """
         msg = ('Method to retrieve SAM dataframe not implemented for vanilla '
                'Resource handler. Use an NSRDB or WTK handler instead.')
+        logger.error(msg)
         raise NotImplementedError(msg)
 
     def _get_ds(self, ds_name, ds_slice):
@@ -1341,8 +1459,9 @@ class BaseResource(BaseDatasetIterable):
             If unscale, returned in native units else in scaled units
         """
         if ds_name not in self.datasets:
-            raise ResourceKeyError('{} not in {}'
-                                   .format(ds_name, self.datasets))
+            msg = '{} not in {}'.format(ds_name, self.datasets)
+            logger.error(msg)
+            raise ResourceKeyError(msg)
 
         ds = self.h5[ds_name]
         ds_slice = parse_slice(ds_slice)
@@ -1383,6 +1502,7 @@ class BaseResource(BaseDatasetIterable):
                    "the length of the meta and/or index, set the shape of "
                    "{!r} to be 2-dimensional (current shape: {!r}), or use a "
                    "1-dimensional slice.".format(ds_name, ds.shape))
+            logger.error(msg)
             raise ResourceRuntimeError(msg)
 
         if ds.shape == ti_shape:
@@ -1396,6 +1516,7 @@ class BaseResource(BaseDatasetIterable):
                "update the length of ({0!r}) to match either the meta or "
                "index, or use a 1-dimensional slice."
                .format(ds_name, ds.shape, meta_shape, ti_shape))
+        logger.error(msg)
         raise ResourceRuntimeError(msg)
 
     def _get_ds_with_spatial_repeat(self, ds, ds_name, ds_slice):
@@ -1523,7 +1644,9 @@ class BaseResource(BaseDatasetIterable):
         Parameters
         ----------
         h5_file : str
-            h5_file to extract resource from
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
         sites : list
             List of sites to be provided to SAM
             (sites is synonymous with gids aka spatial indices)
@@ -1538,7 +1661,8 @@ class BaseResource(BaseDatasetIterable):
             Group within .h5 resource file to open
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
@@ -1750,7 +1874,9 @@ class Resource(BaseResource):
         Parameters
         ----------
         h5_file : str
-            Path to .h5 resource file
+            String filepath to .h5 file to extract resource from. Can also
+            be a path to an HSDS file (starts with /nrel/) or S3 file
+            (starts with s3://)
         unscale : bool, optional
             Boolean flag to automatically unscale variables on extraction,
             by default True
@@ -1762,7 +1888,8 @@ class Resource(BaseResource):
             Group within .h5 resource file to open, by default None
         hsds : bool, optional
             Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
-            behind HSDS, by default False
+            behind HSDS, by default False. This is now redundant; file paths
+            starting with /nrel/ will be treated as hsds=True by default
         hsds_kwargs : dict, optional
             Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
             password, by default None
