@@ -1,0 +1,36 @@
+rex.multi\_year\_resource
+=========================
+
+.. automodule:: rex.multi_year_resource
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      MultiYearH5
+      MultiYearNSRDB
+      MultiYearResource
+      MultiYearSolarResource
+      MultiYearWaveResource
+      MultiYearWindResource
+   
+   
+
+   
+   
+   
+
+
+

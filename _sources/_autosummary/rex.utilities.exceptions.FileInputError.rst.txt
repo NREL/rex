@@ -1,0 +1,6 @@
+rex.utilities.exceptions.FileInputError
+=======================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: FileInputError
