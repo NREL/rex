@@ -1024,7 +1024,7 @@ class ResourceX(BaseDatasetIterable):
 
         return ts_map
 
-    def get_grid_vectors(self, target, meta=None):
+    def get_grid_vectors(self, target, meta=None, tol=1e-4):
         """Get vectors representing pure horizontal/vertical movements in the
         meta data coordinate system. Note that this can break down if a target
         is requested outside of the main grid area.
@@ -1037,6 +1037,8 @@ class ResourceX(BaseDatasetIterable):
         meta : pd.DataFrame | None
             Optional meta data input with latitude, longitude fields. Default
             is None which extracts self.meta from the resource data.
+        tol : float
+            Tolerance on the target in decimal degrees
 
         Returns
         -------
@@ -1058,10 +1060,10 @@ class ResourceX(BaseDatasetIterable):
 
         meta = meta if meta is not None else self.meta
 
-        out_of_bounds = ((target[0] > meta['latitude']).all()
-                         | (target[0] < meta['latitude']).all()
-                         | (target[1] > meta['longitude']).all()
-                         | (target[1] < meta['longitude']).all())
+        out_of_bounds = ((target[0] > meta['latitude'] + tol).all()
+                         | (target[0] < meta['latitude'] - tol).all()
+                         | (target[1] > meta['longitude'] + tol).all()
+                         | (target[1] < meta['longitude'] - tol).all())
         if out_of_bounds:
             msg = ('Target {} is outside of meta data extent with latitude '
                    'range {} to {} and longitude range {} to {}'
@@ -1259,7 +1261,8 @@ class ResourceX(BaseDatasetIterable):
 
         return raster_index, start_xy, point_x, point_y, end_xy
 
-    def get_raster_index(self, target, shape, meta=None, max_delta=50):
+    def get_raster_index(self, target, shape, meta=None, max_delta=50,
+                         tol=1e-4):
         """Get meta data index values that correspond to a 2D rectangular grid
         of the requested shape starting with the target coordinate in the
         bottom left hand corner. Note that this can break down if a target is
@@ -1280,6 +1283,8 @@ class ResourceX(BaseDatasetIterable):
             once. If shape is (20, 20) and max_delta=10, the full raseter will
             be retrieved in four chunks of (10, 10). This helps adapt to
             non-regular grids that curve over large distances.
+        tol : float
+            Tolerance on the target in decimal degrees
 
         Returns
         -------
@@ -1294,7 +1299,7 @@ class ResourceX(BaseDatasetIterable):
         raster_index = np.zeros(shape, dtype=int)
 
         next_target = None
-        gid_target = self.get_grid_vectors(target, meta=meta)[0]
+        gid_target = self.get_grid_vectors(target, meta=meta, tol=tol)[0]
 
         # chunk the row (i) and columns (j) rasters
         i_split = int(np.ceil(shape[0] / max_delta))
@@ -1316,7 +1321,7 @@ class ResourceX(BaseDatasetIterable):
                 # get the grid vectors using the gid_target from the
                 # previous raster chunk
                 gid_target, vec_dx, vec_dy, _ = self.get_grid_vectors(
-                    gid_target, meta=meta)
+                    gid_target, meta=meta, tol=tol)
 
                 # get the raster using the current grid vectors
                 temp, _, point_x, point_y, _ = self._get_raster_index(
