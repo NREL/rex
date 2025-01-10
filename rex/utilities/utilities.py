@@ -299,13 +299,15 @@ def check_res_file(res_file):
     - It belongs to a multi-file handler
     - Is on local disk
     - Is a hsds path
+    - Is as S3 path (starts with "s3://"
 
     Parameters
     ----------
     res_file : str
         Filepath to single resource file, unix style multi-file path like
-        /h5_dir/prefix*suffix.h5, or an hsds filepath (filename of hsds
-        path can also contain wildcards *)
+        /h5_dir/prefix*suffix.h5, an hsds filepath
+        (filename of hsds path can also contain wildcards *), or
+        an s3 filepath starting with "s3://"
 
     Returns
     -------
@@ -315,40 +317,82 @@ def check_res_file(res_file):
         Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
         behind HSDS
     """
+
     multi_h5_res = False
     hsds = False
+    bad = True
 
     if os.path.isfile(res_file):
-        pass
+        bad = False
+
+    elif res_file.startswith('s3://'):
+        try:
+            import fsspec  # pylint: disable=unused-import
+            bad = False
+        except Exception as e:
+            msg = (f'Tried to open s3 file path: "{res_file}" with '
+                   'fsspec but could not import, try '
+                   '`pip install NREL-rex[s3]`')
+            raise ImportError(msg) from e
 
     elif '*' in res_file:
+        bad = False
         multi_h5_res = True
 
     elif os.path.isdir(res_file):
+        bad = False
         msg = ('Cannot parse directory, need to add wildcard * suffix: {}'
                .format(res_file))
         raise FileInputError(msg)
 
     else:
-        try:
-            import h5pyd
-            hsds_dir = os.path.dirname(res_file)
-            with h5pyd.Folder(hsds_dir + '/') as f:
-                hsds = True
-                fps = [f'{hsds_dir}/{fn}' for fn in f
-                       if fnmatch(f'{hsds_dir}/{fn}', res_file)]
-                if not any(fps):
-                    msg = ('{} is not a valid HSDS file path!'
-                           .format(res_file))
-                    raise FileNotFoundError(msg)
-                elif len(fps) > 1:
-                    multi_h5_res = True
+        multi_h5_res, hsds = check_hsds_file(res_file)
+        bad = not hsds
 
-        except Exception as ex:
-            msg = ("{} is not a valid file path, and HSDS "
-                   "cannot be check for a file at this path:{}!"
-                   .format(res_file, ex))
-            raise FileNotFoundError(msg) from ex
+    if bad:
+        msg = ("{} is not a valid file path, and HSDS "
+               "cannot be check for a file at this path!"
+               .format(res_file))
+        raise FileNotFoundError(msg)
+
+    return multi_h5_res, hsds
+
+
+def check_hsds_file(res_file):
+    """
+    Check resource to see if the given path
+    - It belongs to a multi-file handler
+    - Is a hsds path
+
+    Parameters
+    ----------
+    res_file : str
+        Filepath to single resource file, unix style multi-file path like
+        /h5_dir/prefix*suffix.h5, an hsds filepath
+        (filename of hsds path can also contain wildcards *), or
+        an s3 filepath starting with "s3://"
+
+    Returns
+    -------
+    multi_h5_res : bool
+        Boolean flag to use a MultiFileResource handler
+    hsds : bool
+        Boolean flag to use h5pyd to handle .h5 'files' hosted on AWS
+        behind HSDS
+    """
+    import h5pyd
+    hsds_dir = os.path.dirname(res_file)
+
+    with h5pyd.Folder(hsds_dir + '/') as f:
+        hsds = True
+        fps = [f'{hsds_dir}/{fn}' for fn in f
+               if fnmatch(f'{hsds_dir}/{fn}', res_file)]
+        if not any(fps):
+            msg = ('{} is not a valid HSDS file path!'
+                   .format(res_file))
+            raise FileNotFoundError(msg)
+        elif len(fps) > 1:
+            multi_h5_res = True
 
     return multi_h5_res, hsds
 
@@ -561,6 +605,7 @@ class Retry:
     """
     Retry Decorator to run a function multiple times
     """
+
     def __init__(self, tries=3, n_sec=1):
         """
         Parameters
