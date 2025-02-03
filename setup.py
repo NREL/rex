@@ -69,6 +69,9 @@ setup(
             "temporal-stats=rex.temporal_stats.temporal_stats_cli:main",
             "wind-rose=rex.joint_pd.wind_rose_cli:main"
         ],
+        "xarray.backends": [
+            "rex=rex.external.rexarray:RexBackendEntrypoint"
+        ],
     },
     include_package_data=True,
     license="BSD 3-Clause",
