@@ -73,6 +73,7 @@ setup(
             "rex=rex.external.rexarray:RexBackendEntrypoint"
         ],
     },
+    package_data={'rex': ['external/*.json']},
     include_package_data=True,
     license="BSD 3-Clause",
     zip_safe=False,
