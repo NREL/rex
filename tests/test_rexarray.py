@@ -1,0 +1,167 @@
+# -*- coding: utf-8 -*-
+"""
+pytests for rex xarray backend
+"""
+import os
+
+import pytest
+import numpy as np
+import xarray as xr
+
+from rex import TESTDATADIR, Resource, MultiYearResource, MultiFileResource
+
+NSRDB_2012 = os.path.join(TESTDATADIR, 'nsrdb', 'ri_100_nsrdb_2012.h5')
+NSRDB_2013 = os.path.join(TESTDATADIR, 'nsrdb', 'ri_100_nsrdb_2013.h5')
+SZA_2012 = os.path.join(TESTDATADIR, 'sza', 'nsrdb_sza_2012.h5')
+SZA_2013 = os.path.join(TESTDATADIR, 'sza', 'nsrdb_sza_2013.h5')
+WAVE_2010 = os.path.join(TESTDATADIR, 'wave', 'ri_wave_2010.h5')
+WTK_2012_FP = os.path.join(TESTDATADIR, 'wtk', 'ri_100_wtk_2012.h5')
+WTK_2013_FP = os.path.join(TESTDATADIR, 'wtk', 'ri_100_wtk_2013.h5')
+WTK_2012_GRP_FP = os.path.join(TESTDATADIR, 'wtk', 'ri_wtk_2012_group.h5')
+WTK_2010_100M = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_100m.h5')
+WTK_2010_200M = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_200m.h5')
+
+
+def check_ti(fp, ds, group=None):
+    with Resource(fp, group=group) as res:
+        truth_ti = res.time_index
+
+    assert "time_index" in ds.coords
+    assert len(ds["time_index"].shape) == 1
+    assert ds["time_index"].dtype == np.dtype('datetime64[ns]')
+    assert np.allclose(ds["time_index"].isel(time_index=0)
+                       .astype('int64'), truth_ti[0].value)
+    assert np.allclose(ds["time_index"].isel(time_index=[0, 2])
+                       .astype('int64'), truth_ti[[0, 2]].astype('int64'))
+    assert np.allclose(ds["time_index"].isel(time_index=slice(0, 2))
+                       .astype('int64'), truth_ti[0:2].astype('int64'))
+
+
+def check_meta(fp, ds, group=None):
+    with Resource(fp, group=group) as res:
+        truth_meta = res.meta
+
+    for col in truth_meta.columns:
+        truth_vals = truth_meta[col].to_numpy()
+        truth_dtype = truth_vals.dtype
+        assert col in ds.coords
+        assert len(ds[col].shape) == 1
+        if isinstance(truth_vals[0], str):
+            continue
+        assert (ds[col].isel(gid=0).values.astype(truth_dtype)[0]
+                == truth_vals[0])
+        assert np.allclose(ds[col].isel(gid=[0, 2]).astype(truth_dtype),
+                           truth_vals[[0, 2]])
+        assert np.allclose(ds[col].isel(gid=slice(0, 2)).astype(truth_dtype),
+                           truth_vals[0:2])
+
+
+def check_shape(fp, ds, group=None):
+    with Resource(fp, group=group) as res:
+        truth_shape = res.shape
+
+    assert ds.sizes == {'time_index': truth_shape[0], 'gid': truth_shape[1]}
+
+
+def check_data(fp, ds, group=None):
+    with Resource(fp, group=group) as res:
+        datasets = {d_name: res[d_name][:] for d_name in res.resource_datasets}
+
+    for name, values in datasets.items():
+        assert np.allclose(ds[name], values)
+
+
+@pytest.mark.parametrize('fp', [WTK_2012_FP, WTK_2013_FP, WTK_2010_100M,
+                                WTK_2010_200M, SZA_2012, SZA_2013, NSRDB_2012,
+                                NSRDB_2013])
+def test_open_with_xr(fp):
+    with xr.open_dataset(fp, engine="rex") as ds:
+        check_ti(fp, ds)
+        check_meta(fp, ds)
+        check_shape(fp, ds)
+        check_data(fp, ds)
+
+        assert set(ds.indexes) == {"time_index", "gid"}
+
+
+def test_encoding():
+    with Resource(WTK_2012_FP) as res:
+        truth_shape = res.shape
+
+    with xr.open_dataset(WTK_2012_FP, engine="rex") as ds:
+        expected = {'chunksizes': None,
+                    'fletcher32': False,
+                    'shuffle': False,
+                    'dtype': 'u2',
+                    'scale_factor': 0.1,
+                    'source': WTK_2012_FP,
+                    'original_shape': truth_shape}
+        assert ds["pressure_0m"].encoding == expected
+
+
+def test_attrs():
+    with xr.open_dataset(WTK_2012_FP, engine="rex") as ds:
+        expected = {'standard_name': 'air_pressure', 'units': 'Pa'}
+        assert ds["pressure_0m"].attrs == expected
+
+
+def test_open_group():
+    with xr.open_dataset(WTK_2012_GRP_FP, group="group", engine="rex") as ds:
+        check_ti(WTK_2012_GRP_FP, ds, group="group")
+        check_meta(WTK_2012_GRP_FP, ds, group="group")
+        check_shape(WTK_2012_GRP_FP, ds, group="group")
+        check_data(WTK_2012_GRP_FP, ds, group="group")
+
+
+@pytest.mark.parametrize(
+    'glob_fp',
+    [os.path.join(TESTDATADIR, 'nsrdb', 'ri_100_nsrdb_201*.h5'),
+     os.path.join(TESTDATADIR, 'sza', 'nsrdb_sza_201*.h5'),
+     os.path.join(TESTDATADIR, 'wtk', 'ri_100_wtk_201*.h5')])
+def test_open_mf_year(glob_fp):
+
+    with MultiYearResource(glob_fp) as res:
+        truth_shape = res.shape
+
+    ds = xr.open_mfdataset(glob_fp, engine="rex")
+    assert ds.sizes == {'time_index': truth_shape[0], 'gid': truth_shape[1]}
+
+
+def test_open_mf_ds():
+    glob_fp = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_*m.h5')
+    with MultiFileResource(glob_fp) as res:
+        truth_shape = res.shape
+        datasets = res.resource_datasets
+
+    ds = xr.open_mfdataset(glob_fp, engine="rex")
+    assert ds.sizes == {'time_index': truth_shape[0], 'gid': truth_shape[1]}
+    assert all(ds_name in ds for ds_name in datasets)
+
+
+def test_open_drop_var():
+    with xr.open_dataset(WTK_2012_FP, engine="rex") as ds:
+        assert "pressure_0m" in ds
+
+    with xr.open_dataset(WTK_2012_FP, drop_variables={"pressure_0m"},
+                         engine="rex") as ds:
+        assert "pressure_0m" not in ds
+
+
+def execute_pytest(capture='all', flags='-rapP'):
+    """Execute module as pytest with detailed summary report.
+
+    Parameters
+    ----------
+    capture : str
+        Log or stdout/stderr capture option. ex: log (only logger),
+        all (includes stdout/stderr)
+    flags : str
+        Which tests to show logs and results for.
+    """
+
+    fname = os.path.basename(__file__)
+    pytest.main(['-q', '--show-capture={}'.format(capture), fname, flags])
+
+
+if __name__ == '__main__':
+    execute_pytest()
