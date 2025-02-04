@@ -73,7 +73,7 @@ def check_data(fp, ds, group=None):
 
 @pytest.mark.parametrize('fp', [WTK_2012_FP, WTK_2013_FP, WTK_2010_100M,
                                 WTK_2010_200M, SZA_2012, SZA_2013, NSRDB_2012,
-                                NSRDB_2013])
+                                NSRDB_2013, WAVE_2010])
 def test_open_with_xr(fp):
     with xr.open_dataset(fp, engine="rex") as ds:
         check_ti(fp, ds)

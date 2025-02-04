@@ -208,7 +208,9 @@ class RexArrayWrapper(BackendArray):
         with self.datastore.lock:
             array = self.get_array(needs_lock=False)
             if _is_time_index(self.variable_name):
-                return array[key].astype(TI_DTYPE)
+                values_as_str = array[key].astype("U")
+                values_no_tz = np.char.partition(values_as_str, "+")[:, 0]
+                return values_no_tz.astype(TI_DTYPE)
 
             if _is_from_meta(self.meta_index):
                 if self.variable_name == "gid":
