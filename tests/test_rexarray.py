@@ -3,12 +3,15 @@
 pytests for rex xarray backend
 """
 import os
+from tempfile import TemporaryDirectory
 
 import pytest
+import pandas as pd
 import numpy as np
 import xarray as xr
 
-from rex import TESTDATADIR, Resource, MultiYearResource, MultiFileResource
+from rex import (TESTDATADIR, Resource, Outputs, MultiYearResource,
+                 MultiFileResource)
 
 NSRDB_2012 = os.path.join(TESTDATADIR, 'nsrdb', 'ri_100_nsrdb_2012.h5')
 NSRDB_2013 = os.path.join(TESTDATADIR, 'nsrdb', 'ri_100_nsrdb_2013.h5')
@@ -145,6 +148,42 @@ def test_open_drop_var():
     with xr.open_dataset(WTK_2012_FP, drop_variables={"pressure_0m"},
                          engine="rex") as ds:
         assert "pressure_0m" not in ds
+
+
+def test_detect_var_dims():
+    meta = pd.DataFrame(
+        {"latitude": [41.29], "longitude": [-71.86], "timezone": [-5]}
+    )
+    meta.index.name = "gid"
+    with TemporaryDirectory() as td:
+        test_file = os.path.join(td, "test_geo.h5")
+
+        with Outputs(test_file, "w") as f:
+            f.meta = meta
+            f.time_index = pd.date_range(start="1/1/2018", end="1/1/2019",
+                                         freq="h")[:-1]
+
+        Outputs.add_dataset(test_file, "spatial_var", np.array([1]),
+                            np.float32, attrs={"units": "C"})
+        Outputs.add_dataset(test_file, "temporal_var", np.zeros((8760,)),
+                            np.float32, attrs={"units": "MW"})
+        Outputs.add_dataset(test_file, "spatiotemporal_var",
+                            np.ones((8760, 1)), np.float32,
+                            attrs={"units": "MW"})
+
+        with xr.open_dataset(test_file, engine="rex") as ds:
+            assert set(ds.indexes) == {"time_index", "gid"}
+
+            assert ds["spatial_var"].dims == ("gid",)
+            assert ds["temporal_var"].dims == ("time_index", )
+            assert ds["spatiotemporal_var"].dims == ("time_index", "gid")
+            assert ds["latitude"].dims == ("gid",)
+            assert ds["longitude"].dims == ("gid",)
+            assert ds["timezone"].dims == ("gid",)
+
+            check_ti(test_file, ds)
+            check_shape(test_file, ds)
+            check_data(test_file, ds)
 
 
 def execute_pytest(capture='all', flags='-rapP'):
