@@ -110,16 +110,6 @@ def _read_attributes(h5_var):
     return attrs
 
 
-def _detect_dimensions(name, var, meta_index):
-    if _is_from_meta(meta_index):
-        return ["gid"]
-
-    if _is_time_index(name):
-        return ["time_index"]
-
-    return ["time_index", "gid"][:len(var.shape)]
-
-
 def _compile_attrs(name, var, meta_index):
     attrs = {}
     for stand_name, stand_attrs in _SA.items():
@@ -242,7 +232,7 @@ class RexStore(AbstractDataStore):
     """Store for reading NREL-rex style data via h5py"""
 
     __slots__ = ("_filename", "_group", "_manager", "_mode", "is_remote",
-                 "lock")
+                 "lock", "_ds_shape")
 
     def __init__(self, manager, group=None, mode=None, lock=HDF5_LOCK):
         if isinstance(manager, h5py.File | h5py.Group):
@@ -261,6 +251,7 @@ class RexStore(AbstractDataStore):
         self._group = group
         self._mode = mode
         self._filename = _get_h5_fn(self.ds)
+        self._ds_shape = None
         self.lock = ensure_lock(lock)
 
     @classmethod
@@ -338,9 +329,16 @@ class RexStore(AbstractDataStore):
     def ds(self):
         return self._acquire()
 
+    @property
+    def ds_shape(self):
+        if self._ds_shape is None:
+            self._ds_shape = (self.ds.get("time_index", np.array([])).shape[0],
+                              self.ds.get("meta", np.array([])).shape[0])
+        return self._ds_shape
+
     def open_store_variable(self, name, var, meta_index=-1):
 
-        dimensions = _detect_dimensions(name, var, meta_index)
+        dimensions = self._detect_dimensions(name, var, meta_index)
         attrs = _compile_attrs(name, var, meta_index)
         sf = attrs.pop("scale_factor", 1)
         ao = attrs.pop("add_offset", 0)
@@ -354,6 +352,24 @@ class RexStore(AbstractDataStore):
         encoding = _compile_encoding(name, var, self._filename, dimensions,
                                      orig_shape=data.shape)
         return Variable(dimensions, data, attrs, encoding)
+
+    def _detect_dimensions(self, name, var, meta_index):
+        if _is_from_meta(meta_index):
+            return ["gid"]
+
+        if _is_time_index(name):
+            return ["time_index"]
+
+        if var.shape == self.ds_shape:
+            return ["time_index", "gid"]
+
+        if var.shape == (self.ds_shape[0],):
+            return ["time_index"]
+
+        if var.shape == (self.ds_shape[1],):
+            return ["gid"]
+
+        return ["gid"]  # default to gid dimension
 
     def get_variables(self):
         return FrozenDict((k, self.open_store_variable(k, v, i))
