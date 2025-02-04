@@ -13,30 +13,22 @@ from pathlib import Path
 import h5py
 import numpy as np
 import dask.array as da
-
 from xarray import coding
-from xarray.backends.common import (
-    AbstractDataStore,
-    BackendArray,
-    BackendEntrypoint,
-    _normalize_path,
-    _open_remote_file,
-    find_root_and_group,
-)
+from xarray.backends.common import (AbstractDataStore, BackendArray,
+                                    BackendEntrypoint, _normalize_path,
+                                    _open_remote_file, find_root_and_group)
 from xarray.backends.file_manager import CachingFileManager, DummyFileManager
 from xarray.backends.locks import (HDF5_LOCK, combine_locks, ensure_lock,
                                    get_write_lock)
 from xarray.backends.store import StoreBackendEntrypoint
 from xarray.core import indexing
-from xarray.core.utils import (
-    FrozenDict,
-    emit_user_level_warning,
-    is_remote_uri,
-    read_magic_number_from_file,
-    try_read_magic_number_from_file_or_path,
-    close_on_error,
-)
+from xarray.core.utils import (FrozenDict, emit_user_level_warning,
+                               is_remote_uri, read_magic_number_from_file,
+                               try_read_magic_number_from_file_or_path,
+                               close_on_error)
 from xarray.core.variable import Variable
+
+from rex.utilities import rex_unscale
 
 
 TI_DTYPE = np.dtype('datetime64[ns]')
@@ -213,13 +205,7 @@ class RexArrayWrapper(BackendArray):
                 return np.array([col[self.meta_index] for col in meta_info],
                                 dtype=self.dtype)
 
-            return self._unscale_like_rex(array[key])
-
-    def _unscale_like_rex(self, data):
-        if self.adder == 0:
-            return data / self.scale_factor
-
-        return data * self.scale_factor + self.adder
+            return rex_unscale(array[key], self.scale_factor, self.adder)
 
     def get_array(self, needs_lock=True):
         ds = self.datastore._acquire(needs_lock)

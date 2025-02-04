@@ -15,7 +15,7 @@ import pandas as pd
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 from rex.utilities.parse_keys import parse_keys, parse_slice
-from rex.utilities.utilities import check_tz, get_lat_lon_cols
+from rex.utilities.utilities import check_tz, get_lat_lon_cols, rex_unscale
 
 
 logger = logging.getLogger(__name__)
@@ -537,14 +537,7 @@ class ResourceDataset:
             Unscaled dataset array
         """
         data = data.astype('float32')
-
-        if self.adder != 0:
-            data *= self.scale_factor
-            data += self.adder
-        else:
-            data /= self.scale_factor
-
-        return data
+        return rex_unscale(data, self.scale_factor, self.adder)
 
     def _get_ds_slice(self, ds_slice):
         """
