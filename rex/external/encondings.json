@@ -1,0 +1,30 @@
+{
+    "inversemoninobukhovlength": {
+        "dtype": "i2",
+        "scale_factor": 0.01
+    },
+    "precipitationrate": {
+        "dtype": "u2",
+        "scale_factor": 0.1
+    },
+    "pressure": {
+        "dtype": "u2",
+        "scale_factor": 0.1
+    },
+    "relativehumidity": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    },
+    "temperature": {
+        "dtype": "i2",
+        "scale_factor": 0.01
+    },
+    "windspeed": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    },
+    "winddirection": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    }
+}

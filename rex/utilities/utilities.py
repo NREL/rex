@@ -1098,3 +1098,30 @@ def pd_date_range(*args, **kwargs):
             kwargs['closed'] = None
 
     return pd.date_range(*args, **kwargs)
+
+
+def rex_unscale(data, scale_factor=1, adder=0):
+    """Unscale rex-formatted data
+
+    Rex-style unscaling divides by the ``scale_factor`` if ``adder==0``;
+    otherwise the ``scale_factor`` is multiplied before adding the
+    ``adder``.
+
+    Parameters
+    ----------
+    data : array-like
+        Input data to be unscaled.
+    scale_factor : int | float, optional
+        Data scaling factor. By default, ``1``.
+    adder : int | float, optional
+        Data adder. By default, ``0``.
+
+    Returns
+    -------
+    array-like
+        Unscaled input data.
+    """
+    if adder == 0:
+        return data / scale_factor
+
+    return data * scale_factor + adder
