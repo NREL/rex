@@ -1,0 +1,6 @@
+rex.bias\_correction.lin\_ws
+============================
+
+.. currentmodule:: rex.bias_correction
+
+.. autofunction:: lin_ws

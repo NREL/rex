@@ -1,0 +1,69 @@
+rex.resource\_extraction.resource\_extraction.SolarX
+====================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: SolarX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SolarX.box_gids
+      ~SolarX.close
+      ~SolarX.get_SAM_gid
+      ~SolarX.get_SAM_lat_lon
+      ~SolarX.get_box_df
+      ~SolarX.get_box_ts
+      ~SolarX.get_gid_df
+      ~SolarX.get_gid_ts
+      ~SolarX.get_grid_vectors
+      ~SolarX.get_lat_lon_df
+      ~SolarX.get_lat_lon_ts
+      ~SolarX.get_raster_index
+      ~SolarX.get_region_df
+      ~SolarX.get_region_ts
+      ~SolarX.get_timestep_map
+      ~SolarX.lat_lon_gid
+      ~SolarX.make_SAM_files
+      ~SolarX.region_gids
+      ~SolarX.save_region
+      ~SolarX.save_subset
+      ~SolarX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SolarX.attrs
+      ~SolarX.coordinates
+      ~SolarX.counties
+      ~SolarX.countries
+      ~SolarX.data_version
+      ~SolarX.datasets
+      ~SolarX.distance_threshold
+      ~SolarX.dsets
+      ~SolarX.global_attrs
+      ~SolarX.groups
+      ~SolarX.h5
+      ~SolarX.lat_lon
+      ~SolarX.meta
+      ~SolarX.res_dsets
+      ~SolarX.resource
+      ~SolarX.resource_datasets
+      ~SolarX.shape
+      ~SolarX.states
+      ~SolarX.time_index
+      ~SolarX.tree
+   
+   

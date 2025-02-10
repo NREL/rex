@@ -1,0 +1,31 @@
+rex.utilities.regridder.CachedRegridder
+=======================================
+
+.. currentmodule:: rex.utilities.regridder
+
+.. autoclass:: CachedRegridder
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~CachedRegridder.build_cache
+      ~CachedRegridder.load_cache
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CachedRegridder.weights
+   
+   

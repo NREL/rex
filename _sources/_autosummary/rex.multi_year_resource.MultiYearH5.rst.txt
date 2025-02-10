@@ -1,0 +1,39 @@
+rex.multi\_year\_resource.MultiYearH5
+=====================================
+
+.. currentmodule:: rex.multi_year_resource
+
+.. autoclass:: MultiYearH5
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiYearH5.close
+      ~MultiYearH5.year_index
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiYearH5.attrs
+      ~MultiYearH5.datasets
+      ~MultiYearH5.files
+      ~MultiYearH5.h5
+      ~MultiYearH5.h5_files
+      ~MultiYearH5.resource_datasets
+      ~MultiYearH5.shape
+      ~MultiYearH5.time_index
+      ~MultiYearH5.years
+   
+   
