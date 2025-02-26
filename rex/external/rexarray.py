@@ -16,7 +16,7 @@ import dask.array as da
 from xarray import coding
 from xarray.backends.common import (AbstractDataStore, BackendArray,
                                     BackendEntrypoint, _normalize_path,
-                                    _open_remote_file, find_root_and_group)
+                                    find_root_and_group)
 from xarray.backends.file_manager import CachingFileManager, DummyFileManager
 from xarray.backends.locks import (HDF5_LOCK, combine_locks, ensure_lock,
                                    get_write_lock)
@@ -38,6 +38,26 @@ with _SA_FN.open(encoding="utf-8") as fh:
 _EN_FN = Path(__file__).parent / "encondings.json"
 with _EN_FN.open(encoding="utf-8") as fh:
     _EN = json.load(fh)
+
+
+def _open_remote_file(file_path, mode, storage_options=None):
+    # WIP!
+    try:
+        import fsspec
+    except Exception as e:
+        msg = (f'Tried to open s3 file path: "{file_path}" with '
+               'fsspec but could not import, try '
+               '`pip install NREL-rex[s3]`')
+        # logger.error(msg)
+        raise ImportError(msg) from e
+
+    # s3f = fsspec.open(file_path, mode='rb', anon=True,
+    #                     default_fill_cache=False)
+
+    fs, _, paths = fsspec.get_fs_token_paths(
+        file_path, mode=mode, storage_options=storage_options
+    )
+    return fs.open(paths[0], mode=mode)
 
 
 def _get_h5_fn(handle):
@@ -223,6 +243,7 @@ class RexStore(AbstractDataStore):
     def __init__(self, manager, group=None, mode=None, lock=HDF5_LOCK):
         if isinstance(manager, h5py.File | h5py.Group):
             if group is None:
+                # TODO: does this work for h5pyd????
                 root, group = find_root_and_group(manager)
             else:
                 if type(manager) is not h5py.File:
