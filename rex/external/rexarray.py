@@ -20,8 +20,9 @@ from xarray.backends.common import (AbstractDataStore, BackendArray,
 from xarray.backends.file_manager import CachingFileManager, DummyFileManager
 from xarray.backends.locks import (HDF5_LOCK, combine_locks, ensure_lock,
                                    get_write_lock)
-from xarray.backends.store import StoreBackendEntrypoint
+from xarray import conventions
 from xarray.core import indexing
+from xarray.core.dataset import Dataset
 from xarray.core.utils import (FrozenDict, emit_user_level_warning,
                                is_remote_uri, read_magic_number_from_file,
                                try_read_magic_number_from_file_or_path,
@@ -495,23 +496,30 @@ class RexBackendEntrypoint(BackendEntrypoint):
                               driver=driver, driver_kwds=driver_kwds,
                               storage_options=storage_options)
 
-        store_entrypoint = StoreBackendEntrypoint()
         with close_on_error(store):
-            ds = store_entrypoint.open_dataset(store, mask_and_scale=False,
-                                               decode_times=False,
-                                               concat_characters=True,
-                                               decode_coords=False,
-                                               drop_variables=drop_variables,
-                                               use_cftime=False,
-                                               decode_timedelta=False)
+            variables, attrs = store.load()
+            encoding = store.get_encoding()
 
-            coord_names = (store.get_coord_names()
-                           .intersection(set(ds.variables)))
+            variables, attrs, coord_names = conventions.decode_cf_variables(
+                variables,
+                attrs,
+                mask_and_scale=False,
+                decode_times=False,
+                concat_characters=True,
+                decode_coords=False,
+                drop_variables=drop_variables,
+                use_cftime=False,
+                decode_timedelta=False,
+            )
+
+            ds = Dataset(variables, attrs=attrs)
+            coord_names = (store.get_coord_names().intersection(variables))
             ds = ds.set_coords(coord_names)
-
-            dimension_coords = {name: name for name in {"time_index", "gid"}
+            dimension_coords = {name: name for name in ["time_index", "gid"]
                                 if name in coord_names}
             if dimension_coords:
                 ds = ds.set_index(dimension_coords)
+            ds.set_close(store.close)
+            ds.encoding = encoding
 
         return ds
