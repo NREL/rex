@@ -241,7 +241,7 @@ class RexStore(AbstractDataStore):
                  "lock", "_ds_shape")
 
     def __init__(self, manager, group=None, mode=None, lock=HDF5_LOCK):
-        if isinstance(manager, h5py.File | h5py.Group):
+        if isinstance(manager, h5py.File) or isinstance(manager, h5py.Group):
             if group is None:
                 # TODO: does this work for h5pyd????
                 root, group = find_root_and_group(manager)
