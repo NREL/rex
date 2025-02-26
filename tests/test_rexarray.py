@@ -126,8 +126,9 @@ def test_open_mf_year(glob_fp):
     with MultiYearResource(glob_fp) as res:
         truth_shape = res.shape
 
-    ds = xr.open_mfdataset(glob_fp, engine="rex")
-    assert ds.sizes == {'time_index': truth_shape[0], 'gid': truth_shape[1]}
+    with xr.open_mfdataset(glob_fp, engine="rex") as ds:
+        assert ds.sizes == {'time_index': truth_shape[0],
+                            'gid': truth_shape[1]}
 
 
 def test_open_mf_ds():
@@ -136,9 +137,10 @@ def test_open_mf_ds():
         truth_shape = res.shape
         datasets = res.resource_datasets
 
-    ds = xr.open_mfdataset(glob_fp, engine="rex")
-    assert ds.sizes == {'time_index': truth_shape[0], 'gid': truth_shape[1]}
-    assert all(ds_name in ds for ds_name in datasets)
+    with xr.open_mfdataset(glob_fp, engine="rex") as ds:
+        assert ds.sizes == {'time_index': truth_shape[0],
+                            'gid': truth_shape[1]}
+        assert all(ds_name in ds for ds_name in datasets)
 
 
 def test_open_drop_var():
