@@ -103,7 +103,7 @@ def _rex_var_dtype(variable_name, in_dtype):
     return in_dtype
 
 def _read_attributes(h5_var):
-    # GH451
+    # xarray GH451
     # to ensure conventions decoding works properly on Python 3,
     # decode all bytes attributes to strings
     attrs = {}
@@ -177,6 +177,9 @@ def _is_from_meta(idx):
 
 
 class RexMetaVar:
+    __slots__ = ("chunks", "fletcher32", "shuffle", "dtype", "shape",
+                 "compression", "compression_opts", "attrs")
+
     def __init__(self, meta_var, dtype):
         self.chunks = meta_var.chunks
         self.fletcher32 = meta_var.fletcher32
