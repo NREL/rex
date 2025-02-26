@@ -1,0 +1,6 @@
+rex.utilities.loggers.create\_dirs
+==================================
+
+.. currentmodule:: rex.utilities.loggers
+
+.. autofunction:: create_dirs

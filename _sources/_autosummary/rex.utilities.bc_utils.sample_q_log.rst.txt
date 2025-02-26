@@ -1,0 +1,6 @@
+rex.utilities.bc\_utils.sample\_q\_log
+======================================
+
+.. currentmodule:: rex.utilities.bc_utils
+
+.. autofunction:: sample_q_log
