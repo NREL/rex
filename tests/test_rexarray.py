@@ -102,10 +102,33 @@ def test_encoding():
         assert ds["pressure_0m"].encoding == expected
 
 
-def test_attrs():
+def test_var_attrs():
     with xr.open_dataset(WTK_2012_FP, engine="rex") as ds:
         expected = {'standard_name': 'air_pressure', 'units': 'Pa'}
         assert ds["pressure_0m"].attrs == expected
+
+
+def test_ds_attrs():
+    meta = pd.DataFrame(
+        {"latitude": [41.29], "longitude": [-71.86], "timezone": [-5]}
+    )
+    meta.index.name = "gid"
+    test_attrs = {"test": 1, "another": "Attr"}
+    with TemporaryDirectory() as td:
+        test_file = os.path.join(td, "test_geo.h5")
+
+        with Outputs(test_file, "w") as f:
+            f.meta = meta
+            f.time_index = pd.date_range(start="1/1/2018", end="1/1/2019",
+                                         freq="h")[:-1]
+            f.run_attrs = test_attrs
+
+        with xr.open_dataset(test_file, engine="rex") as ds:
+            for k, v in test_attrs.items():
+                assert ds.attrs[k] == v
+            assert ds.attrs["package"] == "rex"
+            assert "version" in ds.attrs
+            assert "full_version_record" in ds.attrs
 
 
 def test_open_group():
@@ -164,6 +187,7 @@ def test_detect_var_dims():
             f.meta = meta
             f.time_index = pd.date_range(start="1/1/2018", end="1/1/2019",
                                          freq="h")[:-1]
+            f.run_attrs = {}
 
         Outputs.add_dataset(test_file, "spatial_var", np.array([1]),
                             np.float32, attrs={"units": "C"})
