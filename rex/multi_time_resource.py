@@ -20,6 +20,7 @@ from rex.renewable_resource import (
 from rex.resource import Resource, BaseDatasetIterable
 from rex.utilities.exceptions import FileInputError
 from rex.utilities.parse_keys import parse_keys, parse_slice
+from rex.utilities.utilities import is_hsds_file, is_s3_file
 
 
 logger = logging.getLogger(__name__)
@@ -337,10 +338,10 @@ class MultiTimeH5:
             List of filepaths for this handler to handle.
         """
 
-        if Resource.is_hsds_file(h5_path) or hsds:
+        if is_hsds_file(h5_path) or hsds:
             file_paths = cls._get_hsds_file_paths(h5_path,
                                                   hsds_kwargs=hsds_kwargs)
-        elif Resource.is_s3_file(h5_path):
+        elif is_s3_file(h5_path):
             file_paths = cls._get_s3_file_paths(h5_path)
         elif isinstance(h5_path, (list, tuple)):
             file_paths = list(chain.from_iterable(glob(fp) for fp in h5_path))

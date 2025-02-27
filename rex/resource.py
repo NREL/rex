@@ -15,7 +15,10 @@ import pandas as pd
 from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 from rex.utilities.parse_keys import parse_keys, parse_slice
-from rex.utilities.utilities import check_tz, get_lat_lon_cols, rex_unscale
+from rex.utilities.utilities import (check_tz, get_lat_lon_cols, rex_unscale,
+                                     import_fsspec_or_fail, is_s3_file,
+                                     import_h5pyd_or_fail, is_hsds_file,
+                                     assert_read_only_mode)
 
 
 logger = logging.getLogger(__name__)
@@ -1133,42 +1136,15 @@ class BaseResource(BaseDatasetIterable):
             file on s3 using h5py and fsspec, or the file on HSDS using h5pyd.
         """
 
-        if cls.is_hsds_file(file_path) or hsds:
-            if mode != 'r':
-                msg = 'Cannot write to files accessed via HSDS!'
-                logger.error(msg)
-                raise OSError(msg)
-
-            try:
-                import h5pyd
-            except Exception as e:
-                msg = (f'Tried to open hsds file path: "{file_path}" with '
-                       'h5pyd but could not import, try '
-                       '`pip install NREL-rex[hsds]`')
-                logger.error(msg)
-                raise ImportError(msg) from e
-
-            if hsds_kwargs is None:
-                hsds_kwargs = {}
-
+        if is_hsds_file(file_path) or hsds:
+            assert_read_only_mode(mode)
+            h5pyd = import_h5pyd_or_fail(file_path)
             file = h5pyd.File(file_path, mode='r', use_cache=False,
-                              **hsds_kwargs)
+                              **(hsds_kwargs or {}))
 
-        elif cls.is_s3_file(file_path):
-            if mode != 'r':
-                msg = 'Cannot write to files accessed via s3/fsspec!'
-                logger.error(msg)
-                raise OSError(msg)
-
-            try:
-                import fsspec
-            except Exception as e:
-                msg = (f'Tried to open s3 file path: "{file_path}" with '
-                       'fsspec but could not import, try '
-                       '`pip install NREL-rex[s3]`')
-                logger.error(msg)
-                raise ImportError(msg) from e
-
+        elif is_s3_file(file_path):
+            assert_read_only_mode(mode, service="s3/fsspec")
+            fsspec = import_fsspec_or_fail(file_path)
             s3f = fsspec.open(file_path, mode='rb', anon=True,
                               default_fill_cache=False)
             file = h5py.File(s3f.open(), mode=mode)
@@ -1177,42 +1153,6 @@ class BaseResource(BaseDatasetIterable):
             file = h5py.File(file_path, mode=mode)
 
         return file
-
-    @staticmethod
-    def is_hsds_file(file_path):
-        """Parse one or more filepath to determine if it is hsds
-
-        Parameters
-        ----------
-        file_path : str | list
-            One or more file paths (only the first is parsed if multiple)
-
-        Returns
-        -------
-        is_hsds_file : bool
-            True if hsds
-        """
-        if isinstance(file_path, (list, tuple)):
-            file_path = file_path[0]
-        return str(file_path).startswith('/nrel/')
-
-    @staticmethod
-    def is_s3_file(file_path):
-        """Parse one or more filepath to determine if it is s3
-
-        Parameters
-        ----------
-        file_path : str | list
-            One or more file paths (only the first is parsed if multiple)
-
-        Returns
-        -------
-        is_s3_file : bool
-            True if s3
-        """
-        if isinstance(file_path, (list, tuple)):
-            file_path = file_path[0]
-        return str(file_path).startswith('s3://')
 
     def get_attrs(self, dset=None):
         """
