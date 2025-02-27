@@ -11,6 +11,7 @@ import json
 import logging
 import warnings
 from pathlib import Path
+from collections import namedtuple
 
 import h5py
 import numpy as np
@@ -202,6 +203,10 @@ def _iter_h5_groups(root, parent="/"):
         yield from _iter_h5_groups(root[parent], parent=gpath)
 
 
+VarInfo = namedtuple("VarInfo", ["name", "var", "meta_index", "coord_index"],
+                     defaults=[-1, -1])
+
+
 class RexMetaVar:
     __slots__ = ("chunks", "fletcher32", "shuffle", "dtype", "shape",
                  "compression", "compression_opts", "attrs")
@@ -377,6 +382,7 @@ class RexStore(AbstractDataStore):
         return cls(manager, group=group, mode=mode, lock=lock, hsds=hsds)
 
     def _acquire(self, needs_lock=True):
+        """Acquire a handle to the file object that can access data"""
         with self.manager.acquire_context(needs_lock) as root:
             ds = _h5_root_or_group(root, self._group, self.mode)
         return ds
@@ -431,6 +437,7 @@ class RexStore(AbstractDataStore):
         return Variable(dimensions, data, attrs, encoding)
 
     def _detect_dimensions(self, name, var, meta_index):
+        """Guess dimension based on var name or shape"""
         if _is_from_meta(meta_index):
             return ["gid"]
 
@@ -452,38 +459,52 @@ class RexStore(AbstractDataStore):
         return ["gid"]  # default to gid dimension
 
     def get_variables(self):
-        return FrozenDict((k, self.open_store_variable(k, v, mi, ci))
-                          for k, v, mi, ci in self._iter_vars())
+        """Mapping of variables in the store
+
+        Returns
+        -------
+        FrozenDict
+            Dictionary mapping variable name to :obj:`xr.Variable`
+            instance.
+        """
+        return FrozenDict((name, self.open_store_variable(name, *var_info))
+                          for name, *var_info in self._iter_vars())
 
     def _iter_vars(self):
+        """Iterate of variables in the store
+
+        Order matters, so we iterate over non-coordinate vars first.
+        Everything in the meta dataframe is assumed to be a coordinate.
+        """
         iter_meta = False
         iter_coords = False
         for k, v in self.ds.items():
-            if not _is_h5_dset(v):
+            if not _is_h5_dset(v):  # groups are not vars
                 continue
             if k.casefold() == "coordinates":
-                iter_coords = True
+                iter_coords = True  # handle below
                 continue
             if k == "meta":
-                iter_meta = True
+                iter_meta = True  # handle below
                 continue
             if k == "time_index":
-                yield "time_index", v, -1, -1
-                yield "time", v, -1, -1
+                yield VarInfo("time_index", v)
+                yield VarInfo("time", v)  # for users who expect "time"
                 continue
-            yield k, v, -1, -1
+            yield VarInfo(k, v)
 
         # Get "gid" first, before lat/lon
         if iter_meta:
             meta_var = self.ds["meta"]
-            yield "gid", RexMetaVar(meta_var, np.dtype("int64")), 0, -1
+            yield VarInfo("gid", RexMetaVar(meta_var, np.dtype("int64")),
+                          meta_index=0)
 
         # Get "lat/lon" next, before rest of meta
         already_got_from_coords = set()
         if iter_coords:
             coord_var = self.ds["coordinates"]
-            yield "latitude", RexCoordVar(coord_var), -1, 0
-            yield "longitude", RexCoordVar(coord_var), -1, 1
+            yield VarInfo("latitude", RexCoordVar(coord_var), coord_index=0)
+            yield VarInfo("longitude", RexCoordVar(coord_var), coord_index=1)
             already_got_from_coords = {"latitude", "longitude"}
 
         # Get rest of meta
@@ -492,9 +513,20 @@ class RexStore(AbstractDataStore):
             for ind, (name, dtype) in enumerate(meta_var.dtype.fields.items()):
                 if name in already_got_from_coords:
                     continue
-                yield name, RexMetaVar(meta_var, dtype[0]), ind, -1
+                yield VarInfo(name, RexMetaVar(meta_var, dtype[0]),
+                              meta_index=ind)
 
     def get_coord_names(self):
+        """Set of variable names that represent coordinate datasets
+
+        Most of these come from the meta, but some are based on datasets
+        like `time_index` or `coordinates`.
+
+        Returns
+        -------
+        set
+            Set of variable names that should be treated as coordinates.
+        """
         coords = set()
         if "time_index" in self.ds:
             coords.add("time_index")
@@ -512,21 +544,32 @@ class RexStore(AbstractDataStore):
         return coords
 
     def get_attrs(self):
+        """Get Dataset attribute dictionary
+
+        Returns
+        -------
+        dict
+            Immutable dictionary of attributes for the dataset.
+        """
         return FrozenDict(_read_attributes(self.ds))
 
     def get_dimensions(self):
+        """Get Dataset dimensions
+
+        Returns
+        -------
+        dict
+            Immutable mapping of dataset dimension names to their shape.
+        """
         return FrozenDict((k, len(v.shape)) for k, v in self.ds.items())
 
-    def get_encoding(self):
-        return FrozenDict()
-
     def close(self, **kwargs):
+        """Close the store"""
         self.manager.close(**kwargs)
 
 
 class RexBackendEntrypoint(BackendEntrypoint):
-    """
-    Backend for NREL rex-style files based on the h5py package.
+    """Backend for NREL rex-style files
 
     See Also
     --------
@@ -605,6 +648,7 @@ class RexBackendEntrypoint(BackendEntrypoint):
                       group=None, lock=None, h5_driver=None,
                       h5_driver_kwds=None, hsds=None, hsds_kwargs=None):
         # Delayed import for Python 3.9 compat
+        # pylint: disable=import-outside-toplevel
         from xarray.backends.common import datatree_from_dict_with_io_cleanup
 
         groups_dict = self.open_groups_as_dict(filename_or_obj,
@@ -621,6 +665,7 @@ class RexBackendEntrypoint(BackendEntrypoint):
                             group=None, lock=None, h5_driver=None,
                             h5_driver_kwds=None, hsds=None, hsds_kwargs=None):
         # Delayed import for Python 3.9 compat
+        # pylint: disable=import-outside-toplevel
         from xarray.core.treenode import NodePath
 
         filename_or_obj = _normalize_path(filename_or_obj)
@@ -654,7 +699,6 @@ class RexBackendEntrypoint(BackendEntrypoint):
     def _load_rex_dataset(store, drop_variables):
         """Create a dataset from an open store"""
         variables, attrs = store.load()
-        encoding = store.get_encoding()
 
         variables, attrs, coord_names = conventions.decode_cf_variables(
             variables, attrs, mask_and_scale=False, decode_times=False,
@@ -671,6 +715,5 @@ class RexBackendEntrypoint(BackendEntrypoint):
         if dimension_coords:
             ds = ds.set_index(dimension_coords)
         ds.set_close(store.close)
-        ds.encoding = encoding
 
         return ds
