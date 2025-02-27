@@ -5,6 +5,7 @@ pytests for rex xarray backend
 import os
 from tempfile import TemporaryDirectory
 
+import h5py
 import pytest
 import pandas as pd
 import numpy as np
@@ -201,7 +202,6 @@ def test_detect_var_dims():
             f.meta = meta
             f.time_index = pd.date_range(start="1/1/2018", end="1/1/2019",
                                          freq="h")[:-1]
-            f.run_attrs = {}
 
         Outputs.add_dataset(test_file, "spatial_var", np.array([1]),
                             np.float32, attrs={"units": "C"})
@@ -225,9 +225,38 @@ def test_detect_var_dims():
             assert ds["temporal_var"].isel(time_index=542) == 0
             assert ds["spatiotemporal_var"].isel(gid=0, time_index=542) == 1
 
+            assert np.allclose(ds["latitude"], [41.29])
+            assert np.allclose(ds["longitude"], [-71.86])
+
             check_ti(test_file, ds)
             check_shape(test_file, ds)
             check_data(test_file, ds)
+
+
+def test_coords_dset():
+    """Test that the coordinates dataset is loaded properly"""
+    meta = pd.DataFrame(
+        {"latitude": [45.29], "longitude": [71.86], "timezone": [-5]}
+    )
+    meta.index.name = "gid"
+    with TemporaryDirectory() as td:
+        test_file = os.path.join(td, "test_geo.h5")
+        with Outputs(test_file, "w") as f:
+            f.meta = meta
+            f.time_index = pd.date_range(start="1/1/2018", end="1/1/2019",
+                                         freq="h")[:-1]
+
+        with h5py.File(test_file, "a") as fh:
+            fh.create_dataset("coordinates", data=np.array([[41.29, -71.86]]))
+
+        with xr.open_dataset(test_file, engine="rex") as ds:
+            assert set(ds.indexes) == {"time_index", "gid"}
+            assert ds["latitude"].dims == ("gid",)
+            assert ds["longitude"].dims == ("gid",)
+            assert ds["timezone"].dims == ("gid",)
+
+            assert np.allclose(ds["latitude"], [41.29])
+            assert np.allclose(ds["longitude"], [-71.86])
 
 
 def execute_pytest(capture='all', flags='-rapP'):
