@@ -65,7 +65,7 @@ def test_multiyear():
         assert isinstance(dsets, list)
         assert isinstance(ghi, np.ndarray)
 
-    with xr.open_dataset(files, engine="rex") as ds:
+    with xr.open_mfdataset(files, engine="rex") as ds:
         xr_ghi = ds["ghi"].isel(time_index=slice(0, 10), gid=0)
         assert np.allclose(xr_ghi, ghi)
         assert ds.sizes['time_index'] == 35040
