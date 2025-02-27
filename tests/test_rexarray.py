@@ -13,6 +13,7 @@ import xarray as xr
 from rex import (TESTDATADIR, Resource, Outputs, MultiYearResource,
                  MultiFileResource)
 
+
 NSRDB_2012 = os.path.join(TESTDATADIR, 'nsrdb', 'ri_100_nsrdb_2012.h5')
 NSRDB_2013 = os.path.join(TESTDATADIR, 'nsrdb', 'ri_100_nsrdb_2013.h5')
 SZA_2012 = os.path.join(TESTDATADIR, 'sza', 'nsrdb_sza_2012.h5')
@@ -26,6 +27,7 @@ WTK_2010_200M = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_200m.h5')
 
 
 def check_ti(fp, ds, group=None):
+    """Check that the time index of the dataset matches expectations"""
     with Resource(fp, group=group) as res:
         truth_ti = res.time_index
 
@@ -41,6 +43,7 @@ def check_ti(fp, ds, group=None):
 
 
 def check_meta(fp, ds, group=None):
+    """Check that the meta of the dataset matches expectations"""
     with Resource(fp, group=group) as res:
         truth_meta = res.meta
 
@@ -60,6 +63,7 @@ def check_meta(fp, ds, group=None):
 
 
 def check_shape(fp, ds, group=None):
+    """Check that the shape of the dataset matches expectations"""
     with Resource(fp, group=group) as res:
         truth_shape = res.shape
 
@@ -67,6 +71,7 @@ def check_shape(fp, ds, group=None):
 
 
 def check_data(fp, ds, group=None):
+    """Check that the values of the dataset match expectations"""
     with Resource(fp, group=group) as res:
         datasets = {d_name: res[d_name][:] for d_name in res.resource_datasets}
 
@@ -78,6 +83,7 @@ def check_data(fp, ds, group=None):
                                 WTK_2010_200M, SZA_2012, SZA_2013, NSRDB_2012,
                                 NSRDB_2013, WAVE_2010])
 def test_open_with_xr(fp):
+    """Test basic opening and read operations on various files"""
     with xr.open_dataset(fp, engine="rex") as ds:
         check_ti(fp, ds)
         check_meta(fp, ds)
@@ -88,6 +94,7 @@ def test_open_with_xr(fp):
 
 
 def test_encoding():
+    """Test that the encoding is set properly"""
     with Resource(WTK_2012_FP) as res:
         truth_shape = res.shape
 
@@ -103,12 +110,14 @@ def test_encoding():
 
 
 def test_var_attrs():
+    """Test the attrs values for a dataset variable"""
     with xr.open_dataset(WTK_2012_FP, engine="rex") as ds:
         expected = {'standard_name': 'air_pressure', 'units': 'Pa'}
         assert ds["pressure_0m"].attrs == expected
 
 
 def test_ds_attrs():
+    """Test the attrs values for a dataset"""
     meta = pd.DataFrame(
         {"latitude": [41.29], "longitude": [-71.86], "timezone": [-5]}
     )
@@ -132,6 +141,7 @@ def test_ds_attrs():
 
 
 def test_open_group():
+    """Test opening a group within the file"""
     with xr.open_dataset(WTK_2012_GRP_FP, group="group", engine="rex") as ds:
         check_ti(WTK_2012_GRP_FP, ds, group="group")
         check_meta(WTK_2012_GRP_FP, ds, group="group")
@@ -145,7 +155,7 @@ def test_open_group():
      os.path.join(TESTDATADIR, 'sza', 'nsrdb_sza_201*.h5'),
      os.path.join(TESTDATADIR, 'wtk', 'ri_100_wtk_201*.h5')])
 def test_open_mf_year(glob_fp):
-
+    """Test opening a multi-file dataset across years"""
     with MultiYearResource(glob_fp) as res:
         truth_shape = res.shape
 
@@ -155,6 +165,7 @@ def test_open_mf_year(glob_fp):
 
 
 def test_open_mf_ds():
+    """Test opening multi-file dataset across variables"""
     glob_fp = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_*m.h5')
     with MultiFileResource(glob_fp) as res:
         truth_shape = res.shape
@@ -167,6 +178,7 @@ def test_open_mf_ds():
 
 
 def test_open_drop_var():
+    """Test dropping of variables when opening a file"""
     with xr.open_dataset(WTK_2012_FP, engine="rex") as ds:
         assert "pressure_0m" in ds
 
@@ -176,6 +188,7 @@ def test_open_drop_var():
 
 
 def test_detect_var_dims():
+    """Test that var dimensions are detected properly"""
     meta = pd.DataFrame(
         {"latitude": [41.29], "longitude": [-71.86], "timezone": [-5]}
     )
