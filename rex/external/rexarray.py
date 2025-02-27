@@ -30,8 +30,8 @@ from xarray.core.utils import (FrozenDict, is_remote_uri,
                                close_on_error)
 from xarray.core.variable import Variable
 
-from rex.resource import BaseResource
-from rex.utilities import rex_unscale
+from rex.utilities import (rex_unscale, import_fsspec_or_fail, is_hsds_file,
+                           import_h5pyd_or_fail, assert_read_only_mode)
 
 
 logger = logging.getLogger(__name__)
@@ -44,21 +44,11 @@ with _EN_FN.open(encoding="utf-8") as fh:
     _EN = json.load(fh)
 
 
-def _open_remote_file(file_path, mode):
-    # WIP!
-    # TODO check for read only mode
-    try:
-        import fsspec
-    except Exception as e:
-        msg = (f'Tried to open s3 file path: "{file_path}" with '
-               'fsspec but could not import, try '
-               '`pip install NREL-rex[s3]`')
-        logger.error(msg)
-        raise ImportError(msg) from e
-
-    s3f = fsspec.open(file_path, mode=mode, anon=True,
+def _open_remote_file(file_path):
+    fsspec = import_fsspec_or_fail(file_path)
+    s3f = fsspec.open(file_path, mode="rb", anon=True,
                       default_fill_cache=False)
-    return s3f.open()
+    return s3f.open()  # pylint: disable=no-member
 
 
 def _get_h5_fn(handle):
@@ -66,6 +56,12 @@ def _get_h5_fn(handle):
         return handle.filename
     except AttributeError:
         return _get_h5_fn(handle.file)
+
+
+def _get_lock(filename, mode):
+    if mode == "r":
+        return HDF5_LOCK
+    return combine_locks([HDF5_LOCK, get_write_lock(filename)])
 
 
 def _h5_root_or_group(handle, group, mode):
@@ -314,21 +310,23 @@ class RexStore(AbstractDataStore):
     @classmethod
     def open(cls, filename, mode="r", group=None, lock=None, h5_driver=None,
              h5_driver_kwds=None, hsds=False, hsds_kwargs=None):
-        """_summary_
+        """Open a RexStore instance
 
         Parameters
         ----------
         filename : _type_
             _description_
-        mode : str, optional
+        mode : str, default="r"
             _description_. By default, ``"r"``.
         group : _type_, optional
             _description_. By default, ``None``.
         lock : _type_, optional
             _description_. By default, ``None``.
-        driver : _type_, optional
+        h5_driver : _type_, optional
             _description_. By default, ``None``.
-        driver_kwds : _type_, optional
+        hsds : _type_, optional
+            _description_. By default, ``None``.
+        hsds_kwargs : _type_, optional
             _description_. By default, ``None``.
 
         Returns
@@ -339,55 +337,41 @@ class RexStore(AbstractDataStore):
         Raises
         ------
         ValueError
-            _description_
-        ValueError
-            _description_
+            If `filename` is a bytes object or if the file does not
+            start with valid HDF5 magic number.
         """
         remote_file = (isinstance(filename, str)
                        and is_remote_uri(filename)
                        and h5_driver is None)
         if remote_file:
-            mode_ = "rb" if mode == "r" else mode
-            filename = _open_remote_file(filename, mode=mode_)
+            assert_read_only_mode(mode, service="s3/fsspec")
+            filename = _open_remote_file(filename)
 
         if isinstance(filename, bytes):
-            raise ValueError("can't open netCDF4/HDF5 as bytes "
+            raise ValueError("can't open rex HDF5 as bytes; "
                              "try passing a path or file-like object")
-        elif isinstance(filename, io.IOBase):
+        if isinstance(filename, io.IOBase):
             magic_number = read_magic_number_from_file(filename)
             if not magic_number.startswith(b"\211HDF\r\n\032\n"):
                 raise ValueError(f"{magic_number!r} is not the signature "
-                                 "of a valid netCDF4 file")
-
-        h5_kwargs = {"driver": h5_driver}
-        if h5_driver_kwds is not None:
-            h5_kwargs.update(h5_driver_kwds)
+                                 "of a valid rex HDF5 file")
 
         if lock is None:
-            if mode == "r":
-                lock = HDF5_LOCK
-            else:
-                lock = combine_locks([HDF5_LOCK, get_write_lock(filename)])
+            lock = _get_lock(filename, mode)
 
-        if hsds or (isinstance(filename, str)
-                    and BaseResource.is_hsds_file(filename)):
-            try:
-                import h5pyd
-            except Exception as e:
-                msg = (f'Tried to open hsds file path: "{filename}" with '
-                       'h5pyd but could not import, try '
-                       '`pip install NREL-rex[hsds]`')
-                logger.error(msg)
-                raise ImportError(msg) from e
+        hsds = hsds or is_hsds_file(filename)
 
-            if hsds_kwargs is None:
-                hsds_kwargs = {}
+        if hsds:
+            h5pyd = import_h5pyd_or_fail(filename)
+
+            hsds_kwargs = hsds_kwargs or {}
             hsds_kwargs["use_cache"] = False
-
+            assert_read_only_mode(mode)
             manager = CachingFileManager(h5pyd.File, filename, mode=mode,
-                                         kwargs=h5_kwargs)
-            hsds = True
+                                         kwargs=hsds_kwargs)
         else:
+            h5_kwargs = {"driver": h5_driver}
+            h5_kwargs.update(h5_driver_kwds or {})
             manager = CachingFileManager(h5py.File, filename, mode=mode,
                                          kwargs=h5_kwargs)
         return cls(manager, group=group, mode=mode, lock=lock, hsds=hsds)
@@ -399,17 +383,36 @@ class RexStore(AbstractDataStore):
 
     @property
     def ds(self):
+        """obj: File object that can be used to access the data"""
         return self._acquire()
 
     @property
     def ds_shape(self):
+        """tuple: Shape of the dataset, i.e. (time_index, meta)"""
         if self._ds_shape is None:
             self._ds_shape = (self.ds.get("time_index", np.array([])).shape[0],
                               self.ds.get("meta", np.array([])).shape[0])
         return self._ds_shape
 
     def open_store_variable(self, name, var, meta_index=-1, coord_index=-1):
+        """_summary_
 
+        Parameters
+        ----------
+        name : _type_
+            _description_
+        var : _type_
+            _description_
+        meta_index : int, optional
+            _description_. By default, ``-1``.
+        coord_index : int, optional
+            _description_. By default, ``-1``.
+
+        Returns
+        -------
+        _type_
+            _description_
+        """
         dimensions = self._detect_dimensions(name, var, meta_index)
         attrs = _compile_attrs(name, var, meta_index)
         sf = attrs.pop("scale_factor", 1)
@@ -531,31 +534,34 @@ class RexBackendEntrypoint(BackendEntrypoint):
     """
 
     description = "Open NREL-rex style HDF5 files in Xarray"
-    url = "https://docs.xarray.dev/en/stable/generated/xarray.backends.H5cfBackendEntrypoint.html"
+    url = ("https://nrel.github.io/rex/_autosummary/"
+           "rex.external.rexarray.RexBackendEntrypoint.html")
     open_dataset_parameters = ["filename_or_obj", "drop_variables", "group",
                                "lock", "h5_driver", "h5_driver_kwds", "hsds",
                                "hsds_kwargs"]
 
     def guess_can_open(self, filename_or_obj):
-        """_summary_
+        """Guess if this backend can read a file
 
         Parameters
         ----------
-        filename_or_obj : str | path-like | ReadBuffer | AbstractDataStore
-            _description_
+        filename_or_obj : path-like
+            Filename used to guess wether this backend can open.
 
         Returns
         -------
         bool
-            _description_
+            Flag indicating wether this backend can open the file or
+            not.
         """
         magic_number = try_read_magic_number_from_file_or_path(filename_or_obj)
         if magic_number is not None:
             return magic_number.startswith(b"\211HDF\r\n\032\n")
 
-        if isinstance(filename_or_obj, str | os.PathLike):
-            _, ext = os.path.splitext(filename_or_obj)
-            return ext in {".nc", ".nc4", ".cdf"}
+        if isinstance(filename_or_obj, (os.PathLike, str)):
+            fn = os.path.basename(filename_or_obj).casefold()
+            if any(kw in fn for kw in ["nsrdb", "wtk", "sup3r"]):
+                return True
 
         return False
 
