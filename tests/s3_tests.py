@@ -38,7 +38,6 @@ def test_wtk():
         assert np.allclose(xr_ws, ws)
 
 
-
 def test_sup3rcc():
     """Test retrieving sup3rcc data"""
     fp = ('s3://nrel-pds-sup3rcc/conus_ecearth3_ssp585_r1i1p1f1/v0.1.0/'
@@ -52,7 +51,6 @@ def test_sup3rcc():
     with xr.open_dataset(fp, engine="rex") as ds:
         xr_temp = ds["temperature_2m"].isel(time_index=slice(0, 10), gid=0)
         assert np.allclose(xr_temp, temp)
-
 
 
 def test_multiyear():
