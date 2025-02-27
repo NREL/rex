@@ -260,7 +260,7 @@ def test_coords_dset():
             assert np.allclose(ds["longitude"], [-71.86])
 
 
-@pytest.mark.skipif(sys.version_info[:2] < (3, 9),
+@pytest.mark.skipif(sys.version_info[:2] <= (3, 9),
                     reason="DataTrees require Python 3.10+ to run")
 @pytest.mark.parametrize('fp', [WTK_2012_FP, WTK_2013_FP, WTK_2010_100M,
                                 WTK_2010_200M, SZA_2012, SZA_2013, NSRDB_2012,
@@ -275,7 +275,7 @@ def test_open_data_tree_no_groups(fp):
 
         assert set(ds.indexes) == {"time_index", "gid"}
 
-@pytest.mark.skipif(sys.version_info[:2] < (3, 9),
+@pytest.mark.skipif(sys.version_info[:2] <= (3, 9),
                     reason="DataTrees require Python 3.10+ to run")
 def test_open_data_tree_with_group():
     """Test opening a data tree for a file with a group"""
