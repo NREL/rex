@@ -171,6 +171,10 @@ def _is_from_meta(idx):
     return idx > -1
 
 
+def _is_from_coords(idx):
+    return idx > -1
+
+
 def _fix_keys(keys):
     """h5pyd fancy indexing only works if iterables are lists """
     for key in keys:
@@ -195,16 +199,32 @@ class RexMetaVar:
         self.attrs = {}
 
 
+class RexCoordVar:
+    __slots__ = ("chunks", "fletcher32", "shuffle", "dtype", "shape",
+                 "compression", "compression_opts", "attrs")
+
+    def __init__(self, coord_var):
+        self.chunks = coord_var.chunks
+        self.fletcher32 = coord_var.fletcher32
+        self.shuffle = coord_var.shuffle
+        self.dtype = coord_var.dtype
+        self.shape = coord_var.shape[:-1]
+        self.compression = None
+        self.compression_opts = None
+        self.attrs = {}
+
+
 class RexArrayWrapper(BackendArray):
     __slots__ = ("datastore", "dtype", "shape", "variable_name", "meta_index",
-                 "scale_factor", "adder")
+                 "coord_index", "scale_factor", "adder")
 
-    def __init__(self, variable_name, datastore, dtype, meta_index=-1,
-                 scale_factor=1, adder=0, hsds=False):
+    def __init__(self, variable_name, datastore, dtype, shape, meta_index=-1,
+                 coord_index=-1, scale_factor=1, adder=0):
         self.datastore = datastore
         self.variable_name = variable_name
         self.meta_index = meta_index
-        self.shape = self.get_array().shape
+        self.coord_index = coord_index
+        self.shape = shape
         self.dtype = _rex_var_dtype(variable_name, dtype)
         self.scale_factor = scale_factor
         self.adder = adder
@@ -219,6 +239,8 @@ class RexArrayWrapper(BackendArray):
             key = tuple(_fix_keys(key))
         with self.datastore.lock:
             array = self.get_array(needs_lock=False)
+            if _is_from_coords(self.coord_index):
+                return array[*key, self.coord_index]
             if _is_time_index(self.variable_name):
                 values_as_str = array[key].astype("U")
                 if len(values_as_str.shape) < 1: # scalar ti
@@ -242,6 +264,8 @@ class RexArrayWrapper(BackendArray):
 
     def get_array(self, needs_lock=True):
         ds = self.datastore._acquire(needs_lock)
+        if _is_from_coords(self.coord_index):
+            return ds["coordinates"]
         if _is_from_meta(self.meta_index):
             return ds["meta"]
         if _is_time_index(self.variable_name):
@@ -362,7 +386,7 @@ class RexStore(AbstractDataStore):
                               self.ds.get("meta", np.array([])).shape[0])
         return self._ds_shape
 
-    def open_store_variable(self, name, var, meta_index=-1):
+    def open_store_variable(self, name, var, meta_index=-1, coord_index=-1):
 
         dimensions = self._detect_dimensions(name, var, meta_index)
         attrs = _compile_attrs(name, var, meta_index)
@@ -371,7 +395,9 @@ class RexStore(AbstractDataStore):
 
         data = indexing.LazilyIndexedArray(RexArrayWrapper(name, self,
                                                            var.dtype,
+                                                           var.shape,
                                                            meta_index,
+                                                           coord_index,
                                                            scale_factor=sf,
                                                            adder=ao))
 
@@ -386,6 +412,9 @@ class RexStore(AbstractDataStore):
         if _is_time_index(name):
             return ["time_index"]
 
+        if name in {"latitude", "longitude"}:
+            return ["gid"]
+
         if var.shape == self.ds_shape:
             return ["time_index", "gid"]
 
@@ -398,32 +427,55 @@ class RexStore(AbstractDataStore):
         return ["gid"]  # default to gid dimension
 
     def get_variables(self):
-        return FrozenDict((k, self.open_store_variable(k, v, i))
-                          for k, v, i in self._iter_vars())
+        return FrozenDict((k, self.open_store_variable(k, v, mi, ci))
+                          for k, v, mi, ci in self._iter_vars())
 
     def _iter_vars(self):
         iter_meta = False
+        iter_coords = False
         for k, v in self.ds.items():
             if k.casefold() == "coordinates":
+                iter_coords = True
                 continue
             if k == "meta":
                 iter_meta = True
                 continue
-            yield k, v, -1
             if k == "time_index":
-                yield "time", v, -1
+                yield "time_index", v, -1, -1
+                yield "time", v, -1, -1
+                continue
+            yield k, v, -1, -1
 
+        # Get "gid" first, before lat/lon
         if iter_meta:
             meta_var = self.ds["meta"]
-            yield "gid", RexMetaVar(meta_var, np.dtype("int64")), 0
+            yield "gid", RexMetaVar(meta_var, np.dtype("int64")), 0, -1
+
+        # Get "lat/lon" next, before rest of meta
+        already_got_from_coords = set()
+        if iter_coords:
+            coord_var = self.ds["coordinates"]
+            yield "latitude", RexCoordVar(coord_var), -1, 0
+            yield "longitude", RexCoordVar(coord_var), -1, 1
+            already_got_from_coords = {"latitude", "longitude"}
+
+        # Get rest of meta
+        if iter_meta:
+            meta_var = self.ds["meta"]
             for ind, (name, dtype) in enumerate(meta_var.dtype.fields.items()):
-                yield name, RexMetaVar(meta_var, dtype[0]), ind
+                if name in already_got_from_coords:
+                    continue
+                yield name, RexMetaVar(meta_var, dtype[0]), ind, -1
 
     def get_coord_names(self):
         coords = set()
         if "time_index" in self.ds:
             coords.add("time_index")
             coords.add("time")
+
+        if "coordinates" in self.ds:
+            coords.add("latitude")
+            coords.add("longitude")
 
         if "meta" in self.ds:
             for name in self.ds["meta"].dtype.fields:
