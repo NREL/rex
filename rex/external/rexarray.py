@@ -172,6 +172,7 @@ def _is_from_meta(idx):
 
 
 def _fix_keys(keys):
+    """h5pyd fancy indexing only works if iterables are lists """
     for key in keys:
         try:
             yield list(key)
@@ -196,7 +197,7 @@ class RexMetaVar:
 
 class RexArrayWrapper(BackendArray):
     __slots__ = ("datastore", "dtype", "shape", "variable_name", "meta_index",
-                 "scale_factor", "adder", "hsds")
+                 "scale_factor", "adder")
 
     def __init__(self, variable_name, datastore, dtype, meta_index=-1,
                  scale_factor=1, adder=0, hsds=False):
@@ -207,7 +208,6 @@ class RexArrayWrapper(BackendArray):
         self.dtype = _rex_var_dtype(variable_name, dtype)
         self.scale_factor = scale_factor
         self.adder = adder
-        self.hsds = hsds
 
     def __getitem__(self, key):
         return indexing.explicit_indexing_adapter(
@@ -215,7 +215,7 @@ class RexArrayWrapper(BackendArray):
             self._getitem)
 
     def _getitem(self, key):
-        if self.hsds:
+        if self.datastore.hsds:
             key = tuple(_fix_keys(key))
         with self.datastore.lock:
             array = self.get_array(needs_lock=False)
@@ -253,7 +253,7 @@ class RexStore(AbstractDataStore):
     """Store for reading NREL-rex style data via h5py"""
 
     __slots__ = ("_filename", "_group", "_manager", "_mode", "is_remote",
-                 "lock", "_ds_shape", "_hsds")
+                 "lock", "_ds_shape", "hsds")
 
     def __init__(self, manager, group=None, mode=None, hsds=False,
                  lock=HDF5_LOCK):
@@ -262,7 +262,7 @@ class RexStore(AbstractDataStore):
         self._mode = mode
         self._filename = _get_h5_fn(self.ds)
         self._ds_shape = None
-        self._hsds = hsds
+        self.hsds = hsds
         self.lock = ensure_lock(lock)
 
     @classmethod
@@ -373,8 +373,7 @@ class RexStore(AbstractDataStore):
                                                            var.dtype,
                                                            meta_index,
                                                            scale_factor=sf,
-                                                           adder=ao,
-                                                           hsds=self._hsds))
+                                                           adder=ao))
 
         encoding = _compile_encoding(name, var, self._filename, dimensions,
                                      orig_shape=data.shape)
