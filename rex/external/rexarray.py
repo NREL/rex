@@ -8,6 +8,8 @@ https://github.com/pydata/xarray/blob/main/xarray/backends/h5netcdf_.py
 import io
 import os
 import json
+import logging
+import warnings
 from pathlib import Path
 
 import h5py
@@ -24,8 +26,8 @@ from xarray import conventions
 from xarray.core import indexing
 from xarray.core.dataset import Dataset
 from xarray.core.treenode import NodePath
-from xarray.core.utils import (FrozenDict, emit_user_level_warning,
-                               is_remote_uri, read_magic_number_from_file,
+from xarray.core.utils import (FrozenDict, is_remote_uri,
+                               read_magic_number_from_file,
                                try_read_magic_number_from_file_or_path,
                                close_on_error)
 from xarray.core.variable import Variable
@@ -34,6 +36,7 @@ from rex.resource import BaseResource
 from rex.utilities import rex_unscale
 
 
+logger = logging.getLogger(__name__)
 TI_DTYPE = np.dtype('datetime64[ns]')
 _SA_FN = Path(__file__).parent / "standard_attrs.json"
 with _SA_FN.open(encoding="utf-8") as fh:
@@ -52,7 +55,7 @@ def _open_remote_file(file_path, mode):
         msg = (f'Tried to open s3 file path: "{file_path}" with '
                'fsspec but could not import, try '
                '`pip install NREL-rex[s3]`')
-        # logger.error(msg)
+        logger.error(msg)
         raise ImportError(msg) from e
 
     s3f = fsspec.open(file_path, mode=mode, anon=True,
@@ -112,12 +115,11 @@ def _read_attributes(h5_var):
                 try:
                     v = v.decode("utf-8")
                 except UnicodeDecodeError:
-                    emit_user_level_warning(
-                        f"'utf-8' codec can't decode bytes for attribute "
-                        f"{k!r} of h5 object {h5_var.name!r}, "
-                        f"returning bytes undecoded.",
-                        UnicodeWarning,
-                    )
+                    msg = (f"'utf-8' codec can't decode bytes for attribute "
+                           f"{k!r} of h5 object {h5_var.name!r}, "
+                           f"returning bytes undecoded.")
+                    logger.warning(msg)
+                    warnings.warn(msg, UnicodeWarning)
         attrs[k] = v
     return attrs
 
@@ -131,7 +133,7 @@ def _compile_attrs(name, var, meta_index):
     attrs.update(_read_attributes(var))
     if _is_from_meta(meta_index):
         attrs.setdefault("description",
-                            "Extracted from H5 file 'meta' variable")
+                         "Extracted from H5 file 'meta' variable")
 
     return attrs
 
@@ -377,7 +379,7 @@ class RexStore(AbstractDataStore):
                 msg = (f'Tried to open hsds file path: "{filename}" with '
                        'h5pyd but could not import, try '
                        '`pip install NREL-rex[hsds]`')
-                # logger.error(msg)
+                logger.error(msg)
                 raise ImportError(msg) from e
 
             if hsds_kwargs is None:
