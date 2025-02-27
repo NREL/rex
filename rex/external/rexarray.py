@@ -240,7 +240,7 @@ class RexArrayWrapper(BackendArray):
         with self.datastore.lock:
             array = self.get_array(needs_lock=False)
             if _is_from_coords(self.coord_index):
-                return array[*key, self.coord_index]
+                return array[(*key, self.coord_index)]
             if _is_time_index(self.variable_name):
                 values_as_str = array[key].astype("U")
                 if len(values_as_str.shape) < 1: # scalar ti
