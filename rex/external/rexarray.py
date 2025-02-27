@@ -145,9 +145,7 @@ def _compile_encoding(name, var, fn, dimensions, orig_shape):
             encoding.update(default_encoding)
 
     if var.chunks:
-        encoding["preferred_chunks"] = dict(
-            zip(dimensions, var.chunks, strict=True)
-        )
+        encoding["preferred_chunks"] = dict(zip(dimensions, var.chunks))
     # Convert h5py-style compression options to NetCDF4-Python
     # style, if possible
     if var.compression == "gzip":
