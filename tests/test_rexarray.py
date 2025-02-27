@@ -259,6 +259,29 @@ def test_coords_dset():
             assert np.allclose(ds["longitude"], [-71.86])
 
 
+@pytest.mark.parametrize('fp', [WTK_2012_FP, WTK_2013_FP, WTK_2010_100M,
+                                WTK_2010_200M, SZA_2012, SZA_2013, NSRDB_2012,
+                                NSRDB_2013, WAVE_2010])
+def test_open_data_tree_no_groups(fp):
+    """Test basic opening and read operations for a data tree"""
+    with xr.open_datatree(fp, engine="rex") as ds:
+        check_ti(fp, ds)
+        check_meta(fp, ds)
+        check_shape(fp, ds)
+        check_data(fp, ds)
+
+        assert set(ds.indexes) == {"time_index", "gid"}
+
+
+def test_open_data_tree_with_group():
+    """Test opening a data tree for a file with a group"""
+    with xr.open_datatree(WTK_2012_GRP_FP, engine="rex") as ds:
+        check_ti(WTK_2012_GRP_FP, ds["group"], group="group")
+        check_meta(WTK_2012_GRP_FP, ds["group"], group="group")
+        check_shape(WTK_2012_GRP_FP, ds["group"], group="group")
+        check_data(WTK_2012_GRP_FP, ds["group"], group="group")
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 
