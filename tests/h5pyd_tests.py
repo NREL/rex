@@ -7,7 +7,11 @@ separate github action that sets up a local hsds server before running the
 test.
 """
 import h5pyd
-from rex import Resource, NSRDB, WindResource
+import numpy as np
+import xarray as xr
+
+from rex import NSRDB, WindResource
+
 
 def test_file_list():
     """Test listing the nrel hsds directory with h5pyd"""
@@ -21,7 +25,8 @@ def test_file_list():
 
 def test_nsrdb():
     """Test retrieving NSRDB data"""
-    with NSRDB('/nrel/nsrdb/v3/nsrdb_2020.h5', hsds=True) as res:
+    fp = '/nrel/nsrdb/v3/nsrdb_2020.h5'
+    with NSRDB(fp, hsds=True) as res:
         dsets = res.dsets
         ghi = res['ghi', :, int(1e5)]
 
@@ -30,17 +35,24 @@ def test_nsrdb():
     assert all(ghi < 1300)
     assert any(ghi > 800)
 
+    with xr.open_dataset(fp, engine="rex", hsds=True) as ds:
+        assert np.allclose(ds["ghi"].isel(gid=int(1e5)), ghi)
+
 
 def test_wtk():
     """Test retrieving WTK data"""
-    with WindResource('/nrel/wtk/conus/wtk_conus_2007.h5', hsds=True) as res:
+    fp = '/nrel/wtk/conus/wtk_conus_2007.h5'
+    with WindResource(fp, hsds=True) as res:
         dsets = res.dsets
-        ws = res['windspeed_88m', :, int(1e5)]
+        ws = res['windspeed_80m', :, [100000, 100100]]
 
     assert len(dsets) == 37
-    assert not any(ws < 0)
-    assert all(ws < 50)
-    assert any(ws > 10)
+    assert not (ws < 0).any()
+    assert (ws < 50).all()
+    assert (ws > 10).any()
+
+    with xr.open_dataset(fp, engine="rex", hsds=True) as ds:
+        assert np.allclose(ds["windspeed_80m"].isel(gid=[100000, 100100]), ws)
 
 
 def test_sup3rcc():
@@ -49,16 +61,20 @@ def test_sup3rcc():
           'sup3rcc_conus_ecearth3_ssp585_r1i1p1f1_2059.h5')
     with WindResource(fp, hsds=True) as res:
         dsets = res.dsets
-        ghi = res['ghi', :, int(1e5)]
-        ws = res['windspeed_88m', :, int(1e5)]
-        temp = res['temperature_2m', :, int(1e5)]
+        ghi = res['ghi', :, 100000:100002]
+        ws = res['windspeed_88m', :, 100000:100002]
+        temp = res['temperature_2m', :, 100000:100002]
 
     assert len(dsets) == 14
-    assert not any(ghi < 0)
-    assert all(ghi < 1300)
-    assert any(ghi > 800)
-    assert not any(ws < 0)
-    assert all(ws < 50)
-    assert any(ws > 10)
-    assert any(temp > 20)
-    assert any(temp < -20)
+    assert not (ghi < 0).any()
+    assert (ghi < 1300).all()
+    assert (ghi > 800).any()
+    assert not (ws < 0).any()
+    assert (ws < 50).all()
+    assert (ws > 10).any()
+    assert (temp > 20).any()
+    assert (temp < -20).any()
+
+    with xr.open_dataset(fp, engine="rex", hsds=True) as ds:
+        assert np.allclose(ds["ghi"].isel(gid=slice(100000, 100002)), ghi)
+
