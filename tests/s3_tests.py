@@ -29,12 +29,12 @@ def test_wtk():
     fp = 's3://nrel-pds-wtk/conus/v1.0.0/wtk_conus_2007.h5'
     with WindResource(fp) as res:
         dsets = res.dsets
-        ws = res['windspeed_88m', 0:10, 0]
+        ws = res['windspeed_80m', 0:10, 0]
         assert isinstance(dsets, list)
         assert isinstance(ws, np.ndarray)
 
     with xr.open_dataset(fp, engine="rex") as ds:
-        xr_ws = ds["windspeed_88m"].isel(time_index=slice(0, 10), gid=0)
+        xr_ws = ds["windspeed_80m"].isel(time_index=slice(0, 10), gid=0)
         assert np.allclose(xr_ws, ws)
 
 
