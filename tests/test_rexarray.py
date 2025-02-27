@@ -3,6 +3,7 @@
 pytests for rex xarray backend
 """
 import os
+import sys
 from tempfile import TemporaryDirectory
 
 import h5py
@@ -259,6 +260,8 @@ def test_coords_dset():
             assert np.allclose(ds["longitude"], [-71.86])
 
 
+@pytest.mark.skipif(sys.version_info[:2] < (3, 9),
+                    reason="DataTrees require Python 3.10+ to run")
 @pytest.mark.parametrize('fp', [WTK_2012_FP, WTK_2013_FP, WTK_2010_100M,
                                 WTK_2010_200M, SZA_2012, SZA_2013, NSRDB_2012,
                                 NSRDB_2013, WAVE_2010])
@@ -272,7 +275,8 @@ def test_open_data_tree_no_groups(fp):
 
         assert set(ds.indexes) == {"time_index", "gid"}
 
-
+@pytest.mark.skipif(sys.version_info[:2] < (3, 9),
+                    reason="DataTrees require Python 3.10+ to run")
 def test_open_data_tree_with_group():
     """Test opening a data tree for a file with a group"""
     with xr.open_datatree(WTK_2012_GRP_FP, engine="rex") as ds:

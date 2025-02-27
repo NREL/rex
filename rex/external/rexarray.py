@@ -17,15 +17,13 @@ import numpy as np
 import dask.array as da
 from xarray import coding
 from xarray.backends.common import (AbstractDataStore, BackendArray,
-                                    BackendEntrypoint, _normalize_path,
-                                    datatree_from_dict_with_io_cleanup)
+                                    BackendEntrypoint, _normalize_path)
 from xarray.backends.file_manager import CachingFileManager
 from xarray.backends.locks import (HDF5_LOCK, combine_locks, ensure_lock,
                                    get_write_lock)
 from xarray import conventions
 from xarray.core import indexing
 from xarray.core.dataset import Dataset
-from xarray.core.treenode import NodePath
 from xarray.core.utils import (FrozenDict, is_remote_uri,
                                read_magic_number_from_file,
                                try_read_magic_number_from_file_or_path,
@@ -204,7 +202,7 @@ def _iter_h5_groups(root, parent="/"):
 
     yield parent
     for subgroup in ds:
-        gpath = NodePath(parent) / NodePath(subgroup)
+        gpath = f"/{subgroup}" if parent == "/" else f"{parent}/{subgroup}"
         yield from _iter_h5_groups(root[parent], parent=gpath)
 
 
@@ -600,6 +598,9 @@ class RexBackendEntrypoint(BackendEntrypoint):
     def open_datatree(self, filename_or_obj, *, drop_variables=None,
                       group=None, lock=None, h5_driver=None,
                       h5_driver_kwds=None, hsds=None, hsds_kwargs=None):
+        # Delayed import for Python 3.9 compat
+        from xarray.backends.common import datatree_from_dict_with_io_cleanup
+
         groups_dict = self.open_groups_as_dict(filename_or_obj,
                                                drop_variables=drop_variables,
                                                group=group, lock=lock,
@@ -613,6 +614,8 @@ class RexBackendEntrypoint(BackendEntrypoint):
     def open_groups_as_dict(self, filename_or_obj, *, drop_variables=None,
                             group=None, lock=None, h5_driver=None,
                             h5_driver_kwds=None, hsds=None, hsds_kwargs=None):
+        # Delayed import for Python 3.9 compat
+        from xarray.core.treenode import NodePath
 
         filename_or_obj = _normalize_path(filename_or_obj)
         store = RexStore.open(filename_or_obj, group=group, lock=lock,
