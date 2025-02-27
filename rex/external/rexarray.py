@@ -41,7 +41,7 @@ with _EN_FN.open(encoding="utf-8") as fh:
     _EN = json.load(fh)
 
 
-def _open_remote_file(file_path, mode, storage_options=None):
+def _open_remote_file(file_path, mode):
     # WIP!
     try:
         import fsspec
@@ -52,13 +52,9 @@ def _open_remote_file(file_path, mode, storage_options=None):
         # logger.error(msg)
         raise ImportError(msg) from e
 
-    # s3f = fsspec.open(file_path, mode='rb', anon=True,
-    #                     default_fill_cache=False)
-
-    fs, _, paths = fsspec.get_fs_token_paths(
-        file_path, mode=mode, storage_options=storage_options
-    )
-    return fs.open(paths[0], mode=mode)
+    s3f = fsspec.open(file_path, mode=mode, anon=True,
+                      default_fill_cache=False)
+    return s3f.open()
 
 
 def _get_h5_fn(handle):
@@ -267,7 +263,7 @@ class RexStore(AbstractDataStore):
 
     @classmethod
     def open(cls, filename, mode="r", group=None, lock=None, driver=None,
-             driver_kwds=None, storage_options=None):
+             driver_kwds=None):
         """_summary_
 
         Parameters
@@ -283,8 +279,6 @@ class RexStore(AbstractDataStore):
         driver : _type_, optional
             _description_. By default, ``None``.
         driver_kwds : _type_, optional
-            _description_. By default, ``None``.
-        storage_options : dict[str, Any] | None, optional
             _description_. By default, ``None``.
 
         Returns
@@ -304,9 +298,7 @@ class RexStore(AbstractDataStore):
                        and driver is None)
         if remote_file:
             mode_ = "rb" if mode == "r" else mode
-            filename = _open_remote_file(
-                filename, mode=mode_, storage_options=storage_options
-            )
+            filename = _open_remote_file(filename, mode=mode_)
 
         if isinstance(filename, bytes):
             raise ValueError("can't open netCDF4/HDF5 as bytes "
