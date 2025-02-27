@@ -1200,3 +1200,39 @@ def assert_read_only_mode(mode, service="HSDS"):
         msg = f'Cannot write to files accessed via {service}!'
         logger.error(msg)
         raise OSError(msg)
+
+
+def is_hsds_file(file_path):
+    """Parse one or more filepath to determine if it is hsds
+
+    Parameters
+    ----------
+    file_path : str | list
+        One or more file paths (only the first is parsed if multiple)
+
+    Returns
+    -------
+    is_hsds_file : bool
+        True if hsds
+    """
+    if isinstance(file_path, (list, tuple)):
+        file_path = file_path[0]
+    return str(file_path).startswith('/nrel/')
+
+
+def is_s3_file(file_path):
+    """Parse one or more filepath to determine if it is s3
+
+    Parameters
+    ----------
+    file_path : str | list
+        One or more file paths (only the first is parsed if multiple)
+
+    Returns
+    -------
+    is_s3_file : bool
+        True if s3
+    """
+    if isinstance(file_path, (list, tuple)):
+        file_path = file_path[0]
+    return str(file_path).startswith('s3://')
