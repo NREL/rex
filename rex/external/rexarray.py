@@ -165,7 +165,7 @@ def _compile_encoding(name, var, fn, dimensions, orig_shape):
 
 
 def _is_time_index(variable_name):
-    return variable_name.casefold() == "time_index"
+    return variable_name.casefold() in {"time_index", "time"}
 
 
 def _is_from_meta(idx):
@@ -211,6 +211,9 @@ class RexArrayWrapper(BackendArray):
             array = self.get_array(needs_lock=False)
             if _is_time_index(self.variable_name):
                 values_as_str = array[key].astype("U")
+                if len(values_as_str.shape) < 1: # scalar ti
+                    values_as_str = values_as_str.split("+")[0]
+                    return np.array(values_as_str, dtype=TI_DTYPE)
                 values_no_tz = np.char.partition(values_as_str, "+")[:, 0]
                 return values_no_tz.astype(TI_DTYPE)
 
@@ -220,7 +223,7 @@ class RexArrayWrapper(BackendArray):
 
                 meta_info = array[key]
                 if len(meta_info.shape) < 1:  # scalar index
-                    return np.array([meta_info[self.meta_index]],
+                    return np.array(meta_info[self.meta_index],
                                     dtype=self.dtype)
                 return np.array([col[self.meta_index] for col in meta_info],
                                 dtype=self.dtype)
@@ -231,6 +234,8 @@ class RexArrayWrapper(BackendArray):
         ds = self.datastore._acquire(needs_lock)
         if _is_from_meta(self.meta_index):
             return ds["meta"]
+        if _is_time_index(self.variable_name):
+            return ds["time_index"]
         return ds[self.variable_name]
 
 
@@ -387,6 +392,8 @@ class RexStore(AbstractDataStore):
                 iter_meta = True
                 continue
             yield k, v, -1
+            if k == "time_index":
+                yield "time", v, -1
 
         if iter_meta:
             meta_var = self.ds["meta"]
@@ -398,6 +405,7 @@ class RexStore(AbstractDataStore):
         coords = set()
         if "time_index" in self.ds:
             coords.add("time_index")
+            coords.add("time")
 
         if "meta" in self.ds:
             for name in self.ds["meta"].dtype.fields:

@@ -31,15 +31,16 @@ def check_ti(fp, ds, group=None):
     with Resource(fp, group=group) as res:
         truth_ti = res.time_index
 
-    assert "time_index" in ds.coords
-    assert len(ds["time_index"].shape) == 1
-    assert ds["time_index"].dtype == np.dtype('datetime64[ns]')
-    assert np.allclose(ds["time_index"].isel(time_index=0)
-                       .astype('int64'), truth_ti[0].value)
-    assert np.allclose(ds["time_index"].isel(time_index=[0, 2])
-                       .astype('int64'), truth_ti[[0, 2]].astype('int64'))
-    assert np.allclose(ds["time_index"].isel(time_index=slice(0, 2))
-                       .astype('int64'), truth_ti[0:2].astype('int64'))
+    for t_var in ["time_index", "time"]:
+        assert t_var in ds.coords
+        assert len(ds[t_var].shape) == 1
+        assert ds[t_var].dtype == np.dtype('datetime64[ns]')
+        assert np.allclose(ds[t_var].isel(time_index=0)
+                           .astype('int64'), truth_ti[0].value)
+        assert np.allclose(ds[t_var].isel(time_index=[0, 2])
+                           .astype('int64'), truth_ti[[0, 2]].astype('int64'))
+        assert np.allclose(ds[t_var].isel(time_index=slice(0, 2))
+                           .astype('int64'), truth_ti[0:2].astype('int64'))
 
 
 def check_meta(fp, ds, group=None):
@@ -54,7 +55,7 @@ def check_meta(fp, ds, group=None):
         assert len(ds[col].shape) == 1
         if isinstance(truth_vals[0], str):
             continue
-        assert (ds[col].isel(gid=0).values.astype(truth_dtype)[0]
+        assert (ds[col].isel(gid=0).values.astype(truth_dtype)
                 == truth_vals[0])
         assert np.allclose(ds[col].isel(gid=[0, 2]).astype(truth_dtype),
                            truth_vals[[0, 2]])
@@ -219,6 +220,10 @@ def test_detect_var_dims():
             assert ds["latitude"].dims == ("gid",)
             assert ds["longitude"].dims == ("gid",)
             assert ds["timezone"].dims == ("gid",)
+
+            assert ds["spatial_var"].isel(gid=0) == 1
+            assert ds["temporal_var"].isel(time_index=542) == 0
+            assert ds["spatiotemporal_var"].isel(gid=0, time_index=542) == 1
 
             check_ti(test_file, ds)
             check_shape(test_file, ds)
