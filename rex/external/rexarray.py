@@ -433,8 +433,7 @@ class RexBackendEntrypoint(BackendEntrypoint):
     )
     url = "https://docs.xarray.dev/en/stable/generated/xarray.backends.H5cfBackendEntrypoint.html"
     open_dataset_parameters = ["filename_or_obj", "drop_variables", "group",
-                               "lock", "driver", "driver_kwds",
-                               "storage_options"]
+                               "lock", "driver", "driver_kwds"]
 
     def guess_can_open(self, filename_or_obj):
         """_summary_
@@ -460,8 +459,7 @@ class RexBackendEntrypoint(BackendEntrypoint):
         return False
 
     def open_dataset(self, filename_or_obj, *, drop_variables=None, group=None,
-                     lock=None, driver=None, driver_kwds=None,
-                     storage_options=None):
+                     lock=None, driver=None, driver_kwds=None):
         """_summary_
 
         Parameters
@@ -478,8 +476,6 @@ class RexBackendEntrypoint(BackendEntrypoint):
             _description_. By default, ``None``.
         driver_kwds : _type_, optional
             _description_. By default, ``None``.
-        storage_options : dict[str, Any] | None, optional
-            _description_. By default, ``None``.
 
         Returns
         -------
@@ -488,8 +484,7 @@ class RexBackendEntrypoint(BackendEntrypoint):
         """
         filename_or_obj = _normalize_path(filename_or_obj)
         store = RexStore.open(filename_or_obj, group=group, lock=lock,
-                              driver=driver, driver_kwds=driver_kwds,
-                              storage_options=storage_options)
+                              driver=driver, driver_kwds=driver_kwds)
 
         with close_on_error(store):
             variables, attrs = store.load()
