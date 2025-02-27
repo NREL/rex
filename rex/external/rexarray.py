@@ -15,9 +15,8 @@ import numpy as np
 import dask.array as da
 from xarray import coding
 from xarray.backends.common import (AbstractDataStore, BackendArray,
-                                    BackendEntrypoint, _normalize_path,
-                                    find_root_and_group)
-from xarray.backends.file_manager import CachingFileManager, DummyFileManager
+                                    BackendEntrypoint, _normalize_path)
+from xarray.backends.file_manager import CachingFileManager
 from xarray.backends.locks import (HDF5_LOCK, combine_locks, ensure_lock,
                                    get_write_lock)
 from xarray import conventions
@@ -29,6 +28,7 @@ from xarray.core.utils import (FrozenDict, emit_user_level_warning,
                                close_on_error)
 from xarray.core.variable import Variable
 
+from rex.resource import BaseResource
 from rex.utilities import rex_unscale
 
 
@@ -43,6 +43,7 @@ with _EN_FN.open(encoding="utf-8") as fh:
 
 def _open_remote_file(file_path, mode):
     # WIP!
+    # TODO check for read only mode
     try:
         import fsspec
     except Exception as e:
@@ -170,6 +171,14 @@ def _is_from_meta(idx):
     return idx > -1
 
 
+def _fix_keys(keys):
+    for key in keys:
+        try:
+            yield list(key)
+        except TypeError:
+            yield key
+
+
 class RexMetaVar:
     __slots__ = ("chunks", "fletcher32", "shuffle", "dtype", "shape",
                  "compression", "compression_opts", "attrs")
@@ -187,10 +196,10 @@ class RexMetaVar:
 
 class RexArrayWrapper(BackendArray):
     __slots__ = ("datastore", "dtype", "shape", "variable_name", "meta_index",
-                 "scale_factor", "adder")
+                 "scale_factor", "adder", "hsds")
 
     def __init__(self, variable_name, datastore, dtype, meta_index=-1,
-                 scale_factor=1, adder=0):
+                 scale_factor=1, adder=0, hsds=False):
         self.datastore = datastore
         self.variable_name = variable_name
         self.meta_index = meta_index
@@ -198,6 +207,7 @@ class RexArrayWrapper(BackendArray):
         self.dtype = _rex_var_dtype(variable_name, dtype)
         self.scale_factor = scale_factor
         self.adder = adder
+        self.hsds = hsds
 
     def __getitem__(self, key):
         return indexing.explicit_indexing_adapter(
@@ -205,6 +215,8 @@ class RexArrayWrapper(BackendArray):
             self._getitem)
 
     def _getitem(self, key):
+        if self.hsds:
+            key = tuple(_fix_keys(key))
         with self.datastore.lock:
             array = self.get_array(needs_lock=False)
             if _is_time_index(self.variable_name):
@@ -241,19 +253,21 @@ class RexStore(AbstractDataStore):
     """Store for reading NREL-rex style data via h5py"""
 
     __slots__ = ("_filename", "_group", "_manager", "_mode", "is_remote",
-                 "lock", "_ds_shape")
+                 "lock", "_ds_shape", "_hsds")
 
-    def __init__(self, manager, group=None, mode=None, lock=HDF5_LOCK):
+    def __init__(self, manager, group=None, mode=None, hsds=False,
+                 lock=HDF5_LOCK):
         self._manager = manager
         self._group = group
         self._mode = mode
         self._filename = _get_h5_fn(self.ds)
         self._ds_shape = None
+        self._hsds = hsds
         self.lock = ensure_lock(lock)
 
     @classmethod
-    def open(cls, filename, mode="r", group=None, lock=None, driver=None,
-             driver_kwds=None):
+    def open(cls, filename, mode="r", group=None, lock=None, h5_driver=None,
+             h5_driver_kwds=None, hsds=False, hsds_kwargs=None):
         """_summary_
 
         Parameters
@@ -285,7 +299,7 @@ class RexStore(AbstractDataStore):
         """
         remote_file = (isinstance(filename, str)
                        and is_remote_uri(filename)
-                       and driver is None)
+                       and h5_driver is None)
         if remote_file:
             mode_ = "rb" if mode == "r" else mode
             filename = _open_remote_file(filename, mode=mode_)
@@ -299,9 +313,9 @@ class RexStore(AbstractDataStore):
                 raise ValueError(f"{magic_number!r} is not the signature "
                                  "of a valid netCDF4 file")
 
-        kwargs = {"driver": driver}
-        if driver_kwds is not None:
-            kwargs.update(driver_kwds)
+        h5_kwargs = {"driver": h5_driver}
+        if h5_driver_kwds is not None:
+            h5_kwargs.update(h5_driver_kwds)
 
         if lock is None:
             if mode == "r":
@@ -309,9 +323,28 @@ class RexStore(AbstractDataStore):
             else:
                 lock = combine_locks([HDF5_LOCK, get_write_lock(filename)])
 
-        manager = CachingFileManager(h5py.File, filename, mode=mode,
-                                     kwargs=kwargs)
-        return cls(manager, group=group, mode=mode, lock=lock)
+        if hsds or (isinstance(filename, str)
+                    and BaseResource.is_hsds_file(filename)):
+            try:
+                import h5pyd
+            except Exception as e:
+                msg = (f'Tried to open hsds file path: "{filename}" with '
+                       'h5pyd but could not import, try '
+                       '`pip install NREL-rex[hsds]`')
+                # logger.error(msg)
+                raise ImportError(msg) from e
+
+            if hsds_kwargs is None:
+                hsds_kwargs = {}
+            hsds_kwargs["use_cache"] = False
+
+            manager = CachingFileManager(h5pyd.File, filename, mode=mode,
+                                         kwargs=h5_kwargs)
+            hsds = True
+        else:
+            manager = CachingFileManager(h5py.File, filename, mode=mode,
+                                         kwargs=h5_kwargs)
+        return cls(manager, group=group, mode=mode, lock=lock, hsds=hsds)
 
     def _acquire(self, needs_lock=True):
         with self._manager.acquire_context(needs_lock) as root:
@@ -340,7 +373,8 @@ class RexStore(AbstractDataStore):
                                                            var.dtype,
                                                            meta_index,
                                                            scale_factor=sf,
-                                                           adder=ao))
+                                                           adder=ao,
+                                                           hsds=self._hsds))
 
         encoding = _compile_encoding(name, var, self._filename, dimensions,
                                      orig_shape=data.shape)
@@ -421,12 +455,11 @@ class RexBackendEntrypoint(BackendEntrypoint):
     backends.RexStore
     """
 
-    description = (
-        "Open NREL-rex style HDF5 files in Xarray"
-    )
+    description = "Open NREL-rex style HDF5 files in Xarray"
     url = "https://docs.xarray.dev/en/stable/generated/xarray.backends.H5cfBackendEntrypoint.html"
     open_dataset_parameters = ["filename_or_obj", "drop_variables", "group",
-                               "lock", "driver", "driver_kwds"]
+                               "lock", "h5_driver", "h5_driver_kwds", "hsds",
+                               "hsds_kwargs"]
 
     def guess_can_open(self, filename_or_obj):
         """_summary_
@@ -452,7 +485,8 @@ class RexBackendEntrypoint(BackendEntrypoint):
         return False
 
     def open_dataset(self, filename_or_obj, *, drop_variables=None, group=None,
-                     lock=None, driver=None, driver_kwds=None):
+                     lock=None, h5_driver=None, h5_driver_kwds=None,
+                     hsds=None, hsds_kwargs=None):
         """_summary_
 
         Parameters
@@ -477,7 +511,9 @@ class RexBackendEntrypoint(BackendEntrypoint):
         """
         filename_or_obj = _normalize_path(filename_or_obj)
         store = RexStore.open(filename_or_obj, group=group, lock=lock,
-                              driver=driver, driver_kwds=driver_kwds)
+                              h5_driver=h5_driver,
+                              h5_driver_kwds=h5_driver_kwds,
+                              hsds=hsds, hsds_kwargs=hsds_kwargs)
 
         with close_on_error(store):
             variables, attrs = store.load()
