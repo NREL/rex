@@ -15,13 +15,15 @@ import numpy as np
 import dask.array as da
 from xarray import coding
 from xarray.backends.common import (AbstractDataStore, BackendArray,
-                                    BackendEntrypoint, _normalize_path)
+                                    BackendEntrypoint, _normalize_path,
+                                    datatree_from_dict_with_io_cleanup)
 from xarray.backends.file_manager import CachingFileManager
 from xarray.backends.locks import (HDF5_LOCK, combine_locks, ensure_lock,
                                    get_write_lock)
 from xarray import conventions
 from xarray.core import indexing
 from xarray.core.dataset import Dataset
+from xarray.core.treenode import NodePath
 from xarray.core.utils import (FrozenDict, emit_user_level_warning,
                                is_remote_uri, read_magic_number_from_file,
                                try_read_magic_number_from_file_or_path,
@@ -184,6 +186,26 @@ def _fix_keys(keys):
             yield key
 
 
+def _is_h5_dset(val):
+    try:
+        val.keys()
+        return False
+    except AttributeError:
+        return True
+
+
+def _iter_h5_groups(root, parent="/"):
+    parent = str(parent)
+    ds = root[parent]
+    if _is_h5_dset(ds):
+        return
+
+    yield parent
+    for subgroup in ds:
+        gpath = NodePath(parent) / NodePath(subgroup)
+        yield from _iter_h5_groups(root[parent], parent=gpath)
+
+
 class RexMetaVar:
     __slots__ = ("chunks", "fletcher32", "shuffle", "dtype", "shape",
                  "compression", "compression_opts", "attrs")
@@ -276,14 +298,14 @@ class RexArrayWrapper(BackendArray):
 class RexStore(AbstractDataStore):
     """Store for reading NREL-rex style data via h5py"""
 
-    __slots__ = ("_filename", "_group", "_manager", "_mode", "is_remote",
+    __slots__ = ("_filename", "_group", "manager", "mode", "is_remote",
                  "lock", "_ds_shape", "hsds")
 
     def __init__(self, manager, group=None, mode=None, hsds=False,
                  lock=HDF5_LOCK):
-        self._manager = manager
+        self.manager = manager
         self._group = group
-        self._mode = mode
+        self.mode = mode
         self._filename = _get_h5_fn(self.ds)
         self._ds_shape = None
         self.hsds = hsds
@@ -371,8 +393,8 @@ class RexStore(AbstractDataStore):
         return cls(manager, group=group, mode=mode, lock=lock, hsds=hsds)
 
     def _acquire(self, needs_lock=True):
-        with self._manager.acquire_context(needs_lock) as root:
-            ds = _h5_root_or_group(root, self._group, self._mode)
+        with self.manager.acquire_context(needs_lock) as root:
+            ds = _h5_root_or_group(root, self._group, self.mode)
         return ds
 
     @property
@@ -434,6 +456,8 @@ class RexStore(AbstractDataStore):
         iter_meta = False
         iter_coords = False
         for k, v in self.ds.items():
+            if not _is_h5_dset(v):
+                continue
             if k.casefold() == "coordinates":
                 iter_coords = True
                 continue
@@ -494,7 +518,7 @@ class RexStore(AbstractDataStore):
         return FrozenDict()
 
     def close(self, **kwargs):
-        self._manager.close(**kwargs)
+        self.manager.close(**kwargs)
 
 
 class RexBackendEntrypoint(BackendEntrypoint):
@@ -567,29 +591,75 @@ class RexBackendEntrypoint(BackendEntrypoint):
                               hsds=hsds, hsds_kwargs=hsds_kwargs)
 
         with close_on_error(store):
-            variables, attrs = store.load()
-            encoding = store.get_encoding()
+            ds = self._load_rex_dataset(store, drop_variables)
 
-            variables, attrs, coord_names = conventions.decode_cf_variables(
-                variables,
-                attrs,
-                mask_and_scale=False,
-                decode_times=False,
-                concat_characters=True,
-                decode_coords=False,
-                drop_variables=drop_variables,
-                use_cftime=False,
-                decode_timedelta=False,
-            )
+        return ds
 
-            ds = Dataset(variables, attrs=attrs)
-            coord_names = (store.get_coord_names().intersection(variables))
-            ds = ds.set_coords(coord_names)
-            dimension_coords = {name: name for name in ["time_index", "gid"]
-                                if name in coord_names}
-            if dimension_coords:
-                ds = ds.set_index(dimension_coords)
-            ds.set_close(store.close)
-            ds.encoding = encoding
+    def open_datatree(self, filename_or_obj, *, drop_variables=None,
+                      group=None, lock=None, h5_driver=None,
+                      h5_driver_kwds=None, hsds=None, hsds_kwargs=None):
+        groups_dict = self.open_groups_as_dict(filename_or_obj,
+                                               drop_variables=drop_variables,
+                                               group=group, lock=lock,
+                                               h5_driver=h5_driver,
+                                               h5_driver_kwds=h5_driver_kwds,
+                                               hsds=hsds,
+                                               hsds_kwargs=hsds_kwargs)
+
+        return datatree_from_dict_with_io_cleanup(groups_dict)
+
+    def open_groups_as_dict(self, filename_or_obj, *, drop_variables=None,
+                            group=None, lock=None, h5_driver=None,
+                            h5_driver_kwds=None, hsds=None, hsds_kwargs=None):
+
+        filename_or_obj = _normalize_path(filename_or_obj)
+        store = RexStore.open(filename_or_obj, group=group, lock=lock,
+                              h5_driver=h5_driver,
+                              h5_driver_kwds=h5_driver_kwds,
+                              hsds=hsds, hsds_kwargs=hsds_kwargs)
+
+        # Check for a group and make it a parent if it exists
+        if group:
+            parent = NodePath("/") / NodePath(group)
+        else:
+            parent = NodePath("/")
+
+        groups_dict = {}
+        for path_group in _iter_h5_groups(store.ds, parent=parent):
+            group_store = RexStore(store.manager, group=path_group,
+                                   mode=store.mode, hsds=store.hsds, lock=lock)
+            with close_on_error(group_store):
+                group_ds = self._load_rex_dataset(group_store, drop_variables)
+
+            if group:
+                group_name = str(NodePath(path_group).relative_to(parent))
+            else:
+                group_name = str(NodePath(path_group))
+            groups_dict[group_name] = group_ds
+
+        return groups_dict
+
+    @staticmethod
+    def _load_rex_dataset(store, drop_variables):
+        """Create a dataset from an open store"""
+        variables, attrs = store.load()
+        encoding = store.get_encoding()
+
+        variables, attrs, coord_names = conventions.decode_cf_variables(
+            variables, attrs, mask_and_scale=False, decode_times=False,
+            concat_characters=True, decode_coords=False,
+            drop_variables=drop_variables, use_cftime=False,
+            decode_timedelta=False,
+        )
+
+        ds = Dataset(variables, attrs=attrs)
+        coord_names = (store.get_coord_names().intersection(variables))
+        ds = ds.set_coords(coord_names)
+        dimension_coords = {name: name for name in ["time_index", "gid"]
+                            if name in coord_names}
+        if dimension_coords:
+            ds = ds.set_index(dimension_coords)
+        ds.set_close(store.close)
+        ds.encoding = encoding
 
         return ds
