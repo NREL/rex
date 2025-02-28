@@ -43,222 +43,6 @@ _SA = {}
 _EN = {}
 
 
-def _open_remote_file(file_path):
-    """Open a file using fsspec"""
-    fsspec = import_fsspec_or_fail(file_path)
-    s3f = fsspec.open(file_path, mode="rb", anon=True,
-                      default_fill_cache=False)
-    return s3f.open()  # pylint: disable=no-member
-
-
-def _get_h5_fn(handle):
-    """Get name of HDF5 file from open handle"""
-    try:
-        return handle.filename
-    except AttributeError:
-        return _get_h5_fn(handle.file)
-
-
-def _get_lock(filename, mode):
-    """Get lock instance for the file"""
-    if mode == "r":
-        return HDF5_LOCK
-    return combine_locks([HDF5_LOCK, get_write_lock(filename)])
-
-
-def _h5_root_or_group(handle, group, mode):
-    """Open a particular group in the h5 file"""
-    if group in {None, "", "/"}:
-        return handle
-
-    if not isinstance(group, str):
-        raise ValueError("group must be a string or None")
-
-    path = group.strip("/").split("/")
-    for key in path:
-        try:
-            handle = handle[key]
-        except KeyError as e:
-            if mode != "r":
-                handle = handle.create_group(key)
-            else:
-                # wrap error to provide slightly more helpful message
-                raise OSError(f"group not found: {key}", e) from e
-    return handle
-
-
-def _rex_var_dtype(variable_name, in_dtype):
-    """Modify variable dtype, if necessary"""
-    if _is_time_index(variable_name):
-        return TI_DTYPE
-
-    if in_dtype is str:
-        # use object dtype (with additional vlen string metadata)
-        # because that's the only way in numpy to represent variable
-        # length strings and to check vlen string dtype in further steps
-        # it also prevents automatic string concatenation via
-        # conventions.decode_cf_variable
-        in_dtype = coding.strings.create_vlen_dtype(str)
-
-    return in_dtype
-
-def _read_attributes(h5_var):
-    """Read variable attributes from the H5 file.
-
-    See xarray GH451 for discussion on decoding of bytes:
-    to ensure conventions decoding works properly on Python 3,
-    decode all bytes attributes to strings
-    """
-    attrs = {}
-    no_decode_vars = ["_FillValue", "missing_value"]
-    for k, v in h5_var.attrs.items():
-        if k not in no_decode_vars and isinstance(v, bytes):
-            v = _try_decode(v, k, h5_var.name)
-        attrs[k] = v
-    return attrs
-
-
-def _try_decode(val, key, var_name):
-    """Try to decode byte data"""
-    try:
-        val = val.decode("utf-8")
-    except UnicodeDecodeError:
-        msg = (f"'utf-8' codec can't decode bytes for attribute "
-               f"{key!r} of h5 object {var_name!r}, "
-               f"returning bytes un-decoded.")
-        logger.warning(msg)
-        warnings.warn(msg, UnicodeWarning)
-
-    return val
-
-
-def _compile_attrs(name, var, meta_index):
-    """Compile attributes for a variable
-
-    Attributes are first read from a pre-determined generic attribute
-    dictionary based on known rex variables. Then, attrs are read
-    directly from the file, and any attributes that are found are added
-    to the attribute dictionary, overwriting the generic values if
-    necessary.
-    """
-    attrs = {}
-    _load_standard_attributes()
-    for stand_name, stand_attrs in _SA.items():
-        if name.startswith(stand_name):
-            attrs.update(stand_attrs)
-
-    attrs.update(_read_attributes(var))
-    if _is_from_meta(meta_index):
-        attrs.setdefault("description",
-                         "Extracted from H5 file 'meta' variable")
-
-    return attrs
-
-
-def _load_standard_attributes():
-    """Load standard attributes into global namespace, if needed"""
-    if _SA:
-        return
-
-    with _SA_FN.open(encoding="utf-8") as fh:
-        _SA.update(json.load(fh))
-
-
-def _load_standard_encodings():
-    """Load standard encodings into global namespace, if needed"""
-    if _EN:
-        return
-
-    with _EN_FN.open(encoding="utf-8") as fh:
-        _EN.update(json.load(fh))
-
-
-def _compile_variable_encoding(name, var, fn, dimensions, orig_shape):
-    """Compile variable encoding"""
-    # netCDF4 specific encoding
-    encoding = {
-        "chunksizes": var.chunks,
-        "fletcher32": var.fletcher32,
-        "shuffle": var.shuffle,
-    }
-    _load_standard_encodings()
-    for encoding_name, default_encoding in _EN.items():
-        if name.startswith(encoding_name):
-            encoding.update(default_encoding)
-
-    if var.chunks:
-        encoding["preferred_chunks"] = dict(zip(dimensions, var.chunks))
-
-    # Convert h5py-style compression options to NetCDF4-Python
-    # style, if possible
-    if var.compression == "gzip":
-        encoding["zlib"] = True
-        encoding["complevel"] = var.compression_opts
-    elif var.compression is not None:
-        encoding["compression"] = var.compression
-        encoding["compression_opts"] = var.compression_opts
-
-    # save source so __repr__ can detect if it's local or not
-    encoding["source"] = fn
-    encoding["original_shape"] = orig_shape
-    encoding.setdefault("dtype", var.dtype)
-    return encoding
-
-
-def _is_time_index(variable_name):
-    """Check if variable name is related to time index"""
-    return variable_name.casefold() in {"time_index", "time"}
-
-
-def _is_from_meta(idx):
-    """Check if var is from meta dataset (i.e. if index is positive)"""
-    return idx > -1
-
-
-def _is_from_coords(idx):
-    """Check if var is from coordinates dataset
-
-    This method uses `_is_from_meta` function for consistency, since
-    both follow the same index encoding style
-    """
-    return _is_from_meta(idx)
-
-
-def _fix_keys_for_h5pyd(keys):
-    """h5pyd fancy indexing only works if iterables are lists """
-    for key in keys:
-        try:
-            yield list(key)
-        except TypeError:
-            yield key
-
-
-def _is_h5_dataset(val):
-    """Check for `.keys()` attribute; """
-    try:
-        val.keys()
-        return False
-    except AttributeError:
-        return True
-
-
-def _iter_h5_groups(root, parent="/"):
-    """Iterate over groups in h5 file
-
-    Groups are determined to be any value in the HDF5 file with a
-    `.keys()` attribute.
-    """
-    parent = str(parent)
-    ds = root[parent]
-    if _is_h5_dataset(ds):
-        return
-
-    yield parent
-    for subgroup in ds:
-        gpath = f"/{subgroup}" if parent == "/" else f"{parent}/{subgroup}"
-        yield from _iter_h5_groups(root[parent], parent=gpath)
-
-
 VarInfo = namedtuple("VarInfo", ["name", "var", "meta_index", "coord_index"],
                      defaults=[-1, -1])
 
@@ -391,7 +175,7 @@ class RexArrayWrapper(BackendArray):
         """Parse values from the `time_index` dataset"""
         values_as_str = array[key].astype("U")
 
-        if len(values_as_str.shape) < 1: # scalar ti
+        if len(values_as_str.shape) < 1:  # scalar ti
             values_as_str = values_as_str.split("+")[0]
             return np.array(values_as_str, dtype=TI_DTYPE)
 
@@ -695,28 +479,39 @@ class RexStore(AbstractDataStore):
                 continue
             yield VarInfo(k, v)
 
-        # Get "gid" first, before lat/lon
+        yield from self._iter_remaining_vars(iter_meta, iter_coords)
+
+    def _iter_remaining_vars(self, iter_meta, iter_coords):
+        """Iterate over remaining "non-standard" variables (e.g. meta)"""
         if iter_meta:
-            meta_var = self.ds["meta"]
-            yield VarInfo("gid", RexMetaVar(meta_var, np.dtype("int64")),
-                          meta_index=0)
+            yield VarInfo("gid", RexMetaVar(self.ds["meta"],
+                                            np.dtype("int64")),
+                                            meta_index=0)
 
         # Get "lat/lon" next, before rest of meta
         already_got_from_coords = set()
         if iter_coords:
-            coord_var = self.ds["coordinates"]
-            yield VarInfo("latitude", RexCoordVar(coord_var), coord_index=0)
-            yield VarInfo("longitude", RexCoordVar(coord_var), coord_index=1)
             already_got_from_coords = {"latitude", "longitude"}
+            yield from self._iter_coordinates_vars()
 
         # Get rest of meta
         if iter_meta:
-            meta_var = self.ds["meta"]
-            for ind, (name, dtype) in enumerate(meta_var.dtype.fields.items()):
-                if name in already_got_from_coords:
-                    continue
-                yield VarInfo(name, RexMetaVar(meta_var, dtype[0]),
-                              meta_index=ind)
+            yield from self._iter_meta_vars(skip_vars=already_got_from_coords)
+
+    def _iter_coordinates_vars(self):
+        """Iterate over coord vars"""
+        coord_var = self.ds["coordinates"]
+        yield VarInfo("latitude", RexCoordVar(coord_var), coord_index=0)
+        yield VarInfo("longitude", RexCoordVar(coord_var), coord_index=1)
+
+    def _iter_meta_vars(self, skip_vars):
+        """Iterate over meta vars"""
+        meta_var = self.ds["meta"]
+        for ind, (name, dtype) in enumerate(meta_var.dtype.fields.items()):
+            if name in skip_vars:
+                continue
+            yield VarInfo(name, RexMetaVar(meta_var, dtype[0]), meta_index=ind)
+
 
     def get_coord_names(self):
         """Set of variable names that represent coordinate datasets
@@ -1024,3 +819,220 @@ class RexBackendEntrypoint(BackendEntrypoint):
         ds.set_close(store.close)
 
         return ds
+
+
+def _open_remote_file(file_path):
+    """Open a file using fsspec"""
+    fsspec = import_fsspec_or_fail(file_path)
+    s3f = fsspec.open(file_path, mode="rb", anon=True,
+                      default_fill_cache=False)
+    return s3f.open()  # pylint: disable=no-member
+
+
+def _get_h5_fn(handle):
+    """Get name of HDF5 file from open handle"""
+    try:
+        return handle.filename
+    except AttributeError:
+        return _get_h5_fn(handle.file)
+
+
+def _get_lock(filename, mode):
+    """Get lock instance for the file"""
+    if mode == "r":
+        return HDF5_LOCK
+    return combine_locks([HDF5_LOCK, get_write_lock(filename)])
+
+
+def _h5_root_or_group(handle, group, mode):
+    """Open a particular group in the h5 file"""
+    if group in {None, "", "/"}:
+        return handle
+
+    if not isinstance(group, str):
+        raise ValueError("group must be a string or None")
+
+    path = group.strip("/").split("/")
+    for key in path:
+        try:
+            handle = handle[key]
+        except KeyError as e:
+            if mode != "r":
+                handle = handle.create_group(key)
+            else:
+                # wrap error to provide slightly more helpful message
+                raise OSError(f"group not found: {key}", e) from e
+    return handle
+
+
+def _rex_var_dtype(variable_name, in_dtype):
+    """Modify variable dtype, if necessary"""
+    if _is_time_index(variable_name):
+        return TI_DTYPE
+
+    if in_dtype is str:
+        # use object dtype (with additional vlen string metadata)
+        # because that's the only way in numpy to represent variable
+        # length strings and to check vlen string dtype in further steps
+        # it also prevents automatic string concatenation via
+        # conventions.decode_cf_variable
+        in_dtype = coding.strings.create_vlen_dtype(str)
+
+    return in_dtype
+
+
+def _read_attributes(h5_var):
+    """Read variable attributes from the H5 file.
+
+    See xarray GH451 for discussion on decoding of bytes:
+    to ensure conventions decoding works properly on Python 3,
+    decode all bytes attributes to strings
+    """
+    attrs = {}
+    no_decode_vars = ["_FillValue", "missing_value"]
+    for k, v in h5_var.attrs.items():
+        if k not in no_decode_vars and isinstance(v, bytes):
+            v = _try_decode(v, k, h5_var.name)
+        attrs[k] = v
+    return attrs
+
+
+def _try_decode(val, key, var_name):
+    """Try to decode byte data"""
+    try:
+        val = val.decode("utf-8")
+    except UnicodeDecodeError:
+        msg = (f"'utf-8' codec can't decode bytes for attribute "
+               f"{key!r} of h5 object {var_name!r}, "
+               f"returning bytes un-decoded.")
+        logger.warning(msg)
+        warnings.warn(msg, UnicodeWarning)
+
+    return val
+
+
+def _compile_attrs(name, var, meta_index):
+    """Compile attributes for a variable
+
+    Attributes are first read from a pre-determined generic attribute
+    dictionary based on known rex variables. Then, attrs are read
+    directly from the file, and any attributes that are found are added
+    to the attribute dictionary, overwriting the generic values if
+    necessary.
+    """
+    attrs = {}
+    _load_standard_attributes()
+    for stand_name, stand_attrs in _SA.items():
+        if name.startswith(stand_name):
+            attrs.update(stand_attrs)
+
+    attrs.update(_read_attributes(var))
+    if _is_from_meta(meta_index):
+        attrs.setdefault("description",
+                         "Extracted from H5 file 'meta' variable")
+
+    return attrs
+
+
+def _load_standard_attributes():
+    """Load standard attributes into global namespace, if needed"""
+    if _SA:
+        return
+
+    with _SA_FN.open(encoding="utf-8") as fh:
+        _SA.update(json.load(fh))
+
+
+def _load_standard_encodings():
+    """Load standard encodings into global namespace, if needed"""
+    if _EN:
+        return
+
+    with _EN_FN.open(encoding="utf-8") as fh:
+        _EN.update(json.load(fh))
+
+
+def _compile_variable_encoding(name, var, fn, dimensions, orig_shape):
+    """Compile variable encoding"""
+    # netCDF4 specific encoding
+    encoding = {
+        "chunksizes": var.chunks,
+        "fletcher32": var.fletcher32,
+        "shuffle": var.shuffle,
+    }
+    _load_standard_encodings()
+    for encoding_name, default_encoding in _EN.items():
+        if name.startswith(encoding_name):
+            encoding.update(default_encoding)
+
+    if var.chunks:
+        encoding["preferred_chunks"] = dict(zip(dimensions, var.chunks))
+
+    # Convert h5py-style compression options to NetCDF4-Python
+    # style, if possible
+    if var.compression == "gzip":
+        encoding["zlib"] = True
+        encoding["complevel"] = var.compression_opts
+    elif var.compression is not None:
+        encoding["compression"] = var.compression
+        encoding["compression_opts"] = var.compression_opts
+
+    # save source so __repr__ can detect if it's local or not
+    encoding["source"] = fn
+    encoding["original_shape"] = orig_shape
+    encoding.setdefault("dtype", var.dtype)
+    return encoding
+
+
+def _is_time_index(variable_name):
+    """Check if variable name is related to time index"""
+    return variable_name.casefold() in {"time_index", "time"}
+
+
+def _is_from_meta(idx):
+    """Check if var is from meta dataset (i.e. if index is positive)"""
+    return idx > -1
+
+
+def _is_from_coords(idx):
+    """Check if var is from coordinates dataset
+
+    This method uses `_is_from_meta` function for consistency, since
+    both follow the same index encoding style
+    """
+    return _is_from_meta(idx)
+
+
+def _fix_keys_for_h5pyd(keys):
+    """h5pyd fancy indexing only works if iterables are lists """
+    for key in keys:
+        try:
+            yield list(key)
+        except TypeError:
+            yield key
+
+
+def _is_h5_dataset(val):
+    """Check for `.keys()` attribute; """
+    try:
+        val.keys()
+        return False
+    except AttributeError:
+        return True
+
+
+def _iter_h5_groups(root, parent="/"):
+    """Iterate over groups in h5 file
+
+    Groups are determined to be any value in the HDF5 file with a
+    `.keys()` attribute.
+    """
+    parent = str(parent)
+    ds = root[parent]
+    if _is_h5_dataset(ds):
+        return
+
+    yield parent
+    for subgroup in ds:
+        gpath = f"/{subgroup}" if parent == "/" else f"{parent}/{subgroup}"
+        yield from _iter_h5_groups(root[parent], parent=gpath)
