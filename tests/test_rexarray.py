@@ -106,7 +106,7 @@ def test_encoding():
                     'fletcher32': False,
                     'shuffle': False,
                     'dtype': 'u2',
-                    'scale_factor': 0.1,
+                    'scale_factor': 10,
                     'source': WTK_2012_FP,
                     'original_shape': truth_shape}
         assert ds["pressure_0m"].encoding == expected
