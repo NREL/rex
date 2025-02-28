@@ -281,6 +281,7 @@ def test_open_data_tree_no_groups(fp):
 
         assert set(ds.indexes) == {"time_index", "gid"}
 
+
 @pytest.mark.skipif(sys.version_info[:2] <= (3, 9),
                     reason="DataTrees require Python 3.10+ to run")
 def test_open_data_tree_with_group():
