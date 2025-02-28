@@ -133,7 +133,8 @@ def _compile_attrs(name, var, meta_index):
     return attrs
 
 
-def _compile_encoding(name, var, fn, dimensions, orig_shape):
+def _compile_variable_encoding(name, var, fn, dimensions, orig_shape):
+    """Compile variable encoding"""
     # netCDF4 specific encoding
     encoding = {
         "chunksizes": var.chunks,
@@ -146,6 +147,7 @@ def _compile_encoding(name, var, fn, dimensions, orig_shape):
 
     if var.chunks:
         encoding["preferred_chunks"] = dict(zip(dimensions, var.chunks))
+
     # Convert h5py-style compression options to NetCDF4-Python
     # style, if possible
     if var.compression == "gzip":
@@ -163,15 +165,22 @@ def _compile_encoding(name, var, fn, dimensions, orig_shape):
 
 
 def _is_time_index(variable_name):
+    """Check if variable name is related to time index"""
     return variable_name.casefold() in {"time_index", "time"}
 
 
 def _is_from_meta(idx):
+    """Check if var is from meta dataset (i.e. if index is positive)"""
     return idx > -1
 
 
 def _is_from_coords(idx):
-    return idx > -1
+    """Check if var is from coordinates dataset
+
+    This method uses `_is_from_meta` function for consistency, since
+    both follow the same index encoding style
+    """
+    return _is_from_meta(idx)
 
 
 def _fix_keys(keys):
@@ -184,6 +193,7 @@ def _fix_keys(keys):
 
 
 def _is_h5_dset(val):
+    """Check for `.keys()` attribute; """
     try:
         val.keys()
         return False
@@ -192,6 +202,11 @@ def _is_h5_dset(val):
 
 
 def _iter_h5_groups(root, parent="/"):
+    """Iterate over groups in h5 file
+
+    Groups are determined to be any value in the HDF5 file with a
+    `.keys()` attribute.
+    """
     parent = str(parent)
     ds = root[parent]
     if _is_h5_dset(ds):
@@ -409,15 +424,26 @@ class RexStore(AbstractDataStore):
             _description_
         var : _type_
             _description_
-        meta_index : int, optional
-            _description_. By default, ``-1``.
-        coord_index : int, optional
-            _description_. By default, ``-1``.
+        meta_index : int, default=-1
+            Index value specifying wether variable came from meta. If
+            this value is positive, the variable is assumed to originate
+            from the meta. In this case, the value should represent the
+            index in the meta records array corresponding to the
+            variable. If negative, then this input is ignored.
+            By default, ``-1``.
+        coord_index : int, default=-1
+            Index value specifying wether variable came from coordinates
+            dataset. If this value is positive, the variable is assumed
+            to originate from `coordinates`. In this case, the value
+            should represent the last index in the `coordinates` array
+            corresponding to the variable (typically 0 for latitude,
+            1 for longitude). If negative, then this input is ignored.
+            By default, ``-1``.
 
         Returns
         -------
-        _type_
-            _description_
+        Variable
+            Initialized `Variable` instance.
         """
         dimensions = self._detect_dimensions(name, var, meta_index)
         attrs = _compile_attrs(name, var, meta_index)
@@ -432,8 +458,9 @@ class RexStore(AbstractDataStore):
                                                            scale_factor=sf,
                                                            adder=ao))
 
-        encoding = _compile_encoding(name, var, self._filename, dimensions,
-                                     orig_shape=data.shape)
+        encoding = _compile_variable_encoding(name, var, self._filename,
+                                              dimensions,
+                                              orig_shape=data.shape)
         return Variable(dimensions, data, attrs, encoding)
 
     def _detect_dimensions(self, name, var, meta_index):
