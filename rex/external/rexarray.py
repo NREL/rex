@@ -484,9 +484,9 @@ class RexStore(AbstractDataStore):
     def _iter_remaining_vars(self, iter_meta, iter_coords):
         """Iterate over remaining "non-standard" variables (e.g. meta)"""
         if iter_meta:
-            yield VarInfo("gid", RexMetaVar(self.ds["meta"],
-                                            np.dtype("int64")),
-                                            meta_index=0)
+            yield VarInfo("gid",
+                          RexMetaVar(self.ds["meta"], np.dtype("int64")),
+                          meta_index=0)
 
         # Get "lat/lon" next, before rest of meta
         already_got_from_coords = set()
@@ -511,7 +511,6 @@ class RexStore(AbstractDataStore):
             if name in skip_vars:
                 continue
             yield VarInfo(name, RexMetaVar(meta_var, dtype[0]), meta_index=ind)
-
 
     def get_coord_names(self):
         """Set of variable names that represent coordinate datasets
