@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=too-many-arguments
 """
 rex backend for xarray implementation
 
@@ -46,6 +47,7 @@ with _EN_FN.open(encoding="utf-8") as fh:
 
 
 def _open_remote_file(file_path):
+    """Open a file using fsspec"""
     fsspec = import_fsspec_or_fail(file_path)
     s3f = fsspec.open(file_path, mode="rb", anon=True,
                       default_fill_cache=False)
@@ -53,6 +55,7 @@ def _open_remote_file(file_path):
 
 
 def _get_h5_fn(handle):
+    """Get name of HDF5 file from open handle"""
     try:
         return handle.filename
     except AttributeError:
@@ -60,12 +63,14 @@ def _get_h5_fn(handle):
 
 
 def _get_lock(filename, mode):
+    """Get lock instance for the file"""
     if mode == "r":
         return HDF5_LOCK
     return combine_locks([HDF5_LOCK, get_write_lock(filename)])
 
 
 def _h5_root_or_group(handle, group, mode):
+    """Open a particular group in the h5 file"""
     if group in {None, "", "/"}:
         return handle
 
@@ -86,6 +91,7 @@ def _h5_root_or_group(handle, group, mode):
 
 
 def _rex_var_dtype(variable_name, in_dtype):
+    """Modify variable dtype, if necessary"""
     if _is_time_index(variable_name):
         return TI_DTYPE
 
@@ -100,26 +106,44 @@ def _rex_var_dtype(variable_name, in_dtype):
     return in_dtype
 
 def _read_attributes(h5_var):
-    # xarray GH451
-    # to ensure conventions decoding works properly on Python 3,
-    # decode all bytes attributes to strings
+    """Read variable attributes from the H5 file.
+
+    See xarray GH451 for discussion on decoding of bytes:
+    to ensure conventions decoding works properly on Python 3,
+    decode all bytes attributes to strings
+    """
     attrs = {}
+    no_decode_vars = ["_FillValue", "missing_value"]
     for k, v in h5_var.attrs.items():
-        if k not in ["_FillValue", "missing_value"]:
-            if isinstance(v, bytes):
-                try:
-                    v = v.decode("utf-8")
-                except UnicodeDecodeError:
-                    msg = (f"'utf-8' codec can't decode bytes for attribute "
-                           f"{k!r} of h5 object {h5_var.name!r}, "
-                           f"returning bytes undecoded.")
-                    logger.warning(msg)
-                    warnings.warn(msg, UnicodeWarning)
+        if k not in no_decode_vars and isinstance(v, bytes):
+            v = _try_decode(v, k, h5_var.name)
         attrs[k] = v
     return attrs
 
 
+def _try_decode(val, key, var_name):
+    """Try to decode byte data"""
+    try:
+        val = val.decode("utf-8")
+    except UnicodeDecodeError:
+        msg = (f"'utf-8' codec can't decode bytes for attribute "
+               f"{key!r} of h5 object {var_name!r}, "
+               f"returning bytes un-decoded.")
+        logger.warning(msg)
+        warnings.warn(msg, UnicodeWarning)
+
+    return val
+
+
 def _compile_attrs(name, var, meta_index):
+    """Compile attributes for a variable
+
+    Attributes are first read from a pre-determined generic attribute
+    dictionary based on known rex variables. Then, attrs are read
+    directly from the file, and any attributes that are found are added
+    to the attribute dictionary, overwriting the generic values if
+    necessary.
+    """
     attrs = {}
     for stand_name, stand_attrs in _SA.items():
         if name.startswith(stand_name):
@@ -183,7 +207,7 @@ def _is_from_coords(idx):
     return _is_from_meta(idx)
 
 
-def _fix_keys(keys):
+def _fix_keys_for_h5pyd(keys):
     """h5pyd fancy indexing only works if iterables are lists """
     for key in keys:
         try:
@@ -192,7 +216,7 @@ def _fix_keys(keys):
             yield key
 
 
-def _is_h5_dset(val):
+def _is_h5_dataset(val):
     """Check for `.keys()` attribute; """
     try:
         val.keys()
@@ -209,7 +233,7 @@ def _iter_h5_groups(root, parent="/"):
     """
     parent = str(parent)
     ds = root[parent]
-    if _is_h5_dset(ds):
+    if _is_h5_dataset(ds):
         return
 
     yield parent
@@ -223,10 +247,21 @@ VarInfo = namedtuple("VarInfo", ["name", "var", "meta_index", "coord_index"],
 
 
 class RexMetaVar:
+    """Wrapper class containing meta attributes for a variable"""
+
     __slots__ = ("chunks", "fletcher32", "shuffle", "dtype", "shape",
                  "compression", "compression_opts", "attrs")
 
     def __init__(self, meta_var, dtype):
+        """
+
+        Parameters
+        ----------
+        meta_var : handle
+            Handle that contains meta attributes for the coordinate.
+        dtype : str | obj
+            Variable data type.
+        """
         self.chunks = meta_var.chunks
         self.fletcher32 = meta_var.fletcher32
         self.shuffle = meta_var.shuffle
@@ -238,10 +273,19 @@ class RexMetaVar:
 
 
 class RexCoordVar:
+    """Wrapper class containing meta attributes for a coordinate"""
+
     __slots__ = ("chunks", "fletcher32", "shuffle", "dtype", "shape",
                  "compression", "compression_opts", "attrs")
 
     def __init__(self, coord_var):
+        """
+
+        Parameters
+        ----------
+        coord_var : handle
+            Handle that contains meta attributes for the coordinate.
+        """
         self.chunks = coord_var.chunks
         self.fletcher32 = coord_var.fletcher32
         self.shuffle = coord_var.shuffle
@@ -253,11 +297,46 @@ class RexCoordVar:
 
 
 class RexArrayWrapper(BackendArray):
+    """rexarray implementation of a `BackendArray`"""
+
     __slots__ = ("datastore", "dtype", "shape", "variable_name", "meta_index",
                  "coord_index", "scale_factor", "adder")
 
     def __init__(self, variable_name, datastore, dtype, shape, meta_index=-1,
                  coord_index=-1, scale_factor=1, adder=0):
+        """
+
+        Parameters
+        ----------
+        variable_name : str
+            Name of variable associated with data.
+        datastore : `RexStore`
+            Open `RexStore` instance that can be used to retrieve the
+            data.
+        dtype : str | obj
+            Data type.
+        shape : tuple
+            Tuple representing data shape.
+        meta_index : int, default=-1
+            Index value specifying wether variable came from meta. If
+            this value is positive, the variable is assumed to originate
+            from the meta. In this case, the value should represent the
+            index in the meta records array corresponding to the
+            variable. If negative, then this input is ignored.
+            By default, ``-1``.
+        coord_index : int, default=-1
+            Index value specifying wether variable came from coordinates
+            dataset. If this value is positive, the variable is assumed
+            to originate from `coordinates`. In this case, the value
+            should represent the last index in the `coordinates` array
+            corresponding to the variable (typically 0 for latitude,
+            1 for longitude). If negative, then this input is ignored.
+            By default, ``-1``.
+        scale_factor : int | float, default=1
+            Optional rex-style scaling factor. By default, ``1``.
+        adder : int | float, default=0
+            Optional rex-style adder. By default, ``0``.
+        """
         self.datastore = datastore
         self.variable_name = variable_name
         self.meta_index = meta_index
@@ -273,41 +352,75 @@ class RexArrayWrapper(BackendArray):
             self._getitem)
 
     def _getitem(self, key):
+        """Get actual data values by slicing into array"""
         if self.datastore.hsds:
-            key = tuple(_fix_keys(key))
+            key = tuple(_fix_keys_for_h5pyd(key))
+
         with self.datastore.lock:
             array = self.get_array(needs_lock=False)
+
             if _is_from_coords(self.coord_index):
                 return array[(*key, self.coord_index)]
+
             if _is_time_index(self.variable_name):
-                values_as_str = array[key].astype("U")
-                if len(values_as_str.shape) < 1: # scalar ti
-                    values_as_str = values_as_str.split("+")[0]
-                    return np.array(values_as_str, dtype=TI_DTYPE)
-                values_no_tz = np.char.partition(values_as_str, "+")[:, 0]
-                return values_no_tz.astype(TI_DTYPE)
+                return self._decode_array_from_time_index(array, key)
 
             if _is_from_meta(self.meta_index):
-                if self.variable_name == "gid":
-                    return da.arange(self.shape[0])[key].compute()
-
-                meta_info = array[key]
-                if len(meta_info.shape) < 1:  # scalar index
-                    return np.array(meta_info[self.meta_index],
-                                    dtype=self.dtype)
-                return np.array([col[self.meta_index] for col in meta_info],
-                                dtype=self.dtype)
+                return self._decode_array_from_meta(array, key)
 
             return rex_unscale(array[key], self.scale_factor, self.adder)
 
+    def _decode_array_from_time_index(self, array, key):
+        """Parse values from the `time_index` dataset"""
+        values_as_str = array[key].astype("U")
+
+        if len(values_as_str.shape) < 1: # scalar ti
+            values_as_str = values_as_str.split("+")[0]
+            return np.array(values_as_str, dtype=TI_DTYPE)
+
+        values_no_tz = np.char.partition(values_as_str, "+")[:, 0]
+        return values_no_tz.astype(TI_DTYPE)
+
+    def _decode_array_from_meta(self, array, key):
+        """Parse values from the `meta` record array"""
+        if self.variable_name == "gid":
+            return da.arange(self.shape[0])[key].compute()
+
+        meta_info = array[key]
+        if len(meta_info.shape) < 1:  # scalar index
+            return np.array(meta_info[self.meta_index], dtype=self.dtype)
+
+        return np.array([col[self.meta_index] for col in meta_info],
+                        dtype=self.dtype)
+
+    # pylint: disable=protected-access
     def get_array(self, needs_lock=True):
+        """Get array of data for variable
+
+        Parameters
+        ----------
+        needs_lock : bool, optional
+            Flag indicating wether a lock should be acquired before
+            reading the data array (e.g. if a write operation is
+            necessary). By default, ``True``.
+
+        Returns
+        -------
+        array-like
+            Array of data. Could be lazy-loaded like an h5py.Dataset
+            instance.
+        """
         ds = self.datastore._acquire(needs_lock)
+
         if _is_from_coords(self.coord_index):
             return ds["coordinates"]
+
         if _is_from_meta(self.meta_index):
             return ds["meta"]
+
         if _is_time_index(self.variable_name):
             return ds["time_index"]
+
         return ds[self.variable_name]
 
 
@@ -319,6 +432,30 @@ class RexStore(AbstractDataStore):
 
     def __init__(self, manager, group=None, mode=None, hsds=False,
                  lock=HDF5_LOCK):
+        """
+
+        Parameters
+        ----------
+        manager : FileManager
+            A `FileManager` instance that can track wether files are
+            locked for reading or not.
+        group : str, optional
+            Name of subgroup in HDF5 file to open. By default, ``None``.
+        mode : str, default="r"
+            Mode to open file in. Note that cloud-based files (i.e. S3
+            or HSDS) can only be opened in read mode.
+            By default, ``"r"``.
+        hsds : bool, optional
+            Boolean flag indicating wether ``h5pyd`` is being used to
+            access the data. By default, ``False``.
+        lock : `SerializableLock`, optional
+            Resource lock to use when reading data from disk. Only
+            relevant when using dask or another form of parallelism. By
+            default, `None``, which chooses the appropriate locks to
+            safely read and write files with the currently active dask
+            scheduler.
+
+        """
         self.manager = manager
         self._group = group
         self.mode = mode
@@ -334,25 +471,41 @@ class RexStore(AbstractDataStore):
 
         Parameters
         ----------
-        filename : _type_
-            _description_
+        filename : path-like
+            Path to file to open.
         mode : str, default="r"
-            _description_. By default, ``"r"``.
-        group : _type_, optional
-            _description_. By default, ``None``.
-        lock : _type_, optional
-            _description_. By default, ``None``.
-        h5_driver : _type_, optional
-            _description_. By default, ``None``.
-        hsds : _type_, optional
-            _description_. By default, ``None``.
-        hsds_kwargs : _type_, optional
-            _description_. By default, ``None``.
+            Mode to open file in. Note that cloud-based files (i.e. S3
+            or HSDS) can only be opened in read mode.
+            By default, ``"r"``.
+        group : str, optional
+            Name of subgroup in HDF5 file to open. By default, ``None``.
+        lock : `SerializableLock`, optional
+            Resource lock to use when reading data from disk. Only
+            relevant when using dask or another form of parallelism. By
+            default, `None``, which chooses the appropriate locks to
+            safely read and write files with the currently active dask
+            scheduler.
+        h5_driver : str, optional
+            HDF5 driver to use. See
+            [here](https://docs.h5py.org/en/latest/high/file.html#file-drivers)
+            for more details. By default, ``None``.
+        h5_driver_kwds : _type_, optional
+            HDF5 driver keyword-argument pairs. See
+            [here](https://docs.h5py.org/en/latest/high/file.html#file-drivers)
+            for more details. By default, ``None``.
+        hsds : bool, optional
+            Boolean flag to use ``h5pyd`` to handle HDF5 'files' hosted
+            on AWS behind HSDS. Note that file paths starting with
+            "/nrel/" will be treated as ``hsds=True`` regardless of this
+            input. By default, ``False``.
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for ``h5pyd``, (e.g., bucket,
+            username, password, etc.). By default, ``None``.
 
         Returns
         -------
-        _type_
-            _description_
+        RexStore
+            Initialized `RexStore` instance.
 
         Raises
         ------
@@ -416,14 +569,18 @@ class RexStore(AbstractDataStore):
         return self._ds_shape
 
     def open_store_variable(self, name, var, meta_index=-1, coord_index=-1):
-        """_summary_
+        """Initialize a `Variable` instance from the store
 
         Parameters
         ----------
-        name : _type_
-            _description_
-        var : _type_
-            _description_
+        name : str
+            Name of variable.
+        var : obj
+            Handle that can be used to pull variable metadata. Typically
+            this is an h5py.Dataset, but it can also be a custom wrapper
+            as long as it has the correct attributes to compile a
+            variable meta dictionary. `RexMetaVar` and `RexCoordVar`
+            satisfy the latter requirement.
         meta_index : int, default=-1
             Index value specifying wether variable came from meta. If
             this value is positive, the variable is assumed to originate
@@ -474,14 +631,15 @@ class RexStore(AbstractDataStore):
         if name in {"latitude", "longitude"}:
             return ["gid"]
 
+        return self._get_dimensions_from_var_shape(var)
+
+    def _get_dimensions_from_var_shape(self, var):
+        """Get dimensions for var based on it's shape"""
         if var.shape == self.ds_shape:
             return ["time_index", "gid"]
 
         if var.shape == (self.ds_shape[0],):
             return ["time_index"]
-
-        if var.shape == (self.ds_shape[1],):
-            return ["gid"]
 
         return ["gid"]  # default to gid dimension
 
@@ -506,7 +664,7 @@ class RexStore(AbstractDataStore):
         iter_meta = False
         iter_coords = False
         for k, v in self.ds.items():
-            if not _is_h5_dset(v):  # groups are not vars
+            if not _is_h5_dataset(v):  # groups are not vars
                 continue
             if k.casefold() == "coordinates":
                 iter_coords = True  # handle below
@@ -637,28 +795,47 @@ class RexBackendEntrypoint(BackendEntrypoint):
 
     def open_dataset(self, filename_or_obj, *, drop_variables=None, group=None,
                      lock=None, h5_driver=None, h5_driver_kwds=None,
-                     hsds=None, hsds_kwargs=None):
-        """_summary_
+                     hsds=False, hsds_kwargs=None):
+        """Open a dataset using the rexarray backend
 
         Parameters
         ----------
         filename_or_obj : str | path-like | ReadBuffer | AbstractDataStore
-            _description_
+            Path to file to open, or instantiated buffer that data can
+            be read from.
         drop_variables : str | Iterable[str] | None, optional
-            _description_. By default, ``None``.
-        group : _type_, optional
-            _description_. By default, ``None``.
-        lock : _type_, optional
-            _description_. By default, ``None``.
-        driver : _type_, optional
-            _description_. By default, ``None``.
-        driver_kwds : _type_, optional
-            _description_. By default, ``None``.
+            A variable or list of variables to exclude from being parsed
+            from the dataset. This may be useful to drop variables with
+            problems or inconsistent values. By default, ``None``.
+        group : str, optional
+            Name of subgroup in HDF5 file to open. By default, ``None``.
+        lock : `SerializableLock`, optional
+            Resource lock to use when reading data from disk. Only
+            relevant when using dask or another form of parallelism. By
+            default, `None``, which chooses the appropriate locks to
+            safely read and write files with the currently active dask
+            scheduler.
+        h5_driver : str, optional
+            HDF5 driver to use. See
+            [here](https://docs.h5py.org/en/latest/high/file.html#file-drivers)
+            for more details. By default, ``None``.
+        h5_driver_kwds : _type_, optional
+            HDF5 driver keyword-argument pairs. See
+            [here](https://docs.h5py.org/en/latest/high/file.html#file-drivers)
+            for more details. By default, ``None``.
+        hsds : bool, optional
+            Boolean flag to use ``h5pyd`` to handle HDF5 'files' hosted
+            on AWS behind HSDS. Note that file paths starting with
+            "/nrel/" will be treated as ``hsds=True`` regardless of this
+            input. By default, ``False``.
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for ``h5pyd``, (e.g., bucket,
+            username, password, etc.). By default, ``None``.
 
         Returns
         -------
-        _type_
-            _description_
+        xr.Dataset
+            Initialized and opened xarray Dataset instance.
         """
         filename_or_obj = _normalize_path(filename_or_obj)
         store = RexStore.open(filename_or_obj, group=group, lock=lock,
@@ -673,7 +850,51 @@ class RexBackendEntrypoint(BackendEntrypoint):
 
     def open_datatree(self, filename_or_obj, *, drop_variables=None,
                       group=None, lock=None, h5_driver=None,
-                      h5_driver_kwds=None, hsds=None, hsds_kwargs=None):
+                      h5_driver_kwds=None, hsds=False, hsds_kwargs=None):
+        """Open a rex-style file as a data tree
+
+        The groups in the HDF5 file map directly to the groups of the
+        DataTree
+
+        Parameters
+        ----------
+        filename_or_obj : str | path-like | ReadBuffer | AbstractDataStore
+            Path to file to open, or instantiated buffer that data can
+            be read from.
+        drop_variables : str | Iterable[str] | None, optional
+            A variable or list of variables to exclude from being parsed
+            from the dataset. This may be useful to drop variables with
+            problems or inconsistent values. By default, ``None``.
+        group : str, optional
+            Name of subgroup in HDF5 file to open. By default, ``None``.
+        lock : `SerializableLock`, optional
+            Resource lock to use when reading data from disk. Only
+            relevant when using dask or another form of parallelism. By
+            default, `None``, which chooses the appropriate locks to
+            safely read and write files with the currently active dask
+            scheduler.
+        h5_driver : str, optional
+            HDF5 driver to use. See
+            [here](https://docs.h5py.org/en/latest/high/file.html#file-drivers)
+            for more details. By default, ``None``.
+        h5_driver_kwds : _type_, optional
+            HDF5 driver keyword-argument pairs. See
+            [here](https://docs.h5py.org/en/latest/high/file.html#file-drivers)
+            for more details. By default, ``None``.
+        hsds : bool, optional
+            Boolean flag to use ``h5pyd`` to handle HDF5 'files' hosted
+            on AWS behind HSDS. Note that file paths starting with
+            "/nrel/" will be treated as ``hsds=True`` regardless of this
+            input. By default, ``False``.
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for ``h5pyd``, (e.g., bucket,
+            username, password, etc.). By default, ``None``.
+
+        Returns
+        -------
+        xr.DataTree
+            Initialized and opened xarray DataTree instance.
+        """
         # Delayed import for Python 3.9 compat
         # pylint: disable=import-outside-toplevel
         from xarray.backends.common import datatree_from_dict_with_io_cleanup
@@ -690,7 +911,52 @@ class RexBackendEntrypoint(BackendEntrypoint):
 
     def open_groups_as_dict(self, filename_or_obj, *, drop_variables=None,
                             group=None, lock=None, h5_driver=None,
-                            h5_driver_kwds=None, hsds=None, hsds_kwargs=None):
+                            h5_driver_kwds=None, hsds=False, hsds_kwargs=None):
+        """Open a rex-style file as a data dictionary
+
+        The groups in the HDF5 file map directly to keys in the return
+        dictionary.
+
+        Parameters
+        ----------
+        filename_or_obj : str | path-like | ReadBuffer | AbstractDataStore
+            Path to file to open, or instantiated buffer that data can
+            be read from.
+        drop_variables : str | Iterable[str] | None, optional
+            A variable or list of variables to exclude from being parsed
+            from the dataset. This may be useful to drop variables with
+            problems or inconsistent values. By default, ``None``.
+        group : str, optional
+            Name of subgroup in HDF5 file to open. By default, ``None``.
+        lock : `SerializableLock`, optional
+            Resource lock to use when reading data from disk. Only
+            relevant when using dask or another form of parallelism. By
+            default, `None``, which chooses the appropriate locks to
+            safely read and write files with the currently active dask
+            scheduler.
+        h5_driver : str, optional
+            HDF5 driver to use. See
+            [here](https://docs.h5py.org/en/latest/high/file.html#file-drivers)
+            for more details. By default, ``None``.
+        h5_driver_kwds : _type_, optional
+            HDF5 driver keyword-argument pairs. See
+            [here](https://docs.h5py.org/en/latest/high/file.html#file-drivers)
+            for more details. By default, ``None``.
+        hsds : bool, optional
+            Boolean flag to use ``h5pyd`` to handle HDF5 'files' hosted
+            on AWS behind HSDS. Note that file paths starting with
+            "/nrel/" will be treated as ``hsds=True`` regardless of this
+            input. By default, ``False``.
+        hsds_kwargs : dict, optional
+            Dictionary of optional kwargs for ``h5pyd``, (e.g., bucket,
+            username, password, etc.). By default, ``None``.
+
+        Returns
+        -------
+        dict
+            Initialized and opened file where keys are group names and
+            values are dataset instances for that group.
+        """
         # Delayed import for Python 3.9 compat
         # pylint: disable=import-outside-toplevel
         from xarray.core.treenode import NodePath
@@ -702,10 +968,7 @@ class RexBackendEntrypoint(BackendEntrypoint):
                               hsds=hsds, hsds_kwargs=hsds_kwargs)
 
         # Check for a group and make it a parent if it exists
-        if group:
-            parent = NodePath("/") / NodePath(group)
-        else:
-            parent = NodePath("/")
+        parent = NodePath("/") / NodePath(group) if group else NodePath("/")
 
         groups_dict = {}
         for path_group in _iter_h5_groups(store.ds, parent=parent):
