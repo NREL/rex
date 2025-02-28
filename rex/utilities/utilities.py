@@ -3,6 +3,7 @@
 Collection of helpful functions
 """
 import datetime
+import logging
 import inspect
 import json
 import yaml
@@ -20,6 +21,9 @@ from packaging import version
 
 from rex.utilities.exceptions import (FileInputError, JSONError, RetryError,
                                       RetryWarning)
+
+
+logger = logging.getLogger(__name__)
 
 
 def safe_json_load(fpath):
@@ -1098,3 +1102,137 @@ def pd_date_range(*args, **kwargs):
             kwargs['closed'] = None
 
     return pd.date_range(*args, **kwargs)
+
+
+def rex_unscale(data, scale_factor=1, adder=0):
+    """Unscale rex-formatted data
+
+    Rex-style unscaling divides by the ``scale_factor`` if ``adder==0``;
+    otherwise the ``scale_factor`` is multiplied before adding the
+    ``adder``.
+
+    Parameters
+    ----------
+    data : array-like
+        Input data to be unscaled.
+    scale_factor : int | float, optional
+        Data scaling factor. By default, ``1``.
+    adder : int | float, optional
+        Data adder. By default, ``0``.
+
+    Returns
+    -------
+    array-like
+        Unscaled input data.
+    """
+    if adder == 0:
+        return data / scale_factor
+
+    return data * scale_factor + adder
+
+
+def import_fsspec_or_fail(file_path=None):
+    """Attempt to import `fsspec` module; throw error if not found
+
+    Parameters
+    ----------
+    file_path : str, optional
+        Optional name of file to add to error message to make it more
+        explicit to user what file was trying to be opened.
+
+    Returns
+    -------
+    fsspec
+        Handle to the fsspec module.
+    """
+    maybe_fn = "" if file_path is None else f': "{file_path}"'
+    try:
+        # pylint: disable=import-outside-toplevel
+        import fsspec
+    except Exception as e:
+        msg = (f'Tried to open s3 file path{maybe_fn} with '
+               'fsspec but could not import, try '
+               '`pip install NREL-rex[s3]`')
+        logger.error(msg)
+        raise ImportError(msg) from e
+
+    return fsspec
+
+
+def import_h5pyd_or_fail(file_path=None):
+    """Attempt to import `h5pyd` module; throw error if not found
+
+    Parameters
+    ----------
+    file_path : str, optional
+        Optional name of file to add to error message to make it more
+        explicit to user what file was trying to be opened.
+
+    Returns
+    -------
+    fsspec
+        Handle to the fsspec module.
+    """
+    maybe_fn = "" if file_path is None else f': "{file_path}"'
+    try:
+        import h5pyd
+    except Exception as e:
+        msg = (f'Tried to open hsds file path{maybe_fn} with '
+               'h5pyd but could not import, try '
+               '`pip install NREL-rex[hsds]`')
+        logger.error(msg)
+        raise ImportError(msg) from e
+
+    return h5pyd
+
+def assert_read_only_mode(mode, service="HSDS"):
+    """Throw error if attempting to use non-read mode
+
+    Parameters
+    ----------
+    mode : str
+        File open mode requested by user.
+    service : str, default="HSDS"
+        Optional name of remote service being used for more descriptive
+        error message.
+    """
+    if 'r' not in mode or 'w' in mode or 'a' in mode:
+        msg = f'Cannot write to files accessed via {service}!'
+        logger.error(msg)
+        raise OSError(msg)
+
+
+def is_hsds_file(file_path):
+    """Parse one or more filepath to determine if it is hsds
+
+    Parameters
+    ----------
+    file_path : str | list
+        One or more file paths (only the first is parsed if multiple)
+
+    Returns
+    -------
+    is_hsds_file : bool
+        True if hsds
+    """
+    if isinstance(file_path, (list, tuple)):
+        file_path = file_path[0]
+    return str(file_path).startswith('/nrel/')
+
+
+def is_s3_file(file_path):
+    """Parse one or more filepath to determine if it is s3
+
+    Parameters
+    ----------
+    file_path : str | list
+        One or more file paths (only the first is parsed if multiple)
+
+    Returns
+    -------
+    is_s3_file : bool
+        True if s3
+    """
+    if isinstance(file_path, (list, tuple)):
+        file_path = file_path[0]
+    return str(file_path).startswith('s3://')
