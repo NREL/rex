@@ -135,12 +135,18 @@ def test_ds_attrs():
                                          freq="h")[:-1]
             f.run_attrs = test_attrs
 
+        Outputs.add_dataset(test_file, "pressure_0m", np.array([1]),
+                            np.float32, attrs={"units": "C"})
+
         with xr.open_dataset(test_file, engine="rex") as ds:
             for k, v in test_attrs.items():
                 assert ds.attrs[k] == v
             assert ds.attrs["package"] == "rex"
             assert "version" in ds.attrs
             assert "full_version_record" in ds.attrs
+
+            expected = {'standard_name': 'air_pressure', 'units': 'C'}
+            assert ds["pressure_0m"].attrs == expected
 
 
 def test_open_group():
