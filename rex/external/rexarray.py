@@ -39,11 +39,9 @@ from rex.utilities import (rex_unscale, import_fsspec_or_fail, is_hsds_file,
 logger = logging.getLogger(__name__)
 TI_DTYPE = np.dtype('datetime64[ns]')
 _SA_FN = Path(__file__).parent / "standard_attrs.json"
-with _SA_FN.open(encoding="utf-8") as fh:
-    _SA = json.load(fh)
 _EN_FN = Path(__file__).parent / "encondings.json"
-with _EN_FN.open(encoding="utf-8") as fh:
-    _EN = json.load(fh)
+_SA = {}
+_EN = {}
 
 
 def _open_remote_file(file_path):
@@ -145,6 +143,7 @@ def _compile_attrs(name, var, meta_index):
     necessary.
     """
     attrs = {}
+    _load_standard_attributes()
     for stand_name, stand_attrs in _SA.items():
         if name.startswith(stand_name):
             attrs.update(stand_attrs)
@@ -157,6 +156,24 @@ def _compile_attrs(name, var, meta_index):
     return attrs
 
 
+def _load_standard_attributes():
+    """Load standard attributes into global namespace, if needed"""
+    if _SA:
+        return
+
+    with _SA_FN.open(encoding="utf-8") as fh:
+        _SA.update(json.load(fh))
+
+
+def _load_standard_encodings():
+    """Load standard encodings into global namespace, if needed"""
+    if _EN:
+        return
+
+    with _EN_FN.open(encoding="utf-8") as fh:
+        _EN.update(json.load(fh))
+
+
 def _compile_variable_encoding(name, var, fn, dimensions, orig_shape):
     """Compile variable encoding"""
     # netCDF4 specific encoding
@@ -165,6 +182,7 @@ def _compile_variable_encoding(name, var, fn, dimensions, orig_shape):
         "fletcher32": var.fletcher32,
         "shuffle": var.shuffle,
     }
+    _load_standard_encodings()
     for encoding_name, default_encoding in _EN.items():
         if name.startswith(encoding_name):
             encoding.update(default_encoding)
