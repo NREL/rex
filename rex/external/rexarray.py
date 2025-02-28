@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=too-many-arguments
-"""
-rex backend for xarray implementation
+"""rex backend for xarray implementation
 
 Heavily based on the h5netcdf backend:
 https://github.com/pydata/xarray/blob/main/xarray/backends/h5netcdf_.py
