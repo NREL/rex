@@ -38,7 +38,7 @@ from rex.utilities import (rex_unscale, import_fsspec_or_fail, is_hsds_file,
 logger = logging.getLogger(__name__)
 TI_DTYPE = np.dtype('datetime64[ns]')
 _SA_FN = Path(__file__).parent / "standard_attrs.json"
-_EN_FN = Path(__file__).parent / "encondings.json"
+_EN_FN = Path(__file__).parent / "encodings.json"
 _SA = {}
 _EN = {}
 
