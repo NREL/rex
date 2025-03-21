@@ -31,8 +31,8 @@ from xarray.core.utils import (FrozenDict, is_remote_uri,
                                close_on_error)
 from xarray.core.variable import Variable
 
-from rex.utilities import (rex_unscale, import_fsspec_or_fail, is_hsds_file,
-                           import_h5pyd_or_fail, assert_read_only_mode)
+from rex.utilities import (rex_unscale, import_io_module_or_fail, is_hsds_file,
+                           assert_read_only_mode)
 
 
 logger = logging.getLogger(__name__)
@@ -336,7 +336,7 @@ class RexStore(AbstractDataStore):
         hsds = hsds or is_hsds_file(filename)
 
         if hsds:
-            h5pyd = import_h5pyd_or_fail(filename)
+            h5pyd = import_io_module_or_fail("h5pyd", filename)
 
             hsds_kwargs = hsds_kwargs or {}
             hsds_kwargs["use_cache"] = False
@@ -822,7 +822,7 @@ class RexBackendEntrypoint(BackendEntrypoint):
 
 def _open_remote_file(file_path):
     """Open a file using fsspec"""
-    fsspec = import_fsspec_or_fail(file_path)
+    fsspec = import_io_module_or_fail("fsspec", file_path)
     s3f = fsspec.open(file_path, mode="rb", anon=True,
                       default_fill_cache=False)
     return s3f.open()  # pylint: disable=no-member

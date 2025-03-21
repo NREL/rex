@@ -8,6 +8,7 @@ import inspect
 import json
 import yaml
 import os
+import importlib
 from fnmatch import fnmatch
 import numpy as np
 import pandas as pd
@@ -1131,59 +1132,43 @@ def rex_unscale(data, scale_factor=1, adder=0):
     return data * scale_factor + adder
 
 
-def import_fsspec_or_fail(file_path=None):
-    """Attempt to import `fsspec` module; throw error if not found
+def import_io_module_or_fail(module_name, file_path=None):
+    """Attempt to import I/O module; throw error if not found
+
+    The assumption is that the I/O module will be used to read a file,
+    so the `file_path` argument is used to put together a meaningful
+    error message to the user if importing the module fails.
 
     Parameters
     ----------
+    module_name : str
+        Name of i/o module (e.g. "h5pyd", "fsspec", etc.).
     file_path : str, optional
         Optional name of file to add to error message to make it more
         explicit to user what file was trying to be opened.
 
     Returns
     -------
-    fsspec
-        Handle to the fsspec module.
+    obj
+        Handle to the imported module.
     """
     maybe_fn = "" if file_path is None else f': "{file_path}"'
+    maybe_help_text = ""
+    if module_name == "h5pyd":
+        maybe_help_text = ", try `pip install NREL-rex[hsds]`"
+    elif module_name == "fsspec":
+        maybe_help_text = ", try `pip install NREL-rex[s3]`"
     try:
         # pylint: disable=import-outside-toplevel
-        import fsspec
+        module = importlib.import_module(module_name)
     except Exception as e:
-        msg = (f'Tried to open s3 file path{maybe_fn} with '
-               'fsspec but could not import, try '
-               '`pip install NREL-rex[s3]`')
+        msg = (f'Tried to open file path{maybe_fn} with {module_name!r} '
+               f'but could not import module{maybe_help_text}')
         logger.error(msg)
         raise ImportError(msg) from e
 
-    return fsspec
+    return module
 
-
-def import_h5pyd_or_fail(file_path=None):
-    """Attempt to import `h5pyd` module; throw error if not found
-
-    Parameters
-    ----------
-    file_path : str, optional
-        Optional name of file to add to error message to make it more
-        explicit to user what file was trying to be opened.
-
-    Returns
-    -------
-    fsspec
-        Handle to the fsspec module.
-    """
-    maybe_fn = "" if file_path is None else f': "{file_path}"'
-    try:
-        import h5pyd
-    except Exception as e:
-        msg = (f'Tried to open hsds file path{maybe_fn} with '
-               'h5pyd but could not import, try '
-               '`pip install NREL-rex[hsds]`')
-        logger.error(msg)
-        raise ImportError(msg) from e
-
-    return h5pyd
 
 def assert_read_only_mode(mode, service="HSDS"):
     """Throw error if attempting to use non-read mode

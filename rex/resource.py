@@ -16,9 +16,8 @@ from rex.sam_resource import SAMResource
 from rex.utilities.exceptions import ResourceKeyError, ResourceRuntimeError
 from rex.utilities.parse_keys import parse_keys, parse_slice
 from rex.utilities.utilities import (check_tz, get_lat_lon_cols, rex_unscale,
-                                     import_fsspec_or_fail, is_s3_file,
-                                     import_h5pyd_or_fail, is_hsds_file,
-                                     assert_read_only_mode)
+                                     import_io_module_or_fail, is_s3_file,
+                                     is_hsds_file, assert_read_only_mode)
 
 
 logger = logging.getLogger(__name__)
@@ -1138,13 +1137,13 @@ class BaseResource(BaseDatasetIterable):
 
         if is_hsds_file(file_path) or hsds:
             assert_read_only_mode(mode)
-            h5pyd = import_h5pyd_or_fail(file_path)
+            h5pyd = import_io_module_or_fail("h5pyd", file_path)
             file = h5pyd.File(file_path, mode='r', use_cache=False,
                               **(hsds_kwargs or {}))
 
         elif is_s3_file(file_path):
             assert_read_only_mode(mode, service="s3/fsspec")
-            fsspec = import_fsspec_or_fail(file_path)
+            fsspec = import_io_module_or_fail("fsspec", file_path)
             s3f = fsspec.open(file_path, mode='rb', anon=True,
                               default_fill_cache=False)
             file = h5py.File(s3f.open(), mode=mode)
