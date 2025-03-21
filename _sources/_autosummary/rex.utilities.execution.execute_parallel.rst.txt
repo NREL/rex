@@ -1,0 +1,6 @@
+rex.utilities.execution.execute\_parallel
+=========================================
+
+.. currentmodule:: rex.utilities.execution
+
+.. autofunction:: execute_parallel

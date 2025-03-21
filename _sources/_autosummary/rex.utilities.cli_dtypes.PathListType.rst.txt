@@ -1,0 +1,41 @@
+rex.utilities.cli\_dtypes.PathListType
+======================================
+
+.. currentmodule:: rex.utilities.cli_dtypes
+
+.. autoclass:: PathListType
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PathListType.convert
+      ~PathListType.dtype
+      ~PathListType.fail
+      ~PathListType.get_metavar
+      ~PathListType.get_missing_message
+      ~PathListType.path
+      ~PathListType.shell_complete
+      ~PathListType.split_envvar_value
+      ~PathListType.to_info_dict
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PathListType.arity
+      ~PathListType.envvar_list_splitter
+      ~PathListType.is_composite
+      ~PathListType.name
+   
+   

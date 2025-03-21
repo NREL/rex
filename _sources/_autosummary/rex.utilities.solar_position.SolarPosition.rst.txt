@@ -1,0 +1,35 @@
+rex.utilities.solar\_position.SolarPosition
+===========================================
+
+.. currentmodule:: rex.utilities.solar_position
+
+.. autoclass:: SolarPosition
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SolarPosition.apparent_elevation
+      ~SolarPosition.azimuth
+      ~SolarPosition.elevation
+      ~SolarPosition.latitude
+      ~SolarPosition.longitude
+      ~SolarPosition.time_index
+      ~SolarPosition.zenith
+   
+   
