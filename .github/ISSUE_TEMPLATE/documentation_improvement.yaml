@@ -1,0 +1,41 @@
+name: Documentation Improvement
+description: Report wrong, missing, or incomplete rex documentation
+type: Task
+labels: [documentation, enhancement]
+
+body:
+  - type: checkboxes
+    attributes:
+      label: rex version checks
+      options:
+        - label: >
+            I have checked that the issue still exists on the latest versions of the docs
+            on `main` [here](https://nrel.github.io/rex/)
+          required: true
+  - type: textarea
+    id: location
+    attributes:
+      label: Location of the documentation
+      description: >
+        Please provide the location of the documentation, e.g. ``rex.resource.Resource`` or the
+        URL of the documentation, e.g.
+        "https://nrel.github.io/rex/_autosummary/rex.resource.Resource.html#rex.resource.Resource"
+      placeholder: https://nrel.github.io/rex/_autosummary/rex.resource.Resource.html#rex.resource.Resource
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Documentation problem
+      description: >
+        Please provide a description of what documentation you believe needs to be fixed/improved.
+    validations:
+      required: true
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested fix for documentation
+      description: >
+        Please provide a suggested fix for the wrong, missing, or incomplete documentation.
+    validations:
+      required: true
