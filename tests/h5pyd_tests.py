@@ -10,7 +10,7 @@ import h5pyd
 import numpy as np
 import xarray as xr
 
-from rex import NSRDB, WindResource
+from rex import NSRDB, WindResource, open_mfdataset_hsds
 
 
 def test_file_list():
@@ -78,3 +78,13 @@ def test_sup3rcc():
     with xr.open_dataset(fp, engine="rex", hsds=True) as ds:
         assert np.allclose(ds["ghi"].isel(gid=slice(100000, 100002)), ghi)
 
+
+def test_mf_hsds_xr():
+    """Test opening multiple files via HSDS with xarray"""
+
+    with open_mfdataset_hsds(
+        "/nrel/wtk/conus/wtk_conus_200[8,9].h5", parallel=True, chunks="auto"
+    ) as ds:
+        assert ds.sizes == {'time_index': 17544, 'gid': 2488136}
+        assert str(ds.time_index.isel(time_index=0).values).startswith("2008")
+        assert str(ds.time_index.isel(time_index=-1).values).startswith("2009")
