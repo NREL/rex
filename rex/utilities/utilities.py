@@ -1202,6 +1202,7 @@ def is_hsds_file(file_path):
     """
     if isinstance(file_path, (list, tuple)):
         file_path = file_path[0]
+    file_path = filename_from_h5pyd(file_path)
     return str(file_path).startswith('/nrel/')
 
 
@@ -1221,3 +1222,25 @@ def is_s3_file(file_path):
     if isinstance(file_path, (list, tuple)):
         file_path = file_path[0]
     return str(file_path).startswith('s3://')
+
+
+def filename_from_h5pyd(filename_or_obj):
+    """Extract file name from `h5pyd.File` object
+
+    If input is not instance of ``h5pyd.File``, the input is returned
+    without any modification.
+
+    Parameters
+    ----------
+    filename_or_obj : str | h5pyd.File
+        Input that could be a file name or an ``h5pyd.File`` object.
+
+    Returns
+    -------
+    str
+        Name of file
+    """
+    try:
+        return filename_or_obj.filename
+    except AttributeError:
+        return filename_or_obj

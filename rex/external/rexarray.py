@@ -32,7 +32,7 @@ from xarray.core.utils import (FrozenDict, is_remote_uri,
 from xarray.core.variable import Variable
 
 from rex.utilities import (rex_unscale, import_io_module_or_fail, is_hsds_file,
-                           assert_read_only_mode)
+                           assert_read_only_mode, filename_from_h5pyd)
 
 
 logger = logging.getLogger(__name__)
@@ -336,6 +336,7 @@ class RexStore(AbstractDataStore):
         hsds = hsds or is_hsds_file(filename)
 
         if hsds:
+            filename = filename_from_h5pyd(filename)
             h5pyd = import_io_module_or_fail("h5pyd", filename)
 
             hsds_kwargs = hsds_kwargs or {}
