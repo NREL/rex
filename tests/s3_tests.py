@@ -21,7 +21,7 @@ def test_nsrdb():
         assert isinstance(ghi, np.ndarray)
 
     with xr.open_dataset(fp, engine="rex") as ds:
-        assert np.allclose(ds["ghi"].isel(time_index=slice(0, 10), gid=0), ghi)
+        assert np.allclose(ds["ghi"].isel(time=slice(0, 10), gid=0), ghi)
 
 
 def test_wtk():
@@ -34,7 +34,7 @@ def test_wtk():
         assert isinstance(ws, np.ndarray)
 
     with xr.open_dataset(fp, engine="rex") as ds:
-        xr_ws = ds["windspeed_80m"].isel(time_index=slice(0, 10), gid=0)
+        xr_ws = ds["windspeed_80m"].isel(time=slice(0, 10), gid=0)
         assert np.allclose(xr_ws, ws)
 
 
@@ -49,7 +49,7 @@ def test_sup3rcc():
         assert isinstance(temp, np.ndarray)
 
     with xr.open_dataset(fp, engine="rex") as ds:
-        xr_temp = ds["temperature_2m"].isel(time_index=slice(0, 10), gid=0)
+        xr_temp = ds["temperature_2m"].isel(time=slice(0, 10), gid=0)
         assert np.allclose(xr_temp, temp)
 
 
@@ -66,6 +66,6 @@ def test_multiyear():
     files = ["s3://nrel-pds-nsrdb/current/nsrdb_1998.h5",
              "s3://nrel-pds-nsrdb/current/nsrdb_1999.h5"]
     with xr.open_mfdataset(files, engine="rex") as ds:
-        xr_ghi = ds["ghi"].isel(time_index=slice(0, 10), gid=0)
+        xr_ghi = ds["ghi"].isel(time=slice(0, 10), gid=0)
         assert np.allclose(xr_ghi, ghi)
-        assert ds.sizes['time_index'] == 35040
+        assert ds.sizes['time'] == 35040

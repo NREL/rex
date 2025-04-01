@@ -37,12 +37,12 @@ def check_ti(fp, ds, group=None):
         assert t_var in ds.coords
         assert len(ds[t_var].shape) == 1
         assert ds[t_var].dtype == np.dtype('datetime64[ns]')
-        assert np.allclose(ds[t_var].isel(time_index=0)
-                           .astype('int64'), truth_ti[0].value)
-        assert np.allclose(ds[t_var].isel(time_index=[0, 2])
-                           .astype('int64'), truth_ti[[0, 2]].astype('int64'))
-        assert np.allclose(ds[t_var].isel(time_index=slice(0, 2))
-                           .astype('int64'), truth_ti[0:2].astype('int64'))
+        assert np.allclose(ds[t_var].isel(time=0).astype('int64'),
+                           truth_ti[0].value)
+        assert np.allclose(ds[t_var].isel(time=[0, 2]).astype('int64'),
+                           truth_ti[[0, 2]].astype('int64'))
+        assert np.allclose(ds[t_var].isel(time=slice(0, 2)).astype('int64'),
+                           truth_ti[0:2].astype('int64'))
 
 
 def check_meta(fp, ds, group=None):
@@ -70,7 +70,7 @@ def check_shape(fp, ds, group=None):
     with Resource(fp, group=group) as res:
         truth_shape = res.shape
 
-    assert ds.sizes == {'time_index': truth_shape[0], 'gid': truth_shape[1]}
+    assert ds.sizes == {'time': truth_shape[0], 'gid': truth_shape[1]}
 
 
 def check_data(fp, ds, group=None):
@@ -93,7 +93,7 @@ def test_open_with_xr(fp):
         check_shape(fp, ds)
         check_data(fp, ds)
 
-        assert set(ds.indexes) == {"time_index", "gid"}
+        assert set(ds.indexes) == {"time", "gid"}
 
 
 def test_encoding():
@@ -169,8 +169,7 @@ def test_open_mf_year(glob_fp):
         truth_shape = res.shape
 
     with xr.open_mfdataset(glob_fp, engine="rex") as ds:
-        assert ds.sizes == {'time_index': truth_shape[0],
-                            'gid': truth_shape[1]}
+        assert ds.sizes == {'time': truth_shape[0], 'gid': truth_shape[1]}
 
 
 def test_open_mf_ds():
@@ -181,8 +180,7 @@ def test_open_mf_ds():
         datasets = res.resource_datasets
 
     with xr.open_mfdataset(glob_fp, engine="rex") as ds:
-        assert ds.sizes == {'time_index': truth_shape[0],
-                            'gid': truth_shape[1]}
+        assert ds.sizes == {'time': truth_shape[0], 'gid': truth_shape[1]}
         assert all(ds_name in ds for ds_name in datasets)
 
 
@@ -219,18 +217,18 @@ def test_detect_var_dims():
                             attrs={"units": "MW"})
 
         with xr.open_dataset(test_file, engine="rex") as ds:
-            assert set(ds.indexes) == {"time_index", "gid"}
+            assert set(ds.indexes) == {"time", "gid"}
 
             assert ds["spatial_var"].dims == ("gid",)
-            assert ds["temporal_var"].dims == ("time_index", )
-            assert ds["spatiotemporal_var"].dims == ("time_index", "gid")
+            assert ds["temporal_var"].dims == ("time", )
+            assert ds["spatiotemporal_var"].dims == ("time", "gid")
             assert ds["latitude"].dims == ("gid",)
             assert ds["longitude"].dims == ("gid",)
             assert ds["timezone"].dims == ("gid",)
 
             assert ds["spatial_var"].isel(gid=0) == 1
-            assert ds["temporal_var"].isel(time_index=542) == 0
-            assert ds["spatiotemporal_var"].isel(gid=0, time_index=542) == 1
+            assert ds["temporal_var"].isel(time=542) == 0
+            assert ds["spatiotemporal_var"].isel(gid=0, time=542) == 1
 
             assert np.allclose(ds["latitude"], [41.29])
             assert np.allclose(ds["longitude"], [-71.86])
@@ -257,7 +255,7 @@ def test_coords_dset():
             fh.create_dataset("coordinates", data=np.array([[41.29, -71.86]]))
 
         with xr.open_dataset(test_file, engine="rex") as ds:
-            assert set(ds.indexes) == {"time_index", "gid"}
+            assert set(ds.indexes) == {"time", "gid"}
             assert ds["latitude"].dims == ("gid",)
             assert ds["longitude"].dims == ("gid",)
             assert ds["timezone"].dims == ("gid",)
@@ -279,7 +277,7 @@ def test_open_data_tree_no_groups(fp):
         check_shape(fp, ds)
         check_data(fp, ds)
 
-        assert set(ds.indexes) == {"time_index", "gid"}
+        assert set(ds.indexes) == {"time", "gid"}
 
 
 @pytest.mark.skipif(sys.version_info[:2] <= (3, 9),

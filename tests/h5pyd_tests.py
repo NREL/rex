@@ -85,6 +85,6 @@ def test_mf_hsds_xr():
     with open_mfdataset_hsds(
         "/nrel/wtk/conus/wtk_conus_200[8,9].h5", parallel=True, chunks="auto"
     ) as ds:
-        assert ds.sizes == {'time_index': 17544, 'gid': 2488136}
-        assert str(ds.time_index.isel(time_index=0).values).startswith("2008")
-        assert str(ds.time_index.isel(time_index=-1).values).startswith("2009")
+        assert ds.sizes == {'time': 17544, 'gid': 2488136}
+        assert str(ds.time_index.isel(time=0).values).startswith("2008")
+        assert str(ds.time_index.isel(time=-1).values).startswith("2009")

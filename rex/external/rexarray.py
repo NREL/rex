@@ -240,7 +240,7 @@ class RexStore(AbstractDataStore):
         Parameters
         ----------
         manager : FileManager
-            A `FileManager` instance that can track wether files are
+            A `FileManager` instance that can track whether files are
             locked for reading or not.
         group : str, optional
             Name of subgroup in HDF5 file to open. By default, ``None``.
@@ -430,7 +430,7 @@ class RexStore(AbstractDataStore):
             return ["gid"]
 
         if _is_time_index(name):
-            return ["time_index"]
+            return ["time"]
 
         if name in {"latitude", "longitude"}:
             return ["gid"]
@@ -440,10 +440,10 @@ class RexStore(AbstractDataStore):
     def _get_dimensions_from_var_shape(self, var):
         """Get dimensions for var based on it's shape"""
         if var.shape == self.ds_shape:
-            return ["time_index", "gid"]
+            return ["time", "gid"]
 
         if var.shape == (self.ds_shape[0],):
-            return ["time_index"]
+            return ["time"]
 
         return ["gid"]  # default to gid dimension
 
@@ -814,7 +814,7 @@ class RexBackendEntrypoint(BackendEntrypoint):
         ds = Dataset(variables, attrs=attrs)
         coord_names = (store.get_coord_names().intersection(variables))
         ds = ds.set_coords(coord_names)
-        dimension_coords = {name: name for name in ["time_index", "gid"]
+        dimension_coords = {name: name for name in ["time", "gid"]
                             if name in coord_names}
         if dimension_coords:
             ds = ds.set_index(dimension_coords)
