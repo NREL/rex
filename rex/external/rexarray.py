@@ -8,6 +8,7 @@ https://github.com/pydata/xarray/blob/main/xarray/backends/h5netcdf_.py
 import io
 import os
 import json
+import fnmatch
 import logging
 import warnings
 from pathlib import Path
@@ -22,7 +23,7 @@ from xarray.backends.common import (AbstractDataStore, BackendArray,
 from xarray.backends.file_manager import CachingFileManager
 from xarray.backends.locks import (HDF5_LOCK, combine_locks, ensure_lock,
                                    get_write_lock)
-from xarray import conventions
+from xarray import conventions, open_mfdataset
 from xarray.core import indexing
 from xarray.core.dataset import Dataset
 from xarray.core.utils import (FrozenDict, is_remote_uri,
@@ -43,6 +44,7 @@ _SA = {}
 _EN = {}
 
 
+_RexHSDSPath = namedtuple("_RexHSDSPath", ["filename"])
 VarInfo = namedtuple("VarInfo", ["name", "var", "meta_index", "coord_index"],
                      defaults=[-1, -1])
 
@@ -819,6 +821,42 @@ class RexBackendEntrypoint(BackendEntrypoint):
         ds.set_close(store.close)
 
         return ds
+
+
+def open_mfdataset_hsds(paths, **kwargs):
+    """Open a rex-style file as a data dictionary
+
+    The groups in the HDF5 file map directly to keys in the return
+    dictionary.
+
+    Parameters
+    ----------
+    paths : str | sequence of str
+        Either a string glob in the form "/path/to/my/hsds/files/*.h5"
+        or an explicit list of HSDS file paths to open.
+    **kwargs
+        Keyword-value argument pairs to pass to :func:`open_mfdataset`.
+        We strongly recommend specifying ``parallel=True`` and
+        ``chunks="auto"`` to help with data loading times.
+    """
+    kwargs["engine"] = "rex"
+    kwargs["hsds"] = True
+
+    if isinstance(paths, str):
+        paths = _hsds_glob_to_list(paths)
+
+    return open_mfdataset(paths, **kwargs)
+
+
+def _hsds_glob_to_list(pattern):
+    """Given a glob pattern, return all hsds paths that match as list"""
+    h5pyd = import_io_module_or_fail("h5pyd", pattern)
+
+    folder = Path(pattern).parent
+    with h5pyd.Folder(f"{folder}/") as f:
+        data_list = [str(folder / fn) for fn in f]
+
+    return [_RexHSDSPath(fp) for fp in fnmatch.filter(data_list, pattern)]
 
 
 def _open_remote_file(file_path):
