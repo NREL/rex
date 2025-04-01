@@ -15,6 +15,7 @@ from pathlib import Path
 from collections import namedtuple
 
 import h5py
+import fsspec
 import numpy as np
 import dask.array as da
 from xarray import coding
@@ -861,7 +862,6 @@ def _hsds_glob_to_list(pattern):
 
 def _open_remote_file(file_path):
     """Open a file using fsspec"""
-    fsspec = import_io_module_or_fail("fsspec", file_path)
     s3f = fsspec.open(file_path, mode="rb", anon=True,
                       default_fill_cache=False)
     return s3f.open()  # pylint: disable=no-member

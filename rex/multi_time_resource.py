@@ -8,6 +8,7 @@ from itertools import chain
 from fnmatch import fnmatch
 import logging
 
+import s3fs
 import numpy as np
 import pandas as pd
 
@@ -288,15 +289,6 @@ class MultiTimeH5:
         file_paths : list
             List of filepaths for this handler to handle.
         """
-        try:
-            import s3fs
-        except Exception as e:
-            msg = (f'Tried to open s3 file path: "{h5_path}" with '
-                   'fsspec but could not import, try '
-                   '`pip install NREL-rex[s3]`')
-            logger.error(msg)
-            raise ImportError(msg) from e
-
         s3 = s3fs.S3FileSystem(anon=True)
 
         if isinstance(h5_path, (list, tuple)):

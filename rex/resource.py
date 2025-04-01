@@ -8,6 +8,7 @@ import logging
 from warnings import warn
 
 import dateutil
+import fsspec
 import h5py
 import numpy as np
 import pandas as pd
@@ -1143,7 +1144,6 @@ class BaseResource(BaseDatasetIterable):
 
         elif is_s3_file(file_path):
             assert_read_only_mode(mode, service="s3/fsspec")
-            fsspec = import_io_module_or_fail("fsspec", file_path)
             s3f = fsspec.open(file_path, mode='rb', anon=True,
                               default_fill_cache=False)
             file = h5py.File(s3f.open(), mode=mode)

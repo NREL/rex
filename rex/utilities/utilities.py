@@ -331,14 +331,7 @@ def check_res_file(res_file):
         bad = False
 
     elif res_file.startswith('s3://'):
-        try:
-            import fsspec  # pylint: disable=unused-import
-            bad = False
-        except Exception as e:
-            msg = (f'Tried to open s3 file path: "{res_file}" with '
-                   'fsspec but could not import, try '
-                   '`pip install NREL-rex[s3]`')
-            raise ImportError(msg) from e
+        bad = False
 
     elif '*' in res_file:
         bad = False
@@ -1156,8 +1149,6 @@ def import_io_module_or_fail(module_name, file_path=None):
     maybe_help_text = ""
     if module_name == "h5pyd":
         maybe_help_text = ", try `pip install NREL-rex[hsds]`"
-    elif module_name == "fsspec":
-        maybe_help_text = ", try `pip install NREL-rex[s3]`"
     try:
         # pylint: disable=import-outside-toplevel
         module = importlib.import_module(module_name)

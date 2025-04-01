@@ -94,7 +94,6 @@ setup(
         "test": test_requires,
         "dev": test_requires + dev_requires,
         "hsds": ["hsds>=0.8.4"],
-        "s3": ['fsspec', 's3fs'],
     },
     cmdclass={"develop": PostDevelopCommand},
 )
