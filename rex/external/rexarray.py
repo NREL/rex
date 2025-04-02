@@ -854,8 +854,8 @@ def _hsds_glob_to_list(pattern):
     h5pyd = import_io_module_or_fail("h5pyd", pattern)
 
     folder = Path(pattern).parent
-    with h5pyd.Folder(f"{folder}/") as f:
-        data_list = [str(folder / fn) for fn in f]
+    with h5pyd.Folder(f"{folder.as_posix()}/") as f:
+        data_list = [(folder / fn).as_posix() for fn in f]
 
     return [_RexHSDSPath(fp) for fp in fnmatch.filter(data_list, pattern)]
 
