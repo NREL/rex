@@ -825,26 +825,42 @@ class RexBackendEntrypoint(BackendEntrypoint):
 
 
 def open_mfdataset_hsds(paths, **kwargs):
-    """Open a rex-style file as a data dictionary
-
-    The groups in the HDF5 file map directly to keys in the return
-    dictionary.
+    """Open multiple NREL spatiotemporal datasets stored in cloud-optimized
+    HSDS paths into an xarray dataset object.
 
     Parameters
     ----------
     paths : str | sequence of str
         Either a string glob in the form "/path/to/my/hsds/files/*.h5"
-        or an explicit list of HSDS file paths to open.
+        or an explicit list of HSDS file paths to open. HSDS filepaths
+        typically start with "/nrel/*" and can be found using h5pyd. See `this
+        instruction set <https://nrel.github.io/rex/misc/examples.hsds.html>`_
+        for more details on HSDS files.
     **kwargs
         Keyword-value argument pairs to pass to :func:`open_mfdataset`.
         We strongly recommend specifying ``parallel=True`` and
         ``chunks="auto"`` to help with data loading times.
+
+    Returns
+    -------
+    dataset : xarray.Dataset
+        Xarray `Dataset
+        <https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html>`_
+        object initialized with an HSDS backend for cloud-optimized data
+        streaming.
     """
     kwargs["engine"] = "rex"
     kwargs["hsds"] = True
 
     if isinstance(paths, str):
         paths = _hsds_glob_to_list(paths)
+    elif isinstance(paths, (list, tuple)):
+        paths = [_RexHSDSPath(fp) for fp in paths]
+    else:
+        msg = ('Rex ``open_mfdataset_hsds()`` needs a str or list/tuple of '
+               f'strings but got: {type(paths)}')
+        logger.error(msg)
+        raise TypeError(msg)
 
     return open_mfdataset(paths, **kwargs)
 
