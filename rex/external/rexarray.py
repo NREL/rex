@@ -845,6 +845,13 @@ def open_mfdataset_hsds(paths, **kwargs):
 
     if isinstance(paths, str):
         paths = _hsds_glob_to_list(paths)
+    elif isinstance(paths, (list, tuple)):
+        paths = [_RexHSDSPath(fp) for fp in paths]
+    else:
+        msg = ('Rex ``open_mfdataset_hsds()`` needs a str or list/tuple of '
+               f'strings but got: {type(paths)}')
+        logger.error(msg)
+        raise TypeError(msg)
 
     return open_mfdataset(paths, **kwargs)
 

@@ -6,6 +6,7 @@ Note that this file cannot be named "test_*.py" because it is run with a
 separate github action that sets up a local hsds server before running the
 test.
 """
+import pytest
 import h5pyd
 import numpy as np
 import xarray as xr
@@ -79,12 +80,13 @@ def test_sup3rcc():
         assert np.allclose(ds["ghi"].isel(gid=slice(100000, 100002)), ghi)
 
 
-def test_mf_hsds_xr():
+@pytest.mark.parametrize('fps', ["/nrel/wtk/conus/wtk_conus_200[8,9].h5",
+                                 ("/nrel/wtk/conus/wtk_conus_2008.h5",
+                                  "/nrel/wtk/conus/wtk_conus_2009.h5")])
+def test_mf_hsds_xr(fps):
     """Test opening multiple files via HSDS with xarray"""
 
-    with open_mfdataset_hsds(
-        "/nrel/wtk/conus/wtk_conus_200[8,9].h5", parallel=True, chunks="auto"
-    ) as ds:
+    with open_mfdataset_hsds(fps, parallel=True, chunks="auto") as ds:
         assert ds.sizes == {'time': 17544, 'gid': 2488136}
         assert str(ds.time_index.isel(time=0).values).startswith("2008")
         assert str(ds.time_index.isel(time=-1).values).startswith("2009")
