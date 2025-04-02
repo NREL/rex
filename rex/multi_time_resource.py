@@ -8,6 +8,7 @@ from itertools import chain
 from fnmatch import fnmatch
 import logging
 
+import s3fs
 import numpy as np
 import pandas as pd
 
@@ -20,6 +21,7 @@ from rex.renewable_resource import (
 from rex.resource import Resource, BaseDatasetIterable
 from rex.utilities.exceptions import FileInputError
 from rex.utilities.parse_keys import parse_keys, parse_slice
+from rex.utilities.utilities import is_hsds_file, is_s3_file
 
 
 logger = logging.getLogger(__name__)
@@ -287,15 +289,6 @@ class MultiTimeH5:
         file_paths : list
             List of filepaths for this handler to handle.
         """
-        try:
-            import s3fs
-        except Exception as e:
-            msg = (f'Tried to open s3 file path: "{h5_path}" with '
-                   'fsspec but could not import, try '
-                   '`pip install NREL-rex[s3]`')
-            logger.error(msg)
-            raise ImportError(msg) from e
-
         s3 = s3fs.S3FileSystem(anon=True)
 
         if isinstance(h5_path, (list, tuple)):
@@ -337,10 +330,10 @@ class MultiTimeH5:
             List of filepaths for this handler to handle.
         """
 
-        if Resource.is_hsds_file(h5_path) or hsds:
+        if is_hsds_file(h5_path) or hsds:
             file_paths = cls._get_hsds_file_paths(h5_path,
                                                   hsds_kwargs=hsds_kwargs)
-        elif Resource.is_s3_file(h5_path):
+        elif is_s3_file(h5_path):
             file_paths = cls._get_s3_file_paths(h5_path)
         elif isinstance(h5_path, (list, tuple)):
             file_paths = list(chain.from_iterable(glob(fp) for fp in h5_path))

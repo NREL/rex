@@ -1,0 +1,135 @@
+{
+    "air_temperature": {
+        "dtype": "i2",
+        "scale_factor": 0.1
+    },
+    "alpha": {
+        "dtype": "u1",
+        "scale_factor": 0.01
+    },
+    "aod": {
+        "dtype": "u2",
+        "scale_factor": 0.001
+    },
+    "asymmetry": {
+        "dtype": "i1",
+        "scale_factor": 0.01
+    },
+    "cld_opd_dcomp": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    },
+    "cld_press_acha": {
+        "dtype": "u2",
+        "scale_factor": 1
+    },
+    "cld_reff_dcomp": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    },
+    "clearsky_dhi": {
+        "dtype": "u2",
+        "scale_factor": 1
+    },
+    "clearsky_dni": {
+        "dtype": "u2",
+        "scale_factor": 1
+    },
+    "clearsky_ghi": {
+        "dtype": "u2",
+        "scale_factor": 1
+    },
+    "cloud_fill_flag": {
+        "dtype": "u1",
+        "scale_factor": 1
+    },
+    "cloud_type": {
+        "dtype": "i1",
+        "scale_factor": 1
+    },
+    "dew_point": {
+        "dtype": "i2",
+        "scale_factor": 0.1
+    },
+    "dhi": {
+        "dtype": "u2",
+        "scale_factor": 1
+    },
+    "dni": {
+        "dtype": "u2",
+        "scale_factor": 1
+    },
+    "fill_flag": {
+        "dtype": "u1",
+        "scale_factor": 1
+    },
+    "ghi": {
+        "dtype": "u2",
+        "scale_factor": 1
+    },
+    "inversemoninobukhovlength": {
+        "dtype": "i2",
+        "scale_factor": 0.01
+    },
+    "ozone": {
+        "dtype": "u2",
+        "scale_factor": 0.001
+    },
+    "precipitationrate": {
+        "dtype": "u2",
+        "scale_factor": 0.1
+    },
+    "pressure": {
+        "dtype": "u2",
+        "scale_factor": 10
+    },
+    "relativehumidity": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    },
+    "relative_humidity": {
+        "dtype": "i1",
+        "scale_factor": 0.01
+    },
+
+    "solar_zenith_angle": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    },
+    "ssa": {
+        "dtype": "u1",
+        "scale_factor": 0.01
+    },
+    "surface_albedo": {
+        "dtype": "u1",
+        "scale_factor": 0.01
+    },
+    "surface_pressure": {
+        "dtype": "u2",
+        "scale_factor": 1
+    },
+    "temperature": {
+        "dtype": "i2",
+        "scale_factor": 0.01
+    },
+    "total_precipitable_water": {
+        "dtype": "u1",
+        "scale_factor": 0.1
+    },
+    "winddirection": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    },
+    "wind_direction": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    },
+    "windspeed": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    },
+    "wind_speed": {
+        "dtype": "u2",
+        "scale_factor": 0.01
+    }
+}

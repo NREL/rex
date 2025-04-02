@@ -12,7 +12,7 @@ You may need some additional software beyond the rex requirements to run this ex
 
 .. code-block:: bash
 
-    pip install s3fs zarr fsspec kerchunk
+    pip install zarr kerchunk
 
 Code Example
 ------------

@@ -69,7 +69,11 @@ setup(
             "temporal-stats=rex.temporal_stats.temporal_stats_cli:main",
             "wind-rose=rex.joint_pd.wind_rose_cli:main"
         ],
+        "xarray.backends": [
+            "rex=rex.external.rexarray:RexBackendEntrypoint"
+        ],
     },
+    package_data={'rex': ['external/*.json']},
     include_package_data=True,
     license="BSD 3-Clause",
     zip_safe=False,
@@ -90,7 +94,6 @@ setup(
         "test": test_requires,
         "dev": test_requires + dev_requires,
         "hsds": ["hsds>=0.8.4"],
-        "s3": ['fsspec', 's3fs'],
     },
     cmdclass={"develop": PostDevelopCommand},
 )

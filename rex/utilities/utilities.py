@@ -3,10 +3,12 @@
 Collection of helpful functions
 """
 import datetime
+import logging
 import inspect
 import json
 import yaml
 import os
+import importlib
 from fnmatch import fnmatch
 import numpy as np
 import pandas as pd
@@ -20,6 +22,9 @@ from packaging import version
 
 from rex.utilities.exceptions import (FileInputError, JSONError, RetryError,
                                       RetryWarning)
+
+
+logger = logging.getLogger(__name__)
 
 
 def safe_json_load(fpath):
@@ -326,14 +331,7 @@ def check_res_file(res_file):
         bad = False
 
     elif res_file.startswith('s3://'):
-        try:
-            import fsspec  # pylint: disable=unused-import
-            bad = False
-        except Exception as e:
-            msg = (f'Tried to open s3 file path: "{res_file}" with '
-                   'fsspec but could not import, try '
-                   '`pip install NREL-rex[s3]`')
-            raise ImportError(msg) from e
+        bad = False
 
     elif '*' in res_file:
         bad = False
@@ -1098,3 +1096,142 @@ def pd_date_range(*args, **kwargs):
             kwargs['closed'] = None
 
     return pd.date_range(*args, **kwargs)
+
+
+def rex_unscale(data, scale_factor=1, adder=0):
+    """Unscale rex-formatted data
+
+    Rex-style unscaling divides by the ``scale_factor`` if ``adder==0``;
+    otherwise the ``scale_factor`` is multiplied before adding the
+    ``adder``.
+
+    Parameters
+    ----------
+    data : array-like
+        Input data to be unscaled.
+    scale_factor : int | float, optional
+        Data scaling factor. By default, ``1``.
+    adder : int | float, optional
+        Data adder. By default, ``0``.
+
+    Returns
+    -------
+    array-like
+        Unscaled input data.
+    """
+    if adder == 0:
+        return data / scale_factor
+
+    return data * scale_factor + adder
+
+
+def import_io_module_or_fail(module_name, file_path=None):
+    """Attempt to import I/O module; throw error if not found
+
+    The assumption is that the I/O module will be used to read a file,
+    so the `file_path` argument is used to put together a meaningful
+    error message to the user if importing the module fails.
+
+    Parameters
+    ----------
+    module_name : str
+        Name of i/o module (e.g. "h5pyd", "fsspec", etc.).
+    file_path : str, optional
+        Optional name of file to add to error message to make it more
+        explicit to user what file was trying to be opened.
+
+    Returns
+    -------
+    obj
+        Handle to the imported module.
+    """
+    maybe_fn = "" if file_path is None else f': "{file_path}"'
+    maybe_help_text = ""
+    if module_name == "h5pyd":
+        maybe_help_text = ", try `pip install NREL-rex[hsds]`"
+    try:
+        # pylint: disable=import-outside-toplevel
+        module = importlib.import_module(module_name)
+    except Exception as e:
+        msg = (f'Tried to open file path{maybe_fn} with {module_name!r} '
+               f'but could not import module{maybe_help_text}')
+        logger.error(msg)
+        raise ImportError(msg) from e
+
+    return module
+
+
+def assert_read_only_mode(mode, service="HSDS"):
+    """Throw error if attempting to use non-read mode
+
+    Parameters
+    ----------
+    mode : str
+        File open mode requested by user.
+    service : str, default="HSDS"
+        Optional name of remote service being used for more descriptive
+        error message.
+    """
+    if 'r' not in mode or 'w' in mode or 'a' in mode:
+        msg = f'Cannot write to files accessed via {service}!'
+        logger.error(msg)
+        raise OSError(msg)
+
+
+def is_hsds_file(file_path):
+    """Parse one or more filepath to determine if it is hsds
+
+    Parameters
+    ----------
+    file_path : str | list
+        One or more file paths (only the first is parsed if multiple)
+
+    Returns
+    -------
+    is_hsds_file : bool
+        True if hsds
+    """
+    if isinstance(file_path, (list, tuple)):
+        file_path = file_path[0]
+    file_path = filename_from_h5pyd(file_path)
+    return str(file_path).startswith('/nrel/')
+
+
+def is_s3_file(file_path):
+    """Parse one or more filepath to determine if it is s3
+
+    Parameters
+    ----------
+    file_path : str | list
+        One or more file paths (only the first is parsed if multiple)
+
+    Returns
+    -------
+    is_s3_file : bool
+        True if s3
+    """
+    if isinstance(file_path, (list, tuple)):
+        file_path = file_path[0]
+    return str(file_path).startswith('s3://')
+
+
+def filename_from_h5pyd(filename_or_obj):
+    """Extract file name from `h5pyd.File` object
+
+    If input is not instance of ``h5pyd.File``, the input is returned
+    without any modification.
+
+    Parameters
+    ----------
+    filename_or_obj : str | h5pyd.File
+        Input that could be a file name or an ``h5pyd.File`` object.
+
+    Returns
+    -------
+    str
+        Name of file
+    """
+    try:
+        return filename_or_obj.filename
+    except AttributeError:
+        return filename_or_obj

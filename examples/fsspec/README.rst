@@ -5,14 +5,6 @@ Filesystem utilities from ``fsspec`` enable users outside of NREL to open h5 res
 
 For more info on ``fsspec``, read the docs `here <https://filesystem-spec.readthedocs.io/en/latest/>`_
 
-Extra Requirements
-------------------
-
-You may need some additional software beyond the basic ``rex`` install to run this example:
-
-.. code-block:: bash
-
-    pip install NREL-rex[s3]
 
 Code Example
 ------------

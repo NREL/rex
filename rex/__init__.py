@@ -8,6 +8,7 @@ if not logging.getLogger().handlers:
     logging.getLogger().addHandler(logging.NullHandler())
 import os
 
+from rex.external.rexarray import open_mfdataset_hsds
 from rex.joint_pd import JointPD
 from rex.multi_file_resource import (MultiFileNSRDB, MultiFileResource,
                                      MultiFileWTK)

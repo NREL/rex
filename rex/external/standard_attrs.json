@@ -1,0 +1,148 @@
+{
+    "air_temperature": {
+        "standard_name": "air_temperature",
+        "units": "C"
+    },
+    "alpha": {
+        "standard_name": "angstrom_exponent_of_ambient_aerosol_in_air",
+        "units": 1,
+        "description": "Angstrom wavelength exponent, ideally obtained by linear regression of all available spectral AODs between 380 and 1020 nm."
+    },
+    "aod": {
+        "standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol_particles",
+        "units": 1,
+        "description": "Aerosol Optical Depth (AOD) measures the attenuation of solar radiation due to aerosol particles in the atmosphere, providing insight into air quality and visibility."
+    },
+    "asymmetry": {
+        "standard_name": "asymmetry_factor_of_ambient_aerosol_particles",
+        "units": 1,
+        "description": "Asymmetry parameter specific to the dataset, often related to the directional properties of scattered radiation or aerosol properties."
+    },
+    "cld_opd_dcomp": {
+        "standard_name": "atmosphere_optical_thickness_due_to_cloud",
+        "units": 1,
+        "description": "Cloud optical depth decomposed specific to the dataset, indicating the optical thickness of clouds and how it varies across different components."
+    },
+    "cld_press_acha": {
+        "standard_name": "air_pressure_at_cloud_base",
+        "units": "hPa",
+        "description": "loud pressure altitude specific to the dataset, representing the pressure level at which clouds are located."
+    },
+    "cld_reff_dcomp": {
+        "standard_name": "effective_radius_of_cloud_liquid_water_particles",
+        "units": "1e-6 m",
+        "description": "Cloud effective radius decomposed specific to the dataset, describing the average size of cloud droplets or particles and its decomposition."
+    },
+    "clearsky_dhi": {
+        "units": "W m-2",
+        "description": "Clear sky diffuse horizontal irradiance is the amount of solar radiation received per unit area on a horizontal surface under clear sky conditions, due to scattering from the atmosphere."
+    },
+    "clearsky_dni": {
+        "units": "W m-2",
+        "description": "Clear sky direct normal irradiance is the amount of solar radiation received per unit area on a surface perpendicular to the sun's rays, under clear sky conditions."
+    },
+    "clearsky_ghi": {
+        "units": "W m-2",
+        "description": "Clear sky global horizontal irradiance is the total amount of solar radiation received per unit area on a horizontal surface under clear sky conditions."
+    },
+    "dew_point": {
+        "standard_name": "dew_point_temperature",
+        "units": "C",
+        "description": "Dew point temperature is the temperature to which air must be cooled at constant pressure and constant water vapor content to reach saturation, often leading to condensation."
+    },
+    "dhi": {
+        "units": "W m-2",
+        "description": "Diffuse horizontal irradiance is the amount of solar radiation received per unit area on a horizontal surface, due to diffuse sky radiation."
+    },
+    "dni": {
+        "units": "W m-2",
+        "description": "Direct normal irradiance is the amount of solar radiation received per unit area on a surface perpendicular to the sun's rays."
+    },
+    "ghi": {
+        "units": "W m-2",
+        "description": "Global horizontal irradiance is the total amount of solar radiation received per unit area on a horizontal surface."
+    },
+    "inversemoninobukhovlength": {
+        "units": "m-1"
+    },
+    "latitude": {
+        "standard_name": "latitude",
+        "units": "degree_north"
+    },
+    "longitude": {
+        "standard_name": "longitude",
+        "units": "degree_east"
+    },
+    "precipitationrate": {
+        "standard_name": "convective_precipitation_rate",
+        "units": "mm hr-1"
+    },
+    "pressure": {
+        "standard_name": "air_pressure",
+        "units": "Pa"
+    },
+    "relativehumidity": {
+        "standard_name": "relative_humidity",
+        "units": "percent"
+    },
+    "relative_humidity": {
+        "standard_name": "relative_humidity",
+        "units": "percent"
+    },
+    "solar_zenith_angle": {
+        "standard_name": "solar_zenith_angle",
+        "units": "degree"
+    },
+    "ssa": {
+        "standard_name": "single_scattering_albedo_in_air_due_to_ambient_aerosol_particles",
+        "units": 1
+    },
+    "surface_albedo": {
+        "standard_name": "surface_albedo",
+        "units": 1,
+        "description": "Surface albedo is the fraction of solar energy reflected by the Earth's surface, often varying based on surface type (e.g., snow-covered vs. vegetated)."
+    },
+    "surface_pressure": {
+        "standard_name": "surface_air_pressure",
+        "units": "hPa",
+        "description": "Surface atmospheric pressure is the force per unit area exerted by the weight of the atmosphere above a specific location on the Earth's surface."
+    },
+    "temperature": {
+        "standard_name": "air_temperature",
+        "units": "C"
+    },
+    "time": {
+        "standard_name": "time",
+        "long_name": "time",
+        "calendar": "proleptic_gregorian",
+        "time_zone": "UTC"
+    },
+    "time_index": {
+        "standard_name": "time",
+        "long_name": "time",
+        "calendar": "proleptic_gregorian",
+        "time_zone": "UTC"
+    },
+    "total_precipitable_water": {
+        "standard_name": "lwe_thickness_of_atmosphere_mass_content_of_water_vapor",
+        "units": "cm",
+        "description": "Total precipitable water is the depth of liquid water that would result from precipitating all the water vapor in a vertical column above a given location."
+
+    },
+    "winddirection": {
+        "standard_name": "wind_from_direction",
+        "units": "degree"
+    },
+    "wind_direction": {
+        "standard_name": "wind_from_direction",
+        "units": "degree"
+    },
+    "windspeed": {
+        "standard_name": "wind_speed",
+        "units": "m s-1"
+    },
+    "wind_speed": {
+        "standard_name": "wind_speed",
+        "units": "m s-1"
+    }
+}
