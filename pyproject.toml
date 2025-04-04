@@ -1,0 +1,147 @@
+[build-system]
+requires = [
+  "setuptools >= 61",
+  "setuptools_scm[toml] >= 8",
+]
+build-backend = 'setuptools.build_meta'
+
+[project]
+name="NREL-rex"
+dynamic = ["version"]
+description = "National Renewable Energy Laboratory's (NREL's) REsource eXtraction tool: rex"
+readme = {file = "README.rst", content-type = "text/x-rst"}
+authors = [
+  {name = "Michael Rossol", email = "michael.rossol@nrel.gov"},
+]
+maintainers = [
+  {name = "Grant Buster", email = "gbuster@nrel.gov"},
+  {name = "Paul Pinchuk", email = "ppinchuk@nrel.gov"},
+  {name = "Brandon Benton", email = "brandon.benton@nrel.gov"},
+]
+license = "BSD-3-Clause"
+keywords = ["rex", "NREL"]
+requires-python = ">= 3.9"
+classifiers=[
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Natural Language :: English",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+  "click>=8.1.8,<9",
+  "fsspec>=2021.09.0,<2025",
+  "dask>=2024.8.0,<2025",
+  "h5py>=2.10.0,!=3.0.0",
+  "h5pyd>=0.18.0,<1",
+  "numpy>=1.16",
+  "pandas>=2.0.0,<3",
+  "packaging>=24.2,<25",
+  "psutil>=7.0.0,<8",
+  "PyYAML>=6.0.2,<7",
+  "s3fs>=2023.6.0,<2024",
+  "scikit-learn>=1.6.1,<2",
+  "scipy>=1.3,<2",
+  "toml>=0.10.2,<0.11",
+  "xarray>=2024.07.0,<2026",
+]
+
+[project.optional-dependencies]
+test = [
+  "pytest>=8.3.3,<9",
+  "pytest-timeout>=2.3.1,<3",
+  "flaky>=3.8.1,<4",
+]
+dev = [
+  "flake8",
+  "pre-commit",
+  "pylint",
+]
+hsds = [
+  "hsds>=0.8.4,<1",
+]
+build = [
+  "build>=0.10,<1",
+  "pkginfo>=1.10.0,<2",
+  "twine>=6.1.0,<7",
+]
+
+[project.urls]
+homepage = "https://www2.nrel.gov/gis/renewable-energy-potential"
+documentation = "https://nrel.github.io/rex/"
+repository = "https://github.com/NREL/rex"
+
+[project.scripts]
+rex = "rex.resource_extraction.resource_cli:main"
+NSRDBX = "rex.resource_extraction.nsrdb_cli:main"
+WINDX = "rex.resource_extraction.wind_cli:main"
+WaveX = "rex.resource_extraction.wave_cli:main"
+MultiYearX = "rex.resource_extraction.multi_year_resource_cli:main"
+US-wave = "rex.resource_extraction.US_wave_cli:main"
+rechunk = "rex.rechunk_h5.rechunk_cli:main"
+combine-h5 = "rex.rechunk_h5.combine_h5_cli:main"
+temporal-stats = "rex.temporal_stats.temporal_stats_cli:main"
+wind-rose = "rex.joint_pd.wind_rose_cli:main"
+
+[project.entry-points."xarray.backends"]
+rex = "rex.external.rexarray:RexBackendEntrypoint"
+
+
+[tool.setuptools]
+packages = ["rex"]
+
+[tool.setuptools.dynamic]
+version = {attr = "rex.version.__version__"}
+
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+# Regexes for lines to exclude from consideration
+exclude_also = [
+  # Have to re-enable the standard pragma
+  "pragma: no cover",
+
+  # Don't complain about missing debug-only code:
+  "if self\\.debug",
+
+  # Don't complain about repr methods
+  "def __repr__",
+  "def _repr_markdown_",
+
+  # Don't complain about data I/O code
+  "def load*",
+  "def _load*",
+
+  # Don't complain if tests don't hit defensive assertion code:
+  "raise AssertionError",
+  "raise NotImplementedError",
+
+  # Don't complain if non-runnable code isn't run:
+  "if __name__ == .__main__.:",
+
+  # Don't complain about abstract methods, they aren't run:
+  "@(abc\\.)?abstractmethod",
+
+  # Don't complain about logging debugging functions
+  "def print_logging_info*",
+  "def __cls_name",
+]
+
+omit = [
+  # omit test files
+  "tests/*",
+  # omit init files
+  "__init__.py",
+  # omit version file
+  "version.py",
+  # omit pixi files
+  ".pixi/*",
+]
+
+
+[tool.pytest.ini_options]
+addopts = "--disable-warnings"
+testpaths = ["tests"]
