@@ -74,7 +74,7 @@ Option 1: Install from PIP or Conda (recommended for analysts):
     2) or ``conda install nrel-rex --channel=nrel``
 
 4. Install for users outside of NREL that want to access data via HSDS or S3 as per the instructions `here <https://nrel.github.io/rex/misc/examples.nrel_data.html#data-location-external-users>`_:
-    1) ``pip install NREL-rex[hsds]`` for more performant access of the data on HSDS with slightly more setup as per `this hsds example <https://nrel.github.io/rex/misc/examples.hsds.html>`_
+    1) ``pip install NREL-rex[hsds]`` for more performant access of the data on HSDS with slightly more setup as per `this hsds example <https://nrel.github.io/rex/misc/examples.hsds.html>`_. Note that the highest version of Python currently supported by ``hsds`` is Python 3.11.
 
 Option 2: Clone repo (recommended for developers)
 -------------------------------------------------
