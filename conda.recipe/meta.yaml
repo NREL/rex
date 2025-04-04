@@ -16,24 +16,34 @@ requirements:
     - pip
     - setuptools
     - click
+    - fsspec
+    - dask
     - h5py>=2.10.0,!=3.0.0
     - numpy>=1.16
     - pandas
     - psutil
     - scipy
+    - s3fs
+    - scikit-learn
     - toml
     - PyYAML
+    - xarray
   run:
     - python
     - pip
     - click
+    - fsspec
+    - dask
     - h5py>=2.10.0,!=3.0.0
     - {{ pin_compatible('numpy') }}
     - pandas
     - psutil
     - scipy
+    - s3fs
+    - scikit-learn
     - toml
     - PyYAML
+    - xarray
   run-constrained:
     - h5pyd
 
