@@ -25,7 +25,7 @@ jobs:
     - name: Generate coverage report
       run: |
         cd tests
-        pytest --disable-warnings --cov=./ --cov-report=xml:coverage.xml
+        pytest --disable-warnings --cov=./ --cov-branch --cov-report=xml:coverage.xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
