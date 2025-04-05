@@ -16,7 +16,8 @@ otherwise.
 Extra Requirements
 ------------------
 
-You may need some additional software beyond the basic ``rex`` install to run this example:
+You may need some additional software beyond the basic ``rex`` install to run this example
+(make sure you are running not running higher than Python 3.11):
 
 .. code-block:: bash
 
