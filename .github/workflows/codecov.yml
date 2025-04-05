@@ -3,6 +3,8 @@ name: Codecov
 on:
   push:
     branches: [main, master]
+  pull_request:
+    branches: [main, master]
 
 jobs:
   run:
@@ -17,15 +19,11 @@ jobs:
     - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install pytest
         pip install pytest-cov
-        pip install pytest-timeout
-        pip install flaky
-        pip install -e .
+        pip install -e ".[test]"
     - name: Generate coverage report
       run: |
-        cd tests
-        pytest --disable-warnings --cov=./ --cov-report=xml:coverage.xml
+        pytest --disable-warnings --cov=./ --cov-branch --cov-report=xml:coverage.xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
