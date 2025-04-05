@@ -30,11 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install pytest
-          pip install pytest-cov
-          pip install pytest-timeout
-          pip install flaky
-          pip install -e .
+          pip install -e .[test]
       - name: Run pytest and Generate coverage report
         run: |
           pytest -v
