@@ -1,0 +1,52 @@
+rex.multi\_year\_resource.MultiYearResource
+===========================================
+
+.. currentmodule:: rex.multi_year_resource
+
+.. autoclass:: MultiYearResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiYearResource.close
+      ~MultiYearResource.get_attrs
+      ~MultiYearResource.get_dset_properties
+      ~MultiYearResource.get_meta_arr
+      ~MultiYearResource.get_scale_factor
+      ~MultiYearResource.get_units
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiYearResource.attrs
+      ~MultiYearResource.chunks
+      ~MultiYearResource.coordinates
+      ~MultiYearResource.datasets
+      ~MultiYearResource.dsets
+      ~MultiYearResource.dtypes
+      ~MultiYearResource.global_attrs
+      ~MultiYearResource.h5
+      ~MultiYearResource.lat_lon
+      ~MultiYearResource.meta
+      ~MultiYearResource.res_dsets
+      ~MultiYearResource.resource_datasets
+      ~MultiYearResource.scale_factors
+      ~MultiYearResource.shape
+      ~MultiYearResource.shapes
+      ~MultiYearResource.time_index
+      ~MultiYearResource.units
+      ~MultiYearResource.years
+   
+   

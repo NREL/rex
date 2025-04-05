@@ -1,0 +1,6 @@
+rex.utilities.utilities.row\_col\_indices
+=========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: row_col_indices

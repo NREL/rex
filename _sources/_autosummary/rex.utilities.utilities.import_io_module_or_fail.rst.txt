@@ -1,0 +1,6 @@
+rex.utilities.utilities.import\_io\_module\_or\_fail
+====================================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: import_io_module_or_fail

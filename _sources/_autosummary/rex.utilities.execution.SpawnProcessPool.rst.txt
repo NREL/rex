@@ -1,0 +1,26 @@
+rex.utilities.execution.SpawnProcessPool
+========================================
+
+.. currentmodule:: rex.utilities.execution
+
+.. autoclass:: SpawnProcessPool
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SpawnProcessPool.map
+      ~SpawnProcessPool.shutdown
+      ~SpawnProcessPool.submit
+   
+   
+
+   
+   
+   
