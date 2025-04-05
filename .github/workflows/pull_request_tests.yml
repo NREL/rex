@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -e .[test]
+          pip install -e ".[test]"
       - name: Run pytest and Generate coverage report
         run: |
           pytest -v
