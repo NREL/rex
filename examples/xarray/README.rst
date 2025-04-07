@@ -589,3 +589,4 @@ Case Studies
 Once you have opened the file with ``xarray``, you can take full advantage of the library's
 powerful features to perform data analysis tasks. Check out some examples of this below:
 
+- `Daily Aggregations using Xarray <https://github.com/NREL/rex/blob/main/examples/xarray/daily_agg.ipynb>`_
