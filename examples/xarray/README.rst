@@ -8,6 +8,9 @@ more about the benefits of using ``xarray`` `here <https://docs.xarray.dev/en/st
 Basic Usage
 -----------
 
+Opening a single file
+^^^^^^^^^^^^^^^^^^^^^
+
 To read in an NREL data file, simply supply ``engine="rex"`` to the
 `open_dataset <https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html#xarray-open-dataset>`_
 function:
@@ -52,7 +55,7 @@ function:
 
 
 Lazy Loading - ``rex``
-----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 Note that the operation above (reading a file using ``xr.open_dataset``)
 did not immediately load arrays into memory. This is because the ``rex``
@@ -142,7 +145,7 @@ Operations on these arrays are not lazy and *will* cause them to get loaded into
 
 
 Lazy Loading - ``dask``
------------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 We can also request that our data be read in lazily using `dask <https://www.dask.org/>`_.
 The easiest way to do this is to provide a ``chunks=...`` parameter in ``xr.open_dataset``:
@@ -209,7 +212,7 @@ For more information on using dask with xarray, see `this <https://docs.xarray.d
 
 
 Opening Multiple Files
-----------------------
+^^^^^^^^^^^^^^^^^^^^^
 
 You can use ``xr.open_mfdataset`` to open multiple NREL data files at once:
 
@@ -275,11 +278,15 @@ The shape of ``time`` indicates that two years of data have been loaded. You can
         time_zone:      UTC
 
 
-Opening Remote Files
---------------------
+Remote Files
+------------
 
-You can also use ``xarray`` to open remote files directly. For files on S3, you do not need
-to provide any extra information:
+You can also use ``xarray`` to open remote files directly.
+
+Files on S3
+^^^^^^^^^^^
+
+For files on S3, you do not need to provide any extra information:
 
 
 .. code-block:: python
@@ -324,7 +331,12 @@ to provide any extra information:
 
 Just like before, the data is lazy-loaded, so reading in the file does not take too long.
 However, once you start processing the data, it will need to be downloaded, which can be
-time consuming. A more performant option is to use HSDS (see
+time consuming.
+
+Files on HSDS
+^^^^^^^^^^^^^
+
+A more performant option is to use HSDS (see
 `this guide <https://nrel.github.io/rex/misc/examples.hsds.html#setting-up-a-local-hsds-server>`_
 on setting up your own local hsds server):
 
@@ -372,7 +384,7 @@ on setting up your own local hsds server):
 
 
 Opening Multiple Remote Files
------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ``xr.open_mfdataset`` does not support the wildcard (``*``) syntax for remote files,
 so to open multiple files on S3, you have to list them out explicitly:
