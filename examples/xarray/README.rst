@@ -519,6 +519,6 @@ when your read in the data (as we've done above).
 
 Case Studies
 ------------
-Once you have opened the file with ``xarray``, you cen leverage all the power of that library to
-perform data analysis tasks. Check out some examples of this below:
+Once you have opened the file with ``xarray``, you can take full advantage of the library's
+powerful features to perform data analysis tasks. Check out some examples of this below:
 
