@@ -23,6 +23,8 @@ function:
     ds = xr.open_dataset(WTK_2012_FP, engine="rex")
     ds
 
+.. code-block:: console
+
     <xarray.Dataset> Size: 32MB
     Dimensions:             (time: 8784, gid: 200)
     Coordinates:
