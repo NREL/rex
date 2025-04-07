@@ -55,7 +55,7 @@ function:
 
 
 Lazy Loading - ``rex``
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 Note that the operation above (reading a file using ``xr.open_dataset``)
 did not immediately load arrays into memory. This is because the ``rex``
@@ -145,7 +145,7 @@ Operations on these arrays are not lazy and *will* cause them to get loaded into
 
 
 Lazy Loading - ``dask``
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^
 
 We can also request that our data be read in lazily using `dask <https://www.dask.org/>`_.
 The easiest way to do this is to provide a ``chunks=...`` parameter in ``xr.open_dataset``:
@@ -212,7 +212,7 @@ For more information on using dask with xarray, see `this <https://docs.xarray.d
 
 
 Opening Multiple Files
-^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 You can use ``xr.open_mfdataset`` to open multiple NREL data files at once:
 
@@ -488,7 +488,7 @@ your analysis workflow.
 
 
 Parallel Computing with ``dask``
--------------------------------
+--------------------------------
 
 Although your computations are lazy if you load your data with ``dask``, they still only run on a single
 process (or thread pool) by default (see `here <https://docs.dask.org/en/stable/scheduling.html#scheduling>`_
