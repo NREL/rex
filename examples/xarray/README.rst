@@ -447,6 +447,46 @@ accept wildcard inputs:
     ds
 
 
+.. code-block:: python-console
+
+    <xarray.Dataset> Size: 3TB
+    Dimensions:                   (time: 35040, gid: 2018392)
+    Coordinates: (12/13)
+        time_index                (time) datetime64[ns] 280kB dask.array<chunksize=(17520,), meta=np.ndarray>
+      * time                      (time) datetime64[ns] 280kB 1998-01-01 ... 1999...
+      * gid                       (gid) int64 16MB 0 1 2 ... 2018389 2018390 2018391
+        latitude                  (gid) float32 8MB dask.array<chunksize=(252299,), meta=np.ndarray>
+        longitude                 (gid) float32 8MB dask.array<chunksize=(252299,), meta=np.ndarray>
+        elevation                 (gid) float32 8MB dask.array<chunksize=(12856,), meta=np.ndarray>
+        ...                        ...
+        country                   (gid) |S30 61MB dask.array<chunksize=(12856,), meta=np.ndarray>
+        state                     (gid) |S30 61MB dask.array<chunksize=(12856,), meta=np.ndarray>
+        county                    (gid) |S30 61MB dask.array<chunksize=(12856,), meta=np.ndarray>
+        urban                     (gid) |S30 61MB dask.array<chunksize=(12856,), meta=np.ndarray>
+        population                (gid) int32 8MB dask.array<chunksize=(12856,), meta=np.ndarray>
+        landcover                 (gid) int16 4MB dask.array<chunksize=(12856,), meta=np.ndarray>
+    Data variables: (12/25)
+        air_temperature           (time, gid) int8 71GB dask.array<chunksize=(2688, 744), meta=np.ndarray>
+        alpha                     (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        aod                       (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        asymmetry                 (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        cld_opd_dcomp             (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        cld_reff_dcomp            (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        ...                        ...
+        ssa                       (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        surface_albedo            (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        surface_pressure          (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        total_precipitable_water  (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        wind_direction            (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+        wind_speed                (time, gid) int16 141GB dask.array<chunksize=(2688, 372), meta=np.ndarray>
+    Attributes:
+        Version:  3.0.6
+
+
+The object returned by this function is a standard ``xarray.DataSet``, so you can plug it directly into
+your analysis workflow.
+
+
 Parallel Computing with ``dask``
 -------------------------------
 
