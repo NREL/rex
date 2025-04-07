@@ -526,30 +526,57 @@ as normal. Any ``dask`` computations you do will be performed in chunks using 4 
 
 .. code-block:: python-console
 
-    <xarray.Dataset> Size: 32MB
-    Dimensions:             (time: 8784, gid: 200)
+    <xarray.DataArray 'windspeed_100m' (gid: 200)> Size: 2kB
+    array([6.87944558, 6.93480874, 6.99835383, 6.93864071, 6.94729167,
+           7.10710155, 7.20108265, 7.16832536, 7.17782559, 7.32525729,
+           7.31806466, 7.33072291, 7.28809312, 7.22210041, 7.26382286,
+           7.22113616, 7.07780852, 7.08420082, 7.06300888, 7.29566712,
+           7.39969945, 7.45076844, 7.43958447, 7.43899704, 7.46535405,
+           7.42845401, 7.29795651, 7.19493852, 7.05814663, 6.88442168,
+           6.85640938, 6.85859176, 7.05063525, 7.09214253, 7.14200478,
+           7.23776412, 7.31980874, 7.27634107, 7.23299977, 7.30763434,
+           7.36336179, 7.29896175, 7.14903347, 7.01208447, 6.89744877,
+           6.75741234, 6.70825137, 6.7998816 , 6.95533584, 6.86520833,
+           6.89120105, 6.97641507, 7.03485883, 7.18894353, 7.24894923,
+           7.16365437, 6.94202641, 6.83164959, 7.01116462, 7.16896744,
+           7.12047473, 6.9952163 , 6.87737705, 6.76693875, 6.66649021,
+           6.64727345, 6.77149704, 6.85299522, 7.09365551, 6.93533356,
+           6.93294627, 7.01532673, 7.03204235, 7.06432377, 7.13546903,
+           7.18949567, 7.31379098, 7.25667464, 7.01673725, 6.76937158,
+           6.77199567, 7.02523338, 7.18999203, 7.13933629, 7.02185109,
+           6.8873224 , 6.74311362, 6.63313183, 6.56818306, 6.56203097,
+           6.55499772, 7.82230419, 7.6846209 , 7.01713912, 7.38534608,
+           7.27920993, 7.14663138, 7.10545879, 7.03550091, 6.89493739,
+           6.97185109, 7.14635246, 7.99603256, 7.87955373, 8.10967896,
+           8.04715392, 7.94161544, 7.81445811, 8.21366576, 8.16868056,
+           8.10710155, 8.00840392, 7.90002732, 7.6702015 , 8.24766735,
+           8.20477117, 8.14225638, 8.05135246, 7.95503985, 7.78786544,
+           8.31860997, 8.29575364, 8.25664276, 8.19562955, 8.11789617,
+           8.02574112, 7.91357013, 8.36183402, 8.35696949, 8.3436612 ,
+           8.32018784, 8.28632969, 8.23200137, 8.17405738, 8.09175319,
+           8.00542919, 7.86773224, 8.4832434 , 8.4748133 , 8.44929986,
+           8.42680328, 8.40229508, 8.38972336, 8.37218807, 8.3485633 ,
+           8.32098588, 8.27343579, 8.23153119, 8.16400159, 8.08327641,
+           7.98567851, 7.80577186, 8.50659722, 8.50146403, 8.50739982,
+           8.51652436, 8.51465733, 8.51314094, 8.49275273, 8.47009904,
+           8.44045765, 8.42123406, 8.39814663, 8.37284381, 8.34804303,
+           8.30322746, 8.27097791, 8.21462773, 8.13777778, 8.05820355,
+           7.94375455, 7.79726207, 8.52080829, 8.52497837, 8.52421107,
+           8.53359403, 8.53315574, 8.53251138, 8.53214367, 8.53220856,
+           8.53655624, 8.52449681, 8.50425888, 8.4733857 , 8.45109517,
+           8.42566826, 8.39944331, 8.37924408, 8.33734403, 8.31360087,
+           8.26787568, 8.20503074, 8.13375228, 8.04971881, 7.95212659,
+           8.56010474, 8.55197177, 8.54179417, 8.54154599, 8.53991234])
     Coordinates:
-        time_index          (time) datetime64[ns] 70kB dask.array<chunksize=(8784,), meta=np.ndarray>
-      * time                (time) datetime64[ns] 70kB 2012-01-01 ... 2012-12-31T...
-      * gid                 (gid) int64 2kB 0 1 2 3 4 5 ... 194 195 196 197 198 199
-        latitude            (gid) float32 800B dask.array<chunksize=(200,), meta=np.ndarray>
-        longitude           (gid) float32 800B dask.array<chunksize=(200,), meta=np.ndarray>
-        country             (gid) |S13 3kB dask.array<chunksize=(200,), meta=np.ndarray>
-        state               (gid) |S4 800B dask.array<chunksize=(200,), meta=np.ndarray>
-        county              (gid) |S22 4kB dask.array<chunksize=(200,), meta=np.ndarray>
-        timezone            (gid) int16 400B dask.array<chunksize=(200,), meta=np.ndarray>
-        elevation           (gid) int16 400B dask.array<chunksize=(200,), meta=np.ndarray>
-        offshore            (gid) int16 400B dask.array<chunksize=(200,), meta=np.ndarray>
-    Data variables:
-        pressure_0m         (time, gid) uint16 4MB dask.array<chunksize=(8784, 200), meta=np.ndarray>
-        pressure_100m       (time, gid) uint16 4MB dask.array<chunksize=(8784, 200), meta=np.ndarray>
-        pressure_200m       (time, gid) uint16 4MB dask.array<chunksize=(8784, 200), meta=np.ndarray>
-        temperature_100m    (time, gid) int16 4MB dask.array<chunksize=(8784, 200), meta=np.ndarray>
-        temperature_80m     (time, gid) int16 4MB dask.array<chunksize=(8784, 200), meta=np.ndarray>
-        winddirection_100m  (time, gid) uint16 4MB dask.array<chunksize=(8784, 200), meta=np.ndarray>
-        winddirection_80m   (time, gid) uint16 4MB dask.array<chunksize=(8784, 200), meta=np.ndarray>
-        windspeed_100m      (time, gid) uint16 4MB dask.array<chunksize=(8784, 200), meta=np.ndarray>
-        windspeed_80m       (time, gid) uint16 4MB dask.array<chunksize=(8784, 200), meta=np.ndarray>
+      * gid        (gid) int64 2kB 0 1 2 3 4 5 6 7 ... 193 194 195 196 197 198 199
+        latitude   (gid) float32 800B 41.96 41.98 42.0 41.9 ... 40.91 40.93 40.95
+        longitude  (gid) float32 800B -71.79 -71.79 -71.78 ... -71.79 -71.78 -71.78
+        country    (gid) |S13 3kB b'United States' b'United States' ... b'None'
+        state      (gid) |S4 800B b'RI' b'RI' b'RI' ... b'None' b'None' b'None'
+        county     (gid) |S22 4kB b'Providence' b'Providence' ... b'None' b'None'
+        timezone   (gid) int16 400B -5 -5 -5 -5 -5 -5 -5 -5 ... -5 -5 -5 -5 -5 -5 -5
+        elevation  (gid) int16 400B 202 178 174 195 201 170 187 ... 0 0 0 0 0 0 0
+        offshore   (gid) int16 400B 0 0 0 0 0 0 0 0 0 0 0 ... 1 1 1 1 1 1 1 1 1 1 1
 
 
 Remember that in order for the computations to be distributed using ``dask``, you must
