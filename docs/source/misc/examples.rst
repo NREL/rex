@@ -8,4 +8,5 @@ Examples
    examples.us_wave
    examples.hsds
    examples.fsspec
+   examples.xarray
    examples.zarr
