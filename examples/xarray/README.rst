@@ -11,7 +11,7 @@ Basic Usage
 Opening a single file
 ^^^^^^^^^^^^^^^^^^^^^
 
-To read in an NREL data file, simply supply ``engine="rex"`` to the
+To read in an NREL data file, simply ``pip install NREL-rex`` and then supply ``engine="rex"`` to the xarray
 `open_dataset <https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html#xarray-open-dataset>`_
 function:
 
@@ -77,7 +77,9 @@ You can verify this for yourself by checking the private ``_data`` attribute:
 You can see that we have a ``LazilyIndexedArray`` instance around the custom
 ``RexArrayWrapper`` object. Notably, there is no data shown.
 
-You can get the data to load into memory like so:
+You can get the data to load into memory like so, although be careful as
+loading this for the full-sized WIND/NSRDB files will load tens or hundreds of
+GB into memory:
 
 .. code-block:: python
 
@@ -99,7 +101,7 @@ have been loaded:
 
 .. code-block:: python
 
-    print(ds["windspeed_100m"].data)
+    print(ds["windspeed_100m"].variable._data)
 
 
 .. code-block:: python-console
@@ -113,7 +115,8 @@ have been loaded:
         [10.34, 10.43, 10.74, ..., 14.77, 14.85, 14.82]], shape=(8784, 200))))
 
 
-Operations on these arrays are not lazy and *will* cause them to get loaded into memory:
+Operations on these arrays are not lazy and *will* cause them to get loaded
+into memory:
 
 .. code-block:: python
 
@@ -281,12 +284,16 @@ The shape of ``time`` indicates that two years of data have been loaded. You can
 Remote Files
 ------------
 
-You can also use ``xarray`` to open remote files directly.
+You can also use ``xarray`` to open remote files directly. If you do not have
+access to the NREL HPC, this guide is for you. See instructions
+`here <file:///Users/gbuster/code/rex/docs/_build/html/misc/examples.nrel_data.html#data-location-external-users>`_
+on where to find these file paths on S3 and HSDS.
 
 Files on S3
 ^^^^^^^^^^^
 
-For files on S3, you do not need to provide any extra information:
+For files on S3, you do not need to do anything beyond just providing the S3
+filepath:
 
 
 .. code-block:: python
@@ -483,7 +490,7 @@ accept wildcard inputs:
         Version:  3.0.6
 
 
-The object returned by this function is a standard ``xarray.DataSet``, so you can plug it directly into
+The object returned by this function is a standard ``xarray.Dataset``, so you can plug it directly into
 your analysis workflow.
 
 
@@ -509,9 +516,10 @@ Next, you should start a ``dask`` client that controls your parallelization sche
     from dask.distributed import Client
     client = Client(n_workers=4, memory_limit='10GB')
 
-In this example, we have told dask that we would like our computations to take up 4 cores and
-a maximum of 10GB of memory. Once this client is running, you can write your data analysis code
-as normal. Any ``dask`` computations you do will be performed in chunks using 4 processes:
+In this example, we have told dask that we would like our computations to take
+up 4 cores and a maximum of 10GB of memory per worker. Once this client is
+running, you can write your data analysis code as normal. Any ``dask``
+computations you do will be performed in chunks using 4 processes:
 
 
 .. code-block:: python

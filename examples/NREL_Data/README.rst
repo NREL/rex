@@ -187,3 +187,10 @@ the System Advisor Model (SAM). For example, try:
 For a full list of ``ResourceX`` classes with additional features specific to
 various renewable energy resource types, see the docs `here
 <https://nrel.github.io/rex/_autosummary/rex.resource_extraction.resource_extraction.html>`_.
+
+Using rex with xarray
++++++++++++++++++++++
+
+You can now use ``rex`` with ``xarray`` to open NREL datasets on the NREL HPC
+and remotely outside of NREL! See the guide `here
+<https://nrel.github.io/rex/misc/examples.xarray.html>`_ for details.
