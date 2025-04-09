@@ -5,6 +5,9 @@ Filesystem utilities from ``fsspec`` enable users outside of NREL to open h5 res
 
 For more info on ``fsspec``, read the docs `here <https://filesystem-spec.readthedocs.io/en/latest/>`_
 
+You can now use ``fsspec`` with ``xarray`` to open NREL datasets remotely! See the guide
+`here <https://nrel.github.io/rex/misc/examples.xarray.html>`_ for details.
+
 
 Code Example
 ------------
