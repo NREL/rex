@@ -13,6 +13,9 @@ h5pyd or rex tools to stream small chunks of the files stored on S3. The
 multi-terabyte .h5 files on S3 would be incredibly cumbersome to access
 otherwise.
 
+You can now use HSDS with ``xarray`` to open NREL datasets remotely! See the guide
+`here <https://nrel.github.io/rex/misc/examples.xarray.html>`_ for details.
+
 Extra Requirements
 ------------------
 
