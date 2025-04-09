@@ -1,0 +1,69 @@
+rex.resource\_extraction.resource\_extraction.MultiTimeResourceX
+================================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: MultiTimeResourceX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiTimeResourceX.box_gids
+      ~MultiTimeResourceX.close
+      ~MultiTimeResourceX.get_SAM_gid
+      ~MultiTimeResourceX.get_SAM_lat_lon
+      ~MultiTimeResourceX.get_box_df
+      ~MultiTimeResourceX.get_box_ts
+      ~MultiTimeResourceX.get_gid_df
+      ~MultiTimeResourceX.get_gid_ts
+      ~MultiTimeResourceX.get_grid_vectors
+      ~MultiTimeResourceX.get_lat_lon_df
+      ~MultiTimeResourceX.get_lat_lon_ts
+      ~MultiTimeResourceX.get_raster_index
+      ~MultiTimeResourceX.get_region_df
+      ~MultiTimeResourceX.get_region_ts
+      ~MultiTimeResourceX.get_timestep_map
+      ~MultiTimeResourceX.lat_lon_gid
+      ~MultiTimeResourceX.make_SAM_files
+      ~MultiTimeResourceX.region_gids
+      ~MultiTimeResourceX.save_region
+      ~MultiTimeResourceX.save_subset
+      ~MultiTimeResourceX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiTimeResourceX.attrs
+      ~MultiTimeResourceX.coordinates
+      ~MultiTimeResourceX.counties
+      ~MultiTimeResourceX.countries
+      ~MultiTimeResourceX.data_version
+      ~MultiTimeResourceX.datasets
+      ~MultiTimeResourceX.distance_threshold
+      ~MultiTimeResourceX.dsets
+      ~MultiTimeResourceX.global_attrs
+      ~MultiTimeResourceX.groups
+      ~MultiTimeResourceX.h5
+      ~MultiTimeResourceX.lat_lon
+      ~MultiTimeResourceX.meta
+      ~MultiTimeResourceX.res_dsets
+      ~MultiTimeResourceX.resource
+      ~MultiTimeResourceX.resource_datasets
+      ~MultiTimeResourceX.shape
+      ~MultiTimeResourceX.states
+      ~MultiTimeResourceX.time_index
+      ~MultiTimeResourceX.tree
+   
+   

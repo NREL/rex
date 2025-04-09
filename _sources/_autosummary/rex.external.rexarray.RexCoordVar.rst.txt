@@ -1,0 +1,36 @@
+rex.external.rexarray.RexCoordVar
+=================================
+
+.. currentmodule:: rex.external.rexarray
+
+.. autoclass:: RexCoordVar
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RexCoordVar.chunks
+      ~RexCoordVar.fletcher32
+      ~RexCoordVar.shuffle
+      ~RexCoordVar.dtype
+      ~RexCoordVar.shape
+      ~RexCoordVar.compression
+      ~RexCoordVar.compression_opts
+      ~RexCoordVar.attrs
+   
+   

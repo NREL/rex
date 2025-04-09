@@ -1,0 +1,52 @@
+rex.multi\_year\_resource.MultiYearWaveResource
+===============================================
+
+.. currentmodule:: rex.multi_year_resource
+
+.. autoclass:: MultiYearWaveResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiYearWaveResource.close
+      ~MultiYearWaveResource.get_attrs
+      ~MultiYearWaveResource.get_dset_properties
+      ~MultiYearWaveResource.get_meta_arr
+      ~MultiYearWaveResource.get_scale_factor
+      ~MultiYearWaveResource.get_units
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiYearWaveResource.attrs
+      ~MultiYearWaveResource.chunks
+      ~MultiYearWaveResource.coordinates
+      ~MultiYearWaveResource.datasets
+      ~MultiYearWaveResource.dsets
+      ~MultiYearWaveResource.dtypes
+      ~MultiYearWaveResource.global_attrs
+      ~MultiYearWaveResource.h5
+      ~MultiYearWaveResource.lat_lon
+      ~MultiYearWaveResource.meta
+      ~MultiYearWaveResource.res_dsets
+      ~MultiYearWaveResource.resource_datasets
+      ~MultiYearWaveResource.scale_factors
+      ~MultiYearWaveResource.shape
+      ~MultiYearWaveResource.shapes
+      ~MultiYearWaveResource.time_index
+      ~MultiYearWaveResource.units
+      ~MultiYearWaveResource.years
+   
+   
