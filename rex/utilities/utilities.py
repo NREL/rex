@@ -380,6 +380,7 @@ def check_hsds_file(res_file):
     """
     import h5pyd
     hsds_dir = os.path.dirname(res_file)
+    multi_h5_res = False
 
     with h5pyd.Folder(hsds_dir + '/') as f:
         hsds = True
