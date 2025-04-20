@@ -333,7 +333,7 @@ def check_res_file(res_file):
     elif res_file.startswith('s3://'):
         bad = False
 
-    elif '*' in res_file:
+    elif '*' in res_file and not res_file.startswith('/nrel/'):
         bad = False
         multi_h5_res = True
 
