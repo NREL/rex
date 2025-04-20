@@ -349,7 +349,7 @@ def check_res_file(res_file):
 
     if bad:
         msg = ("{} is not a valid file path, and HSDS "
-               "cannot be check for a file at this path!"
+               "cannot be checked for a file at this path!"
                .format(res_file))
         raise FileNotFoundError(msg)
 
