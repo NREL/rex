@@ -20,22 +20,19 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          python-version: 3.9
+          python-version: 3.11
       - name: Install reVX dependencies
         working-directory: ./reVX
         shell: bash -l {0}
         run: |
           conda install pip rtree pytest
           pip install geopandas
-          pip install --upgrade --force-reinstall shapely~=1.8
-          pip install -e .
-          pip install HOPP
+          pip install -e ".[flicker]"
       - name: Install rex
         working-directory: ./rex
         shell: bash -l {0}
         run: |
-          pip install --upgrade --force-reinstall numpy~=1.24
-          pip install -e .
+          pip install -e ".[test]"
       - name: Run reVX pytest
         working-directory: ./reVX
         shell: bash -l {0}
