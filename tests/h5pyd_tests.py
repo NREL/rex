@@ -12,6 +12,7 @@ import numpy as np
 import xarray as xr
 
 from rex import NSRDB, WindResource, open_mfdataset_hsds
+from rex.utilities.utilities import check_res_file
 
 
 def test_file_list():
@@ -90,3 +91,21 @@ def test_mf_hsds_xr(fps):
         assert ds.sizes == {'time': 17544, 'gid': 2488136}
         assert str(ds.time_index.isel(time=0).values).startswith("2008")
         assert str(ds.time_index.isel(time=-1).values).startswith("2009")
+
+
+def test_check_res_file_hsds():
+    """Test `check_res_file` function for hsds files"""
+
+    multi_file, hsds = check_res_file("/nrel/wtk/conus/wtk_conus_2008.h5")
+    assert hsds
+    assert not multi_file
+
+
+@pytest.mark.parametrize('fps', ["/nrel/wtk/conus/wtk_conus_200[8,9].h5",
+                                 "/nrel/wtk/conus/wtk_conus_200*.h5"])
+def test_check_res_file_hsds_multi(fps):
+    """Test `check_res_file` function for multi-file hsds files"""
+
+    multi_file, hsds = check_res_file(fps)
+    assert hsds
+    assert multi_file

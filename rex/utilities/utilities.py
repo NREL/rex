@@ -333,7 +333,7 @@ def check_res_file(res_file):
     elif res_file.startswith('s3://'):
         bad = False
 
-    elif '*' in res_file:
+    elif '*' in res_file and not res_file.startswith('/nrel/'):
         bad = False
         multi_h5_res = True
 
@@ -349,7 +349,7 @@ def check_res_file(res_file):
 
     if bad:
         msg = ("{} is not a valid file path, and HSDS "
-               "cannot be check for a file at this path!"
+               "cannot be checked for a file at this path!"
                .format(res_file))
         raise FileNotFoundError(msg)
 
@@ -380,6 +380,7 @@ def check_hsds_file(res_file):
     """
     import h5pyd
     hsds_dir = os.path.dirname(res_file)
+    multi_h5_res = False
 
     with h5pyd.Folder(hsds_dir + '/') as f:
         hsds = True
