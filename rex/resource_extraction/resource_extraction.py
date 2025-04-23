@@ -427,7 +427,7 @@ class ResourceX(BaseDatasetIterable):
                            .format(tree_path, e))
 
     @staticmethod
-    def _get_ds_slice(dset, gids):
+    def _get_ds_slice(dset, gids, ds_ndim):
         """
         Get dataset region slice
 
@@ -437,18 +437,25 @@ class ResourceX(BaseDatasetIterable):
             Dataset to extract region from
         gids : ndarray | list
             Gids associated with region
+        ds_ndim : int
+            Number of dimensions for dset. 1D is assumed to be spatial, 2D is
+            assumed to be (temporal, spatial).
 
         Returns
         -------
         ds_slice : tuple
             ds slice tuple to properly extract region from given dataset
         """
-        if dset == 'time_index':
+        if dset.startswith('time_index'):
             ds_slice = (slice(None), )
         elif dset in ['coordinates', 'meta']:
             ds_slice = (gids, )
-        else:
+        elif ds_ndim == 1:
+            ds_slice = (gids,)
+        elif ds_ndim == 2:
             ds_slice = (slice(None), gids)
+        else:
+            ds_slice = (slice(None), gids) + (slice(None),) * (ds_ndim - 2)
 
         return ds_slice
 
@@ -1449,7 +1456,7 @@ class ResourceX(BaseDatasetIterable):
             for dset in datasets:
                 if dset in self:
                     ds = self.h5[dset]
-                    ds_slice = self._get_ds_slice(dset, gids)
+                    ds_slice = self._get_ds_slice(dset, gids, ds.ndim)
                     data = ResourceDataset.extract(ds, ds_slice,
                                                    scale_attr=scale_attr,
                                                    add_attr=add_attr,

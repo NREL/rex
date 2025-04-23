@@ -1143,6 +1143,23 @@ def test_resourcex_iterable(NSRDBX_cls):
     assert len(dsets_permutation) == num_dsets ** 2
 
 
+def test_save_subset(NSRDBX_cls):
+    """
+    Run test saving a subset of a file to a new file with
+    ``ResourceX.save_subset()``
+    """
+    gids = [10, 12, 13, 14, 20]
+    with tempfile.TemporaryDirectory() as td:
+        fp_out = os.path.join(td, 'test.h5')
+        NSRDBX_cls.save_subset(fp_out, gids, datasets=NSRDBX_cls.dsets)
+
+        with NSRDBX(fp_out) as out:
+            assert_frame_equal(NSRDBX_cls['meta', gids].reset_index(drop=True),
+                               out['meta'].reset_index(drop=True))
+            assert (NSRDBX_cls.time_index == out.time_index).all()
+            assert np.allclose(NSRDBX_cls['ghi', :, gids], out['ghi'])
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 
