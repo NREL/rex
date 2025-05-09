@@ -1,0 +1,30 @@
+rex.external
+============
+
+.. automodule:: rex.external
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+
+.. autosummary::
+   :toctree:
+   :template: custom-module-template.rst
+   :recursive:
+
+   rexarray
+

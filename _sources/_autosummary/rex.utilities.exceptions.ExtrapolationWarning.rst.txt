@@ -1,0 +1,6 @@
+rex.utilities.exceptions.ExtrapolationWarning
+=============================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: ExtrapolationWarning

@@ -1,0 +1,70 @@
+rex.resource\_extraction.resource\_extraction.MultiYearWindX
+============================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: MultiYearWindX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiYearWindX.box_gids
+      ~MultiYearWindX.close
+      ~MultiYearWindX.get_SAM_gid
+      ~MultiYearWindX.get_SAM_lat_lon
+      ~MultiYearWindX.get_box_df
+      ~MultiYearWindX.get_box_ts
+      ~MultiYearWindX.get_gid_df
+      ~MultiYearWindX.get_gid_ts
+      ~MultiYearWindX.get_grid_vectors
+      ~MultiYearWindX.get_lat_lon_df
+      ~MultiYearWindX.get_lat_lon_ts
+      ~MultiYearWindX.get_means_map
+      ~MultiYearWindX.get_raster_index
+      ~MultiYearWindX.get_region_df
+      ~MultiYearWindX.get_region_ts
+      ~MultiYearWindX.get_timestep_map
+      ~MultiYearWindX.lat_lon_gid
+      ~MultiYearWindX.make_SAM_files
+      ~MultiYearWindX.region_gids
+      ~MultiYearWindX.save_region
+      ~MultiYearWindX.save_subset
+      ~MultiYearWindX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiYearWindX.attrs
+      ~MultiYearWindX.coordinates
+      ~MultiYearWindX.counties
+      ~MultiYearWindX.countries
+      ~MultiYearWindX.data_version
+      ~MultiYearWindX.datasets
+      ~MultiYearWindX.distance_threshold
+      ~MultiYearWindX.dsets
+      ~MultiYearWindX.global_attrs
+      ~MultiYearWindX.groups
+      ~MultiYearWindX.h5
+      ~MultiYearWindX.lat_lon
+      ~MultiYearWindX.meta
+      ~MultiYearWindX.res_dsets
+      ~MultiYearWindX.resource
+      ~MultiYearWindX.resource_datasets
+      ~MultiYearWindX.shape
+      ~MultiYearWindX.states
+      ~MultiYearWindX.time_index
+      ~MultiYearWindX.tree
+   
+   

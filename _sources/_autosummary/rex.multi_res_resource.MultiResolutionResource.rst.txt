@@ -1,0 +1,37 @@
+rex.multi\_res\_resource.MultiResolutionResource
+================================================
+
+.. currentmodule:: rex.multi_res_resource
+
+.. autoclass:: MultiResolutionResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiResolutionResource.close
+      ~MultiResolutionResource.make_nn_map
+      ~MultiResolutionResource.map_ds_slice
+      ~MultiResolutionResource.preload_SAM
+      ~MultiResolutionResource.time_interp
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiResolutionResource.HR_ATTRS
+      ~MultiResolutionResource.INTERPOLABLE_DSETS
+      ~MultiResolutionResource.VARIABLE_NAME
+      ~MultiResolutionResource.VARIABLE_UNIT
+   
+   
