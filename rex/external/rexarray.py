@@ -838,8 +838,14 @@ def open_mfdataset_hsds(paths, **kwargs):
         for more details on HSDS files.
     **kwargs
         Keyword-value argument pairs to pass to :func:`open_mfdataset`.
-        We strongly recommend specifying ``parallel=True`` and
-        ``chunks="auto"`` to help with data loading times.
+        We strongly recommend specifying the following parameters to
+        help with data loading times:
+
+            - parallel=True
+            - chunks="auto"
+            - compat="override"
+            - coords="minimal"
+
 
     Returns
     -------
@@ -851,6 +857,16 @@ def open_mfdataset_hsds(paths, **kwargs):
     """
     kwargs["engine"] = "rex"
     kwargs["hsds"] = True
+
+    if kwargs.get("compat") != "override":
+        msg = ("Did not detect 'compat='override' parameter in arguments "
+               "passed to `rex.open_mfdataset_hsds`. You may see drastically "
+               "increased loading times since all of the coordinates are "
+               "loaded and validated by xarray. We strongly recommend passing "
+               "'compat='override' (and coords='minimal') for increased "
+               "read performance.")
+        warnings.warn(msg, UserWarning)
+
 
     if isinstance(paths, str):
         paths = _hsds_glob_to_list(paths)
