@@ -61,11 +61,8 @@ def check_meta(truth_meta, ds):
                            truth_vals[0:2])
 
 
-def check_shape(fp, ds, group=None):
+def check_shape(truth_shape, ds):
     """Check that the shape of the dataset matches expectations"""
-    with Resource(fp, group=group) as res:
-        truth_shape = res.shape
-
     assert ds.sizes == {'time': truth_shape[0], 'gid': truth_shape[1]}
 
 
@@ -86,11 +83,12 @@ def test_open_with_xr(fp):
     with Resource(fp) as res:
         truth_meta = res.meta
         truth_ti = res.time_index
+        truth_shape = res.shape
 
     with xr.open_dataset(fp, engine="rex") as ds:
         check_ti(truth_ti, ds)
         check_meta(truth_meta, ds)
-        check_shape(fp, ds)
+        check_shape(truth_shape, ds)
         check_data(fp, ds)
 
         assert set(ds.indexes) == {"time", "gid"}
@@ -154,11 +152,12 @@ def test_open_group():
     with Resource(WTK_2012_GRP_FP, group="group") as res:
         truth_meta = res.meta
         truth_ti = res.time_index
+        truth_shape = res.shape
 
     with xr.open_dataset(WTK_2012_GRP_FP, group="group", engine="rex") as ds:
         check_ti(truth_ti, ds)
         check_meta(truth_meta, ds)
-        check_shape(WTK_2012_GRP_FP, ds, group="group")
+        check_shape(truth_shape, ds)
         check_data(WTK_2012_GRP_FP, ds, group="group")
 
 
@@ -222,6 +221,7 @@ def test_detect_var_dims():
 
         with Resource(test_file) as res:
             truth_ti = res.time_index
+            truth_shape = res.shape
 
         with xr.open_dataset(test_file, engine="rex") as ds:
             assert set(ds.indexes) == {"time", "gid"}
@@ -241,7 +241,7 @@ def test_detect_var_dims():
             assert np.allclose(ds["longitude"], [-71.86])
 
             check_ti(truth_ti, ds)
-            check_shape(test_file, ds)
+            check_shape(truth_shape, ds)
             check_data(test_file, ds)
 
 
@@ -281,11 +281,12 @@ def test_open_data_tree_no_groups(fp):
     with Resource(fp) as res:
         truth_meta = res.meta
         truth_ti = res.time_index
+        truth_shape = res.shape
 
     with xr.open_datatree(fp, engine="rex") as ds:
         check_ti(truth_ti, ds)
         check_meta(truth_meta, ds)
-        check_shape(fp, ds)
+        check_shape(truth_shape, ds)
         check_data(fp, ds)
 
         assert set(ds.indexes) == {"time", "gid"}
@@ -298,11 +299,12 @@ def test_open_data_tree_with_group():
     with Resource(WTK_2012_GRP_FP, group="group") as res:
         truth_meta = res.meta
         truth_ti = res.time_index
+        truth_shape = res.shape
 
     with xr.open_datatree(WTK_2012_GRP_FP, engine="rex") as ds:
         check_ti(truth_ti, ds["group"])
         check_meta(truth_meta, ds["group"])
-        check_shape(WTK_2012_GRP_FP, ds["group"], group="group")
+        check_shape(truth_shape, ds["group"])
         check_data(WTK_2012_GRP_FP, ds["group"], group="group")
 
 
