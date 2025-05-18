@@ -45,10 +45,8 @@ def check_ti(fp, ds, group=None):
                            truth_ti[0:2].astype('int64'))
 
 
-def check_meta(fp, ds, group=None):
+def check_meta(truth_meta, ds):
     """Check that the meta of the dataset matches expectations"""
-    with Resource(fp, group=group) as res:
-        truth_meta = res.meta
 
     for col in truth_meta.columns:
         truth_vals = truth_meta[col].to_numpy()
@@ -87,9 +85,12 @@ def check_data(fp, ds, group=None):
                                 NSRDB_2013, WAVE_2010])
 def test_open_with_xr(fp):
     """Test basic opening and read operations on various files"""
+    with Resource(fp) as res:
+        truth_meta = res.meta
+
     with xr.open_dataset(fp, engine="rex") as ds:
         check_ti(fp, ds)
-        check_meta(fp, ds)
+        check_meta(truth_meta, ds)
         check_shape(fp, ds)
         check_data(fp, ds)
 
@@ -151,9 +152,12 @@ def test_ds_attrs():
 
 def test_open_group():
     """Test opening a group within the file"""
+    with Resource(WTK_2012_GRP_FP, group="group") as res:
+        truth_meta = res.meta
+
     with xr.open_dataset(WTK_2012_GRP_FP, group="group", engine="rex") as ds:
         check_ti(WTK_2012_GRP_FP, ds, group="group")
-        check_meta(WTK_2012_GRP_FP, ds, group="group")
+        check_meta(truth_meta, ds)
         check_shape(WTK_2012_GRP_FP, ds, group="group")
         check_data(WTK_2012_GRP_FP, ds, group="group")
 
@@ -271,9 +275,12 @@ def test_coords_dset():
                                 NSRDB_2013, WAVE_2010])
 def test_open_data_tree_no_groups(fp):
     """Test basic opening and read operations for a data tree"""
+    with Resource(fp) as res:
+        truth_meta = res.meta
+
     with xr.open_datatree(fp, engine="rex") as ds:
         check_ti(fp, ds)
-        check_meta(fp, ds)
+        check_meta(truth_meta, ds)
         check_shape(fp, ds)
         check_data(fp, ds)
 
@@ -284,9 +291,12 @@ def test_open_data_tree_no_groups(fp):
                     reason="DataTrees require Python 3.10+ to run")
 def test_open_data_tree_with_group():
     """Test opening a data tree for a file with a group"""
+    with Resource(WTK_2012_GRP_FP, group="group") as res:
+        truth_meta = res.meta
+
     with xr.open_datatree(WTK_2012_GRP_FP, engine="rex") as ds:
         check_ti(WTK_2012_GRP_FP, ds["group"], group="group")
-        check_meta(WTK_2012_GRP_FP, ds["group"], group="group")
+        check_meta(truth_meta, ds["group"])
         check_shape(WTK_2012_GRP_FP, ds["group"], group="group")
         check_data(WTK_2012_GRP_FP, ds["group"], group="group")
 
