@@ -87,7 +87,9 @@ def test_sup3rcc():
 def test_mf_hsds_xr(fps):
     """Test opening multiple files via HSDS with xarray"""
 
-    with open_mfdataset_hsds(fps, parallel=True, chunks="auto") as ds:
+    kwargs = {"parallel": True, "chunks": "auto", "compat": "override",
+              "coords": "minimal"}
+    with open_mfdataset_hsds(fps, **kwargs) as ds:
         assert ds.sizes == {'time': 17544, 'gid': 2488136}
         assert str(ds.time_index.isel(time=0).values).startswith("2008")
         assert str(ds.time_index.isel(time=-1).values).startswith("2009")
