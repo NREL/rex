@@ -28,10 +28,8 @@ WTK_2010_100M = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_100m.h5')
 WTK_2010_200M = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_200m.h5')
 
 
-def check_ti(fp, ds, group=None):
+def check_ti(truth_ti, ds):
     """Check that the time index of the dataset matches expectations"""
-    with Resource(fp, group=group) as res:
-        truth_ti = res.time_index
 
     for t_var in ["time_index", "time"]:
         assert t_var in ds.coords
@@ -87,9 +85,10 @@ def test_open_with_xr(fp):
     """Test basic opening and read operations on various files"""
     with Resource(fp) as res:
         truth_meta = res.meta
+        truth_ti = res.time_index
 
     with xr.open_dataset(fp, engine="rex") as ds:
-        check_ti(fp, ds)
+        check_ti(truth_ti, ds)
         check_meta(truth_meta, ds)
         check_shape(fp, ds)
         check_data(fp, ds)
@@ -154,9 +153,10 @@ def test_open_group():
     """Test opening a group within the file"""
     with Resource(WTK_2012_GRP_FP, group="group") as res:
         truth_meta = res.meta
+        truth_ti = res.time_index
 
     with xr.open_dataset(WTK_2012_GRP_FP, group="group", engine="rex") as ds:
-        check_ti(WTK_2012_GRP_FP, ds, group="group")
+        check_ti(truth_ti, ds)
         check_meta(truth_meta, ds)
         check_shape(WTK_2012_GRP_FP, ds, group="group")
         check_data(WTK_2012_GRP_FP, ds, group="group")
@@ -220,6 +220,9 @@ def test_detect_var_dims():
                             np.ones((8760, 1)), np.float32,
                             attrs={"units": "MW"})
 
+        with Resource(test_file) as res:
+            truth_ti = res.time_index
+
         with xr.open_dataset(test_file, engine="rex") as ds:
             assert set(ds.indexes) == {"time", "gid"}
 
@@ -237,7 +240,7 @@ def test_detect_var_dims():
             assert np.allclose(ds["latitude"], [41.29])
             assert np.allclose(ds["longitude"], [-71.86])
 
-            check_ti(test_file, ds)
+            check_ti(truth_ti, ds)
             check_shape(test_file, ds)
             check_data(test_file, ds)
 
@@ -277,9 +280,10 @@ def test_open_data_tree_no_groups(fp):
     """Test basic opening and read operations for a data tree"""
     with Resource(fp) as res:
         truth_meta = res.meta
+        truth_ti = res.time_index
 
     with xr.open_datatree(fp, engine="rex") as ds:
-        check_ti(fp, ds)
+        check_ti(truth_ti, ds)
         check_meta(truth_meta, ds)
         check_shape(fp, ds)
         check_data(fp, ds)
@@ -293,9 +297,10 @@ def test_open_data_tree_with_group():
     """Test opening a data tree for a file with a group"""
     with Resource(WTK_2012_GRP_FP, group="group") as res:
         truth_meta = res.meta
+        truth_ti = res.time_index
 
     with xr.open_datatree(WTK_2012_GRP_FP, engine="rex") as ds:
-        check_ti(WTK_2012_GRP_FP, ds["group"], group="group")
+        check_ti(truth_ti, ds["group"])
         check_meta(truth_meta, ds["group"])
         check_shape(WTK_2012_GRP_FP, ds["group"], group="group")
         check_data(WTK_2012_GRP_FP, ds["group"], group="group")
