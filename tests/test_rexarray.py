@@ -197,6 +197,44 @@ def test_open_mf_ds():
         check_data(truth_datasets, ds)
 
 
+@pytest.mark.parametrize(
+    'glob_fp',
+    [os.path.join(TESTDATADIR, 'nsrdb', 'ri_100_nsrdb_201*.h5'),
+     os.path.join(TESTDATADIR, 'sza', 'nsrdb_sza_201*.h5'),
+     os.path.join(TESTDATADIR, 'wtk', 'ri_100_wtk_201*.h5')])
+def test_open_mf_year_override_compat(glob_fp):
+    """Test opening a multi-file dataset across years with no compat"""
+    with MultiYearResource(glob_fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
+        truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
+
+    kwargs = {'engine': 'rex', 'compat': 'override', 'coords': 'minimal'}
+    with xr.open_mfdataset(glob_fp, **kwargs) as ds:
+        check_meta(truth_meta, ds)
+        check_ti(truth_ti, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
+
+
+def test_open_mf_ds_override_compat():
+    """Test opening multi-file dataset across variables"""
+    glob_fp = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_*m.h5')
+    with MultiFileResource(glob_fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
+        truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
+
+    kwargs = {'engine': 'rex', 'compat': 'override', 'coords': 'minimal'}
+    with xr.open_mfdataset(glob_fp, **kwargs) as ds:
+        check_meta(truth_meta, ds)
+        check_ti(truth_ti, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
+
+
 def test_open_drop_var():
     """Test dropping of variables when opening a file"""
     with xr.open_dataset(WTK_2012_FP, engine="rex") as ds:
