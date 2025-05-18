@@ -169,22 +169,32 @@ def test_open_group():
 def test_open_mf_year(glob_fp):
     """Test opening a multi-file dataset across years"""
     with MultiYearResource(glob_fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
         truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
 
     with xr.open_mfdataset(glob_fp, engine="rex") as ds:
-        assert ds.sizes == {'time': truth_shape[0], 'gid': truth_shape[1]}
+        check_meta(truth_meta, ds)
+        check_ti(truth_ti, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
 
 
 def test_open_mf_ds():
     """Test opening multi-file dataset across variables"""
     glob_fp = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_*m.h5')
     with MultiFileResource(glob_fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
         truth_shape = res.shape
-        datasets = res.resource_datasets
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
 
     with xr.open_mfdataset(glob_fp, engine="rex") as ds:
-        assert ds.sizes == {'time': truth_shape[0], 'gid': truth_shape[1]}
-        assert all(ds_name in ds for ds_name in datasets)
+        check_meta(truth_meta, ds)
+        check_ti(truth_ti, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
 
 
 def test_open_drop_var():
