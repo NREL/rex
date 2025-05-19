@@ -867,7 +867,6 @@ def open_mfdataset_hsds(paths, **kwargs):
                "read performance.")
         warnings.warn(msg, UserWarning)
 
-
     if isinstance(paths, str):
         paths = _hsds_glob_to_list(paths)
     elif isinstance(paths, (list, tuple)):
