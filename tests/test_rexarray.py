@@ -28,10 +28,8 @@ WTK_2010_100M = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_100m.h5')
 WTK_2010_200M = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_200m.h5')
 
 
-def check_ti(fp, ds, group=None):
+def check_ti(truth_ti, ds):
     """Check that the time index of the dataset matches expectations"""
-    with Resource(fp, group=group) as res:
-        truth_ti = res.time_index
 
     for t_var in ["time_index", "time"]:
         assert t_var in ds.coords
@@ -45,10 +43,8 @@ def check_ti(fp, ds, group=None):
                            truth_ti[0:2].astype('int64'))
 
 
-def check_meta(fp, ds, group=None):
+def check_meta(truth_meta, ds):
     """Check that the meta of the dataset matches expectations"""
-    with Resource(fp, group=group) as res:
-        truth_meta = res.meta
 
     for col in truth_meta.columns:
         truth_vals = truth_meta[col].to_numpy()
@@ -65,20 +61,15 @@ def check_meta(fp, ds, group=None):
                            truth_vals[0:2])
 
 
-def check_shape(fp, ds, group=None):
+def check_shape(truth_shape, ds):
     """Check that the shape of the dataset matches expectations"""
-    with Resource(fp, group=group) as res:
-        truth_shape = res.shape
-
     assert ds.sizes == {'time': truth_shape[0], 'gid': truth_shape[1]}
 
 
-def check_data(fp, ds, group=None):
+def check_data(truth_datasets, ds):
     """Check that the values of the dataset match expectations"""
-    with Resource(fp, group=group) as res:
-        datasets = {d_name: res[d_name][:] for d_name in res.resource_datasets}
 
-    for name, values in datasets.items():
+    for name, values in truth_datasets.items():
         assert np.allclose(ds[name], values)
 
 
@@ -87,11 +78,17 @@ def check_data(fp, ds, group=None):
                                 NSRDB_2013, WAVE_2010])
 def test_open_with_xr(fp):
     """Test basic opening and read operations on various files"""
+    with Resource(fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
+        truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
+
     with xr.open_dataset(fp, engine="rex") as ds:
-        check_ti(fp, ds)
-        check_meta(fp, ds)
-        check_shape(fp, ds)
-        check_data(fp, ds)
+        check_ti(truth_ti, ds)
+        check_meta(truth_meta, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
 
         assert set(ds.indexes) == {"time", "gid"}
 
@@ -151,11 +148,17 @@ def test_ds_attrs():
 
 def test_open_group():
     """Test opening a group within the file"""
+    with Resource(WTK_2012_GRP_FP, group="group") as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
+        truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
+
     with xr.open_dataset(WTK_2012_GRP_FP, group="group", engine="rex") as ds:
-        check_ti(WTK_2012_GRP_FP, ds, group="group")
-        check_meta(WTK_2012_GRP_FP, ds, group="group")
-        check_shape(WTK_2012_GRP_FP, ds, group="group")
-        check_data(WTK_2012_GRP_FP, ds, group="group")
+        check_ti(truth_ti, ds)
+        check_meta(truth_meta, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
 
 
 @pytest.mark.parametrize(
@@ -166,22 +169,70 @@ def test_open_group():
 def test_open_mf_year(glob_fp):
     """Test opening a multi-file dataset across years"""
     with MultiYearResource(glob_fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
         truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
 
     with xr.open_mfdataset(glob_fp, engine="rex") as ds:
-        assert ds.sizes == {'time': truth_shape[0], 'gid': truth_shape[1]}
+        check_meta(truth_meta, ds)
+        check_ti(truth_ti, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
 
 
 def test_open_mf_ds():
     """Test opening multi-file dataset across variables"""
     glob_fp = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_*m.h5')
     with MultiFileResource(glob_fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
         truth_shape = res.shape
-        datasets = res.resource_datasets
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
 
     with xr.open_mfdataset(glob_fp, engine="rex") as ds:
-        assert ds.sizes == {'time': truth_shape[0], 'gid': truth_shape[1]}
-        assert all(ds_name in ds for ds_name in datasets)
+        check_meta(truth_meta, ds)
+        check_ti(truth_ti, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
+
+
+@pytest.mark.parametrize(
+    'glob_fp',
+    [os.path.join(TESTDATADIR, 'nsrdb', 'ri_100_nsrdb_201*.h5'),
+     os.path.join(TESTDATADIR, 'sza', 'nsrdb_sza_201*.h5'),
+     os.path.join(TESTDATADIR, 'wtk', 'ri_100_wtk_201*.h5')])
+def test_open_mf_year_override_compat(glob_fp):
+    """Test opening a multi-file dataset across years with no compat"""
+    with MultiYearResource(glob_fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
+        truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
+
+    kwargs = {'engine': 'rex', 'compat': 'override', 'coords': 'minimal'}
+    with xr.open_mfdataset(glob_fp, **kwargs) as ds:
+        check_meta(truth_meta, ds)
+        check_ti(truth_ti, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
+
+
+def test_open_mf_ds_override_compat():
+    """Test opening multi-file dataset across variables"""
+    glob_fp = os.path.join(TESTDATADIR, 'wtk', 'wtk_2010_*m.h5')
+    with MultiFileResource(glob_fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
+        truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
+
+    kwargs = {'engine': 'rex', 'compat': 'override', 'coords': 'minimal'}
+    with xr.open_mfdataset(glob_fp, **kwargs) as ds:
+        check_meta(truth_meta, ds)
+        check_ti(truth_ti, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
 
 
 def test_open_drop_var():
@@ -216,6 +267,12 @@ def test_detect_var_dims():
                             np.ones((8760, 1)), np.float32,
                             attrs={"units": "MW"})
 
+        with Resource(test_file) as res:
+            truth_ti = res.time_index
+            truth_shape = res.shape
+            truth_datasets = {name: res[name][:]
+                              for name in res.resource_datasets}
+
         with xr.open_dataset(test_file, engine="rex") as ds:
             assert set(ds.indexes) == {"time", "gid"}
 
@@ -233,9 +290,9 @@ def test_detect_var_dims():
             assert np.allclose(ds["latitude"], [41.29])
             assert np.allclose(ds["longitude"], [-71.86])
 
-            check_ti(test_file, ds)
-            check_shape(test_file, ds)
-            check_data(test_file, ds)
+            check_ti(truth_ti, ds)
+            check_shape(truth_shape, ds)
+            check_data(truth_datasets, ds)
 
 
 def test_coords_dset():
@@ -271,11 +328,17 @@ def test_coords_dset():
                                 NSRDB_2013, WAVE_2010])
 def test_open_data_tree_no_groups(fp):
     """Test basic opening and read operations for a data tree"""
+    with Resource(fp) as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
+        truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
+
     with xr.open_datatree(fp, engine="rex") as ds:
-        check_ti(fp, ds)
-        check_meta(fp, ds)
-        check_shape(fp, ds)
-        check_data(fp, ds)
+        check_ti(truth_ti, ds)
+        check_meta(truth_meta, ds)
+        check_shape(truth_shape, ds)
+        check_data(truth_datasets, ds)
 
         assert set(ds.indexes) == {"time", "gid"}
 
@@ -284,11 +347,17 @@ def test_open_data_tree_no_groups(fp):
                     reason="DataTrees require Python 3.10+ to run")
 def test_open_data_tree_with_group():
     """Test opening a data tree for a file with a group"""
+    with Resource(WTK_2012_GRP_FP, group="group") as res:
+        truth_meta = res.meta
+        truth_ti = res.time_index
+        truth_shape = res.shape
+        truth_datasets = {name: res[name][:] for name in res.resource_datasets}
+
     with xr.open_datatree(WTK_2012_GRP_FP, engine="rex") as ds:
-        check_ti(WTK_2012_GRP_FP, ds["group"], group="group")
-        check_meta(WTK_2012_GRP_FP, ds["group"], group="group")
-        check_shape(WTK_2012_GRP_FP, ds["group"], group="group")
-        check_data(WTK_2012_GRP_FP, ds["group"], group="group")
+        check_ti(truth_ti, ds["group"])
+        check_meta(truth_meta, ds["group"])
+        check_shape(truth_shape, ds["group"])
+        check_data(truth_datasets, ds["group"])
 
 
 def execute_pytest(capture='all', flags='-rapP'):

@@ -217,7 +217,16 @@ For more information on using dask with xarray, see `this <https://docs.xarray.d
 Opening Multiple Files
 ^^^^^^^^^^^^^^^^^^^^^^
 
-You can use ``xr.open_mfdataset`` to open multiple NREL data files at once:
+You can use ``xr.open_mfdataset`` to open multiple NREL data files at once.
+
+.. IMPORTANT::
+    By default, ``xarray`` does not assume that the coordinate data (i.e. meta variables)
+    match across files. As a result, it will try to load all coordinates and compare them
+    during the concatenation step. This process involves significant I/O and can drastically
+    increase the runtime of ``xr.open_mfdataset`` calls. Since the underlying assumption in
+    rex-style data is that the meta remains consistent across files, we can tell ``xarray``
+    to skip this validation by passing  ``compat="override"`` and ``coords="minimal"`` to the
+    ``xr.open_mfdataset`` call.
 
 
 .. code-block:: python
@@ -228,7 +237,7 @@ You can use ``xr.open_mfdataset`` to open multiple NREL data files at once:
 
     WTK_FPS = os.path.join(TESTDATADIR, 'wtk', 'ri_100_wtk_20*.h5')
 
-    ds = xr.open_mfdataset(WTK_FPS, engine="rex")
+    ds = xr.open_mfdataset(WTK_FPS, engine="rex", compat="override", coords="minimal")
     ds
 
 .. code-block:: python-console
@@ -405,7 +414,7 @@ so to open multiple files on S3, you have to list them out explicitly:
         "s3://nrel-pds-nsrdb/current/nsrdb_1998.h5",
         "s3://nrel-pds-nsrdb/current/nsrdb_1999.h5",
     ]
-    ds = xr.open_mfdataset(files, engine="rex")
+    ds = xr.open_mfdataset(files, engine="rex", compat="override", coords="minimal")
     ds
 
 .. code-block:: python-console
@@ -450,7 +459,7 @@ accept wildcard inputs:
     import xarray as xr
     from rex import open_mfdataset_hsds
 
-    ds = open_mfdataset_hsds("/nrel/nsrdb/v3/nsrdb_199*.h5")
+    ds = open_mfdataset_hsds("/nrel/nsrdb/v3/nsrdb_199*.h5", compat="override", coords="minimal")
     ds
 
 
