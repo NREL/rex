@@ -9,7 +9,7 @@ from tempfile import TemporaryDirectory
 import pandas as pd
 import pytest
 
-from rex.utilities import parse_table
+from rex.utilities import parse_table, check_res_file
 from rex import TESTDATADIR
 
 NSRDB_DIR = os.path.join(TESTDATADIR, 'nsrdb')
@@ -48,6 +48,25 @@ def test_parse_table():
 
     with pytest.raises(ValueError):
         parse_table([0, 1, 2])
+
+
+def test_check_res_file_dne():
+    """Test check_res_file() when file does not exist"""
+    with TemporaryDirectory() as td:
+        test_file = os.path.join(td, "gen.h5")
+
+        with pytest.raises(FileNotFoundError) as error:
+            check_res_file(test_file)
+
+        expected_msg = ("gen.h5 is not a valid file path, and HSDS cannot "
+                        "be checked for a file at this path!")
+        assert expected_msg in str(error)
+
+        open(test_file, "w").close()
+        multi_file, hsds = check_res_file(test_file)
+
+        assert not multi_file
+        assert not hsds
 
 
 def execute_pytest(capture='all', flags='-rapP'):
