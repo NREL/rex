@@ -347,7 +347,7 @@ def check_res_file(res_file):
         try:
             multi_h5_res, hsds = check_hsds_file(res_file)
             bad = not hsds
-        except OSError:  # cannot connect to HSDS
+        except (OSError, ValueError):  # cannot connect to HSDS
             bad = True
 
     if bad:
