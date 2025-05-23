@@ -62,7 +62,7 @@ def test_check_res_file_dne():
                         "be checked for a file at this path!")
         assert expected_msg in str(error)
 
-        open(test_file, "w").close()
+        open(test_file, "w").close()  # pylint: disable=consider-using-with
         multi_file, hsds = check_res_file(test_file)
 
         assert not multi_file
