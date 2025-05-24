@@ -1,0 +1,6 @@
+rex.utilities.exceptions.ParallelExecutionWarning
+=================================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: ParallelExecutionWarning

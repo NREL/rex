@@ -1,0 +1,6 @@
+rex.utilities.exceptions.SlurmError
+===================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: SlurmError

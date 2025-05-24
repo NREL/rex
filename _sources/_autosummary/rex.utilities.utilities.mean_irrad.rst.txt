@@ -1,0 +1,6 @@
+rex.utilities.utilities.mean\_irrad
+===================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: mean_irrad

@@ -1,0 +1,6 @@
+rex.utilities.utilities.parse\_year
+===================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: parse_year

@@ -1,0 +1,35 @@
+rex.external.rexarray.RexBackendEntrypoint
+==========================================
+
+.. currentmodule:: rex.external.rexarray
+
+.. autoclass:: RexBackendEntrypoint
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~RexBackendEntrypoint.guess_can_open
+      ~RexBackendEntrypoint.open_dataset
+      ~RexBackendEntrypoint.open_datatree
+      ~RexBackendEntrypoint.open_groups_as_dict
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RexBackendEntrypoint.description
+      ~RexBackendEntrypoint.open_dataset_parameters
+      ~RexBackendEntrypoint.url
+   
+   

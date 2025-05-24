@@ -1,0 +1,43 @@
+rex.external.rexarray
+=====================
+
+.. automodule:: rex.external.rexarray
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      open_mfdataset_hsds
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      RexArrayWrapper
+      RexBackendEntrypoint
+      RexCoordVar
+      RexMetaVar
+      RexStore
+      VarInfo
+   
+   
+
+   
+   
+   
+
+
+

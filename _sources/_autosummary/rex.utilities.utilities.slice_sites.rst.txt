@@ -1,0 +1,6 @@
+rex.utilities.utilities.slice\_sites
+====================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: slice_sites

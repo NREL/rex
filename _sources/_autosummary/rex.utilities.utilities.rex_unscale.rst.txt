@@ -1,0 +1,6 @@
+rex.utilities.utilities.rex\_unscale
+====================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: rex_unscale
