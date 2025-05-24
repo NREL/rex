@@ -344,8 +344,11 @@ def check_res_file(res_file):
         raise FileInputError(msg)
 
     else:
-        multi_h5_res, hsds = check_hsds_file(res_file)
-        bad = not hsds
+        try:
+            multi_h5_res, hsds = check_hsds_file(res_file)
+            bad = not hsds
+        except (OSError, ValueError):  # cannot connect to HSDS
+            bad = True
 
     if bad:
         msg = ("{} is not a valid file path, and HSDS "
