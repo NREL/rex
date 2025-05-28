@@ -503,15 +503,14 @@ class ResourceX(BaseDatasetIterable):
                 col_map[c] = c.capitalize()
 
         site_meta = site_meta.rename(columns=col_map)
-        cols = ','.join(site_meta.columns)
-        values = site_meta.values[0].astype(str)
-        values = ','.join([value.replace(',', '') for value in values])
-        values = values.replace('\n', '').replace('\r', '').replace('\t', '')
+        meta_line = ','.join(
+            f"{col},{value}" for col, value in site_meta.iloc[0].items()
+        )
 
         with open(out_path, 'r+') as f:
             content = f.read()
             f.seek(0, 0)
-            f.write(cols + '\n' + values + '\n' + content)
+            f.write(meta_line + '\n' + content)
 
     def _init_tree(self, tree):
         """
@@ -1750,9 +1749,9 @@ class WindX(ResourceX):
             returned
         """
         kwargs['height'] = hub_height
-        if out_path is not None:
-            write_time = False
-            kwargs.update({'add_header': True})
+        #if out_path is not None:
+        #    write_time = False
+        #    kwargs.update({'add_header': True})
 
         SAM_df = super().get_SAM_gid(gid, out_path=out_path,
                                      write_time=write_time,

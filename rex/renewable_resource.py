@@ -1360,7 +1360,7 @@ class WindResource(AbstractInterpolatedResource):
             variables.append('relativehumidity_2m')
 
         for var in variables:
-            var_name = "{}_{}m".format(var, height)
+            var_name = "{}_{}m".format(var, height) if var != 'relativehumidity_2m' else var
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var_name, ds_slice)
             var_array = SAMResource.roll_timeseries(var_array, time_zone,
@@ -1371,9 +1371,9 @@ class WindResource(AbstractInterpolatedResource):
                 var, res_df[var],
                 SAMResource.WIND_DATA_RANGES[var], [site])
 
-        col_map = {'pressure': 'Pressure', 'temperature': 'Temperature',
-                   'windspeed': 'Speed', 'winddirection': 'Direction',
-                   'relativehumidity_2m': 'Relative Humidity'}
+        col_map = {'pressure': f'pres_{height}', 'temperature': f'temp_{height}',
+                   'windspeed': f'speed_{height}', 'winddirection': f'dir_{height}',
+                   'relativehumidity_2m': 'rhum'}
         res_df = res_df.rename(columns=col_map)
         res_df.name = "SAM_{}m-{}".format(height, site)
 
