@@ -1749,9 +1749,6 @@ class WindX(ResourceX):
             returned
         """
         kwargs['height'] = hub_height
-        #if out_path is not None:
-        #    write_time = False
-        #    kwargs.update({'add_header': True})
 
         SAM_df = super().get_SAM_gid(gid, out_path=out_path,
                                      write_time=write_time,
