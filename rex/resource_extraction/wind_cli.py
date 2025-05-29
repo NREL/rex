@@ -111,21 +111,21 @@ def sam_datasets(ctx, hub_height, lat_lon, gid, sites):
             if lat_lon is not None:
                 out_path = os.path.join(ctx.obj['OUT_DIR'],
                                         'SAM_{}.csv'.format(lat_lon))
-                f.get_SAM_lat_lon(hub_height, lat_lon,
+                f.get_SAM_lat_lon(lat_lon, hub_height,
                                   out_path=out_path)
             elif gid is not None:
                 out_path = os.path.join(ctx.obj['OUT_DIR'],
                                         'SAM_{}.csv'.format(gid))
-                f.get_SAM_gid(hub_height, gid, out_path=out_path)
+                f.get_SAM_gid(gid, hub_height, out_path=out_path)
 
     else:
         name, gid, lat_lon = _parse_sites(sites)
         with ctx.obj['CLS'](ctx.obj['H5'], **ctx.obj['CLS_KWARGS']) as f:
             meta = f['meta']
             if lat_lon is not None:
-                SAM_df = f.get_SAM_lat_lon(hub_height, lat_lon)
+                SAM_df = f.get_SAM_lat_lon(lat_lon, hub_height)
             elif gid is not None:
-                SAM_df = f.get_SAM_gid(hub_height, gid)
+                SAM_df = f.get_SAM_gid(gid, hub_height)
 
         gids = []
         for df in SAM_df:

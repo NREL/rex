@@ -849,7 +849,7 @@ def test_cli_SAM(runner, WindX_cls):
     path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     with tempfile.TemporaryDirectory() as td:
         truth_path = os.path.join(td, 'truth.csv')
-        WindX_cls.get_SAM_gid(100, gid, out_path=truth_path)
+        WindX_cls.get_SAM_gid(gid, 100, out_path=truth_path)
         truth = pd.read_csv(truth_path, skiprows=1)
 
         result = runner.invoke(main, ['-h5', path,
@@ -880,10 +880,10 @@ def test_windx_make_SAM_files(WindX_cls):
     with tempfile.TemporaryDirectory() as td:
         for gid in gids:
             truth_path = os.path.join(td, f'truth_{gid}.csv')
-            WindX_cls.get_SAM_gid(100, gid, out_path=truth_path)
+            WindX_cls.get_SAM_gid(gid, 100, out_path=truth_path)
 
         test_path = os.path.join(td, 'test.csv')
-        WindX.make_SAM_files(100, path, gids, out_path=test_path)
+        WindX.make_SAM_files(path, gids, hub_height=100, out_path=test_path)
         for gid in gids:
             test_path = os.path.join(td, f'test_{gid}.csv')
             truth_path = os.path.join(td, f'truth_{gid}.csv')
