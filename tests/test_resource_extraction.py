@@ -849,7 +849,7 @@ def test_cli_SAM(runner, WindX_cls):
     path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     with tempfile.TemporaryDirectory() as td:
         truth_path = os.path.join(td, 'truth.csv')
-        WindX_cls.get_SAM_gid(100, gid, out_path=truth_path)
+        WindX_cls.get_SAM_gid(gid, 100, out_path=truth_path)
         truth = pd.read_csv(truth_path, skiprows=1)
 
         result = runner.invoke(main, ['-h5', path,
@@ -866,6 +866,58 @@ def test_cli_SAM(runner, WindX_cls):
         assert_frame_equal(truth, test)
 
     WindX_cls.close()
+    LOGGERS.clear()
+
+
+def test_windx_make_SAM_files(WindX_cls):
+    """
+    Test WindX make_SAM_files method
+    """
+    lat_lon = WindX_cls.lat_lon
+    gids = np.random.choice(len(lat_lon), 3)
+
+    path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    with tempfile.TemporaryDirectory() as td:
+        for gid in gids:
+            truth_path = os.path.join(td, f'truth_{gid}.csv')
+            WindX_cls.get_SAM_gid(gid, 100, out_path=truth_path)
+
+        test_path = os.path.join(td, 'test.csv')
+        WindX.make_SAM_files(path, gids, hub_height=100, out_path=test_path)
+        for gid in gids:
+            test_path = os.path.join(td, f'test_{gid}.csv')
+            truth_path = os.path.join(td, f'truth_{gid}.csv')
+            test = pd.read_csv(test_path, skiprows=1)
+            truth = pd.read_csv(truth_path, skiprows=1)
+            assert_frame_equal(truth, test)
+
+    WindX_cls.close()
+    LOGGERS.clear()
+
+
+def test_nsrdbx_make_SAM_files(NSRDBX_cls):
+    """
+    Test nsrdbx make_SAM_files method
+    """
+    lat_lon = NSRDBX_cls.lat_lon
+    gids = np.random.choice(len(lat_lon), 3)
+
+    path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+    with tempfile.TemporaryDirectory() as td:
+        for gid in gids:
+            truth_path = os.path.join(td, f'truth_{gid}.csv')
+            NSRDBX_cls.get_SAM_gid(gid, out_path=truth_path)
+
+        test_path = os.path.join(td, 'test.csv')
+        NSRDBX.make_SAM_files(path, gids, out_path=test_path)
+        for gid in gids:
+            test_path = os.path.join(td, f'test_{gid}.csv')
+            truth_path = os.path.join(td, f'truth_{gid}.csv')
+            test = pd.read_csv(test_path, skiprows=1)
+            truth = pd.read_csv(truth_path, skiprows=1)
+            assert_frame_equal(truth, test)
+
+    NSRDBX_cls.close()
     LOGGERS.clear()
 
 
