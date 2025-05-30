@@ -111,7 +111,7 @@ def test_roll():
     if 'Minute' in sam_df:
         mask &= sam_df['Minute'] == time_index.minute
 
-    assert np.isclose(sam_df.loc[mask, 'Speed'], wspd)
+    assert np.isclose(sam_df.loc[mask, 'Wind Speed 100m'], wspd)
 
 
 def test_roll_timeseries():

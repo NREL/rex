@@ -86,7 +86,7 @@ def test_sam_df_hh():
 
         arr1 = wind['pressure_100m', :, 0] * 9.86923e-6
         arr1 = SAMResource.roll_timeseries(arr1, -5, 1)
-        arr2 = sam_df['Pressure'].values
+        arr2 = sam_df['Pressure 100m'].values
 
         msg1 = ('Error: pressure should have been loaded at 100m '
                 'b/c there is only windspeed at 100m.')

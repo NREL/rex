@@ -136,7 +136,8 @@ class SAMResource:
                         'winddirection': (0, 360),
                         'pressure': (0.5, 1.099),
                         'temperature': (-200, 100),
-                        'rh': (0.1, 99.9)}
+                        'rh': (0.1, 99.9),
+                        'relativehumidity_2m': (0.1, 99.9)}
 
     # prevent negative wave data; some negative periods are observed on the
     # west coast along the shore. These are small wave areas and should be fine

@@ -11,6 +11,9 @@ import pandas as pd
 import pytest
 from click.testing import CliRunner
 from pandas.testing import assert_frame_equal
+import PySAM.Windpower as PySamWindPower
+import PySAM.Pvwattsv8 as PySamPV8
+
 from rex import TESTDATADIR
 from rex.resource_extraction.resource_extraction import (
     NSRDBX,
@@ -895,6 +898,33 @@ def test_windx_make_SAM_files(WindX_cls):
     LOGGERS.clear()
 
 
+def test_windx_run_SAM_files():
+    """
+    Test running WindX files through SAM
+    """
+
+    h5_path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
+    with tempfile.TemporaryDirectory() as td:
+        out_path = os.path.join(td, 'truth.csv')
+        WindX.make_SAM_files(h5_path, 0, hub_height=80, out_path=out_path)
+
+        obj = PySamWindPower.default('WindPowerNone')
+        obj.Resource.wind_resource_filename = out_path
+        obj.Resource.wind_resource_model_choice = 0
+        obj.execute()
+        energy_no_icing = obj.Outputs.annual_energy
+        assert energy_no_icing > 1e8
+
+        obj.Losses.env_icing_loss = 1
+        obj.Losses.icing_cutoff_rh = 80
+        obj.Losses.icing_cutoff_temp = 10
+        obj.execute()
+        assert obj.Outputs.annual_energy < energy_no_icing
+
+
+    LOGGERS.clear()
+
+
 def test_nsrdbx_make_SAM_files(NSRDBX_cls):
     """
     Test nsrdbx make_SAM_files method
@@ -918,6 +948,24 @@ def test_nsrdbx_make_SAM_files(NSRDBX_cls):
             assert_frame_equal(truth, test)
 
     NSRDBX_cls.close()
+    LOGGERS.clear()
+
+
+def test_nsrdbx_run_SAM_files():
+    """
+    Test running nsrdbx files through SAM
+    """
+
+    h5_path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
+    with tempfile.TemporaryDirectory() as td:
+        out_path = os.path.join(td, 'truth.csv')
+        NSRDBX.make_SAM_files(h5_path, 0, out_path=out_path)
+
+        obj = PySamPV8.default('PVWattsNone')
+        obj.SolarResource.solar_resource_file = out_path
+        obj.execute()
+        assert obj.Outputs.annual_energy > 1.3e8
+
     LOGGERS.clear()
 
 
