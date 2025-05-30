@@ -1748,12 +1748,14 @@ class WindX(ResourceX):
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
-        kwargs['height'] = hub_height
-
+        # SAM CSV requires wind direction, so leave it on by default but
+        # allow users to switch off explicitly
+        get_sam_df_kwargs = {"require_wind_dir": True, "height": hub_height}
+        get_sam_df_kwargs.update(kwargs)
         SAM_df = super().get_SAM_gid(gid, out_path=out_path,
                                      write_time=write_time,
                                      extra_meta_data=extra_meta_data,
-                                     **kwargs)
+                                     **get_sam_df_kwargs)
 
         return SAM_df
 
