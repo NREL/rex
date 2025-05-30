@@ -1360,7 +1360,8 @@ class WindResource(AbstractInterpolatedResource):
             variables.append('relativehumidity_2m')
 
         for var in variables:
-            var_name = "{}_{}m".format(var, height) if var != 'relativehumidity_2m' else var
+            var_name = ("{}_{}m".format(var, height)
+                        if var != 'relativehumidity_2m' else var)
             ds_slice = (slice(None), site)
             var_array = self._get_ds(var_name, ds_slice)
             var_array = SAMResource.roll_timeseries(var_array, time_zone,
