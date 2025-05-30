@@ -1371,9 +1371,11 @@ class WindResource(AbstractInterpolatedResource):
                 var, res_df[var],
                 SAMResource.WIND_DATA_RANGES[var], [site])
 
-        col_map = {'pressure': f'pres_{height}', 'temperature': f'temp_{height}',
-                   'windspeed': f'speed_{height}', 'winddirection': f'dir_{height}',
-                   'relativehumidity_2m': 'rhum'}
+        col_map = {'pressure': f'Pressure {height}m',
+                   'temperature': f'Temperature {height}m',
+                   'windspeed': f'Wind Speed {height}m',
+                   'winddirection': f'Wind Direction {height}m',
+                   'relativehumidity_2m': 'Relative Humidity 2m'}
         res_df = res_df.rename(columns=col_map)
         res_df.name = "SAM_{}m-{}".format(height, site)
 
