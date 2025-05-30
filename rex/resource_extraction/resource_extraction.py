@@ -459,8 +459,7 @@ class ResourceX(BaseDatasetIterable):
 
         return ds_slice
 
-    @staticmethod
-    def _to_SAM_csv(sam_df, site_meta, out_path, write_time=True):
+    def _to_SAM_csv(self, sam_df, site_meta, out_path, write_time=True):
         """
         Save SAM dataframe to disk and add meta data to header to make
         SAM compliant
@@ -489,6 +488,10 @@ class ResourceX(BaseDatasetIterable):
             cols = [c for c in sam_df if c.lower() not in time_cols]
             sam_df[cols].to_csv(out_path, index=False)
 
+        self._add_sam_csv_header(out_path, site_meta)
+
+    def _add_sam_csv_header(self, out_path, site_meta):
+        """Add site meta info header to CSV file"""
         if 'gid' not in site_meta:
             site_meta.index.name = 'gid'
             site_meta = site_meta.reset_index()
@@ -503,14 +506,15 @@ class ResourceX(BaseDatasetIterable):
                 col_map[c] = c.capitalize()
 
         site_meta = site_meta.rename(columns=col_map)
-        meta_line = ','.join(
-            f"{col},{value}" for col, value in site_meta.iloc[0].items()
-        )
+        cols = ','.join(site_meta.columns)
+        values = site_meta.values[0].astype(str)
+        values = ','.join([value.replace(',', '') for value in values])
+        values = values.replace('\n', '').replace('\r', '').replace('\t', '')
 
         with open(out_path, 'r+') as f:
             content = f.read()
             f.seek(0, 0)
-            f.write(meta_line + '\n' + content)
+            f.write(cols + '\n' + values + '\n' + content)
 
     def _init_tree(self, tree):
         """
@@ -1758,6 +1762,31 @@ class WindX(ResourceX):
                                      **get_sam_df_kwargs)
 
         return SAM_df
+
+    def _add_sam_csv_header(self, out_path, site_meta):
+        """Add site meta info header (like WTK) to CSV file"""
+        if 'gid' not in site_meta:
+            site_meta.index.name = 'gid'
+            site_meta = site_meta.reset_index()
+
+        col_map = {}
+        for c in site_meta.columns:
+            if c.lower() == 'timezone':
+                col_map[c] = 'Time Zone'
+            elif c.lower() == 'gid':
+                col_map[c] = 'Location ID'
+            elif c.islower():
+                col_map[c] = c.capitalize()
+
+        site_meta = site_meta.rename(columns=col_map)
+        meta_line = ','.join(
+            f"{col},{value}" for col, value in site_meta.iloc[0].items()
+        )
+
+        with open(out_path, 'r+') as f:
+            content = f.read()
+            f.seek(0, 0)
+            f.write(meta_line + '\n' + content)
 
     def get_SAM_lat_lon(self, lat_lon, hub_height, check_lat_lon=True,
                         out_path=None, **kwargs):
