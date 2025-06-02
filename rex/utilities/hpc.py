@@ -21,9 +21,6 @@ logger = logging.getLogger(__name__)
 class HpcJobManager(SubprocessManager, ABC):
     """Abstract HPC job manager framework"""
 
-    # get username as class attribute.
-    USER = getpass.getuser()
-
     # HPC queue column headers
     QCOL_NAME = None  # Job name column
     QCOL_ID = None  # Job integer ID column
@@ -46,10 +43,7 @@ class HpcJobManager(SubprocessManager, ABC):
             from parse_queue_str(). None will get the queue from PBS or SLURM.
         """
 
-        self._user = user
-        if self._user is None:
-            self._user = self.USER
-
+        self._user = user or getpass.getuser()
         if queue_dict is not None and not isinstance(queue_dict, dict):
             emsg = ('HPC queue_dict arg must be None or Dict but received: '
                     '{}, {}'.format(queue_dict, type(queue_dict)))
@@ -268,7 +262,7 @@ class PBS(HpcJobManager):
         """
 
         if user is None:
-            user = cls.USER
+            user = getpass.getuser()
 
         if skip_rows is None:
             skip_rows = cls.QSKIP
@@ -433,7 +427,7 @@ class SLURM(HpcJobManager):
             job_name_str = ' -n {}'.format(job_name)
 
         if user is None:
-            user = cls.USER
+            user = getpass.getuser()
 
         if qformat is None:
             qformat = cls.SQ_FORMAT
