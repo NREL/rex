@@ -872,7 +872,8 @@ def test_cli_SAM(runner, WindX_cls):
     LOGGERS.clear()
 
 
-def test_windx_make_SAM_files(WindX_cls):
+@pytest.mark.parametrize('max_workers', [1, 2])
+def test_windx_make_SAM_files(WindX_cls, max_workers):
     """
     Test WindX make_SAM_files method
     """
@@ -885,7 +886,8 @@ def test_windx_make_SAM_files(WindX_cls):
         WindX_cls.get_SAM_gid(gids, 100, out_path=truth_path)
 
         test_path = os.path.join(td, 'test.csv')
-        WindX.make_SAM_files(path, gids, hub_height=100, out_path=test_path)
+        WindX.make_SAM_files(path, gids, hub_height=100, out_path=test_path,
+                             max_workers=max_workers)
         for gid in gids:
             test_path = os.path.join(td, f'test_{gid}.csv')
             truth_path = os.path.join(td, f'truth_{gid}.csv')
@@ -923,7 +925,8 @@ def test_windx_run_SAM_files():
     LOGGERS.clear()
 
 
-def test_nsrdbx_make_SAM_files(NSRDBX_cls):
+@pytest.mark.parametrize('max_workers', [1, 2])
+def test_nsrdbx_make_SAM_files(NSRDBX_cls, max_workers):
     """
     Test nsrdbx make_SAM_files method
     """
@@ -936,7 +939,8 @@ def test_nsrdbx_make_SAM_files(NSRDBX_cls):
         NSRDBX_cls.get_SAM_gid(gids, out_path=truth_path)
 
         test_path = os.path.join(td, 'test.csv')
-        NSRDBX.make_SAM_files(path, gids, out_path=test_path)
+        NSRDBX.make_SAM_files(path, gids, out_path=test_path,
+                              max_workers=max_workers)
         for gid in gids:
             test_path = os.path.join(td, f'test_{gid}.csv')
             truth_path = os.path.join(td, f'truth_{gid}.csv')
