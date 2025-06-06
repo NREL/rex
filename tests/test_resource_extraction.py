@@ -117,8 +117,13 @@ def test_sam_csv_with_extra_commas(NSRDBX_cls):
 
     with tempfile.TemporaryDirectory() as td:
         out_path = os.path.join(td, 'test.csv')
+        assert not os.path.exists(out_path)
+
         NSRDBX_cls.get_SAM_gid(0, out_path=out_path,
                                extra_meta_data={"urban": "Washington, D.C."})
+        assert os.path.exists(out_path)
+        assert not os.path.exists(os.path.join(td, 'test_0.csv'))
+
         with open(out_path) as fh:
             col_names = fh.readline()
             values = fh.readline()
@@ -852,7 +857,12 @@ def test_cli_SAM(runner, WindX_cls):
     path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     with tempfile.TemporaryDirectory() as td:
         truth_path = os.path.join(td, 'truth.csv')
+        assert not os.path.exists(truth_path)
+
         WindX_cls.get_SAM_gid(gid, 100, out_path=truth_path)
+        assert os.path.exists(truth_path)
+        assert not os.path.exists(os.path.join(td, f'test_{gid}.csv'))
+
         truth = pd.read_csv(truth_path, skiprows=1)
 
         result = runner.invoke(main, ['-h5', path,
