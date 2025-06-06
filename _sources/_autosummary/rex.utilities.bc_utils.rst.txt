@@ -1,0 +1,41 @@
+rex.utilities.bc\_utils
+=======================
+
+.. automodule:: rex.utilities.bc_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      sample_cdf
+      sample_q_invlog
+      sample_q_linear
+      sample_q_log
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      QuantileDeltaMapping
+   
+   
+
+   
+   
+   
+
+
+

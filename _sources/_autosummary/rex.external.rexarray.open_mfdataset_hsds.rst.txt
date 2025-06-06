@@ -1,0 +1,6 @@
+rex.external.rexarray.open\_mfdataset\_hsds
+===========================================
+
+.. currentmodule:: rex.external.rexarray
+
+.. autofunction:: open_mfdataset_hsds

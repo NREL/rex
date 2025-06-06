@@ -1,0 +1,47 @@
+rex.temporal\_stats.temporal\_stats.TemporalStats
+=================================================
+
+.. currentmodule:: rex.temporal_stats.temporal_stats
+
+.. autoclass:: TemporalStats
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~TemporalStats.all
+      ~TemporalStats.all_stats
+      ~TemporalStats.compute_statistics
+      ~TemporalStats.diurnal
+      ~TemporalStats.diurnal_stats
+      ~TemporalStats.full_stats
+      ~TemporalStats.monthly
+      ~TemporalStats.monthly_diurnal
+      ~TemporalStats.monthly_diurnal_stats
+      ~TemporalStats.monthly_stats
+      ~TemporalStats.run
+      ~TemporalStats.save_stats
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~TemporalStats.STATS
+      ~TemporalStats.lat_lon
+      ~TemporalStats.meta
+      ~TemporalStats.res_cls
+      ~TemporalStats.res_h5
+      ~TemporalStats.statistics
+      ~TemporalStats.time_index
+   
+   

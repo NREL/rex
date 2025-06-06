@@ -1,0 +1,6 @@
+rex.utilities.utilities.is\_hsds\_file
+======================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: is_hsds_file

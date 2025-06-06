@@ -1,0 +1,69 @@
+rex.resource\_extraction.resource\_extraction.WindX
+===================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: WindX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~WindX.box_gids
+      ~WindX.close
+      ~WindX.get_SAM_gid
+      ~WindX.get_SAM_lat_lon
+      ~WindX.get_box_df
+      ~WindX.get_box_ts
+      ~WindX.get_gid_df
+      ~WindX.get_gid_ts
+      ~WindX.get_grid_vectors
+      ~WindX.get_lat_lon_df
+      ~WindX.get_lat_lon_ts
+      ~WindX.get_raster_index
+      ~WindX.get_region_df
+      ~WindX.get_region_ts
+      ~WindX.get_timestep_map
+      ~WindX.lat_lon_gid
+      ~WindX.make_SAM_files
+      ~WindX.region_gids
+      ~WindX.save_region
+      ~WindX.save_subset
+      ~WindX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~WindX.attrs
+      ~WindX.coordinates
+      ~WindX.counties
+      ~WindX.countries
+      ~WindX.data_version
+      ~WindX.datasets
+      ~WindX.distance_threshold
+      ~WindX.dsets
+      ~WindX.global_attrs
+      ~WindX.groups
+      ~WindX.h5
+      ~WindX.lat_lon
+      ~WindX.meta
+      ~WindX.res_dsets
+      ~WindX.resource
+      ~WindX.resource_datasets
+      ~WindX.shape
+      ~WindX.states
+      ~WindX.time_index
+      ~WindX.tree
+   
+   

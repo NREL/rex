@@ -1,0 +1,6 @@
+rex.utilities.utilities.is\_s3\_file
+====================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: is_s3_file

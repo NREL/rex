@@ -1,0 +1,6 @@
+rex.utilities.cli\_dtypes.sanitize\_str
+=======================================
+
+.. currentmodule:: rex.utilities.cli_dtypes
+
+.. autofunction:: sanitize_str
