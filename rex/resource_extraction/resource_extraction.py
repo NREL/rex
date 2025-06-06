@@ -921,8 +921,10 @@ class ResourceX(BaseDatasetIterable):
             If multiple lat, lon pairs are given a list of DatFrames is
             returned
         """
+        needs_gid_suffix = True
         if isinstance(gid, (int, np.integer)):
             gid = [gid]
+            needs_gid_suffix = False
 
         SAM_df = []
         for res_id in gid:
@@ -933,7 +935,7 @@ class ResourceX(BaseDatasetIterable):
             if out_path is not None:
                 assert out_path.endswith('.csv'), 'out_path must be .csv!'
                 i_out_path = out_path
-                if len(gid) > 1:
+                if needs_gid_suffix:
                     tag = '_{}.csv'.format(res_id)
                     i_out_path = i_out_path.replace('.csv', tag)
 
