@@ -881,9 +881,8 @@ def test_windx_make_SAM_files(WindX_cls):
 
     path = os.path.join(TESTDATADIR, 'wtk/ri_100_wtk_2012.h5')
     with tempfile.TemporaryDirectory() as td:
-        for gid in gids:
-            truth_path = os.path.join(td, f'truth_{gid}.csv')
-            WindX_cls.get_SAM_gid(gid, 100, out_path=truth_path)
+        truth_path = os.path.join(td, 'truth.csv')
+        WindX_cls.get_SAM_gid(gids, 100, out_path=truth_path)
 
         test_path = os.path.join(td, 'test.csv')
         WindX.make_SAM_files(path, gids, hub_height=100, out_path=test_path)
@@ -921,7 +920,6 @@ def test_windx_run_SAM_files():
         obj.execute()
         assert obj.Outputs.annual_energy < energy_no_icing
 
-
     LOGGERS.clear()
 
 
@@ -934,9 +932,8 @@ def test_nsrdbx_make_SAM_files(NSRDBX_cls):
 
     path = os.path.join(TESTDATADIR, 'nsrdb/ri_100_nsrdb_2012.h5')
     with tempfile.TemporaryDirectory() as td:
-        for gid in gids:
-            truth_path = os.path.join(td, f'truth_{gid}.csv')
-            NSRDBX_cls.get_SAM_gid(gid, out_path=truth_path)
+        truth_path = os.path.join(td, 'truth.csv')
+        NSRDBX_cls.get_SAM_gid(gids, out_path=truth_path)
 
         test_path = os.path.join(td, 'test.csv')
         NSRDBX.make_SAM_files(path, gids, out_path=test_path)
