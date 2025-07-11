@@ -253,6 +253,23 @@ def test_1D_dataset_shape():
             assert res['dset3'].shape == (8760,)
 
 
+def test_attrs_multiple_opens():
+    """Test that attrs are not overwritten on multiple opens"""
+
+    attrs_to_test = ["package", "version", "full_version_record"]
+    with tempfile.TemporaryDirectory() as td:
+        fp = os.path.join(td, 'outputs.h5')
+        with Outputs(fp, 'a') as f:
+            for attr in attrs_to_test:
+                assert f.h5.attrs[attr] != "test"
+                f.h5.attrs[attr] = "test"
+                assert f.h5.attrs[attr] == "test"
+
+        with Outputs(fp, 'a') as f:
+            for attr in attrs_to_test:
+                assert f.h5.attrs["package"] == "test"
+
+
 def execute_pytest(capture='all', flags='-rapP'):
     """Execute module as pytest with detailed summary report.
 
