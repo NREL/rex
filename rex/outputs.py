@@ -196,23 +196,26 @@ class Outputs(BaseResource):
         dict
             Dictionary of package versions for dependencies
         """
-        versions = {'rex': __version__,
-                    'pandas': pd.__version__,
-                    'numpy': np.__version__,
-                    'python': sys.version,
-                    'click': click.__version__,
+        versions = {'python': sys.version,
+                    'rex': __version__,
                     'h5py': h5py.__version__,
                     'h5pyd': h5pyd.__version__,
-                    'scipy': scipy.__version__
+                    'pandas': pd.__version__,
+                    'numpy': np.__version__,
+                    'scipy': scipy.__version__,
+                    'click': click.__version__,
                     }
         return versions
 
     def set_version_attr(self):
         """Set the version attribute to the h5 file."""
-        self.h5.attrs['version'] = __version__
-        self.h5.attrs['full_version_record'] = json.dumps(
-            self.full_version_record)
-        self.h5.attrs['package'] = 'rex'
+        new_attrs = {'version': __version__,
+                     'full_version_record': json.dumps(
+                         self.full_version_record),
+                     'package': 'rex'}
+        for name, value in new_attrs.items():
+            if name not in self.h5.attrs:
+                self.h5.attrs[name] = value
 
     @property
     def version(self):
@@ -568,7 +571,7 @@ class Outputs(BaseResource):
             msg = ('Shape dimensions ({}) are not the same length as chunks '
                    '({}). Please provide a single chunk value for each '
                    'dimension!'
-                    .format(shape, chunks))
+                   .format(shape, chunks))
             logger.error(msg)
             raise HandlerRuntimeError(msg)
 
@@ -748,6 +751,7 @@ class Outputs(BaseResource):
 
         keys = (dset, ) + dset_slice
 
+        # pylint: disable=unnecessary-dunder-call
         arr = self.__getitem__(keys)
         if not np.array_equal(arr, dset_array):
             self._set_ds_array(dset, dset_array, dset_slice)
