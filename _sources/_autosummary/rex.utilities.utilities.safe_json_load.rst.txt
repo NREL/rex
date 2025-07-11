@@ -1,0 +1,6 @@
+rex.utilities.utilities.safe\_json\_load
+========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: safe_json_load

@@ -1,0 +1,6 @@
+rex.utilities.exceptions.MoninObukhovExtrapolationError
+=======================================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: MoninObukhovExtrapolationError

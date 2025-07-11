@@ -1,0 +1,6 @@
+rex.renewable\_resource.linear\_interp
+======================================
+
+.. currentmodule:: rex.renewable_resource
+
+.. autofunction:: linear_interp
