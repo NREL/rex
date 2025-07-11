@@ -211,7 +211,7 @@ class Outputs(BaseResource):
         """Set the version attribute to the h5 file."""
         new_attrs = {'version': __version__,
                      'full_version_record': json.dumps(
-                        self.full_version_record),
+                         self.full_version_record),
                      'package': 'rex'}
         for name, value in new_attrs.items():
             if name not in self.h5.attrs:
@@ -571,7 +571,7 @@ class Outputs(BaseResource):
             msg = ('Shape dimensions ({}) are not the same length as chunks '
                    '({}). Please provide a single chunk value for each '
                    'dimension!'
-                    .format(shape, chunks))
+                   .format(shape, chunks))
             logger.error(msg)
             raise HandlerRuntimeError(msg)
 
@@ -751,6 +751,7 @@ class Outputs(BaseResource):
 
         keys = (dset, ) + dset_slice
 
+        # pylint: disable=unnecessary-dunder-call
         arr = self.__getitem__(keys)
         if not np.array_equal(arr, dset_array):
             self._set_ds_array(dset, dset_array, dset_slice)
