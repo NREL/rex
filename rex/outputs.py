@@ -196,14 +196,14 @@ class Outputs(BaseResource):
         dict
             Dictionary of package versions for dependencies
         """
-        versions = {'rex': __version__,
-                    'pandas': pd.__version__,
-                    'numpy': np.__version__,
-                    'python': sys.version,
-                    'click': click.__version__,
+        versions = {'python': sys.version,
+                    'rex': __version__,
                     'h5py': h5py.__version__,
                     'h5pyd': h5pyd.__version__,
-                    'scipy': scipy.__version__
+                    'pandas': pd.__version__,
+                    'numpy': np.__version__,
+                    'scipy': scipy.__version__,
+                    'click': click.__version__,
                     }
         return versions
 
