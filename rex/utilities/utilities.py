@@ -5,6 +5,7 @@ Collection of helpful functions
 import datetime
 import logging
 import inspect
+import glob
 import json
 import yaml
 import os
@@ -333,7 +334,7 @@ def check_res_file(res_file):
     elif res_file.startswith('s3://'):
         bad = False
 
-    elif '*' in res_file and not res_file.startswith('/nrel/'):
+    elif len(glob.glob(res_file)) > 0 and not res_file.startswith('/nrel/'):
         bad = False
         multi_h5_res = True
 
