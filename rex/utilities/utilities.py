@@ -3,38 +3,42 @@
 Collection of helpful functions
 """
 import datetime
-import logging
-import inspect
 import glob
-import json
-import yaml
-import os
 import importlib
+import inspect
+import json
+import logging
+import os
+import re
+import time
 from fnmatch import fnmatch
+from warnings import warn
+
+import json5
 import numpy as np
 import pandas as pd
-from pandas.api.types import CategoricalDtype
-import re
-from scipy.spatial import cKDTree
-import time
-from warnings import warn
+import yaml
 from packaging import version
+from pandas.api.types import CategoricalDtype
+from scipy.spatial import cKDTree
 
-
-from rex.utilities.exceptions import (FileInputError, JSONError, RetryError,
-                                      RetryWarning)
-
+from rex.utilities.exceptions import (
+    FileInputError,
+    JSONError,
+    RetryError,
+    RetryWarning,
+)
 
 logger = logging.getLogger(__name__)
 
 
 def safe_json_load(fpath):
-    """Perform a json file load with better exception handling.
+    """Perform a json or json5 file load with better exception handling.
 
     Parameters
     ----------
     fpath : str
-        Filepath to .json file.
+        Filepath to .json or .json5 file.
 
     Returns
     -------
@@ -49,8 +53,10 @@ def safe_json_load(fpath):
      key2: value2}
     """
 
-    validate_filepath(fpath, file_extension='.json', exception_type=JSONError)
-    return _read_data_file(fpath, json.load, exception_type=JSONError)
+    validate_filepath(fpath, file_extension=('.json', '.json5'),
+                      exception_type=JSONError)
+    load_method = json5.load if fpath.endswith('.json5') else json.load
+    return _read_data_file(fpath, load_method, exception_type=JSONError)
 
 
 def safe_yaml_load(fpath):
@@ -150,7 +156,7 @@ def _read_data_file(fpath, load_method, exception_type):
     """
 
     try:
-        with open(fpath, 'r') as f:
+        with open(fpath) as f:
             data = load_method(f)
     except exception_type as e:
         msg = 'Error:\n{}\nCannot read file: "{}"'.format(e, fpath)
@@ -213,7 +219,7 @@ def dict_str_load(dict_str):
     {bool_key: True,
      value_key: None}
     """
-    dict_str = dict_str.replace('\'', '\"')
+    dict_str = dict_str.replace('\'', '"')
     dict_str = dict_str.replace('None', 'null')
     dict_str = dict_str.replace('True', 'true')
     dict_str = dict_str.replace('False', 'false')
@@ -271,11 +277,10 @@ def parse_year(inp, option='raise'):
         if 'bool' in option:
             out = True
 
+    elif 'bool' in option:
+        out = False
     else:
-        if 'bool' in option:
-            out = False
-        else:
-            raise RuntimeError('Cannot parse year from {}'.format(inp))
+        raise RuntimeError('Cannot parse year from {}'.format(inp))
 
     return out
 
@@ -328,10 +333,7 @@ def check_res_file(res_file):
     hsds = False
     bad = True
 
-    if os.path.isfile(res_file):
-        bad = False
-
-    elif res_file.startswith('s3://'):
+    if os.path.isfile(res_file) or res_file.startswith('s3://'):
         bad = False
 
     elif len(glob.glob(res_file)) > 0 and not res_file.startswith('/nrel/'):
@@ -394,7 +396,7 @@ def check_hsds_file(res_file):
             msg = ('{} is not a valid HSDS file path!'
                    .format(res_file))
             raise FileNotFoundError(msg)
-        elif len(fps) > 1:
+        if len(fps) > 1:
             multi_h5_res = True
 
     return multi_h5_res, hsds
