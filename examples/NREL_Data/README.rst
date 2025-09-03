@@ -84,7 +84,7 @@ and the data download APIs for
 
 - Each file has a top level attribute named ``version`` that defines the model version. In the example above this attribute would have a value of ``v4.0.0``. This is the version that is included in the files users
   will download.
-- Each file includes 2 specific datasets that are tied to The API functionality. They are:
+- Each file includes 2 or 3 specific datasets that are tied to The API functionality. They are:
 
   - ``meta`` which contains a table of location specific metadata for each pixel/point/grid-cell of data. There are a few required
     metadata values, and no limit to additional metadata that can be
@@ -101,13 +101,12 @@ and the data download APIs for
     (``2022-01-01 00:45:00+00:00``) defining the temporal value of each
     data step.
 
-    - There is a special use case for TMY data where ``time_index`` is not
-      mandatory and may be superceded by ``tmy_year``. In this case the month,
-      day, hour, and minute will be inferred from the data array position and
-      the year will be supplied from this ``tmy_year`` dataset
+    - The ``time_index`` dataset will be a 1 dimensional array that must
+      have the same length as the temporal dimension of the datasets.
 
-        - The ``time_index`` dataset will be a 1 dimensional array that must
-          have the same length as the temporal dimension of the datasets.
+  - ``tmy_year`` which is ONLY required for TMY data. ``tmy_year`` includes a
+    value per timestep and per point which contains a single integer value
+    defining the year that the TMY data was derived from.
 
 - Each file includes any number of datasets that include the model
   outputs. Each dataset is a variable e.g. “wind_speed” or “ghi”.
