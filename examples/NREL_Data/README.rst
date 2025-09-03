@@ -27,7 +27,7 @@ Definitions
  - ``hsds`` - The highly scalable data service (HSDS) that we recommend to access small chunks of very large cloud-hosted NREL datasets. See the `hsds <https://github.com/HDFGroup/hsds>`_ library for more details.
  - ``meta`` - The ``dataset`` in an NREL h5 file that contains information about the spatial axis. This is typically a `pandas DataFrame <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_ with columns such as "latitude", "longitude", "state", etc... The DataFrame is typically converted to a records array for storage in an h5 ``dataset``. The length of the meta data should match the length of axis 1 of a 2D spatiotemporal ``dataset``.
  - ``S3`` - Amazon Simple Storage Service (S3) is a basic cloud file storage system we use to store raw .h5 files in their full volume. Downloading files directly from S3 may not be the easiest way to access the data because each file tends to be multiple terabytes. Instead, you can stream small chunks of the files via HSDS.
- - ``scale_factor`` - We frequently scale data by a multiplicative factor, round the data to integer precision, and store the data in integer arrays. The ``scale_factor`` is an attribute associated with the relevant h5 ``dataset`` that defines the multiplicative factor required to unscale the data from integer storage to the original physical units.
+ - ``scale_factor`` - We frequently scale data by a multiplicative factor, round the data to integer precision, and store the data in integer arrays. The ``scale_factor`` is an attribute associated with the relevant h5 ``dataset`` that defines the factor required to unscale the data from integer storage to the original physical units. The data should be divided by the ``scale_factor`` to scale back from integer to physical units.
  - ``time_index`` - The ``dataset`` in an NREL h5 file that contains information about the temporal axis. This is typically a `pandas DatetimeIndex <https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html>`_ that has been converted to a string array for storage in an h5 ``dataset``. The length of this ``dataset`` should match the length of axis 0 of a 2D spatiotemporal ``dataset``.
 
 Data Format
@@ -86,7 +86,7 @@ and the data download APIs for
   will download.
 - Each file includes 2 specific datasets that are tied to The API functionality. They are:
 
-  - ``metadata`` which contains a table of location specific metadata for each pixel/point/grid-cell of data. There are a few required
+  - ``meta`` which contains a table of location specific metadata for each pixel/point/grid-cell of data. There are a few required
     metadata values, and no limit to additional metadata that can be
     included as deemed useful for the specific model. The required
     values are
@@ -95,16 +95,16 @@ and the data download APIs for
     - longitude - either of the actual point or the centroid
     - timezone
 
-      - The ``metadata`` dataset will be 1 a dimensional array that must
+      - The ``meta`` dataset will be 1 a dimensional array that must
         have the same length as the spatial dimension of the datasets
   - ``time_index`` which contains UTC timestamps in ISO 8601
     (``2022-01-01 00:45:00+00:00``) defining the temporal value of each
     data step.
 
-    - There is a special use case for TMY data where ``time_index`` is
-      replaced by ``tmy_year``. In this case the month, day, hour, and
-      minute will be inferred from the data array position and the year
-      will be supplied from this ``tmy_year`` dataset
+    - There is a special use case for TMY data where ``time_index`` is not
+      mandatory and may be superceded by ``tmy_year``. In this case the month,
+      day, hour, and minute will be inferred from the data array position and
+      the year will be supplied from this ``tmy_year`` dataset
 
         - The ``time_index`` dataset will be a 1 dimensional array that must
           have the same length as the temporal dimension of the datasets.
@@ -124,12 +124,12 @@ and the data download APIs for
 
     - *scale_factor*: In cases where floats have been converted to
       integers for storage efficiency the *scale_factor* is the value to
-      multiply the raw data by to restore the original value. E.g.
-      ``h5_val * scale_factor = actual_val``
+      divide the raw data by to restore the original value. E.g.
+      ``h5_val / scale_factor = actual_val``
     - *fill_value*: The value that is used to represent NULL. *\* NOTE
-      that empty values in an HDF5 file will result in NaN errors during
-      read out, hence it is crucial to include a fill value in datasets
-      where NULLs are possible*
+      that empty values in an HDF5 file are technically allowable but will
+      result in errors during data post-processing by NREL tools, hence it is
+      important to include a fill value in datasets where NULLs are possible*
     - *units*: The string representation of the units that apply to the
       raw data. Only necessary when you want values in Kelvin to be
       converted to Celcius for output. Otherwise included in output file
@@ -149,7 +149,7 @@ memory failures, etc.
 
 The strategy is to identify the use cases for reading the data out of
 H5, and then assign chunks that are aligned with that strategy. In
-addition it has been proven that tiny chunks will cause slow read time
+addition it has been observed that tiny chunks will cause slow read time
 due to the I/O latency of reading many little chunks, while huge chunks
 will cause slow read time and excessive memory usage because the process
 is going to have to load a huge amount of data into memory in order to
@@ -185,16 +185,21 @@ steps then good chunk options would inclue 8760, (8760/2)=4380, or
 
 Common Data Formatting Errors
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+These are some common data formatting errors that we see when integrating new
+data products into our tools. These are not limitations of the HDF5 format, but
+rather are conventions NREL tools have adopted.
 
 - NaNs in H5s
-- Array sizes that don't align on the *x* or *y* axis. Most often this is caused
-  by something like the first year missing the first month due to the details of
-  when the underlying source data began to be collected (not every weather
-  station goes online at midnight on January 1st UTC time)
+- Array sizes between different years of the same resource and/or different
+  datasets within the same file that don't align on the *x* or *y* axis. Most
+  often this is caused by something like the first year missing the first month
+  due to the details of when the underlying source data began to be collected
+  (not every weather station goes online at midnight on January 1st UTC time).
+  *NOTE: time_index length will vary in leap years*
 - Files that contain less than a year of data. Yearly data files are large, and
   it is often more convenient to work in monthly batches. However for final
   upload yearly is required.
-- Scale factors that are applied by division instead of multiplication. We can
+- Scale factors that are applied by multiplication instead of division. We can
   handle this in code, just let us know how your scale factor is intended to be
   used.
 - Confusion about units. If the datasets don't include the units attribute,
