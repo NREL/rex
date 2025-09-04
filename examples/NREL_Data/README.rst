@@ -27,7 +27,7 @@ Definitions
  - ``hsds`` - The highly scalable data service (HSDS) that we recommend to access small chunks of very large cloud-hosted NREL datasets. See the `hsds <https://github.com/HDFGroup/hsds>`_ library for more details.
  - ``meta`` - The ``dataset`` in an NREL h5 file that contains information about the spatial axis. This is typically a `pandas DataFrame <https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html>`_ with columns such as "latitude", "longitude", "state", etc... The DataFrame is typically converted to a records array for storage in an h5 ``dataset``. The length of the meta data should match the length of axis 1 of a 2D spatiotemporal ``dataset``.
  - ``S3`` - Amazon Simple Storage Service (S3) is a basic cloud file storage system we use to store raw .h5 files in their full volume. Downloading files directly from S3 may not be the easiest way to access the data because each file tends to be multiple terabytes. Instead, you can stream small chunks of the files via HSDS.
- - ``scale_factor`` - We frequently scale data by a multiplicative factor, round the data to integer precision, and store the data in integer arrays. The ``scale_factor`` is an attribute associated with the relevant h5 ``dataset`` that defines the multiplicative factor required to unscale the data from integer storage to the original physical units.
+ - ``scale_factor`` - We frequently scale data by a multiplicative factor, round the data to integer precision, and store the data in integer arrays. The ``scale_factor`` is an attribute associated with the relevant h5 ``dataset`` that defines the factor required to unscale the data from integer storage to the original physical units. The data should be divided by the ``scale_factor`` to scale back from integer to physical units.
  - ``time_index`` - The ``dataset`` in an NREL h5 file that contains information about the temporal axis. This is typically a `pandas DatetimeIndex <https://pandas.pydata.org/docs/reference/api/pandas.DatetimeIndex.html>`_ that has been converted to a string array for storage in an h5 ``dataset``. The length of this ``dataset`` should match the length of axis 0 of a 2D spatiotemporal ``dataset``.
 
 Data Format
@@ -42,6 +42,174 @@ commonly scale each ``dataset`` by a multiplicative factor and store as an
 integer. The scale_factor is provided in the ``scale_factor`` attribute. The
 units for each variable are also commonly provided as an attribute called
 ``units``.
+
+
+Many NREL tools have been developed based on the assumption that the data format
+will follow a pseudo-standard definition. Data creators can adhere to the
+following specifications for seamless integration into
+`SAM <https://sam.nrel.gov>`_,
+`reV <https://www.nrel.gov/gis/renewable-energy-potential>`_,
+`rex <https://github.com/NREL/rex/blob/main/README.rst>`_,
+and the data download APIs for
+`solar <https://developer.nrel.gov/docs/solar/nsrdb/>`_,
+`wind <https://developer.nrel.gov/docs/wind/wind-toolkit/>`_,
+`wave <https://developer.nrel.gov/docs/wave/>`_, and
+`climate <https://developer.nrel.gov/docs/climate/ncdb/>`_ data, to name a few.
+
+- The domain is defined at the data product level. The domain naming convention
+  is defined in a product agnostic way and follows the format:
+  /``nrel``/``resource type``/``product name``/``optional data subclass(es)``/``data version``/``product_name``\ \_\ ``year.h5``.
+
+    - Common subclasses include spatial regions, satellite variants, and
+      underlying model variations. E.g. ``/nrel/nsrdb/GOES/conus/v4.0.0/``
+- Each data product/domain will be represented by a single endpoint in the
+  download APIs. E.g. the domain above is made accessible via
+  `https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download <https://developer.nrel.gov/docs/solar/nsrdb/nsrdb-GOES-conus-v4-0-0-download/>`__
+- Each data product/domain contains a set of HDF5 files, each holding a single
+  year of data. - E.g.
+
++---------------------------------------------------+
+| /nrel/nsrdb/GOES/conus/v4.0.0/                    |
++===================================================+
+| /nrel/nsrdb/GOES/conus/v4.0.0/nsrdb_conus_2018.h5 |
++---------------------------------------------------+
+| /nrel/nsrdb/GOES/conus/v4.0.0/nsrdb_conus_2019.h5 |
++---------------------------------------------------+
+| /nrel/nsrdb/GOES/conus/v4.0.0/nsrdb_conus_2020.h5 |
++---------------------------------------------------+
+| /nrel/nsrdb/GOES/conus/v4.0.0/nsrdb_conus_2021.h5 |
++---------------------------------------------------+
+| /nrel/nsrdb/GOES/conus/v4.0.0/nsrdb_conus_2022.h5 |
++---------------------------------------------------+
+
+- Each file has a top level attribute named ``version`` that defines the model version. In the example above this attribute would have a value of ``v4.0.0``. This is the version that is included in the files users
+  will download.
+- Each file includes 2 or 3 specific datasets that are tied to The API functionality. They are:
+
+  - ``meta`` which contains a table of location specific metadata for each pixel/point/grid-cell of data. There are a few required
+    metadata values, and no limit to additional metadata that can be
+    included as deemed useful for the specific model. The required
+    values are
+
+    - latitude - either of the actual point or the centroid
+    - longitude - either of the actual point or the centroid
+    - timezone
+
+      - The ``meta`` dataset will be 1 a dimensional array that must
+        have the same length as the spatial dimension of the datasets
+  - ``time_index`` which contains UTC timestamps in ISO 8601
+    (``2022-01-01 00:45:00+00:00``) defining the temporal value of each
+    data step.
+
+    - The ``time_index`` dataset will be a 1 dimensional array that must
+      have the same length as the temporal dimension of the datasets.
+
+  - ``tmy_year`` which is ONLY required for TMY data. ``tmy_year`` includes a
+    value per timestep and per point which contains a single integer value
+    defining the year that the TMY data was derived from.
+
+- Each file includes any number of datasets that include the model
+  outputs. Each dataset is a variable e.g. “wind_speed” or “ghi”.
+
+  - Each of these datasets will be a 2 dimensional array with (time, space)
+    dimensions
+  - The number of locations must be identical within every yearly file of the
+    same domain
+  - The number of timesteps must represent a consistent temporal
+    resolution (hourly, 5 minute, etc), though there can be variations
+    in size for leap years
+  - Each of these datasets can optionally include any number of attributes. The
+    following attribtues are used by the APIs to determine output formatting.
+
+    - *scale_factor*: In cases where floats have been converted to
+      integers for storage efficiency the *scale_factor* is the value to
+      divide the raw data by to restore the original value. E.g.
+      ``h5_val / scale_factor = actual_val``
+    - *fill_value*: The value that is used to represent NULL. *\* NOTE
+      that empty values in an HDF5 file are technically allowable but will
+      result in errors during data post-processing by NREL tools, hence it is
+      important to include a fill value in datasets where NULLs are possible*
+    - *units*: The string representation of the units that apply to the
+      raw data. Only necessary when you want values in Kelvin to be
+      converted to Celcius for output. Otherwise included in output file
+      metadata for the benefit of users
+
+Notes on Chunking
+~~~~~~~~~~~~~~~~~
+
+Chunking is vital to achieving the best performance when reading the
+data out of H5. Chunking divides up a potentially massive file into
+discreet blocks on disc. When stored to disc HDF5 stores these chunks in
+physically adjacent blocks for best I/O performance. In the cloud each
+chunk is a discreet object. A bad chunking strategy on a typical data
+product can create enough I/O latency to render the data absolutely
+unusable by our tools due to excessive thread locking, network timeouts,
+memory failures, etc.
+
+The strategy is to identify the use cases for reading the data out of
+H5, and then assign chunks that are aligned with that strategy. In
+addition it has been observed that tiny chunks will cause slow read time
+due to the I/O latency of reading many little chunks, while huge chunks
+will cause slow read time and excessive memory usage because the process
+is going to have to load a huge amount of data into memory in order to
+slice out the small percentage that is relevant to the user. The worst
+possible case would be to chunk the data opposite the manner that it
+will be fetched. For example, if we imaging the data as a table, and
+users typically fetch the data one column at a time, but you chunk the
+data row-wise, then a single columnar fetch will require loading ALL of
+the chunks. Imagine this same table however if the data is chunked
+column-wise and also fetched column-wise the fetch will read only the
+necessary data off disc thus minimizing I/O and maximizing performance.
+
+For example, the APIs always read out a single pixel of data for an entire year
+at a time, the obvious chunking strategy would appear to be to chunk [8760: 1]
+(for hourly data with 8760 time steps). However this actually results in too
+many small chunks and is not the ideal solution. Through testing we have found
+that the ideal chunk for a year of hourly data is [8760: 1000]
+
+There have been instances where a chunking strategy had to be adopted
+that was a compromise between non-complementary use cases. One example
+is where some users wanted to read data in spatially adjacent blocks for
+time spans of only a week or a month at a time. This contradicts The API
+use case of always reading out a year of data for a single pixel at a
+time. The solution was to identify a chunk size that was a satisfacory
+compromise for both. We came up with [2190: 1000]. Essentially this
+breaks up the year into 4 quarters, keeping the 1000 adjacent locations
+in each chunk.
+
+A secondary note about chunking is that it makes logical sense for the
+chunks to be a factor of the whole. E.g. if hourly data has 8760 time
+steps then good chunk options would inclue 8760, (8760/2)=4380, or
+(8760/4)=2190.
+
+Common Data Formatting Errors
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+These are some common data formatting errors that we see when integrating new
+data products into our tools. These are not limitations of the HDF5 format, but
+rather are conventions NREL tools have adopted.
+
+- NaNs in H5s
+- Array sizes between different years of the same resource and/or different
+  datasets within the same file that don't align on the *x* or *y* axis. Most
+  often this is caused by something like the first year missing the first month
+  due to the details of when the underlying source data began to be collected
+  (not every weather station goes online at midnight on January 1st UTC time).
+  *NOTE: time_index length will vary in leap years*
+- Files that contain less than a year of data. Yearly data files are large, and
+  it is often more convenient to work in monthly batches. However for final
+  upload yearly is required.
+- Scale factors that are applied by multiplication instead of division. We can
+  handle this in code, just let us know how your scale factor is intended to be
+  used.
+- Confusion about units. If the datasets don't include the units attribute,
+  please provide documentation.
+- Excessive precision. Data at levels of precision beyond the model's accuracy,
+  or margin of error can dramatically bloat the size of the data products and
+  are very damaging to performance at every stage of the process.
+- Extra dimensions in data. A good example is wind speed at multiple elevations.
+  These values could easily be represented as a 3D array, however the supported
+  way would be to create multiple datasets for each variable at each elevation.
+  E.g. *wind_speed_40m*, *wind_speed_60M*, *wind_speed_80m*, etc.
 
 Data Location - NREL Users
 --------------------------
@@ -105,8 +273,9 @@ for S3 instructions or for how to setup HSDS and how to find the files that
 you're interested in. Then update the file paths to the files you want either
 on HSDS or S3.
 
+
 The rex Resource Class
-++++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~~
 
 Data access in rex is built on the ``Resource`` class. The class can be used to
 open and explore NREL h5 files, extract and automatically unscale data, and
@@ -151,7 +320,7 @@ Toolkit file, but it can be requested by the ``WindResource`` class, which
 interpolates the windspeeds between the available 80 and 100 meter hub heights.
 
 The rex Resource Extraction Class
-+++++++++++++++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 There are also classes that implement additional quality-of-life features. For
 example, you can use the ``ResourceX`` class to retrieve a timeseries DataFrame
@@ -189,7 +358,7 @@ various renewable energy resource types, see the docs `here
 <https://nrel.github.io/rex/_autosummary/rex.resource_extraction.resource_extraction.html>`_.
 
 Using rex with xarray
-+++++++++++++++++++++
+~~~~~~~~~~~~~~~~~~~~~
 
 You can now use ``rex`` with ``xarray`` to open NREL datasets on the NREL HPC
 and remotely outside of NREL! See the guide `here
