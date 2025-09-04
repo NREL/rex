@@ -1,0 +1,34 @@
+rex.resource
+============
+
+.. automodule:: rex.resource
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      BaseDatasetIterable
+      BaseResource
+      Resource
+      ResourceDataset
+   
+   
+
+   
+   
+   
+
+
+

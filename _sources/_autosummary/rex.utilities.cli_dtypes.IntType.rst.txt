@@ -1,0 +1,39 @@
+rex.utilities.cli\_dtypes.IntType
+=================================
+
+.. currentmodule:: rex.utilities.cli_dtypes
+
+.. autoclass:: IntType
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~IntType.convert
+      ~IntType.fail
+      ~IntType.get_metavar
+      ~IntType.get_missing_message
+      ~IntType.shell_complete
+      ~IntType.split_envvar_value
+      ~IntType.to_info_dict
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~IntType.arity
+      ~IntType.envvar_list_splitter
+      ~IntType.is_composite
+      ~IntType.name
+   
+   

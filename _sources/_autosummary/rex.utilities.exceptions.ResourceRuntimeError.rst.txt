@@ -1,0 +1,6 @@
+rex.utilities.exceptions.ResourceRuntimeError
+=============================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: ResourceRuntimeError

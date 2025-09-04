@@ -1,0 +1,52 @@
+rex.multi\_time\_resource.MultiTimeNSRDB
+========================================
+
+.. currentmodule:: rex.multi_time_resource
+
+.. autoclass:: MultiTimeNSRDB
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiTimeNSRDB.close
+      ~MultiTimeNSRDB.get_attrs
+      ~MultiTimeNSRDB.get_dset_properties
+      ~MultiTimeNSRDB.get_meta_arr
+      ~MultiTimeNSRDB.get_scale_factor
+      ~MultiTimeNSRDB.get_units
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiTimeNSRDB.PREFIX
+      ~MultiTimeNSRDB.attrs
+      ~MultiTimeNSRDB.chunks
+      ~MultiTimeNSRDB.coordinates
+      ~MultiTimeNSRDB.datasets
+      ~MultiTimeNSRDB.dsets
+      ~MultiTimeNSRDB.dtypes
+      ~MultiTimeNSRDB.global_attrs
+      ~MultiTimeNSRDB.h5
+      ~MultiTimeNSRDB.lat_lon
+      ~MultiTimeNSRDB.meta
+      ~MultiTimeNSRDB.res_dsets
+      ~MultiTimeNSRDB.resource_datasets
+      ~MultiTimeNSRDB.scale_factors
+      ~MultiTimeNSRDB.shape
+      ~MultiTimeNSRDB.shapes
+      ~MultiTimeNSRDB.time_index
+      ~MultiTimeNSRDB.units
+   
+   

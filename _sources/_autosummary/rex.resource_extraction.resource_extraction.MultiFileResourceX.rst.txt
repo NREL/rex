@@ -1,0 +1,69 @@
+rex.resource\_extraction.resource\_extraction.MultiFileResourceX
+================================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: MultiFileResourceX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiFileResourceX.box_gids
+      ~MultiFileResourceX.close
+      ~MultiFileResourceX.get_SAM_gid
+      ~MultiFileResourceX.get_SAM_lat_lon
+      ~MultiFileResourceX.get_box_df
+      ~MultiFileResourceX.get_box_ts
+      ~MultiFileResourceX.get_gid_df
+      ~MultiFileResourceX.get_gid_ts
+      ~MultiFileResourceX.get_grid_vectors
+      ~MultiFileResourceX.get_lat_lon_df
+      ~MultiFileResourceX.get_lat_lon_ts
+      ~MultiFileResourceX.get_raster_index
+      ~MultiFileResourceX.get_region_df
+      ~MultiFileResourceX.get_region_ts
+      ~MultiFileResourceX.get_timestep_map
+      ~MultiFileResourceX.lat_lon_gid
+      ~MultiFileResourceX.make_SAM_files
+      ~MultiFileResourceX.region_gids
+      ~MultiFileResourceX.save_region
+      ~MultiFileResourceX.save_subset
+      ~MultiFileResourceX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiFileResourceX.attrs
+      ~MultiFileResourceX.coordinates
+      ~MultiFileResourceX.counties
+      ~MultiFileResourceX.countries
+      ~MultiFileResourceX.data_version
+      ~MultiFileResourceX.datasets
+      ~MultiFileResourceX.distance_threshold
+      ~MultiFileResourceX.dsets
+      ~MultiFileResourceX.global_attrs
+      ~MultiFileResourceX.groups
+      ~MultiFileResourceX.h5
+      ~MultiFileResourceX.lat_lon
+      ~MultiFileResourceX.meta
+      ~MultiFileResourceX.res_dsets
+      ~MultiFileResourceX.resource
+      ~MultiFileResourceX.resource_datasets
+      ~MultiFileResourceX.shape
+      ~MultiFileResourceX.states
+      ~MultiFileResourceX.time_index
+      ~MultiFileResourceX.tree
+   
+   

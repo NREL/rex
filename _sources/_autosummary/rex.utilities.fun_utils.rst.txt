@@ -1,0 +1,36 @@
+rex.utilities.fun\_utils
+========================
+
+.. automodule:: rex.utilities.fun_utils
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      arg_to_str
+      get_arg_str
+      get_class
+      get_fun_call_str
+      get_fun_str
+      has_class
+      is_standalone_fun
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

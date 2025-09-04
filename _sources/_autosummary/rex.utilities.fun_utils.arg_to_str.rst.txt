@@ -1,0 +1,6 @@
+rex.utilities.fun\_utils.arg\_to\_str
+=====================================
+
+.. currentmodule:: rex.utilities.fun_utils
+
+.. autofunction:: arg_to_str

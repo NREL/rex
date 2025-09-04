@@ -1,0 +1,30 @@
+rex.utilities.bc\_parse\_table
+==============================
+
+.. automodule:: rex.utilities.bc_parse_table
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      parse_bc_table
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,29 @@
+rex.utilities.execution.SubprocessManager
+=========================================
+
+.. currentmodule:: rex.utilities.execution
+
+.. autoclass:: SubprocessManager
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SubprocessManager.format_walltime
+      ~SubprocessManager.make_path
+      ~SubprocessManager.make_sh
+      ~SubprocessManager.rm
+      ~SubprocessManager.s
+      ~SubprocessManager.submit
+   
+   
+
+   
+   
+   

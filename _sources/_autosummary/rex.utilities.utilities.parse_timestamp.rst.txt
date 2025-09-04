@@ -1,0 +1,6 @@
+rex.utilities.utilities.parse\_timestamp
+========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: parse_timestamp

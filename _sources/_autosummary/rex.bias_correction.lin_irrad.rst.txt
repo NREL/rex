@@ -1,0 +1,6 @@
+rex.bias\_correction.lin\_irrad
+===============================
+
+.. currentmodule:: rex.bias_correction
+
+.. autofunction:: lin_irrad

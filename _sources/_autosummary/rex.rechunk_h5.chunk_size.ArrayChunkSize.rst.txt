@@ -1,0 +1,31 @@
+rex.rechunk\_h5.chunk\_size.ArrayChunkSize
+==========================================
+
+.. currentmodule:: rex.rechunk_h5.chunk_size
+
+.. autoclass:: ArrayChunkSize
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ArrayChunkSize.compute
+      ~ArrayChunkSize.compute_arr_chunks
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ArrayChunkSize.chunks
+   
+   

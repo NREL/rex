@@ -1,0 +1,6 @@
+rex.bias\_correction.qdm\_irrad
+===============================
+
+.. currentmodule:: rex.bias_correction
+
+.. autofunction:: qdm_irrad

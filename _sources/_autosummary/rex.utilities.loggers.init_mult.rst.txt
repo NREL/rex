@@ -1,0 +1,6 @@
+rex.utilities.loggers.init\_mult
+================================
+
+.. currentmodule:: rex.utilities.loggers
+
+.. autofunction:: init_mult

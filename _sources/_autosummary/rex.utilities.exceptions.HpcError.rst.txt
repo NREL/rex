@@ -1,0 +1,6 @@
+rex.utilities.exceptions.HpcError
+=================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: HpcError

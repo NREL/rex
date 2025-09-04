@@ -1,0 +1,6 @@
+rex.utilities.exceptions.SlurmWarning
+=====================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: SlurmWarning

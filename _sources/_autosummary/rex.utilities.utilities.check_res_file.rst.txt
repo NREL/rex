@@ -1,0 +1,6 @@
+rex.utilities.utilities.check\_res\_file
+========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: check_res_file

@@ -1,0 +1,69 @@
+rex.resource\_extraction.resource\_extraction.MultiFileNSRDBX
+=============================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: MultiFileNSRDBX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiFileNSRDBX.box_gids
+      ~MultiFileNSRDBX.close
+      ~MultiFileNSRDBX.get_SAM_gid
+      ~MultiFileNSRDBX.get_SAM_lat_lon
+      ~MultiFileNSRDBX.get_box_df
+      ~MultiFileNSRDBX.get_box_ts
+      ~MultiFileNSRDBX.get_gid_df
+      ~MultiFileNSRDBX.get_gid_ts
+      ~MultiFileNSRDBX.get_grid_vectors
+      ~MultiFileNSRDBX.get_lat_lon_df
+      ~MultiFileNSRDBX.get_lat_lon_ts
+      ~MultiFileNSRDBX.get_raster_index
+      ~MultiFileNSRDBX.get_region_df
+      ~MultiFileNSRDBX.get_region_ts
+      ~MultiFileNSRDBX.get_timestep_map
+      ~MultiFileNSRDBX.lat_lon_gid
+      ~MultiFileNSRDBX.make_SAM_files
+      ~MultiFileNSRDBX.region_gids
+      ~MultiFileNSRDBX.save_region
+      ~MultiFileNSRDBX.save_subset
+      ~MultiFileNSRDBX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiFileNSRDBX.attrs
+      ~MultiFileNSRDBX.coordinates
+      ~MultiFileNSRDBX.counties
+      ~MultiFileNSRDBX.countries
+      ~MultiFileNSRDBX.data_version
+      ~MultiFileNSRDBX.datasets
+      ~MultiFileNSRDBX.distance_threshold
+      ~MultiFileNSRDBX.dsets
+      ~MultiFileNSRDBX.global_attrs
+      ~MultiFileNSRDBX.groups
+      ~MultiFileNSRDBX.h5
+      ~MultiFileNSRDBX.lat_lon
+      ~MultiFileNSRDBX.meta
+      ~MultiFileNSRDBX.res_dsets
+      ~MultiFileNSRDBX.resource
+      ~MultiFileNSRDBX.resource_datasets
+      ~MultiFileNSRDBX.shape
+      ~MultiFileNSRDBX.states
+      ~MultiFileNSRDBX.time_index
+      ~MultiFileNSRDBX.tree
+   
+   

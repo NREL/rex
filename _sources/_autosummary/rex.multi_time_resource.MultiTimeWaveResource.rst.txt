@@ -1,0 +1,51 @@
+rex.multi\_time\_resource.MultiTimeWaveResource
+===============================================
+
+.. currentmodule:: rex.multi_time_resource
+
+.. autoclass:: MultiTimeWaveResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiTimeWaveResource.close
+      ~MultiTimeWaveResource.get_attrs
+      ~MultiTimeWaveResource.get_dset_properties
+      ~MultiTimeWaveResource.get_meta_arr
+      ~MultiTimeWaveResource.get_scale_factor
+      ~MultiTimeWaveResource.get_units
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiTimeWaveResource.attrs
+      ~MultiTimeWaveResource.chunks
+      ~MultiTimeWaveResource.coordinates
+      ~MultiTimeWaveResource.datasets
+      ~MultiTimeWaveResource.dsets
+      ~MultiTimeWaveResource.dtypes
+      ~MultiTimeWaveResource.global_attrs
+      ~MultiTimeWaveResource.h5
+      ~MultiTimeWaveResource.lat_lon
+      ~MultiTimeWaveResource.meta
+      ~MultiTimeWaveResource.res_dsets
+      ~MultiTimeWaveResource.resource_datasets
+      ~MultiTimeWaveResource.scale_factors
+      ~MultiTimeWaveResource.shape
+      ~MultiTimeWaveResource.shapes
+      ~MultiTimeWaveResource.time_index
+      ~MultiTimeWaveResource.units
+   
+   

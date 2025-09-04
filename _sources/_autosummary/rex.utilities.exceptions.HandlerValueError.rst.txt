@@ -1,0 +1,6 @@
+rex.utilities.exceptions.HandlerValueError
+==========================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: HandlerValueError

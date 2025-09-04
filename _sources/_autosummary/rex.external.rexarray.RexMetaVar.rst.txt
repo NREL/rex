@@ -1,0 +1,36 @@
+rex.external.rexarray.RexMetaVar
+================================
+
+.. currentmodule:: rex.external.rexarray
+
+.. autoclass:: RexMetaVar
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RexMetaVar.chunks
+      ~RexMetaVar.fletcher32
+      ~RexMetaVar.shuffle
+      ~RexMetaVar.dtype
+      ~RexMetaVar.shape
+      ~RexMetaVar.compression
+      ~RexMetaVar.compression_opts
+      ~RexMetaVar.attrs
+   
+   

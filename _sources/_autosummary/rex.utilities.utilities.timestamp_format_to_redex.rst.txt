@@ -1,0 +1,6 @@
+rex.utilities.utilities.timestamp\_format\_to\_redex
+====================================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: timestamp_format_to_redex

@@ -1,0 +1,50 @@
+rex.utilities.exceptions
+========================
+
+.. automodule:: rex.utilities.exceptions
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+      :toctree:
+   
+      ExecutionError
+      ExtrapolationWarning
+      FileInputError
+      HandlerRuntimeError
+      HandlerValueError
+      HpcError
+      JSONError
+      LoggerWarning
+      MoninObukhovExtrapolationError
+      ParallelExecutionWarning
+      PbsWarning
+      ResourceError
+      ResourceKeyError
+      ResourceRuntimeError
+      ResourceValueError
+      ResourceWarning
+      RetryError
+      RetryWarning
+      SAMInputWarning
+      SlurmError
+      SlurmWarning
+   
+   
+
+
+

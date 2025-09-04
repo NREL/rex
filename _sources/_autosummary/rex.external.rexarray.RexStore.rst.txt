@@ -1,0 +1,44 @@
+rex.external.rexarray.RexStore
+==============================
+
+.. currentmodule:: rex.external.rexarray
+
+.. autoclass:: RexStore
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~RexStore.close
+      ~RexStore.get_attrs
+      ~RexStore.get_coord_names
+      ~RexStore.get_dimensions
+      ~RexStore.get_encoding
+      ~RexStore.get_variables
+      ~RexStore.load
+      ~RexStore.open
+      ~RexStore.open_store_variable
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RexStore.manager
+      ~RexStore.mode
+      ~RexStore.is_remote
+      ~RexStore.lock
+      ~RexStore.hsds
+      ~RexStore.ds
+      ~RexStore.ds_shape
+   
+   

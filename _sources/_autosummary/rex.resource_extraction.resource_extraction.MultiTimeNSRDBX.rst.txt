@@ -1,0 +1,69 @@
+rex.resource\_extraction.resource\_extraction.MultiTimeNSRDBX
+=============================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: MultiTimeNSRDBX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiTimeNSRDBX.box_gids
+      ~MultiTimeNSRDBX.close
+      ~MultiTimeNSRDBX.get_SAM_gid
+      ~MultiTimeNSRDBX.get_SAM_lat_lon
+      ~MultiTimeNSRDBX.get_box_df
+      ~MultiTimeNSRDBX.get_box_ts
+      ~MultiTimeNSRDBX.get_gid_df
+      ~MultiTimeNSRDBX.get_gid_ts
+      ~MultiTimeNSRDBX.get_grid_vectors
+      ~MultiTimeNSRDBX.get_lat_lon_df
+      ~MultiTimeNSRDBX.get_lat_lon_ts
+      ~MultiTimeNSRDBX.get_raster_index
+      ~MultiTimeNSRDBX.get_region_df
+      ~MultiTimeNSRDBX.get_region_ts
+      ~MultiTimeNSRDBX.get_timestep_map
+      ~MultiTimeNSRDBX.lat_lon_gid
+      ~MultiTimeNSRDBX.make_SAM_files
+      ~MultiTimeNSRDBX.region_gids
+      ~MultiTimeNSRDBX.save_region
+      ~MultiTimeNSRDBX.save_subset
+      ~MultiTimeNSRDBX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiTimeNSRDBX.attrs
+      ~MultiTimeNSRDBX.coordinates
+      ~MultiTimeNSRDBX.counties
+      ~MultiTimeNSRDBX.countries
+      ~MultiTimeNSRDBX.data_version
+      ~MultiTimeNSRDBX.datasets
+      ~MultiTimeNSRDBX.distance_threshold
+      ~MultiTimeNSRDBX.dsets
+      ~MultiTimeNSRDBX.global_attrs
+      ~MultiTimeNSRDBX.groups
+      ~MultiTimeNSRDBX.h5
+      ~MultiTimeNSRDBX.lat_lon
+      ~MultiTimeNSRDBX.meta
+      ~MultiTimeNSRDBX.res_dsets
+      ~MultiTimeNSRDBX.resource
+      ~MultiTimeNSRDBX.resource_datasets
+      ~MultiTimeNSRDBX.shape
+      ~MultiTimeNSRDBX.states
+      ~MultiTimeNSRDBX.time_index
+      ~MultiTimeNSRDBX.tree
+   
+   

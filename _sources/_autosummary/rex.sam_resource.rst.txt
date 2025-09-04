@@ -1,0 +1,31 @@
+rex.sam\_resource
+=================
+
+.. automodule:: rex.sam_resource
+
+   
+   
+   
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      SAMResource
+   
+   
+
+   
+   
+   
+
+
+

@@ -1,0 +1,69 @@
+rex.resource\_extraction.resource\_extraction.WaveX
+===================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: WaveX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~WaveX.box_gids
+      ~WaveX.close
+      ~WaveX.get_SAM_gid
+      ~WaveX.get_SAM_lat_lon
+      ~WaveX.get_box_df
+      ~WaveX.get_box_ts
+      ~WaveX.get_gid_df
+      ~WaveX.get_gid_ts
+      ~WaveX.get_grid_vectors
+      ~WaveX.get_lat_lon_df
+      ~WaveX.get_lat_lon_ts
+      ~WaveX.get_raster_index
+      ~WaveX.get_region_df
+      ~WaveX.get_region_ts
+      ~WaveX.get_timestep_map
+      ~WaveX.lat_lon_gid
+      ~WaveX.make_SAM_files
+      ~WaveX.region_gids
+      ~WaveX.save_region
+      ~WaveX.save_subset
+      ~WaveX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~WaveX.attrs
+      ~WaveX.coordinates
+      ~WaveX.counties
+      ~WaveX.countries
+      ~WaveX.data_version
+      ~WaveX.datasets
+      ~WaveX.distance_threshold
+      ~WaveX.dsets
+      ~WaveX.global_attrs
+      ~WaveX.groups
+      ~WaveX.h5
+      ~WaveX.lat_lon
+      ~WaveX.meta
+      ~WaveX.res_dsets
+      ~WaveX.resource
+      ~WaveX.resource_datasets
+      ~WaveX.shape
+      ~WaveX.states
+      ~WaveX.time_index
+      ~WaveX.tree
+   
+   

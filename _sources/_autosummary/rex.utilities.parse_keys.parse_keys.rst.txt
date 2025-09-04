@@ -1,0 +1,6 @@
+rex.utilities.parse\_keys.parse\_keys
+=====================================
+
+.. currentmodule:: rex.utilities.parse_keys
+
+.. autofunction:: parse_keys

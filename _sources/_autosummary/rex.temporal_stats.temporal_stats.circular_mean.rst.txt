@@ -1,0 +1,6 @@
+rex.temporal\_stats.temporal\_stats.circular\_mean
+==================================================
+
+.. currentmodule:: rex.temporal_stats.temporal_stats
+
+.. autofunction:: circular_mean

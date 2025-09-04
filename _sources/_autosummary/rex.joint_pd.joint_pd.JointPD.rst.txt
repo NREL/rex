@@ -1,0 +1,36 @@
+rex.joint\_pd.joint\_pd.JointPD
+===============================
+
+.. currentmodule:: rex.joint_pd.joint_pd
+
+.. autoclass:: JointPD
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~JointPD.compute
+      ~JointPD.compute_joint_pd
+      ~JointPD.plot_joint_pd
+      ~JointPD.run
+      ~JointPD.save
+      ~JointPD.wind_rose
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~JointPD.res_cls
+      ~JointPD.res_h5
+   
+   

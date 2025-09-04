@@ -1,0 +1,6 @@
+rex.utilities.utilities.get\_class\_properties
+==============================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: get_class_properties

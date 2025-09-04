@@ -1,0 +1,6 @@
+rex.utilities.utilities.split\_sites\_slice
+===========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: split_sites_slice

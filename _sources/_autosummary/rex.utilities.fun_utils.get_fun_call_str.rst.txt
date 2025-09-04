@@ -1,0 +1,6 @@
+rex.utilities.fun\_utils.get\_fun\_call\_str
+============================================
+
+.. currentmodule:: rex.utilities.fun_utils
+
+.. autofunction:: get_fun_call_str

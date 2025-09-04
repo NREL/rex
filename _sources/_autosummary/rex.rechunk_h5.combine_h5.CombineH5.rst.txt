@@ -1,0 +1,34 @@
+rex.rechunk\_h5.combine\_h5.CombineH5
+=====================================
+
+.. currentmodule:: rex.rechunk_h5.combine_h5
+
+.. autoclass:: CombineH5
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~CombineH5.close
+      ~CombineH5.combine
+      ~CombineH5.run
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~CombineH5.combined_h5
+      ~CombineH5.datasets
+      ~CombineH5.source_h5
+   
+   

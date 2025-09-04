@@ -1,0 +1,24 @@
+rex.utilities.toml\_parser.TOMLParser
+=====================================
+
+.. currentmodule:: rex.utilities.toml_parser
+
+.. autoclass:: TOMLParser
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~TOMLParser.get_value
+   
+   
+
+   
+   
+   

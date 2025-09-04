@@ -1,0 +1,6 @@
+rex.utilities.utilities.check\_hsds\_file
+=========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: check_hsds_file

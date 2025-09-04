@@ -1,0 +1,31 @@
+rex.rechunk\_h5.chunk\_size.TimeseriesChunkSize
+===============================================
+
+.. currentmodule:: rex.rechunk_h5.chunk_size
+
+.. autoclass:: TimeseriesChunkSize
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~TimeseriesChunkSize.compute
+      ~TimeseriesChunkSize.compute_dtype_chunks
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~TimeseriesChunkSize.chunks
+   
+   

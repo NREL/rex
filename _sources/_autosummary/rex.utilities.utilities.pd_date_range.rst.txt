@@ -1,0 +1,6 @@
+rex.utilities.utilities.pd\_date\_range
+=======================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: pd_date_range

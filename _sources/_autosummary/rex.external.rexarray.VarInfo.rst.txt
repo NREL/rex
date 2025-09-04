@@ -1,0 +1,34 @@
+rex.external.rexarray.VarInfo
+=============================
+
+.. currentmodule:: rex.external.rexarray
+
+.. autoclass:: VarInfo
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~VarInfo.count
+      ~VarInfo.index
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~VarInfo.coord_index
+      ~VarInfo.meta_index
+      ~VarInfo.name
+      ~VarInfo.var
+   
+   

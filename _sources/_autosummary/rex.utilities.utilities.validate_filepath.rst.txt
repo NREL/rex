@@ -1,0 +1,6 @@
+rex.utilities.utilities.validate\_filepath
+==========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: validate_filepath

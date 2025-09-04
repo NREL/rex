@@ -1,0 +1,6 @@
+rex.utilities.utilities.get\_dtype
+==================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: get_dtype

@@ -1,0 +1,37 @@
+rex.multi\_time\_resource.MultiTimeH5
+=====================================
+
+.. currentmodule:: rex.multi_time_resource
+
+.. autoclass:: MultiTimeH5
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiTimeH5.close
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiTimeH5.attrs
+      ~MultiTimeH5.datasets
+      ~MultiTimeH5.files
+      ~MultiTimeH5.h5
+      ~MultiTimeH5.h5_files
+      ~MultiTimeH5.resource_datasets
+      ~MultiTimeH5.shape
+      ~MultiTimeH5.time_index
+   
+   

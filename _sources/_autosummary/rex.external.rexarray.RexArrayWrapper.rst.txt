@@ -1,0 +1,40 @@
+rex.external.rexarray.RexArrayWrapper
+=====================================
+
+.. currentmodule:: rex.external.rexarray
+
+.. autoclass:: RexArrayWrapper
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~RexArrayWrapper.get_array
+      ~RexArrayWrapper.get_duck_array
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RexArrayWrapper.datastore
+      ~RexArrayWrapper.dtype
+      ~RexArrayWrapper.shape
+      ~RexArrayWrapper.variable_name
+      ~RexArrayWrapper.meta_index
+      ~RexArrayWrapper.coord_index
+      ~RexArrayWrapper.scale_factor
+      ~RexArrayWrapper.adder
+      ~RexArrayWrapper.ndim
+      ~RexArrayWrapper.size
+   
+   

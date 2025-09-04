@@ -1,0 +1,6 @@
+rex.utilities.execution.execute\_single
+=======================================
+
+.. currentmodule:: rex.utilities.execution
+
+.. autofunction:: execute_single

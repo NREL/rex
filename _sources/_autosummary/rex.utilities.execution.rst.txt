@@ -1,0 +1,41 @@
+rex.utilities.execution
+=======================
+
+.. automodule:: rex.utilities.execution
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      execute_parallel
+      execute_single
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      SmartParallelJob
+      SpawnProcessPool
+      SubprocessManager
+   
+   
+
+   
+   
+   
+
+
+

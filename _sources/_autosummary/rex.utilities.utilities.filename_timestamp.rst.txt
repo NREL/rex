@@ -1,0 +1,6 @@
+rex.utilities.utilities.filename\_timestamp
+===========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: filename_timestamp

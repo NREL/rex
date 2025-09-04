@@ -1,0 +1,48 @@
+rex.rechunk\_h5.rechunk\_h5.RechunkH5
+=====================================
+
+.. currentmodule:: rex.rechunk_h5.rechunk_h5
+
+.. autoclass:: RechunkH5
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~RechunkH5.check_dset_attrs
+      ~RechunkH5.close
+      ~RechunkH5.init_dset
+      ~RechunkH5.load_coords
+      ~RechunkH5.load_data
+      ~RechunkH5.load_dset
+      ~RechunkH5.load_meta
+      ~RechunkH5.load_time_index
+      ~RechunkH5.rechunk
+      ~RechunkH5.run
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~RechunkH5.NON_TS_DSETS
+      ~RechunkH5.coordinates_attrs
+      ~RechunkH5.dsets
+      ~RechunkH5.global_attrs
+      ~RechunkH5.meta_attrs
+      ~RechunkH5.rechunk_attrs
+      ~RechunkH5.src_dsets
+      ~RechunkH5.time_index_attrs
+      ~RechunkH5.time_slice
+      ~RechunkH5.variable_attrs
+   
+   

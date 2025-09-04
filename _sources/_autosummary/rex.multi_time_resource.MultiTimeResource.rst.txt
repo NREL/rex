@@ -1,0 +1,51 @@
+rex.multi\_time\_resource.MultiTimeResource
+===========================================
+
+.. currentmodule:: rex.multi_time_resource
+
+.. autoclass:: MultiTimeResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiTimeResource.close
+      ~MultiTimeResource.get_attrs
+      ~MultiTimeResource.get_dset_properties
+      ~MultiTimeResource.get_meta_arr
+      ~MultiTimeResource.get_scale_factor
+      ~MultiTimeResource.get_units
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiTimeResource.attrs
+      ~MultiTimeResource.chunks
+      ~MultiTimeResource.coordinates
+      ~MultiTimeResource.datasets
+      ~MultiTimeResource.dsets
+      ~MultiTimeResource.dtypes
+      ~MultiTimeResource.global_attrs
+      ~MultiTimeResource.h5
+      ~MultiTimeResource.lat_lon
+      ~MultiTimeResource.meta
+      ~MultiTimeResource.res_dsets
+      ~MultiTimeResource.resource_datasets
+      ~MultiTimeResource.scale_factors
+      ~MultiTimeResource.shape
+      ~MultiTimeResource.shapes
+      ~MultiTimeResource.time_index
+      ~MultiTimeResource.units
+   
+   

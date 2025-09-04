@@ -1,0 +1,6 @@
+rex.utilities.exceptions.ResourceValueError
+===========================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: ResourceValueError

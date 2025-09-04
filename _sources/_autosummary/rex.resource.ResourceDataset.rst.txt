@@ -1,0 +1,36 @@
+rex.resource.ResourceDataset
+============================
+
+.. currentmodule:: rex.resource
+
+.. autoclass:: ResourceDataset
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ResourceDataset.extract
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ResourceDataset.adder
+      ~ResourceDataset.chunks
+      ~ResourceDataset.ds
+      ~ResourceDataset.dtype
+      ~ResourceDataset.scale_factor
+      ~ResourceDataset.shape
+      ~ResourceDataset.size
+   
+   

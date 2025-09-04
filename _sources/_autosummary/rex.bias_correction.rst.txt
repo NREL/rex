@@ -1,0 +1,33 @@
+rex.bias\_correction
+====================
+
+.. automodule:: rex.bias_correction
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      lin_irrad
+      lin_ws
+      qdm_irrad
+      qdm_ws
+   
+   
+
+   
+   
+   
+
+   
+   
+   
+
+
+

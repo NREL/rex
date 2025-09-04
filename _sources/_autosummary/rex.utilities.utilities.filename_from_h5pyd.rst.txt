@@ -1,0 +1,6 @@
+rex.utilities.utilities.filename\_from\_h5pyd
+=============================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: filename_from_h5pyd

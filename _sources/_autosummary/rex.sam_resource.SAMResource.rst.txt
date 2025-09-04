@@ -1,0 +1,61 @@
+rex.sam\_resource.SAMResource
+=============================
+
+.. currentmodule:: rex.sam_resource
+
+.. autoclass:: SAMResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SAMResource.append_var_list
+      ~SAMResource.bias_correct
+      ~SAMResource.check_irradiance_datasets
+      ~SAMResource.check_units
+      ~SAMResource.compute_irradiance
+      ~SAMResource.curtail_windspeed
+      ~SAMResource.enforce_arr_range
+      ~SAMResource.load_rex_resource
+      ~SAMResource.roll_timeseries
+      ~SAMResource.runnable
+      ~SAMResource.set_clearsky
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SAMResource.ALIASES
+      ~SAMResource.CSP_DATA_RANGES
+      ~SAMResource.DATA_RANGES
+      ~SAMResource.FLAT_VARS
+      ~SAMResource.GEOTHERMAL_DATA_RANGES
+      ~SAMResource.LF_DATA_RANGES
+      ~SAMResource.PV_DATA_RANGES
+      ~SAMResource.RES_VARS
+      ~SAMResource.SWH_DATA_RANGES
+      ~SAMResource.TPPH_DATA_RANGES
+      ~SAMResource.WAVE_DATA_RANGES
+      ~SAMResource.WIND_DATA_RANGES
+      ~SAMResource.d
+      ~SAMResource.h
+      ~SAMResource.lat_lon
+      ~SAMResource.meta
+      ~SAMResource.shape
+      ~SAMResource.sites
+      ~SAMResource.sites_slice
+      ~SAMResource.sza
+      ~SAMResource.time_index
+      ~SAMResource.var_list
+   
+   

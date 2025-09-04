@@ -1,0 +1,39 @@
+rex.utilities.cli\_dtypes.StrType
+=================================
+
+.. currentmodule:: rex.utilities.cli_dtypes
+
+.. autoclass:: StrType
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~StrType.convert
+      ~StrType.fail
+      ~StrType.get_metavar
+      ~StrType.get_missing_message
+      ~StrType.shell_complete
+      ~StrType.split_envvar_value
+      ~StrType.to_info_dict
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~StrType.arity
+      ~StrType.envvar_list_splitter
+      ~StrType.is_composite
+      ~StrType.name
+   
+   

@@ -1,0 +1,6 @@
+rex.utilities.exceptions.RetryError
+===================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: RetryError

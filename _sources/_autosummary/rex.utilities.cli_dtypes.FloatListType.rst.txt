@@ -1,0 +1,40 @@
+rex.utilities.cli\_dtypes.FloatListType
+=======================================
+
+.. currentmodule:: rex.utilities.cli_dtypes
+
+.. autoclass:: FloatListType
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~FloatListType.convert
+      ~FloatListType.dtype
+      ~FloatListType.fail
+      ~FloatListType.get_metavar
+      ~FloatListType.get_missing_message
+      ~FloatListType.shell_complete
+      ~FloatListType.split_envvar_value
+      ~FloatListType.to_info_dict
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~FloatListType.arity
+      ~FloatListType.envvar_list_splitter
+      ~FloatListType.is_composite
+      ~FloatListType.name
+   
+   

@@ -1,0 +1,6 @@
+rex.utilities.exceptions.ResourceWarning
+========================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: ResourceWarning

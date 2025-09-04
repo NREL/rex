@@ -1,0 +1,23 @@
+rex.multi\_time\_resource.MultiTimeSolarResource
+================================================
+
+.. currentmodule:: rex.multi_time_resource
+
+.. autoclass:: MultiTimeSolarResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+   
+   
+
+   
+   
+   

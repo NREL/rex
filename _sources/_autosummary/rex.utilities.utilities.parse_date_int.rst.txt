@@ -1,0 +1,6 @@
+rex.utilities.utilities.parse\_date\_int
+========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: parse_date_int

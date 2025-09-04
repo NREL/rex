@@ -1,0 +1,6 @@
+rex.utilities.exceptions.SAMInputWarning
+========================================
+
+.. currentmodule:: rex.utilities.exceptions
+
+.. autoexception:: SAMInputWarning

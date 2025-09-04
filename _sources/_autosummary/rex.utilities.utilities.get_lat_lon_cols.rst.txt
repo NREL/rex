@@ -1,0 +1,6 @@
+rex.utilities.utilities.get\_lat\_lon\_cols
+===========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: get_lat_lon_cols

@@ -1,0 +1,6 @@
+rex.utilities.utilities.assert\_read\_only\_mode
+================================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: assert_read_only_mode

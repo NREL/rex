@@ -1,0 +1,32 @@
+rex.multi\_file\_resource.MultiH5
+=================================
+
+.. currentmodule:: rex.multi_file_resource
+
+.. autoclass:: MultiH5
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiH5.close
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiH5.attrs
+      ~MultiH5.datasets
+      ~MultiH5.h5_files
+   
+   

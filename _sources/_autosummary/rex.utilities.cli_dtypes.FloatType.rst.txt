@@ -1,0 +1,39 @@
+rex.utilities.cli\_dtypes.FloatType
+===================================
+
+.. currentmodule:: rex.utilities.cli_dtypes
+
+.. autoclass:: FloatType
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~FloatType.convert
+      ~FloatType.fail
+      ~FloatType.get_metavar
+      ~FloatType.get_missing_message
+      ~FloatType.shell_complete
+      ~FloatType.split_envvar_value
+      ~FloatType.to_info_dict
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~FloatType.arity
+      ~FloatType.envvar_list_splitter
+      ~FloatType.is_composite
+      ~FloatType.name
+   
+   

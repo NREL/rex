@@ -1,0 +1,6 @@
+rex.utilities.utilities.safe\_yaml\_load
+========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: safe_yaml_load

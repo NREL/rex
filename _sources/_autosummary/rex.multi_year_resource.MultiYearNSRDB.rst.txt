@@ -1,0 +1,52 @@
+rex.multi\_year\_resource.MultiYearNSRDB
+========================================
+
+.. currentmodule:: rex.multi_year_resource
+
+.. autoclass:: MultiYearNSRDB
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiYearNSRDB.close
+      ~MultiYearNSRDB.get_attrs
+      ~MultiYearNSRDB.get_dset_properties
+      ~MultiYearNSRDB.get_meta_arr
+      ~MultiYearNSRDB.get_scale_factor
+      ~MultiYearNSRDB.get_units
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiYearNSRDB.attrs
+      ~MultiYearNSRDB.chunks
+      ~MultiYearNSRDB.coordinates
+      ~MultiYearNSRDB.datasets
+      ~MultiYearNSRDB.dsets
+      ~MultiYearNSRDB.dtypes
+      ~MultiYearNSRDB.global_attrs
+      ~MultiYearNSRDB.h5
+      ~MultiYearNSRDB.lat_lon
+      ~MultiYearNSRDB.meta
+      ~MultiYearNSRDB.res_dsets
+      ~MultiYearNSRDB.resource_datasets
+      ~MultiYearNSRDB.scale_factors
+      ~MultiYearNSRDB.shape
+      ~MultiYearNSRDB.shapes
+      ~MultiYearNSRDB.time_index
+      ~MultiYearNSRDB.units
+      ~MultiYearNSRDB.years
+   
+   

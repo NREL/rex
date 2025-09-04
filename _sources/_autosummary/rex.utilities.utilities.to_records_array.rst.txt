@@ -1,0 +1,6 @@
+rex.utilities.utilities.to\_records\_array
+==========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: to_records_array

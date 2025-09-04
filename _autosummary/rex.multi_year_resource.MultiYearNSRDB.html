@@ -1,0 +1,1075 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rex.multi_year_resource.MultiYearNSRDB &mdash; rex 0.4.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=5bfaad31"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="rex.multi_year_resource.MultiYearResource" href="rex.multi_year_resource.MultiYearResource.html" />
+    <link rel="prev" title="rex.multi_year_resource.MultiYearH5" href="rex.multi_year_resource.MultiYearH5.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            rex
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Home page</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../misc/installation_usage.html">Installation and Usage</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/installation.html#command-line-tools">Command Line Tools</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../misc/examples.html">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.nrel_data.html">NREL Renewable Energy Resource Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nrel_data.html#definitions">Definitions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nrel_data.html#data-format">Data Format</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nrel_data.html#notes-on-chunking">Notes on Chunking</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nrel_data.html#common-data-formatting-errors">Common Data Formatting Errors</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nrel_data.html#data-location-nrel-users">Data Location - NREL Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nrel_data.html#data-location-external-users">Data Location - External Users</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nrel_data.html#data-access-examples">Data Access Examples</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nrel_data.html#the-rex-resource-class">The rex Resource Class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nrel_data.html#the-rex-resource-extraction-class">The rex Resource Extraction Class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.nrel_data.html#using-rex-with-xarray">Using rex with xarray</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.nsrdb.html">National Solar Radiation Database (NSRDB)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#nsrdb-cli">NSRDB CLI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.nsrdb.html#references">References</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.wind.html">Wind Integration National Dataset (WIND) Toolkit</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#wind-toolkit-v1-0-0">WIND Toolkit v1.0.0</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#wind-toolkit-references">WIND Toolkit References</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#national-offshore-wind-data-set-now-23">2023 National Offshore Wind data set (NOW-23)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.wind.html#now-23-references">NOW-23 References</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.wind.html#windx-cli">WINDX CLI</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.us_wave.html">High Resolution Ocean Surface Wave Hindcast (US Wave) Data</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#description">Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#model">Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#directory-structure">Directory structure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#wavex-cli">WaveX CLI</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#direct-access-via-h5pyd">Direct Access via h5pyd</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#references">References</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.us_wave.html#disclaimer-and-attribution">Disclaimer and Attribution</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.hsds.html">Highly Scalable Data Service (HSDS)</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.hsds.html#extra-requirements">Extra Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.hsds.html#nrel-developer-api">NREL Developer API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.hsds.html#setting-up-a-local-hsds-server">Setting up a Local HSDS Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.hsds.html#hsds-and-rex-usage-examples">HSDS and rex Usage Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.fsspec.html">fsspec</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.fsspec.html#code-example">Code Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.xarray.html">Using Xarray</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.xarray.html#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.xarray.html#opening-a-single-file">Opening a single file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.xarray.html#lazy-loading-rex">Lazy Loading - <code class="docutils literal notranslate"><span class="pre">rex</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.xarray.html#lazy-loading-dask">Lazy Loading - <code class="docutils literal notranslate"><span class="pre">dask</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.xarray.html#opening-multiple-files">Opening Multiple Files</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.xarray.html#remote-files">Remote Files</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.xarray.html#files-on-s3">Files on S3</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.xarray.html#files-on-hsds">Files on HSDS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../misc/examples.xarray.html#opening-multiple-remote-files">Opening Multiple Remote Files</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.xarray.html#parallel-computing-with-dask">Parallel Computing with <code class="docutils literal notranslate"><span class="pre">dask</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.xarray.html#case-studies">Case Studies</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/examples.zarr.html">Zarr</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.zarr.html#extra-requirements">Extra Requirements</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../misc/examples.zarr.html#code-example">Code Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 current"><a class="reference internal" href="rex.html">API reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="rex.bias_correction.html">rex.bias_correction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.bias_correction.lin_irrad.html">rex.bias_correction.lin_irrad</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.bias_correction.lin_irrad.html#rex.bias_correction.lin_irrad"><code class="docutils literal notranslate"><span class="pre">lin_irrad()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.bias_correction.lin_ws.html">rex.bias_correction.lin_ws</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.bias_correction.lin_ws.html#rex.bias_correction.lin_ws"><code class="docutils literal notranslate"><span class="pre">lin_ws()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.bias_correction.qdm_irrad.html">rex.bias_correction.qdm_irrad</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.bias_correction.qdm_irrad.html#rex.bias_correction.qdm_irrad"><code class="docutils literal notranslate"><span class="pre">qdm_irrad()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.bias_correction.qdm_ws.html">rex.bias_correction.qdm_ws</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.bias_correction.qdm_ws.html#rex.bias_correction.qdm_ws"><code class="docutils literal notranslate"><span class="pre">qdm_ws()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.external.html">rex.external</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.external.rexarray.html">rex.external.rexarray</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.external.rexarray.open_mfdataset_hsds.html">rex.external.rexarray.open_mfdataset_hsds</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.external.rexarray.RexArrayWrapper.html">rex.external.rexarray.RexArrayWrapper</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.external.rexarray.RexBackendEntrypoint.html">rex.external.rexarray.RexBackendEntrypoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.external.rexarray.RexCoordVar.html">rex.external.rexarray.RexCoordVar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.external.rexarray.RexMetaVar.html">rex.external.rexarray.RexMetaVar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.external.rexarray.RexStore.html">rex.external.rexarray.RexStore</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.external.rexarray.VarInfo.html">rex.external.rexarray.VarInfo</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.joint_pd.html">rex.joint_pd</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.joint_pd.joint_pd.html">rex.joint_pd.joint_pd</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.joint_pd.joint_pd.JointPD.html">rex.joint_pd.joint_pd.JointPD</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.joint_pd.wind_rose_cli.html">rex.joint_pd.wind_rose_cli</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.multi_file_resource.html">rex.multi_file_resource</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.MultiFileNSRDB.html">rex.multi_file_resource.MultiFileNSRDB</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_file_resource.MultiFileNSRDB.html#rex.multi_file_resource.MultiFileNSRDB"><code class="docutils literal notranslate"><span class="pre">MultiFileNSRDB</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.MultiFileResource.html">rex.multi_file_resource.MultiFileResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_file_resource.MultiFileResource.html#rex.multi_file_resource.MultiFileResource"><code class="docutils literal notranslate"><span class="pre">MultiFileResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.MultiFileWTK.html">rex.multi_file_resource.MultiFileWTK</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_file_resource.MultiFileWTK.html#rex.multi_file_resource.MultiFileWTK"><code class="docutils literal notranslate"><span class="pre">MultiFileWTK</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.MultiH5.html">rex.multi_file_resource.MultiH5</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_file_resource.MultiH5.html#rex.multi_file_resource.MultiH5"><code class="docutils literal notranslate"><span class="pre">MultiH5</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_file_resource.MultiH5Path.html">rex.multi_file_resource.MultiH5Path</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_file_resource.MultiH5Path.html#rex.multi_file_resource.MultiH5Path"><code class="docutils literal notranslate"><span class="pre">MultiH5Path</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.multi_res_resource.html">rex.multi_res_resource</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_res_resource.MultiResolutionResource.html">rex.multi_res_resource.MultiResolutionResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_res_resource.MultiResolutionResource.html#rex.multi_res_resource.MultiResolutionResource"><code class="docutils literal notranslate"><span class="pre">MultiResolutionResource</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.multi_time_resource.html">rex.multi_time_resource</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.MultiTimeH5.html">rex.multi_time_resource.MultiTimeH5</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_time_resource.MultiTimeH5.html#rex.multi_time_resource.MultiTimeH5"><code class="docutils literal notranslate"><span class="pre">MultiTimeH5</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.MultiTimeNSRDB.html">rex.multi_time_resource.MultiTimeNSRDB</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_time_resource.MultiTimeNSRDB.html#rex.multi_time_resource.MultiTimeNSRDB"><code class="docutils literal notranslate"><span class="pre">MultiTimeNSRDB</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.MultiTimeResource.html">rex.multi_time_resource.MultiTimeResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_time_resource.MultiTimeResource.html#rex.multi_time_resource.MultiTimeResource"><code class="docutils literal notranslate"><span class="pre">MultiTimeResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.MultiTimeSolarResource.html">rex.multi_time_resource.MultiTimeSolarResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_time_resource.MultiTimeSolarResource.html#rex.multi_time_resource.MultiTimeSolarResource"><code class="docutils literal notranslate"><span class="pre">MultiTimeSolarResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.MultiTimeWaveResource.html">rex.multi_time_resource.MultiTimeWaveResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_time_resource.MultiTimeWaveResource.html#rex.multi_time_resource.MultiTimeWaveResource"><code class="docutils literal notranslate"><span class="pre">MultiTimeWaveResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_time_resource.MultiTimeWindResource.html">rex.multi_time_resource.MultiTimeWindResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_time_resource.MultiTimeWindResource.html#rex.multi_time_resource.MultiTimeWindResource"><code class="docutils literal notranslate"><span class="pre">MultiTimeWindResource</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="rex.multi_year_resource.html">rex.multi_year_resource</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.MultiYearH5.html">rex.multi_year_resource.MultiYearH5</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_year_resource.MultiYearH5.html#rex.multi_year_resource.MultiYearH5"><code class="docutils literal notranslate"><span class="pre">MultiYearH5</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">rex.multi_year_resource.MultiYearNSRDB</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB"><code class="docutils literal notranslate"><span class="pre">MultiYearNSRDB</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.MultiYearResource.html">rex.multi_year_resource.MultiYearResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_year_resource.MultiYearResource.html#rex.multi_year_resource.MultiYearResource"><code class="docutils literal notranslate"><span class="pre">MultiYearResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.MultiYearSolarResource.html">rex.multi_year_resource.MultiYearSolarResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_year_resource.MultiYearSolarResource.html#rex.multi_year_resource.MultiYearSolarResource"><code class="docutils literal notranslate"><span class="pre">MultiYearSolarResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.MultiYearWaveResource.html">rex.multi_year_resource.MultiYearWaveResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_year_resource.MultiYearWaveResource.html#rex.multi_year_resource.MultiYearWaveResource"><code class="docutils literal notranslate"><span class="pre">MultiYearWaveResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.multi_year_resource.MultiYearWindResource.html">rex.multi_year_resource.MultiYearWindResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.multi_year_resource.MultiYearWindResource.html#rex.multi_year_resource.MultiYearWindResource"><code class="docutils literal notranslate"><span class="pre">MultiYearWindResource</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.outputs.html">rex.outputs</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.outputs.Outputs.html">rex.outputs.Outputs</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.outputs.Outputs.html#rex.outputs.Outputs"><code class="docutils literal notranslate"><span class="pre">Outputs</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.rechunk_h5.html">rex.rechunk_h5</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.chunk_size.html">rex.rechunk_h5.chunk_size</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.chunk_size.ArrayChunkSize.html">rex.rechunk_h5.chunk_size.ArrayChunkSize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.chunk_size.BaseChunkSize.html">rex.rechunk_h5.chunk_size.BaseChunkSize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.chunk_size.TimeseriesChunkSize.html">rex.rechunk_h5.chunk_size.TimeseriesChunkSize</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.combine_h5.html">rex.rechunk_h5.combine_h5</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.combine_h5.CombineH5.html">rex.rechunk_h5.combine_h5.CombineH5</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.combine_h5_cli.html">rex.rechunk_h5.combine_h5_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.rechunk_cli.html">rex.rechunk_h5.rechunk_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.rechunk_h5.rechunk_h5.html">rex.rechunk_h5.rechunk_h5</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.rechunk_h5.get_dataset_attributes.html">rex.rechunk_h5.rechunk_h5.get_dataset_attributes</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.rechunk_h5.rechunk_h5.RechunkH5.html">rex.rechunk_h5.rechunk_h5.RechunkH5</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.renewable_resource.html">rex.renewable_resource</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.linear_interp.html">rex.renewable_resource.linear_interp</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.renewable_resource.linear_interp.html#rex.renewable_resource.linear_interp"><code class="docutils literal notranslate"><span class="pre">linear_interp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.AbstractInterpolatedResource.html">rex.renewable_resource.AbstractInterpolatedResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.renewable_resource.AbstractInterpolatedResource.html#rex.renewable_resource.AbstractInterpolatedResource"><code class="docutils literal notranslate"><span class="pre">AbstractInterpolatedResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.GeothermalResource.html">rex.renewable_resource.GeothermalResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.renewable_resource.GeothermalResource.html#rex.renewable_resource.GeothermalResource"><code class="docutils literal notranslate"><span class="pre">GeothermalResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.NSRDB.html">rex.renewable_resource.NSRDB</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.renewable_resource.NSRDB.html#rex.renewable_resource.NSRDB"><code class="docutils literal notranslate"><span class="pre">NSRDB</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.SolarResource.html">rex.renewable_resource.SolarResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.renewable_resource.SolarResource.html#rex.renewable_resource.SolarResource"><code class="docutils literal notranslate"><span class="pre">SolarResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.WaveResource.html">rex.renewable_resource.WaveResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.renewable_resource.WaveResource.html#rex.renewable_resource.WaveResource"><code class="docutils literal notranslate"><span class="pre">WaveResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.renewable_resource.WindResource.html">rex.renewable_resource.WindResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.renewable_resource.WindResource.html#rex.renewable_resource.WindResource"><code class="docutils literal notranslate"><span class="pre">WindResource</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.resource.html">rex.resource</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource.BaseDatasetIterable.html">rex.resource.BaseDatasetIterable</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource.BaseDatasetIterable.html#rex.resource.BaseDatasetIterable"><code class="docutils literal notranslate"><span class="pre">BaseDatasetIterable</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource.BaseResource.html">rex.resource.BaseResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource.BaseResource.html#rex.resource.BaseResource"><code class="docutils literal notranslate"><span class="pre">BaseResource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource.Resource.html">rex.resource.Resource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource.Resource.html#rex.resource.Resource"><code class="docutils literal notranslate"><span class="pre">Resource</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource.ResourceDataset.html">rex.resource.ResourceDataset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource.ResourceDataset.html#rex.resource.ResourceDataset"><code class="docutils literal notranslate"><span class="pre">ResourceDataset</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.resource_extraction.html">rex.resource_extraction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.US_wave_cli.html">rex.resource_extraction.US_wave_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.multi_year_resource_cli.html">rex.resource_extraction.multi_year_resource_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.nsrdb_cli.html">rex.resource_extraction.nsrdb_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.resource_cli.html">rex.resource_extraction.resource_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.resource_extraction.html">rex.resource_extraction.resource_extraction</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiFileNSRDBX.html">rex.resource_extraction.resource_extraction.MultiFileNSRDBX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiFileResourceX.html">rex.resource_extraction.resource_extraction.MultiFileResourceX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiFileWindX.html">rex.resource_extraction.resource_extraction.MultiFileWindX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiTimeNSRDBX.html">rex.resource_extraction.resource_extraction.MultiTimeNSRDBX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiTimeResourceX.html">rex.resource_extraction.resource_extraction.MultiTimeResourceX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiTimeWaveX.html">rex.resource_extraction.resource_extraction.MultiTimeWaveX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiTimeWindX.html">rex.resource_extraction.resource_extraction.MultiTimeWindX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiYearNSRDBX.html">rex.resource_extraction.resource_extraction.MultiYearNSRDBX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiYearResourceX.html">rex.resource_extraction.resource_extraction.MultiYearResourceX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiYearWaveX.html">rex.resource_extraction.resource_extraction.MultiYearWaveX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.MultiYearWindX.html">rex.resource_extraction.resource_extraction.MultiYearWindX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.NSRDBX.html">rex.resource_extraction.resource_extraction.NSRDBX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.ResourceX.html">rex.resource_extraction.resource_extraction.ResourceX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.SolarX.html">rex.resource_extraction.resource_extraction.SolarX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.WaveX.html">rex.resource_extraction.resource_extraction.WaveX</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.resource_extraction.resource_extraction.WindX.html">rex.resource_extraction.resource_extraction.WindX</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.wave_cli.html">rex.resource_extraction.wave_cli</a></li>
+<li class="toctree-l3"><a class="reference internal" href="rex.resource_extraction.wind_cli.html">rex.resource_extraction.wind_cli</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.sam_resource.html">rex.sam_resource</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.sam_resource.SAMResource.html">rex.sam_resource.SAMResource</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.sam_resource.SAMResource.html#rex.sam_resource.SAMResource"><code class="docutils literal notranslate"><span class="pre">SAMResource</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.temporal_stats.html">rex.temporal_stats</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.temporal_stats.temporal_stats.html">rex.temporal_stats.temporal_stats</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.temporal_stats.temporal_stats.cdf.html">rex.temporal_stats.temporal_stats.cdf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.temporal_stats.temporal_stats.circular_mean.html">rex.temporal_stats.temporal_stats.circular_mean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.temporal_stats.temporal_stats.TemporalStats.html">rex.temporal_stats.temporal_stats.TemporalStats</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.temporal_stats.temporal_stats_cli.html">rex.temporal_stats.temporal_stats_cli</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.utilities.html">rex.utilities</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.bc_parse_table.html">rex.utilities.bc_parse_table</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.bc_parse_table.parse_bc_table.html">rex.utilities.bc_parse_table.parse_bc_table</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.bc_utils.html">rex.utilities.bc_utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.bc_utils.sample_cdf.html">rex.utilities.bc_utils.sample_cdf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.bc_utils.sample_q_invlog.html">rex.utilities.bc_utils.sample_q_invlog</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.bc_utils.sample_q_linear.html">rex.utilities.bc_utils.sample_q_linear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.bc_utils.sample_q_log.html">rex.utilities.bc_utils.sample_q_log</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.bc_utils.QuantileDeltaMapping.html">rex.utilities.bc_utils.QuantileDeltaMapping</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.cli_dtypes.html">rex.utilities.cli_dtypes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.sanitize_str.html">rex.utilities.cli_dtypes.sanitize_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.FloatListType.html">rex.utilities.cli_dtypes.FloatListType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.FloatType.html">rex.utilities.cli_dtypes.FloatType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.IntListType.html">rex.utilities.cli_dtypes.IntListType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.IntType.html">rex.utilities.cli_dtypes.IntType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.ListType.html">rex.utilities.cli_dtypes.ListType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.PathListType.html">rex.utilities.cli_dtypes.PathListType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.StrFloatType.html">rex.utilities.cli_dtypes.StrFloatType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.StrListType.html">rex.utilities.cli_dtypes.StrListType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.StrOrListType.html">rex.utilities.cli_dtypes.StrOrListType</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.cli_dtypes.StrType.html">rex.utilities.cli_dtypes.StrType</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.exceptions.html">rex.utilities.exceptions</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.ExecutionError.html">rex.utilities.exceptions.ExecutionError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.ExtrapolationWarning.html">rex.utilities.exceptions.ExtrapolationWarning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.FileInputError.html">rex.utilities.exceptions.FileInputError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.HandlerRuntimeError.html">rex.utilities.exceptions.HandlerRuntimeError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.HandlerValueError.html">rex.utilities.exceptions.HandlerValueError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.HpcError.html">rex.utilities.exceptions.HpcError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.JSONError.html">rex.utilities.exceptions.JSONError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.LoggerWarning.html">rex.utilities.exceptions.LoggerWarning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.MoninObukhovExtrapolationError.html">rex.utilities.exceptions.MoninObukhovExtrapolationError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.ParallelExecutionWarning.html">rex.utilities.exceptions.ParallelExecutionWarning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.PbsWarning.html">rex.utilities.exceptions.PbsWarning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.ResourceError.html">rex.utilities.exceptions.ResourceError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.ResourceKeyError.html">rex.utilities.exceptions.ResourceKeyError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.ResourceRuntimeError.html">rex.utilities.exceptions.ResourceRuntimeError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.ResourceValueError.html">rex.utilities.exceptions.ResourceValueError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.ResourceWarning.html">rex.utilities.exceptions.ResourceWarning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.RetryError.html">rex.utilities.exceptions.RetryError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.RetryWarning.html">rex.utilities.exceptions.RetryWarning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.SAMInputWarning.html">rex.utilities.exceptions.SAMInputWarning</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.SlurmError.html">rex.utilities.exceptions.SlurmError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.exceptions.SlurmWarning.html">rex.utilities.exceptions.SlurmWarning</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.execution.html">rex.utilities.execution</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.execution.execute_parallel.html">rex.utilities.execution.execute_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.execution.execute_single.html">rex.utilities.execution.execute_single</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.execution.SmartParallelJob.html">rex.utilities.execution.SmartParallelJob</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.execution.SpawnProcessPool.html">rex.utilities.execution.SpawnProcessPool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.execution.SubprocessManager.html">rex.utilities.execution.SubprocessManager</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.fun_utils.html">rex.utilities.fun_utils</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.fun_utils.arg_to_str.html">rex.utilities.fun_utils.arg_to_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.fun_utils.get_arg_str.html">rex.utilities.fun_utils.get_arg_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.fun_utils.get_class.html">rex.utilities.fun_utils.get_class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.fun_utils.get_fun_call_str.html">rex.utilities.fun_utils.get_fun_call_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.fun_utils.get_fun_str.html">rex.utilities.fun_utils.get_fun_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.fun_utils.has_class.html">rex.utilities.fun_utils.has_class</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.fun_utils.is_standalone_fun.html">rex.utilities.fun_utils.is_standalone_fun</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.hpc.html">rex.utilities.hpc</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.hpc.HpcJobManager.html">rex.utilities.hpc.HpcJobManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.hpc.PBS.html">rex.utilities.hpc.PBS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.hpc.SLURM.html">rex.utilities.hpc.SLURM</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.loggers.html">rex.utilities.loggers</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.add_handlers.html">rex.utilities.loggers.add_handlers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.clear_handlers.html">rex.utilities.loggers.clear_handlers</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.create_dirs.html">rex.utilities.loggers.create_dirs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.get_handler.html">rex.utilities.loggers.get_handler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.init_logger.html">rex.utilities.loggers.init_logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.init_mult.html">rex.utilities.loggers.init_mult</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.log_mem.html">rex.utilities.loggers.log_mem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.log_versions.html">rex.utilities.loggers.log_versions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.setup_logger.html">rex.utilities.loggers.setup_logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.loggers.LoggingAttributes.html">rex.utilities.loggers.LoggingAttributes</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.parse_keys.html">rex.utilities.parse_keys</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.parse_keys.parse_keys.html">rex.utilities.parse_keys.parse_keys</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.parse_keys.parse_slice.html">rex.utilities.parse_keys.parse_slice</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.regridder.html">rex.utilities.regridder</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.regridder.CachedRegridder.html">rex.utilities.regridder.CachedRegridder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.regridder.Regridder.html">rex.utilities.regridder.Regridder</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.solar_position.html">rex.utilities.solar_position</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.solar_position.SolarPosition.html">rex.utilities.solar_position.SolarPosition</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.toml_parser.html">rex.utilities.toml_parser</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.toml_parser.flatten_dict.html">rex.utilities.toml_parser.flatten_dict</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.toml_parser.TOMLParser.html">rex.utilities.toml_parser.TOMLParser</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="rex.utilities.utilities.html">rex.utilities.utilities</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.assert_read_only_mode.html">rex.utilities.utilities.assert_read_only_mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.check_eval_str.html">rex.utilities.utilities.check_eval_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.check_hsds_file.html">rex.utilities.utilities.check_hsds_file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.check_res_file.html">rex.utilities.utilities.check_res_file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.check_tz.html">rex.utilities.utilities.check_tz</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.dict_str_load.html">rex.utilities.utilities.dict_str_load</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.filename_from_h5pyd.html">rex.utilities.utilities.filename_from_h5pyd</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.filename_timestamp.html">rex.utilities.utilities.filename_timestamp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.get_chunk_ranges.html">rex.utilities.utilities.get_chunk_ranges</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.get_class_properties.html">rex.utilities.utilities.get_class_properties</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.get_dtype.html">rex.utilities.utilities.get_dtype</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.get_lat_lon_cols.html">rex.utilities.utilities.get_lat_lon_cols</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.import_io_module_or_fail.html">rex.utilities.utilities.import_io_module_or_fail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.is_hsds_file.html">rex.utilities.utilities.is_hsds_file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.is_s3_file.html">rex.utilities.utilities.is_s3_file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.jsonify_dict.html">rex.utilities.utilities.jsonify_dict</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.mean_irrad.html">rex.utilities.utilities.mean_irrad</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.parse_date_int.html">rex.utilities.utilities.parse_date_int</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.parse_table.html">rex.utilities.utilities.parse_table</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.parse_timestamp.html">rex.utilities.utilities.parse_timestamp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.parse_year.html">rex.utilities.utilities.parse_year</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.pd_date_range.html">rex.utilities.utilities.pd_date_range</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.res_dist_threshold.html">rex.utilities.utilities.res_dist_threshold</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.rex_unscale.html">rex.utilities.utilities.rex_unscale</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.roll_timeseries.html">rex.utilities.utilities.roll_timeseries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.row_col_indices.html">rex.utilities.utilities.row_col_indices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.safe_json_load.html">rex.utilities.utilities.safe_json_load</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.safe_yaml_load.html">rex.utilities.utilities.safe_yaml_load</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.slice_sites.html">rex.utilities.utilities.slice_sites</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.split_sites_list.html">rex.utilities.utilities.split_sites_list</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.split_sites_slice.html">rex.utilities.utilities.split_sites_slice</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.str_to_date.html">rex.utilities.utilities.str_to_date</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.str_to_datetime.html">rex.utilities.utilities.str_to_datetime</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.timestamp_format_to_redex.html">rex.utilities.utilities.timestamp_format_to_redex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.to_records_array.html">rex.utilities.utilities.to_records_array</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.unstupify_path.html">rex.utilities.utilities.unstupify_path</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.validate_filepath.html">rex.utilities.utilities.validate_filepath</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.write_json.html">rex.utilities.utilities.write_json</a></li>
+<li class="toctree-l4"><a class="reference internal" href="rex.utilities.utilities.Retry.html">rex.utilities.utilities.Retry</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rex.version.html">rex.version</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../_cli/cli.html">CLI reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/combine-h5.html">combine-h5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/MultiYearX.html">MultiYearX</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/MultiYearX.html#multiyearx-dataset">dataset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/MultiYearX.html#multiyearx-dataset-box">box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/MultiYearX.html#multiyearx-dataset-map-means">map-means</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/MultiYearX.html#multiyearx-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/MultiYearX.html#multiyearx-dataset-region">region</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/MultiYearX.html#multiyearx-dataset-site">site</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/NSRDBX.html">NSRDBX</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/NSRDBX.html#nsrdbx-dataset">dataset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/NSRDBX.html#nsrdbx-dataset-box">box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/NSRDBX.html#nsrdbx-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/NSRDBX.html#nsrdbx-dataset-region">region</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/NSRDBX.html#nsrdbx-dataset-site">site</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/NSRDBX.html#nsrdbx-sam-datasets">sam-datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/rechunk.html">rechunk</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/rex.html">rex</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/rex.html#rex-dataset">dataset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/rex.html#rex-dataset-box">box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/rex.html#rex-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/rex.html#rex-dataset-region">region</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/rex.html#rex-dataset-site">site</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/rex.html#rex-sam-datasets">sam-datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/temporal-stats.html">temporal-stats</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/temporal-stats.html#temporal-stats-diurnal">diurnal</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/temporal-stats.html#temporal-stats-full">full</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/temporal-stats.html#temporal-stats-monthly">monthly</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/temporal-stats.html#temporal-stats-monthly-diurnal">monthly-diurnal</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/US-wave.html">US-wave</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/US-wave.html#us-wave-dataset">dataset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/US-wave.html#us-wave-dataset-box">box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/US-wave.html#us-wave-dataset-map-means">map-means</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/US-wave.html#us-wave-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/US-wave.html#us-wave-dataset-region">region</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/US-wave.html#us-wave-dataset-site">site</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/WaveX.html">WaveX</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/WaveX.html#wavex-dataset">dataset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/WaveX.html#wavex-dataset-box">box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/WaveX.html#wavex-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/WaveX.html#wavex-dataset-region">region</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/WaveX.html#wavex-dataset-site">site</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/WaveX.html#wavex-sam-datasets">sam-datasets</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/wind-rose.html">wind-rose</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../_cli/WINDX.html">WINDX</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/WINDX.html#windx-dataset">dataset</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/WINDX.html#windx-dataset-box">box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/WINDX.html#windx-dataset-multi-site">multi-site</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/WINDX.html#windx-dataset-region">region</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../_cli/WINDX.html#windx-dataset-site">site</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../_cli/WINDX.html#windx-sam-datasets">sam-datasets</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">rex</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="rex.html">rex</a></li>
+          <li class="breadcrumb-item"><a href="rex.multi_year_resource.html">rex.multi_year_resource</a></li>
+      <li class="breadcrumb-item active">rex.multi_year_resource.MultiYearNSRDB</li>
+      <li class="wy-breadcrumbs-aside">
+              <a href="https://github.com/nrel/rex/blob/main/docs/source/_autosummary/rex.multi_year_resource.MultiYearNSRDB.rst" class="fa fa-github"> Edit on GitHub</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="rex-multi-year-resource-multiyearnsrdb">
+<h1>rex.multi_year_resource.MultiYearNSRDB<a class="headerlink" href="#rex-multi-year-resource-multiyearnsrdb" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MultiYearNSRDB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h5_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">years</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">str_decode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hsds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hsds_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/rex/multi_year_resource.html#MultiYearNSRDB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="rex.multi_year_resource.MultiYearResource.html#rex.multi_year_resource.MultiYearResource" title="rex.multi_year_resource.MultiYearResource"><code class="xref py py-class docutils literal notranslate"><span class="pre">MultiYearResource</span></code></a></p>
+<p>Class to handle multiple years of NSRDB data stored accross
+multiple .h5 files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>h5_path</strong> (<em>str | list</em>) – Unix shell style pattern path with * wildcards to multi-file
+resource file sets. Files must have the same coordinates
+but can have different datasets or time indexes. Can also be
+an explicit list of multi time files, which themselves can
+contain * wildcards. Can also be a path on HSDS starting with
+/nrel/ or a path on s3 starting with s3://</p></li>
+<li><p><strong>years</strong> (<em>list, optional</em>) – List of years to access, by default None</p></li>
+<li><p><strong>unscale</strong> (<em>bool</em>) – Boolean flag to automatically unscale variables on extraction</p></li>
+<li><p><strong>str_decode</strong> (<em>bool</em>) – Boolean flag to decode the bytestring meta data into normal
+strings. Setting this to False will speed up the meta data read.</p></li>
+<li><p><strong>hsds</strong> (<em>bool, optional</em>) – Boolean flag to use h5pyd to handle .h5 ‘files’ hosted on AWS
+behind HSDS, by default False. This is now redundant; file paths
+starting with /nrel/ will be treated as hsds=True by default</p></li>
+<li><p><strong>hsds_kwargs</strong> (<em>dict, optional</em>) – Dictionary of optional kwargs for h5pyd, e.g., bucket, username,
+password, by default None</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.close" title="rex.multi_year_resource.MultiYearNSRDB.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Close h5 instance</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.get_attrs" title="rex.multi_year_resource.MultiYearNSRDB.get_attrs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_attrs</span></code></a>([dset])</p></td>
+<td><p>Get h5 attributes either from file or dataset</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.get_dset_properties" title="rex.multi_year_resource.MultiYearNSRDB.get_dset_properties"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_dset_properties</span></code></a>(dset)</p></td>
+<td><p>Get dataset properties (shape, dtype, chunks)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.get_meta_arr" title="rex.multi_year_resource.MultiYearNSRDB.get_meta_arr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_meta_arr</span></code></a>(rec_name[, rows])</p></td>
+<td><p>Get a meta array by name (faster than DataFrame extraction).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.get_scale_factor" title="rex.multi_year_resource.MultiYearNSRDB.get_scale_factor"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_scale_factor</span></code></a>(dset)</p></td>
+<td><p>Get dataset scale factor</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.get_units" title="rex.multi_year_resource.MultiYearNSRDB.get_units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_units</span></code></a>(dset)</p></td>
+<td><p>Get dataset units</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.attrs" title="rex.multi_year_resource.MultiYearNSRDB.attrs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">attrs</span></code></a></p></td>
+<td><p>Dictionary of all dataset attributes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.chunks" title="rex.multi_year_resource.MultiYearNSRDB.chunks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunks</span></code></a></p></td>
+<td><p>Dictionary of all dataset chunk sizes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.coordinates" title="rex.multi_year_resource.MultiYearNSRDB.coordinates"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coordinates</span></code></a></p></td>
+<td><p>(lat, lon) pairs</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.datasets" title="rex.multi_year_resource.MultiYearNSRDB.datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">datasets</span></code></a></p></td>
+<td><p>Datasets available</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.dsets" title="rex.multi_year_resource.MultiYearNSRDB.dsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dsets</span></code></a></p></td>
+<td><p>Datasets available</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.dtypes" title="rex.multi_year_resource.MultiYearNSRDB.dtypes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtypes</span></code></a></p></td>
+<td><p>Dictionary of all dataset dtypes</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.global_attrs" title="rex.multi_year_resource.MultiYearNSRDB.global_attrs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">global_attrs</span></code></a></p></td>
+<td><p>Global (file) attributes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.h5" title="rex.multi_year_resource.MultiYearNSRDB.h5"><code class="xref py py-obj docutils literal notranslate"><span class="pre">h5</span></code></a></p></td>
+<td><p>Open class instance that handles all .h5 files that data is to be extracted from</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.lat_lon" title="rex.multi_year_resource.MultiYearNSRDB.lat_lon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lat_lon</span></code></a></p></td>
+<td><p>Extract (latitude, longitude) pairs</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.meta" title="rex.multi_year_resource.MultiYearNSRDB.meta"><code class="xref py py-obj docutils literal notranslate"><span class="pre">meta</span></code></a></p></td>
+<td><p>Resource meta data DataFrame</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.res_dsets" title="rex.multi_year_resource.MultiYearNSRDB.res_dsets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">res_dsets</span></code></a></p></td>
+<td><p>Available resource datasets</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.resource_datasets" title="rex.multi_year_resource.MultiYearNSRDB.resource_datasets"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resource_datasets</span></code></a></p></td>
+<td><p>Available resource datasets</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.scale_factors" title="rex.multi_year_resource.MultiYearNSRDB.scale_factors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_factors</span></code></a></p></td>
+<td><p>Dictionary of all dataset scale factors</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.shape" title="rex.multi_year_resource.MultiYearNSRDB.shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></a></p></td>
+<td><p>Resource shape (timesteps, sites) shape = (len(time_index), len(meta))</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.shapes" title="rex.multi_year_resource.MultiYearNSRDB.shapes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shapes</span></code></a></p></td>
+<td><p>Dictionary of all dataset shapes</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.time_index" title="rex.multi_year_resource.MultiYearNSRDB.time_index"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_index</span></code></a></p></td>
+<td><p>Resource DatetimeIndex</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.units" title="rex.multi_year_resource.MultiYearNSRDB.units"><code class="xref py py-obj docutils literal notranslate"><span class="pre">units</span></code></a></p></td>
+<td><p>Dictionary of all dataset units</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#rex.multi_year_resource.MultiYearNSRDB.years" title="rex.multi_year_resource.MultiYearNSRDB.years"><code class="xref py py-obj docutils literal notranslate"><span class="pre">years</span></code></a></p></td>
+<td><p>Available years</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.attrs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">attrs</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.attrs" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of all dataset attributes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>attrs</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.chunks">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">chunks</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.chunks" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of all dataset chunk sizes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>chunks</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.close" title="Link to this definition"></a></dt>
+<dd><p>Close h5 instance</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.coordinates">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coordinates</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.coordinates" title="Link to this definition"></a></dt>
+<dd><p>(lat, lon) pairs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lat_lon</strong> (<em>ndarray</em>)</p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Coordinates</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.datasets">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">datasets</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.datasets" title="Link to this definition"></a></dt>
+<dd><p>Datasets available</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>list</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.dsets">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dsets</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.dsets" title="Link to this definition"></a></dt>
+<dd><p>Datasets available</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>list</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.dtypes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtypes</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.dtypes" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of all dataset dtypes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dtypes</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.get_attrs">
+<span class="sig-name descname"><span class="pre">get_attrs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.get_attrs" title="Link to this definition"></a></dt>
+<dd><p>Get h5 attributes either from file or dataset</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dset</strong> (<em>str</em>) – Dataset to get attributes for, if None get file (global) attributes</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>attrs</strong> (<em>dict</em>) – Dataset or file attributes</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.get_dset_properties">
+<span class="sig-name descname"><span class="pre">get_dset_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.get_dset_properties" title="Link to this definition"></a></dt>
+<dd><p>Get dataset properties (shape, dtype, chunks)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dset</strong> (<em>str</em>) – Dataset to get scale factor for</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>shape</strong> (<em>tuple</em>) – Dataset array shape</p></li>
+<li><p><strong>dtype</strong> (<em>str</em>) – Dataset array dtype</p></li>
+<li><p><strong>chunks</strong> (<em>tuple</em>) – Dataset chunk size</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.get_meta_arr">
+<span class="sig-name descname"><span class="pre">get_meta_arr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rec_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">slice(None,</span> <span class="pre">None,</span> <span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.get_meta_arr" title="Link to this definition"></a></dt>
+<dd><p>Get a meta array by name (faster than DataFrame extraction).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rec_name</strong> (<em>str</em>) – Named record from the meta data to retrieve.</p></li>
+<li><p><strong>rows</strong> (<em>slice</em>) – Rows of the record to extract.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>meta_arr</strong> (<em>np.ndarray</em>) – Extracted array from the meta data record name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.get_scale_factor">
+<span class="sig-name descname"><span class="pre">get_scale_factor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.get_scale_factor" title="Link to this definition"></a></dt>
+<dd><p>Get dataset scale factor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dset</strong> (<em>str</em>) – Dataset to get scale factor for</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>float</em> – Dataset scale factor, used to unscale int values to floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.get_units">
+<span class="sig-name descname"><span class="pre">get_units</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.get_units" title="Link to this definition"></a></dt>
+<dd><p>Get dataset units</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dset</strong> (<em>str</em>) – Dataset to get units for</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>str</em> – Dataset units, None if not defined</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.global_attrs">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">global_attrs</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.global_attrs" title="Link to this definition"></a></dt>
+<dd><p>Global (file) attributes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>global_attrs</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.h5">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">h5</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.h5" title="Link to this definition"></a></dt>
+<dd><p>Open class instance that handles all .h5 files that data is to
+be extracted from</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>h5</strong> (<em>MultiTimeH5 | MultiYearH5</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.lat_lon">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lat_lon</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.lat_lon" title="Link to this definition"></a></dt>
+<dd><p>Extract (latitude, longitude) pairs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>lat_lon</strong> (<em>ndarray</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.meta">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">meta</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.meta" title="Link to this definition"></a></dt>
+<dd><p>Resource meta data DataFrame</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>meta</strong> (<em>pandas.DataFrame</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.res_dsets">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">res_dsets</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.res_dsets" title="Link to this definition"></a></dt>
+<dd><p>Available resource datasets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>list</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.resource_datasets">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">resource_datasets</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.resource_datasets" title="Link to this definition"></a></dt>
+<dd><p>Available resource datasets</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>list</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.scale_factors">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">scale_factors</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.scale_factors" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of all dataset scale factors</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scale_factors</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.shape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.shape" title="Link to this definition"></a></dt>
+<dd><p>Resource shape (timesteps, sites)
+shape = (len(time_index), len(meta))</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>shape</strong> (<em>tuple</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.shapes">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shapes</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.shapes" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of all dataset shapes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>shapes</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.time_index">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time_index</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.time_index" title="Link to this definition"></a></dt>
+<dd><p>Resource DatetimeIndex</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>time_index</strong> (<em>pandas.DatetimeIndex</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.units">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">units</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.units" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of all dataset units</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>units</strong> (<em>dict</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="rex.multi_year_resource.MultiYearNSRDB.years">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">years</span></span><a class="headerlink" href="#rex.multi_year_resource.MultiYearNSRDB.years" title="Link to this definition"></a></dt>
+<dd><p>Available years</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>list</em> – List of dataset present in .h5 files</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="rex.multi_year_resource.MultiYearH5.html" class="btn btn-neutral float-left" title="rex.multi_year_resource.MultiYearH5" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="rex.multi_year_resource.MultiYearResource.html" class="btn btn-neutral float-right" title="rex.multi_year_resource.MultiYearResource" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2020, Alliance for Sustainable Energy, LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

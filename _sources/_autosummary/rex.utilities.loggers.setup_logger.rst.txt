@@ -1,0 +1,6 @@
+rex.utilities.loggers.setup\_logger
+===================================
+
+.. currentmodule:: rex.utilities.loggers
+
+.. autofunction:: setup_logger

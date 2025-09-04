@@ -1,0 +1,6 @@
+rex.utilities.utilities.dict\_str\_load
+=======================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: dict_str_load

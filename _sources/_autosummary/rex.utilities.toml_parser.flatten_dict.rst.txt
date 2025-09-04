@@ -1,0 +1,6 @@
+rex.utilities.toml\_parser.flatten\_dict
+========================================
+
+.. currentmodule:: rex.utilities.toml_parser
+
+.. autofunction:: flatten_dict

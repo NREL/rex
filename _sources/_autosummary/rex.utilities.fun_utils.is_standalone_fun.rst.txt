@@ -1,0 +1,6 @@
+rex.utilities.fun\_utils.is\_standalone\_fun
+============================================
+
+.. currentmodule:: rex.utilities.fun_utils
+
+.. autofunction:: is_standalone_fun

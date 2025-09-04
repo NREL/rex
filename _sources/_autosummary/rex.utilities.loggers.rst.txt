@@ -1,0 +1,46 @@
+rex.utilities.loggers
+=====================
+
+.. automodule:: rex.utilities.loggers
+
+   
+   
+   
+
+   
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+      :toctree:
+   
+      add_handlers
+      clear_handlers
+      create_dirs
+      get_handler
+      init_logger
+      init_mult
+      log_mem
+      log_versions
+      setup_logger
+   
+   
+
+   
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+      :toctree:
+      :template: custom-class-template.rst
+   
+      LoggingAttributes
+   
+   
+
+   
+   
+   
+
+
+

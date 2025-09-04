@@ -1,0 +1,6 @@
+rex.utilities.loggers.clear\_handlers
+=====================================
+
+.. currentmodule:: rex.utilities.loggers
+
+.. autofunction:: clear_handlers

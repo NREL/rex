@@ -1,0 +1,6 @@
+rex.utilities.utilities.roll\_timeseries
+========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: roll_timeseries

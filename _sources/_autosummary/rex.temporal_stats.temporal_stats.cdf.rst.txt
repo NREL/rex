@@ -1,0 +1,6 @@
+rex.temporal\_stats.temporal\_stats.cdf
+=======================================
+
+.. currentmodule:: rex.temporal_stats.temporal_stats
+
+.. autofunction:: cdf

@@ -1,0 +1,6 @@
+rex.utilities.loggers.add\_handlers
+===================================
+
+.. currentmodule:: rex.utilities.loggers
+
+.. autofunction:: add_handlers

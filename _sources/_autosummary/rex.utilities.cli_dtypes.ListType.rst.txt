@@ -1,0 +1,40 @@
+rex.utilities.cli\_dtypes.ListType
+==================================
+
+.. currentmodule:: rex.utilities.cli_dtypes
+
+.. autoclass:: ListType
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~ListType.convert
+      ~ListType.dtype
+      ~ListType.fail
+      ~ListType.get_metavar
+      ~ListType.get_missing_message
+      ~ListType.shell_complete
+      ~ListType.split_envvar_value
+      ~ListType.to_info_dict
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~ListType.arity
+      ~ListType.envvar_list_splitter
+      ~ListType.is_composite
+      ~ListType.name
+   
+   

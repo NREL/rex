@@ -1,0 +1,52 @@
+rex.multi\_time\_resource.MultiTimeWindResource
+===============================================
+
+.. currentmodule:: rex.multi_time_resource
+
+.. autoclass:: MultiTimeWindResource
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiTimeWindResource.close
+      ~MultiTimeWindResource.get_attrs
+      ~MultiTimeWindResource.get_dset_properties
+      ~MultiTimeWindResource.get_meta_arr
+      ~MultiTimeWindResource.get_scale_factor
+      ~MultiTimeWindResource.get_units
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiTimeWindResource.PREFIX
+      ~MultiTimeWindResource.attrs
+      ~MultiTimeWindResource.chunks
+      ~MultiTimeWindResource.coordinates
+      ~MultiTimeWindResource.datasets
+      ~MultiTimeWindResource.dsets
+      ~MultiTimeWindResource.dtypes
+      ~MultiTimeWindResource.global_attrs
+      ~MultiTimeWindResource.h5
+      ~MultiTimeWindResource.lat_lon
+      ~MultiTimeWindResource.meta
+      ~MultiTimeWindResource.res_dsets
+      ~MultiTimeWindResource.resource_datasets
+      ~MultiTimeWindResource.scale_factors
+      ~MultiTimeWindResource.shape
+      ~MultiTimeWindResource.shapes
+      ~MultiTimeWindResource.time_index
+      ~MultiTimeWindResource.units
+   
+   

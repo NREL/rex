@@ -1,0 +1,6 @@
+rex.utilities.utilities.split\_sites\_list
+==========================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: split_sites_list

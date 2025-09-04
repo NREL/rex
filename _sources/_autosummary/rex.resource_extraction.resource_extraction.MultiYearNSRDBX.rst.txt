@@ -1,0 +1,70 @@
+rex.resource\_extraction.resource\_extraction.MultiYearNSRDBX
+=============================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: MultiYearNSRDBX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiYearNSRDBX.box_gids
+      ~MultiYearNSRDBX.close
+      ~MultiYearNSRDBX.get_SAM_gid
+      ~MultiYearNSRDBX.get_SAM_lat_lon
+      ~MultiYearNSRDBX.get_box_df
+      ~MultiYearNSRDBX.get_box_ts
+      ~MultiYearNSRDBX.get_gid_df
+      ~MultiYearNSRDBX.get_gid_ts
+      ~MultiYearNSRDBX.get_grid_vectors
+      ~MultiYearNSRDBX.get_lat_lon_df
+      ~MultiYearNSRDBX.get_lat_lon_ts
+      ~MultiYearNSRDBX.get_means_map
+      ~MultiYearNSRDBX.get_raster_index
+      ~MultiYearNSRDBX.get_region_df
+      ~MultiYearNSRDBX.get_region_ts
+      ~MultiYearNSRDBX.get_timestep_map
+      ~MultiYearNSRDBX.lat_lon_gid
+      ~MultiYearNSRDBX.make_SAM_files
+      ~MultiYearNSRDBX.region_gids
+      ~MultiYearNSRDBX.save_region
+      ~MultiYearNSRDBX.save_subset
+      ~MultiYearNSRDBX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiYearNSRDBX.attrs
+      ~MultiYearNSRDBX.coordinates
+      ~MultiYearNSRDBX.counties
+      ~MultiYearNSRDBX.countries
+      ~MultiYearNSRDBX.data_version
+      ~MultiYearNSRDBX.datasets
+      ~MultiYearNSRDBX.distance_threshold
+      ~MultiYearNSRDBX.dsets
+      ~MultiYearNSRDBX.global_attrs
+      ~MultiYearNSRDBX.groups
+      ~MultiYearNSRDBX.h5
+      ~MultiYearNSRDBX.lat_lon
+      ~MultiYearNSRDBX.meta
+      ~MultiYearNSRDBX.res_dsets
+      ~MultiYearNSRDBX.resource
+      ~MultiYearNSRDBX.resource_datasets
+      ~MultiYearNSRDBX.shape
+      ~MultiYearNSRDBX.states
+      ~MultiYearNSRDBX.time_index
+      ~MultiYearNSRDBX.tree
+   
+   

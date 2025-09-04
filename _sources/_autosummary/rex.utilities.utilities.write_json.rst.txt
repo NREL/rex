@@ -1,0 +1,6 @@
+rex.utilities.utilities.write\_json
+===================================
+
+.. currentmodule:: rex.utilities.utilities
+
+.. autofunction:: write_json

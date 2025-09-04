@@ -1,0 +1,70 @@
+rex.resource\_extraction.resource\_extraction.MultiYearWaveX
+============================================================
+
+.. currentmodule:: rex.resource_extraction.resource_extraction
+
+.. autoclass:: MultiYearWaveX
+   :members:
+   :show-inheritance:
+   :inherited-members:
+   :special-members: __call__, __add__, __mul__
+
+   
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~MultiYearWaveX.box_gids
+      ~MultiYearWaveX.close
+      ~MultiYearWaveX.get_SAM_gid
+      ~MultiYearWaveX.get_SAM_lat_lon
+      ~MultiYearWaveX.get_box_df
+      ~MultiYearWaveX.get_box_ts
+      ~MultiYearWaveX.get_gid_df
+      ~MultiYearWaveX.get_gid_ts
+      ~MultiYearWaveX.get_grid_vectors
+      ~MultiYearWaveX.get_lat_lon_df
+      ~MultiYearWaveX.get_lat_lon_ts
+      ~MultiYearWaveX.get_means_map
+      ~MultiYearWaveX.get_raster_index
+      ~MultiYearWaveX.get_region_df
+      ~MultiYearWaveX.get_region_ts
+      ~MultiYearWaveX.get_timestep_map
+      ~MultiYearWaveX.lat_lon_gid
+      ~MultiYearWaveX.make_SAM_files
+      ~MultiYearWaveX.region_gids
+      ~MultiYearWaveX.save_region
+      ~MultiYearWaveX.save_subset
+      ~MultiYearWaveX.timestep_idx
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~MultiYearWaveX.attrs
+      ~MultiYearWaveX.coordinates
+      ~MultiYearWaveX.counties
+      ~MultiYearWaveX.countries
+      ~MultiYearWaveX.data_version
+      ~MultiYearWaveX.datasets
+      ~MultiYearWaveX.distance_threshold
+      ~MultiYearWaveX.dsets
+      ~MultiYearWaveX.global_attrs
+      ~MultiYearWaveX.groups
+      ~MultiYearWaveX.h5
+      ~MultiYearWaveX.lat_lon
+      ~MultiYearWaveX.meta
+      ~MultiYearWaveX.res_dsets
+      ~MultiYearWaveX.resource
+      ~MultiYearWaveX.resource_datasets
+      ~MultiYearWaveX.shape
+      ~MultiYearWaveX.states
+      ~MultiYearWaveX.time_index
+      ~MultiYearWaveX.tree
+   
+   
